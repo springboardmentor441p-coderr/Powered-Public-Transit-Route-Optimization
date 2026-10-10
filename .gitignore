@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Raw transit data
+data/raw/
+
+# Generated data
+data/processed/
+
+# Local configuration
+.env
