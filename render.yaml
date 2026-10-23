@@ -1,0 +1,5 @@
+services:
+  - type: web
+    name: routeranker
+    runtime: docker
+    plan: starter

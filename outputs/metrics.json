@@ -1,0 +1,537 @@
+{
+  "classifier": {
+    "random_forest": {
+      "grouped_cv": {
+        "accuracy": 0.677734375,
+        "macro_f1": 0.6756535947712418,
+        "confusion": [
+          [
+            85,
+            36,
+            11
+          ],
+          [
+            43,
+            133,
+            32
+          ],
+          [
+            12,
+            31,
+            129
+          ]
+        ]
+      },
+      "stratified_val": {
+        "accuracy": 0.6893203883495146,
+        "macro_f1": 0.6841957793450332,
+        "confusion": [
+          [
+            15,
+            10,
+            1
+          ],
+          [
+            5,
+            31,
+            6
+          ],
+          [
+            2,
+            8,
+            25
+          ]
+        ]
+      },
+      "unseen_cities": {
+        "accuracy": 0.65,
+        "macro_f1": 0.6540836388756045,
+        "confusion": [
+          [
+            13,
+            6,
+            1
+          ],
+          [
+            5,
+            14,
+            5
+          ],
+          [
+            3,
+            1,
+            12
+          ]
+        ],
+        "cities": [
+          "Kochi",
+          "Indore",
+          "Nagpur"
+        ]
+      }
+    },
+    "xgboost": {
+      "grouped_cv": {
+        "accuracy": 0.654296875,
+        "macro_f1": 0.6487983672346312,
+        "confusion": [
+          [
+            75,
+            43,
+            14
+          ],
+          [
+            40,
+            134,
+            34
+          ],
+          [
+            13,
+            33,
+            126
+          ]
+        ]
+      },
+      "stratified_val": {
+        "accuracy": 0.6504854368932039,
+        "macro_f1": 0.6417540384549708,
+        "confusion": [
+          [
+            13,
+            12,
+            1
+          ],
+          [
+            6,
+            28,
+            8
+          ],
+          [
+            2,
+            7,
+            26
+          ]
+        ]
+      },
+      "unseen_cities": {
+        "accuracy": 0.6333333333333333,
+        "macro_f1": 0.6359377559377559,
+        "confusion": [
+          [
+            10,
+            9,
+            1
+          ],
+          [
+            4,
+            16,
+            4
+          ],
+          [
+            3,
+            1,
+            12
+          ]
+        ],
+        "cities": [
+          "Kochi",
+          "Indore",
+          "Nagpur"
+        ]
+      }
+    }
+  },
+  "best": "random_forest",
+  "clustering": {
+    "k": 3,
+    "silhouette_by_k": {
+      "3": 0.18372031946772727,
+      "4": 0.12785820777372262,
+      "5": 0.12906982420790442,
+      "6": 0.11642086700339174,
+      "7": 0.118338278339327,
+      "8": 0.11797784586352783
+    },
+    "kmeans_silhouette": 0.18372031946772727,
+    "kmeans_davies_bouldin": 1.9447625004183948,
+    "dbscan_eps": 2.9744969228026874,
+    "dbscan_clusters": 1,
+    "dbscan_noise_frac": 0.03515625,
+    "dbscan_silhouette": null,
+    "pca_explained": [
+      0.291970273545209,
+      0.17899523969604392
+    ]
+  },
+  "classification_report": {
+    "underutilized": {
+      "precision": 0.6071428571428571,
+      "recall": 0.6439393939393939,
+      "f1-score": 0.625,
+      "support": 132.0
+    },
+    "balanced": {
+      "precision": 0.665,
+      "recall": 0.6394230769230769,
+      "f1-score": 0.6519607843137255,
+      "support": 208.0
+    },
+    "overcrowded": {
+      "precision": 0.75,
+      "recall": 0.75,
+      "f1-score": 0.75,
+      "support": 172.0
+    },
+    "accuracy": 0.677734375,
+    "macro avg": {
+      "precision": 0.6740476190476191,
+      "recall": 0.6777874902874902,
+      "f1-score": 0.6756535947712418,
+      "support": 512.0
+    },
+    "weighted avg": {
+      "precision": 0.6786383928571429,
+      "recall": 0.677734375,
+      "f1-score": 0.677945006127451,
+      "support": 512.0
+    }
+  },
+  "feature_importance": {
+    "proxy_peak_lf": 0.1395,
+    "proxy_pax_per_trip": 0.0977,
+    "proxy_lf": 0.0918,
+    "proxy_avg_lf": 0.09,
+    "headway_cv": 0.0535,
+    "headway_peak_min": 0.0516,
+    "trips_per_day": 0.0391,
+    "headway_offpeak_min": 0.0383,
+    "sum_attr": 0.0359,
+    "avg_stop_spacing_km": 0.0348,
+    "trip_duration_min": 0.0339,
+    "demand_potential_day": 0.0339,
+    "mean_stop_attr": 0.0338,
+    "mean_dist_center_km": 0.0324,
+    "route_length_km": 0.0315
+  },
+  "cleaning": {
+    "Ahmedabad": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Bengaluru": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Bhopal": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Bhubaneswar": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Chandigarh": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Chennai": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Coimbatore": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Delhi": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Hyderabad": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Indore": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Jaipur": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Kanpur": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Kochi": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Kolkata": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Lucknow": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Mumbai": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Nagpur": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Patna": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Pune": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Surat": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Thiruvananthapuram": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Vadodara": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    },
+    "Visakhapatnam": {
+      "stops_removed_invalid_or_duplicate": 0,
+      "stop_times_missing_time_interpolated": 0,
+      "stop_times_non_monotonic_fixed": 0,
+      "stop_times_removed": 0,
+      "trips_removed": 0,
+      "routes_removed_without_trips": 0
+    }
+  },
+  "impact": {
+    "before": {
+      "total_trips_day": 61643.0,
+      "bus_hours_day": 67390.83888888889,
+      "bus_km_day": 994715.6386882327,
+      "pax_share_in_overcrowded_hours": 0.08559005653400668,
+      "trip_share_nearly_empty": 0.46319939003617605,
+      "avg_wait_min": 5.49172502480071,
+      "mean_peak_lf": 1.0739029042734693,
+      "mean_avg_lf": 0.43730658615294327,
+      "n_routes_overcrowded": 172,
+      "n_routes_underutilized": 133,
+      "n_services": 512
+    },
+    "after": {
+      "total_trips_day": 51297.0,
+      "bus_hours_day": 59985.05888888889,
+      "bus_km_day": 880348.3587537855,
+      "pax_share_in_overcrowded_hours": 0.029046257226077836,
+      "trip_share_nearly_empty": 0.2521589956527672,
+      "avg_wait_min": 5.199017573145681,
+      "mean_peak_lf": 0.7735857565461536,
+      "mean_avg_lf": 0.47446684227778635,
+      "n_routes_overcrowded": 44,
+      "n_routes_underutilized": 49,
+      "n_services": 508
+    },
+    "params": {
+      "capacity": 60,
+      "ride_frac": 0.45,
+      "target_lf": 0.65,
+      "min_tph": 2,
+      "max_tph": 20,
+      "merge_overlap": 0.5,
+      "merge_jaccard": 0.3,
+      "split_km": 20.0,
+      "split_peak_lf": 1.3
+    },
+    "n_merges": 4
+  },
+  "forecast": {
+    "train_months": 33,
+    "test_months": 12,
+    "n_routes": 512,
+    "model": {
+      "wape": 0.03966011789394064,
+      "mape": 0.03977480472507337,
+      "bias": -0.007420155878344818
+    },
+    "seasonal_naive_drift": {
+      "wape": 0.048380684237633954,
+      "mape": 0.048832727761438634,
+      "bias": -0.002893443628792909
+    },
+    "seasonal_naive": {
+      "wape": 0.06676635376417378,
+      "mape": 0.06796179326409411,
+      "bias": -0.03732414262039965
+    },
+    "naive_last3": {
+      "wape": 0.0628953924750776,
+      "mape": 0.06255768940255005,
+      "bias": -0.043387534167952
+    },
+    "by_horizon": {
+      "1": {
+        "wape": 0.029835799217120446,
+        "mape": 0.029105996095234267,
+        "bias": -0.003188879957585366
+      },
+      "2": {
+        "wape": 0.03250858967142514,
+        "mape": 0.032107505139529494,
+        "bias": -0.002822462362512788
+      },
+      "3": {
+        "wape": 0.033234961543713915,
+        "mape": 0.03330250832472504,
+        "bias": -0.006238982645220107
+      },
+      "4": {
+        "wape": 0.03731568025567196,
+        "mape": 0.03730102139501361,
+        "bias": -0.008848790957428446
+      },
+      "5": {
+        "wape": 0.037811588518617475,
+        "mape": 0.037946851580699104,
+        "bias": -0.006660049717938896
+      },
+      "6": {
+        "wape": 0.0384109703212694,
+        "mape": 0.03936612378775055,
+        "bias": -0.0073669881662366335
+      },
+      "7": {
+        "wape": 0.04081064028661435,
+        "mape": 0.041152466803425214,
+        "bias": -0.005725673738754509
+      },
+      "8": {
+        "wape": 0.04207136880358844,
+        "mape": 0.042476283009687615,
+        "bias": -0.00741557800003742
+      },
+      "9": {
+        "wape": 0.044692099943174524,
+        "mape": 0.04440087226541096,
+        "bias": -0.011214702033329199
+      },
+      "10": {
+        "wape": 0.04450325336453822,
+        "mape": 0.04483786156034942,
+        "bias": -0.007719660060021698
+      },
+      "11": {
+        "wape": 0.047231101474161465,
+        "mape": 0.04746639938701268,
+        "bias": -0.00917316369653935
+      },
+      "12": {
+        "wape": 0.047957842174875434,
+        "mape": 0.04783376735204253,
+        "bias": -0.012701530529314114
+      }
+    },
+    "interval80_coverage": 0.796875
+  },
+  "actions": {
+    "No change": 199,
+    "Increase frequency": 171,
+    "Reduce frequency": 134,
+    "Merge (retire)": 4,
+    "Merge (absorb)": 4
+  }
+}

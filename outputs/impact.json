@@ -1,0 +1,40 @@
+{
+  "before": {
+    "total_trips_day": 61643.0,
+    "bus_hours_day": 67390.83888888889,
+    "bus_km_day": 994715.6386882327,
+    "pax_share_in_overcrowded_hours": 0.08559005653400668,
+    "trip_share_nearly_empty": 0.46319939003617605,
+    "avg_wait_min": 5.49172502480071,
+    "mean_peak_lf": 1.0739029042734693,
+    "mean_avg_lf": 0.43730658615294327,
+    "n_routes_overcrowded": 172,
+    "n_routes_underutilized": 133,
+    "n_services": 512
+  },
+  "after": {
+    "total_trips_day": 51297.0,
+    "bus_hours_day": 59985.05888888889,
+    "bus_km_day": 880348.3587537855,
+    "pax_share_in_overcrowded_hours": 0.029046257226077836,
+    "trip_share_nearly_empty": 0.2521589956527672,
+    "avg_wait_min": 5.199017573145681,
+    "mean_peak_lf": 0.7735857565461536,
+    "mean_avg_lf": 0.47446684227778635,
+    "n_routes_overcrowded": 44,
+    "n_routes_underutilized": 49,
+    "n_services": 508
+  },
+  "params": {
+    "capacity": 60,
+    "ride_frac": 0.45,
+    "target_lf": 0.65,
+    "min_tph": 2,
+    "max_tph": 20,
+    "merge_overlap": 0.5,
+    "merge_jaccard": 0.3,
+    "split_km": 20.0,
+    "split_peak_lf": 1.3
+  },
+  "n_merges": 4
+}
