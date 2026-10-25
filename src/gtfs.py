@@ -7,13 +7,13 @@ import pandas as pd
 REQUIRED_FILES = ("agency.txt", "calendar.txt", "routes.txt", "stop_times.txt", "stops.txt", "trips.txt")
 
 def resolve_gtfs_dir(project_root: Path) -> Path:
-    """Find the feed from GTFS_DIR, the project data folder, or the user's supplied folder."""
+    """Find the feed from GTFS_DIR or the project dataset folder."""
     candidates = []
     if os.environ.get("GTFS_DIR"):
         candidates.append(Path(os.environ["GTFS_DIR"]).expanduser())
     candidates.extend([
-        project_root / "data" / "raw" / "Chennai_gtfs",
-        Path(r"D:\DOCS\InfosysInternship\Chennai_gtfs"),
+        project_root / "dataset" / "raw" / "chennai_gtfs",
+        project_root / "data" / "raw" / "Chennai_gtfs",  # backward-compatible fallback
     ])
     for candidate in candidates:
         if candidate.is_dir() and all((candidate / name).is_file() for name in REQUIRED_FILES):
@@ -21,7 +21,7 @@ def resolve_gtfs_dir(project_root: Path) -> Path:
     tried = "\n".join(f"  - {p}" for p in candidates)
     raise FileNotFoundError(
         "Could not find the Chennai GTFS folder. Set GTFS_DIR or place the seven .txt files in "
-        f"{project_root / 'data' / 'raw' / 'Chennai_gtfs'}. Checked:\n{tried}"
+        f"{project_root / 'dataset' / 'raw' / 'chennai_gtfs'}. Checked:\n{tried}"
     )
 
 def load_gtfs(gtfs_dir: Path) -> dict[str, pd.DataFrame]:

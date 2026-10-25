@@ -17,21 +17,21 @@ notebooks/
   03_synthetic_ridership_scenario.ipynb
 src/
   gtfs.py                  shared GTFS loading and calendar helpers
-data/
-  raw/Chennai_gtfs/        local input only; not committed
+dataset/
+  raw/chennai_gtfs/        local input only; not committed
   processed/               local notebook outputs only; not committed
 ```
 
 ## Step-by-step: run the notebooks
 
-1. Clone **your branch** and enter the project:
+1. Open your project folder in PowerShell:
 
-   ```bash
-   git clone --branch mdzaid-khan --single-branch https://github.com/springboardmentor441p-coderr/Powered-Public-Transit-Route-Optimization.git
-   cd Powered-Public-Transit-Route-Optimization
+   ```powershell
+   cd D:\DOCS\Powered-Public-Transit-Route-Optimization
+   git switch mdzaid-khan
    ```
 
-   If you already cloned it, run `git switch mdzaid-khan` and `git pull origin mdzaid-khan`.
+   If setting up on a different computer, clone the `mdzaid-khan` branch from GitHub first.
 
 2. Use Python 3.10 or newer. Create and activate a virtual environment (Windows PowerShell):
 
@@ -42,13 +42,13 @@ data/
    pip install -r requirements.txt
    ```
 
-3. Put the seven supplied `.txt` files in `data/raw/Chennai_gtfs/`, **or** set `GTFS_DIR` to the folder where you already keep them. For example, in PowerShell:
+3. Put the seven supplied `.txt` files in `dataset/raw/chennai_gtfs/`, **or** set `GTFS_DIR` to the folder where you already keep them. For example, in PowerShell:
 
    ```powershell
-   $env:GTFS_DIR = 'D:\DOCS\InfosysInternship\Chennai_gtfs'
+   $env:GTFS_DIR = 'D:\DOCS\Powered-Public-Transit-Route-Optimization\dataset\raw\chennai_gtfs'
    ```
 
-   The original feed is intentionally excluded from Git because it is large and should remain a local input. The loader checks `GTFS_DIR`, then `data/raw/Chennai_gtfs/`, then the path above as a convenience for the current machine.
+   The original feed is intentionally excluded from Git because it is large and should remain a local input. The loader uses `GTFS_DIR` when set; otherwise it automatically reads `dataset/raw/chennai_gtfs/`.
 
 4. Start Jupyter from the repository root:
 
@@ -61,7 +61,7 @@ data/
    - `02_route_hour_supply.ipynb` – count scheduled trips by route and first departure hour for a selected calendar date.
    - `03_synthetic_ridership_scenario.ipynb` – allocate the selected aggregate daily total by schedule supply and peak-hour assumptions. Check the source/year and assumptions with your mentor before using the output.
 
-6. Generated CSVs go to `data/processed/`. They are local outputs and are excluded from Git by `.gitignore`.
+6. Generated CSVs go to `dataset/processed/`. They are local outputs and are excluded from Git by `.gitignore`.
 
 ## Synthetic ridership assumptions
 

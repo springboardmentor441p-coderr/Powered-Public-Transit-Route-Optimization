@@ -15,3 +15,6 @@ data/processed/
 
 # Local configuration
 .env
+# Chennai feed inputs and generated outputs
+dataset/raw/
+dataset/processed/
