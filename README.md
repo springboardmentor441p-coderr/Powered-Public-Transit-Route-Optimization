@@ -1,20 +1,21 @@
 # RouteRanker – Chennai public transit route analysis
 
-This branch is for the Chennai single-city internship implementation. The first milestone builds a reproducible GTFS audit, scheduled route/hour supply analysis, and an explicitly synthetic route/hour demand scenario.
+This branch contains the Chennai single-city analysis workflow: GTFS audit, scheduled route/hour supply, a clearly synthetic demand scenario, route feature preparation, exploratory service clustering, and overlap review. The supervised model and full-stack application should follow after the prediction target and evaluation approach are established.
 
 ## Important data limitation
 
-The supplied Chennai GTFS feed describes the network and scheduled service. It does not include actual passenger boardings, alightings, segment loads, or route-level ridership. The synthetic notebook allocates an MTC network-wide average across scheduled trips using stated assumptions. It is a **scenario only**, not observed ridership, and must not be used as ground-truth training labels or evidence that a route is overcrowded. See `notebooks/03_synthetic_ridership_scenario.ipynb` for its assumptions and caveats.
+The supplied Chennai GTFS feed describes the network and scheduled service. It does not include actual passenger boardings, alightings, segment loads, or route-level ridership. The synthetic notebook allocates an MTC network-wide average across scheduled trips using stated assumptions. It is a **scenario only**, not observed ridership, and must not be used as ground-truth training labels or evidence that a route is overcrowded. See the synthetic-scenario section in `notebooks/02_synthetic_scenario_and_overlap_review.ipynb` for its assumptions and caveats.
 
 For route-level ground truth, request anonymized MTC/CUMTA ticketing or passenger-count records, or conduct a documented field survey. Keep that observed data separate from the generated scenario.
 
 ## Project structure
 
 ```text
+app.py                    earlier Streamlit scaffold; full app work is deferred
 notebooks/
-  01_chennai_gtfs_data_audit.ipynb
-  02_route_hour_supply.ipynb
-  03_synthetic_ridership_scenario.ipynb
+  01_data_preparation_eda_features.ipynb
+  02_synthetic_scenario_and_overlap_review.ipynb
+  03_schedule_clustering_baseline.ipynb
 src/
   gtfs.py                  shared GTFS loading and calendar helpers
 dataset/
@@ -24,16 +25,14 @@ dataset/
 
 ## Step-by-step: run the notebooks
 
-1. Open your project folder in PowerShell:
+1. Open the project folder and switch to your own branch:
 
    ```powershell
    cd D:\DOCS\Powered-Public-Transit-Route-Optimization
    git switch mdzaid-khan
    ```
 
-   If setting up on a different computer, clone the `mdzaid-khan` branch from GitHub first.
-
-2. Use Python 3.10 or newer. Create and activate a virtual environment (Windows PowerShell):
+2. Set up Python and install the listed packages if you have not already:
 
    ```powershell
    py -m venv .venv
@@ -42,30 +41,20 @@ dataset/
    pip install -r requirements.txt
    ```
 
-3. Put the seven supplied `.txt` files in `dataset/raw/chennai_gtfs/`, **or** set `GTFS_DIR` to the folder where you already keep them. For example, in PowerShell:
+3. The Chennai feed should be in `dataset/raw/chennai_gtfs/`. The loader also accepts a `GTFS_DIR` environment variable.
 
-   ```powershell
-   $env:GTFS_DIR = 'D:\DOCS\Powered-Public-Transit-Route-Optimization\dataset\raw\chennai_gtfs'
-   ```
+4. Start Jupyter from the project root with `jupyter lab`, then run the three notebooks in order:
+   - `01_data_preparation_eda_features.ipynb` — audit, scheduled supply, EDA, and route features.
+   - `02_synthetic_scenario_and_overlap_review.ipynb` — synthetic scenario and cautious route-overlap shortlist.
+   - `03_schedule_clustering_baseline.ipynb` — exploratory clustering of scheduled service patterns.
 
-   The original feed is intentionally excluded from Git because it is large and should remain a local input. The loader uses `GTFS_DIR` when set; otherwise it automatically reads `dataset/raw/chennai_gtfs/`.
+5. Processed CSVs are written to `dataset/processed/` and remain local. The feed and generated CSVs are ignored by Git.
 
-4. Start Jupyter from the repository root:
-
-   ```powershell
-   jupyter lab
-   ```
-
-5. Run these notebooks in order:
-   - `01_chennai_gtfs_data_audit.ipynb` – inspect table sizes, missing keys, and joins.
-   - `02_route_hour_supply.ipynb` – count scheduled trips by route and first departure hour for a selected calendar date.
-   - `03_synthetic_ridership_scenario.ipynb` – allocate the selected aggregate daily total by schedule supply and peak-hour assumptions. Check the source/year and assumptions with your mentor before using the output.
-
-6. Generated CSVs go to `dataset/processed/`. They are local outputs and are excluded from Git by `.gitignore`.
+The supervised ridership model and full-stack application are not established by the schedule-clustering baseline. Define and review the prediction target and its data source before training a supervised model. Expand the app after the model and evaluation approach are agreed.
 
 ## Synthetic ridership assumptions
 
-Notebook 03 uses the MTC performance indicator of 32.24 lakh passengers/day for FY 2024–25 as an illustrative whole-network calibration value. It assigns that total to route/hour rows in proportion to scheduled trip departures, with a 1.6 peak multiplier for 07:00–09:00 and 17:00–19:00. It does **not** establish how actual passengers are distributed across routes. Change the total, date, and multipliers only with clearly documented rationale; preserve the `data_status` and source columns in any export.
+The synthetic-scenario section uses the MTC performance indicator of 32.24 lakh passengers/day for FY 2024–25 as an illustrative whole-network calibration value. It assigns that total to route/hour rows in proportion to scheduled trip departures, with a 1.6 peak multiplier for 07:00–09:00 and 17:00–19:00. It does **not** establish how actual passengers are distributed across routes. Change the total, date, and multipliers only with clearly documented rationale; preserve the `data_status` and source columns in any export.
 
 ## Branch workflow
 
