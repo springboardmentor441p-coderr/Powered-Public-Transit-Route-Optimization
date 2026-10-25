@@ -11,7 +11,6 @@ For route-level ground truth, request anonymized MTC/CUMTA ticketing or passenge
 ## Project structure
 
 ```text
-app.py                    earlier Streamlit scaffold; full app work is deferred
 notebooks/
   01_data_preparation_eda_features.ipynb
   02_synthetic_scenario_and_overlap_review.ipynb
@@ -50,7 +49,7 @@ dataset/
 
 5. Processed CSVs are written to `dataset/processed/` and remain local. The feed and generated CSVs are ignored by Git.
 
-The supervised ridership model and full-stack application are not established by the schedule-clustering baseline. Define and review the prediction target and its data source before training a supervised model. Expand the app after the model and evaluation approach are agreed.
+The supervised ridership model has not been trained. Define and review the prediction target and its data source before training it; build the full-stack application after the model and evaluation approach are agreed.
 
 ## Synthetic ridership assumptions
 
