@@ -356,8 +356,8 @@ def build_nb03():
         "Using the Spring timetable (`2026-04-09`), this notebook evaluates corridor-level redundancy vs planned coordination:\n"
         "- **Overlapping Pairs Definition:** Any pair sharing at least one stop ($|S_A \\cap S_B| \\ge 1$). 127 pairs meet this criterion out of 820 possible Manhattan pairs.\n"
         "- **Classification Rule:**\n"
-        "  - **Same route family (`planned`):** A local route and its Select Bus Service version, or two variants of the same route (`M15/M15+`, `M34+/M34A+`, `M14A+/M14D+`).\n"
-        "  - **Shared corridor (`review`):** Different routes sharing corridor stops (`M101/M103`, `M101/M102`, `M1/M2`, etc.). Labeled 'review', not 'planned' or 'redundant'.\n"
+        "  - **Same route family (`planned`):** Pairs with the same route number, such as a local route and its Select Bus version, or lettered variants (`M15/M15+`, `M34+/M34A+`, `M14A+/M14D+`).\n"
+        "  - **Shared corridor (`review`):** Different route numbers that share stops (`M101/M103`, `M101/M102`, `M1/M2`, etc.).\n"
         "- **Network coverage metric:** Share of stops served by no other route (stop exclusivity).\n"
         "- **Interactive Folium map:** Visualizes top overlapping corridors."
     ))
@@ -392,7 +392,7 @@ def build_nb03():
     # Step 6.3: Network Coverage (Stop Exclusivity)
     nb.cells.append(nbf.v4.new_markdown_cell(
         "## Step 6.3: Network Coverage & Exclusive Stop Share\n"
-        "Measures the share of stops served by no other route. M35 is the only route serving 100% of its stops."
+        "Measures the share of stops served by no other route. M35 is the only route in the Manhattan timetable serving any of its 23 stops."
     ))
 
     nb.cells.append(nbf.v4.new_code_cell(
@@ -450,7 +450,7 @@ def build_nb04():
         "  - Exclusive stop coverage share (stops served by no other route)\n"
         "  - Top overlapping partner route and overlap share\n\n"
         "> **Important Principle:** We explicitly call this list **'low riders per trip'**, never 'inefficient routes'. "
-        "It is a screening list for operational review, not a verdict. Low patronage often occurs on routes serving essential access without redundancy (e.g., M35 is the only route serving 100% of its stops)."
+        "It is a screening list for operational review, not a verdict. Low patronage often occurs on routes serving essential access without redundancy (e.g., M35 is the only route in the Manhattan timetable serving any of its 23 stops)."
     ))
 
     # Cell 1: Setup
@@ -491,7 +491,7 @@ def build_nb04():
     nb.cells.append(nbf.v4.new_markdown_cell(
         "## Step 7.3: Policy Context & Network Role Analysis\n"
         "A low riders-per-trip figure does not imply a route should be cut. We examine coverage roles:\n"
-        "1. **M35 (Randall's Island Shuttle):** Averages 0.71–3.48 riders/trip, but is the only route serving 100% of its stops (23/23 exclusive stops). It is the sole transit connection to Randall's Island social service and municipal facilities.\n"
+        "1. **M35:** Averages 0.71–3.48 riders/trip, but is the only route in the Manhattan timetable serving any of its 23 stops (100% exclusive stops).\n"
         "2. **M22 / M8 (Crosstown / Lower Manhattan Coverage):** Maintain 72–86% exclusive stops, ensuring access where avenue routes do not reach.\n"
         "3. **M55 / M20 (Off-Peak Avenue Feeders):** Have parallel alternatives (e.g. M1, M7), making them candidates for schedule coordination rather than route elimination."
     ))
@@ -587,8 +587,8 @@ def build_nb05():
     # Class Balance per Split
     nb.cells.append(nbf.v4.new_markdown_cell(
         "### Class Balance per Split\n"
-        "Training has ~25% positive hours by construction (75th percentile of riders per trip on training dates with service). "
-        "Validation (24.04%) drops during summer, while Test (25.04%) rises during the September school and commuter rebound."
+        "The share of positive hours stays close to training in both validation and test (within 1 point: 24.66% training, 24.04% validation, 25.04% test). "
+        "The per-route thresholds carry over across seasons, so the classifier will not face a big shift in class balance."
     ))
 
     nb.cells.append(nbf.v4.new_code_cell(

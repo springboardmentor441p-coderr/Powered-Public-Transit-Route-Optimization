@@ -96,7 +96,7 @@ def test_route_stop_coverage_metrics():
     assert len(cov) == 41
     assert (cov["exclusive_stop_share"] >= 0.0).all() and (cov["exclusive_stop_share"] <= 1.0).all()
 
-    # M35 serves Randall's Island and has 100% exclusive stops
+    # M35 is the only route in the Manhattan timetable serving any of its 23 stops (100% exclusive stops)
     m35_row = cov[cov["route"] == "M35"]
     assert len(m35_row) == 1
     assert m35_row.iloc[0]["exclusive_stop_share"] == 1.0

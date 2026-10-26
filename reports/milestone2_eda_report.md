@@ -133,10 +133,10 @@ All 27 automated tests in [`tests/test_milestone1_steps6_9.py`](file:///d:/Infos
 
 Demand stability is quantified for every route and hour across typical weekdays using the Coefficient of Variation ($CV = \sigma / \mu$):
 1. **Most Stable / Predictable Routes (Daytime Mean $CV \le 0.15$):**
-   - High-frequency trunk and crosstown routes exhibit exceptionally low demand volatility: `M15+` (0.136), `M86+` (0.136), `M14D+` (0.137), `M96` (0.141), and `M101` (0.144). Their high patronage is driven by routine daily work and school trips that recur with minimal percentage variance.
+   - High-frequency trunk and crosstown routes exhibit exceptionally low demand volatility: `M15+` (0.136), `M86+` (0.136), `M14D+` (0.137), `M96` (0.141), and `M101` (0.144).
 2. **Most Volatile / Unpredictable Routes (Daytime Mean $CV \ge 0.35$):**
-   - `M35` exhibits extreme volatility ($CV = 0.847$), driven by intermittent institutional travel to Randall's Island facilities.
-   - `M106` ($CV = 0.468$), `M98` ($CV = 0.378$), and `M20` ($CV = 0.287$) exhibit substantial day-to-day variance, reflecting peak-only ridership and weather sensitivity.
+   - `M35` exhibits the highest daytime demand volatility ($CV = 0.847$) in the network.
+   - `M106` ($CV = 0.468$), `M98` ($CV = 0.378$), and `M20` ($CV = 0.287$) also exhibit substantial day-to-day variance.
 3. **Implication for Modelling & Clustering:**
    - Routes with $CV < 0.20$ can be forecasted reliably with autoregressive and seasonal lags.
    - High-$CV$ routes require explicit calendar indicators, weather variables, and higher baseline uncertainty intervals.
@@ -151,15 +151,15 @@ $$|S_A \cap S_B| \ge 1$$
 This yields exactly **127 overlapping route pairs** across the Manhattan network.
 
 ### Planned Pairs vs Shared Corridors Classification Rule
-To avoid asserting planning intent without empirical evidence, route pairs are classified by a consistent, verifiable rule applied across the network:
-1. **Planned Pair (`planned`):** Same route family — a local route and its Select Bus Service (SBS) version, or two variants/branches of the same route (`M15 & M15+`, `M34+ & M34A+`, `M14A+ & M14D+`). These pairs are deliberately co-designed by MTA transit planners to operate complementary stop patterns (local vs limited-stop skip-stop) or branching terminal spurs along the same primary corridor.
-2. **Shared Corridor (`review`):** Different distinct routes that share stops along a corridor (`M101 & M103`, `M102 & M103`, `M101 & M102`, `M1 & M2`, `M2 & M3`, `M31 & M57`, `M106 & M96`, `M1 & M3`, `M101 & M125`, `M7 & M116`, `M3 & M4`, `M1 & M4`). These routes originate from different historical streetcar lines and serve distinct northern or southern terminal markets. They are categorized as **review** (not "planned" or "redundant") to indicate corridors where headway coordination, bus bunching, and capacity balance warrant operational attention.
+Route pairs are categorized strictly by naming convention:
+- **Same route family (`planned`):** Pairs with the same route number, such as a local route and its Select Bus version, or lettered variants (`M15/M15+`, `M34+/M34A+`, `M14A+/M14D+`).
+- **Shared corridor (`review`):** Different route numbers that share stops (`M101/M103`, `M102/M103`, `M101/M102`, `M1/M2`, `M2/M3`, `M31/M57`, `M106/M96`, `M1/M3`, `M101/M125`, `M7/M116`, `M3/M4`, `M1/M4`).
 
 ### Table 2: Top 15 Overlapping Route Pairs in Manhattan
 | Rank | Route Pair | Smaller Route Stops | Shared Stops | Overlap Share | Jaccard | Corridor Type | Combined Peak Buses/Hr | Design Classification |
 | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :---: | :--- |
 | **1** | **M101 & M103** | 106 (M103) | 82 | **77.4%** | 45.8% | Continuous (3rd/Lexington Ave) | 66.7 | **review** (Shared corridor) |
-| **2** | **M34+ & M34A+** | 29 (M34A+) | 22 | **75.9%** | 53.7% | Continuous (34th St Crosstown) | 31.7 | **planned** (Same route family: SBS branches) |
+| **2** | **M34+ & M34A+** | 29 (M34A+) | 22 | **75.9%** | 53.7% | Continuous (34th St Crosstown) | 31.7 | **planned** (Same route family) |
 | **3** | **M102 & M103** | 106 (M103) | 77 | **72.6%** | 53.9% | Continuous (3rd/Lexington Ave) | 49.5 | **review** (Shared corridor) |
 | **4** | **M101 & M102** | 114 (M102) | 76 | **66.7%** | 39.4% | Segmented (3rd/Lexington Ave) | 70.8 | **review** (Shared corridor) |
 | **5** | **M1 & M2** | 134 (M1) | 77 | **57.5%** | 38.3% | Continuous (5th/Madison Ave) | 64.0 | **review** (Shared corridor) |
@@ -167,11 +167,11 @@ To avoid asserting planning intent without empirical evidence, route pairs are c
 | **7** | **M31 & M57** | 42 (M57) | 23 | **54.8%** | 30.3% | Continuous (57th St Crosstown) | 41.5 | **review** (Shared corridor) |
 | **8** | **M106 & M96** | 24 (M96) | 12 | **50.0%** | 26.7% | Continuous (96th St Crosstown) | 49.7 | **review** (Shared corridor) |
 | **9** | **M1 & M3** | 134 (M1) | 64 | **47.8%** | 27.6% | Segmented (5th/Madison Ave) | 65.7 | **review** (Shared corridor) |
-| **10** | **M14A+ & M14D+** | 42 (M14A+) | 19 | **45.2%** | 28.4% | Continuous (14th St Crosstown) | 61.5 | **planned** (Same route family: SBS branches) |
+| **10** | **M14A+ & M14D+** | 42 (M14A+) | 19 | **45.2%** | 28.4% | Continuous (14th St Crosstown) | 61.5 | **planned** (Same route family) |
 | **11** | **M101 & M125** | 41 (M125) | 18 | **43.9%** | 10.1% | Continuous (125th St Crosstown) | 71.2 | **review** (Shared corridor) |
 | **12** | **M116 & M7** | 42 (M116) | 18 | **42.9%** | 12.7% | Segmented (Harlem Corridor) | 48.4 | **review** (Shared corridor) |
 | **13** | **M3 & M4** | 152 (M4) | 62 | **40.8%** | 24.6% | Continuous (5th/Madison Ave) | 73.5 | **review** (Shared corridor) |
-| **14** | **M15 & M15+** | 42 (M15+) | 15 | **35.7%** | 10.1% | Segmented (1st/2nd Ave) | 84.2 | **planned** (Same route family: SBS + Local) |
+| **14** | **M15 & M15+** | 42 (M15+) | 15 | **35.7%** | 10.1% | Segmented (1st/2nd Ave) | 84.2 | **planned** (Same route family) |
 | **15** | **M1 & M4** | 134 (M1) | 47 | **35.1%** | 19.7% | Continuous (5th/Madison Ave) | 77.5 | **review** (Shared corridor) |
 
 *Interactive Folium Map of top corridors:* [`reports/figures/route_overlaps.html`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/reports/figures/route_overlaps.html).
@@ -200,10 +200,10 @@ This identified **47 qualified route-band combinations** (17 weekday, 15 Saturda
 
 | Day Type | Route | Time Band | Riders / Trip | Riders / Service-Hour | Avg Trips / Day | Days | Exclusive Stops | Top Overlap Partner | Operational Context |
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
-| **Typical Saturday** | **M35** | Night | **0.71** | 3.57 | 65.6 | 36 | **100.0%** | None (0.0%) | The only route serving 100% of its stops (23/23 exclusive); sole transit connection to Randall's Island. |
-| **Typical Saturday** | **M35** | Morning Peak | **1.66** | 8.63 | 27.0 | 36 | **100.0%** | None (0.0%) | The only route serving 100% of its stops; sole transit connection. |
-| **Typical Saturday** | **M35** | Evening Peak | **2.40** | 11.52 | 41.0 | 35 | **100.0%** | None (0.0%) | The only route serving 100% of its stops; low weekend evening patronage. |
-| **Typical Saturday** | **M35** | Midday | **3.48** | 17.68 | 59.3 | 36 | **100.0%** | None (0.0%) | The only route serving 100% of its stops; daytime connectivity. |
+| **Typical Saturday** | **M35** | Night | **0.71** | 3.57 | 65.6 | 36 | **100.0%** | None (0.0%) | The only route in the Manhattan timetable serving any of its 23 stops. |
+| **Typical Saturday** | **M35** | Morning Peak | **1.66** | 8.63 | 27.0 | 36 | **100.0%** | None (0.0%) | The only route in the Manhattan timetable serving any of its 23 stops. |
+| **Typical Saturday** | **M35** | Evening Peak | **2.40** | 11.52 | 41.0 | 35 | **100.0%** | None (0.0%) | The only route in the Manhattan timetable serving any of its 23 stops. |
+| **Typical Saturday** | **M35** | Midday | **3.48** | 17.68 | 59.3 | 36 | **100.0%** | None (0.0%) | The only route in the Manhattan timetable serving any of its 23 stops. |
 | **Typical Saturday** | **M22** | Night | **3.94** | 10.93 | 19.9 | 36 | **72.1%** | M20 (9.3%) | Lower Manhattan coverage; 72.1% unique stops. |
 | **Typical Saturday** | **M8** | Morning Peak | **3.96** | 13.46 | 11.0 | 36 | **85.7%** | M1 (7.1%) | West Village crosstown coverage; 85.7% unique. |
 | **Typical Saturday** | **M20** | Night | **4.16** | 8.89 | 65.9 | 36 | **51.2%** | M7 (18.8%) | Late-night 7th/8th Ave feeder service. |
@@ -259,7 +259,7 @@ The classification target `high_demand_per_trip` is defined by the 75th percenti
 | **Test** | 2026-08-01 to 2026-09-30 | 53,736 | 13,455 | 40,281 | **25.04%** |
 | **Total Window** | 2026-01-04 to 2026-09-30 | 233,227 | 57,383 | 175,844 | **24.60%** |
 
-*Methodological Impact:* Training contains ~25% positive hours by mathematical construction (75th percentile on non-zero service hours; hours without scheduled service are labeled 0). In Validation (June–July summer slowdown), the positive share dips slightly to 24.04%. In Test (incorporating the September school and commuter rebound), the share rises to 25.04%. This variation reflects real seasonal ridership shifts and will directly inform precision, recall, and PR-AUC evaluation of classifiers in Milestone 3.
+*Methodological Impact:* The share of positive hours stays close to training in both validation and test (within 1 point: 24.66% training, 24.04% validation, 25.04% test). Because the per-route thresholds carry over across seasons, the classifier will not face a big shift in class balance.
 
 ### Step 12: Preprocessing Pipeline Architecture
 A scikit-learn `Pipeline` with `ColumnTransformer` was fitted strictly on training data and saved to [`models/preprocessor.joblib`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/models/preprocessor.joblib):
