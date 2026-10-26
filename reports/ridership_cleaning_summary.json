@@ -1,0 +1,592 @@
+{
+  "raw_rows": 301392,
+  "clean_rows": 268632,
+  "first_date": "2026-01-01",
+  "last_date_in_files": "2026-09-30",
+  "last_date_with_ridership": "2026-09-30",
+  "missing_dates": [
+    "2026-01-10",
+    "2026-01-11",
+    "2026-01-12",
+    "2026-01-13",
+    "2026-01-14",
+    "2026-01-15"
+  ],
+  "routes_kept": 41,
+  "zero_ridership_rows_kept": 35857,
+  "zero_ridership_share": 0.1335,
+  "validation": {
+    "null_values": 0,
+    "non_integer_counts": 0,
+    "negative_ridership": 0,
+    "negative_transfers": 0,
+    "transfers_gt_ridership": 0,
+    "duplicate_route_hours": 0
+  },
+  "route_decisions": [
+    {
+      "route": "M100",
+      "ridership": 1136720,
+      "transfers": 258324,
+      "decision": "drop",
+      "reason": "Timetable is in the Bronx GTFS feed, not the Manhattan feed; out of scope for Milestone 1"
+    },
+    {
+      "route": "M14A",
+      "ridership": 0,
+      "transfers": 0,
+      "decision": "drop",
+      "reason": "Pre-SBS code replaced by M14A+; zero ridership and transfers in every hour of 2026"
+    },
+    {
+      "route": "M14D",
+      "ridership": 0,
+      "transfers": 0,
+      "decision": "drop",
+      "reason": "Pre-SBS code replaced by M14D+; zero ridership and transfers in every hour of 2026"
+    },
+    {
+      "route": "M90",
+      "ridership": 31,
+      "transfers": 9,
+      "decision": "drop",
+      "reason": "Shuttle standing in for subway service (31 riders, 23 May - 9 Jun 2026 only); no GTFS trips"
+    },
+    {
+      "route": "M99",
+      "ridership": 0,
+      "transfers": 0,
+      "decision": "drop",
+      "reason": "Shuttle standing in for subway service; zero ridership in 2026; no GTFS trips"
+    },
+    {
+      "route": "M1",
+      "ridership": 1802019,
+      "transfers": 351071,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M10",
+      "ridership": 736479,
+      "transfers": 169962,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M101",
+      "ridership": 2876067,
+      "transfers": 698504,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M102",
+      "ridership": 1774032,
+      "transfers": 400334,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M103",
+      "ridership": 1642012,
+      "transfers": 367249,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M104",
+      "ridership": 1371440,
+      "transfers": 316914,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M106",
+      "ridership": 303459,
+      "transfers": 100035,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M11",
+      "ridership": 1954566,
+      "transfers": 358309,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M116",
+      "ridership": 1005607,
+      "transfers": 312487,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M12",
+      "ridership": 283150,
+      "transfers": 61762,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M125",
+      "ridership": 972268,
+      "transfers": 342965,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M14A+",
+      "ridership": 1369230,
+      "transfers": 389590,
+      "decision": "keep",
+      "reason": "Select Bus Service"
+    },
+    {
+      "route": "M14D+",
+      "ridership": 2580907,
+      "transfers": 757488,
+      "decision": "keep",
+      "reason": "Select Bus Service"
+    },
+    {
+      "route": "M15",
+      "ridership": 3330367,
+      "transfers": 656675,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M15+",
+      "ridership": 5239765,
+      "transfers": 1024777,
+      "decision": "keep",
+      "reason": "Select Bus Service"
+    },
+    {
+      "route": "M2",
+      "ridership": 1430704,
+      "transfers": 275835,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M20",
+      "ridership": 329175,
+      "transfers": 73281,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M21",
+      "ridership": 248967,
+      "transfers": 48066,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M22",
+      "ridership": 309117,
+      "transfers": 59208,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M23+",
+      "ridership": 1766983,
+      "transfers": 534491,
+      "decision": "keep",
+      "reason": "Select Bus Service"
+    },
+    {
+      "route": "M3",
+      "ridership": 2027909,
+      "transfers": 436259,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M31",
+      "ridership": 1781821,
+      "transfers": 439704,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M34+",
+      "ridership": 1090168,
+      "transfers": 297756,
+      "decision": "keep",
+      "reason": "Select Bus Service"
+    },
+    {
+      "route": "M34A+",
+      "ridership": 1054779,
+      "transfers": 257954,
+      "decision": "keep",
+      "reason": "Select Bus Service"
+    },
+    {
+      "route": "M35",
+      "ridership": 57567,
+      "transfers": 22523,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M4",
+      "ridership": 2500589,
+      "transfers": 502081,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M42",
+      "ridership": 1590057,
+      "transfers": 450466,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M5",
+      "ridership": 1179188,
+      "transfers": 253624,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M50",
+      "ridership": 416901,
+      "transfers": 118324,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M55",
+      "ridership": 360159,
+      "transfers": 92557,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M57",
+      "ridership": 1182000,
+      "transfers": 339524,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M60+",
+      "ridership": 1934593,
+      "transfers": 588404,
+      "decision": "keep",
+      "reason": "Select Bus Service"
+    },
+    {
+      "route": "M66",
+      "ridership": 1241785,
+      "transfers": 409958,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M7",
+      "ridership": 1775755,
+      "transfers": 434644,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M72",
+      "ridership": 744679,
+      "transfers": 202208,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M79+",
+      "ridership": 1864674,
+      "transfers": 516862,
+      "decision": "keep",
+      "reason": "Select Bus Service"
+    },
+    {
+      "route": "M8",
+      "ridership": 233392,
+      "transfers": 53066,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M86+",
+      "ridership": 3085839,
+      "transfers": 1051388,
+      "decision": "keep",
+      "reason": "Select Bus Service"
+    },
+    {
+      "route": "M9",
+      "ridership": 872089,
+      "transfers": 153644,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M96",
+      "ridership": 2127241,
+      "transfers": 793127,
+      "decision": "keep",
+      "reason": ""
+    },
+    {
+      "route": "M98",
+      "ridership": 194630,
+      "transfers": 31540,
+      "decision": "keep",
+      "reason": "Regular limited-stop route (194,630 riders in 2026) with trips in every Manhattan GTFS version; not a shuttle"
+    }
+  ],
+  "daily_flags": [
+    {
+      "date": "2026-01-01",
+      "ridership": 99391,
+      "routes_with_riders": 40,
+      "weekday": "Thursday",
+      "holiday": "New Year's Day",
+      "event": "",
+      "missing": false,
+      "same_weekday_median": 265822.5,
+      "ratio": 0.374,
+      "flag": "low"
+    },
+    {
+      "date": "2026-01-10",
+      "ridership": 0,
+      "routes_with_riders": 0,
+      "weekday": "Saturday",
+      "holiday": "",
+      "event": "",
+      "missing": true,
+      "same_weekday_median": 153046.5,
+      "ratio": 0.0,
+      "flag": "missing"
+    },
+    {
+      "date": "2026-01-11",
+      "ridership": 0,
+      "routes_with_riders": 0,
+      "weekday": "Sunday",
+      "holiday": "",
+      "event": "",
+      "missing": true,
+      "same_weekday_median": 120376.0,
+      "ratio": 0.0,
+      "flag": "missing"
+    },
+    {
+      "date": "2026-01-12",
+      "ridership": 0,
+      "routes_with_riders": 0,
+      "weekday": "Monday",
+      "holiday": "",
+      "event": "",
+      "missing": true,
+      "same_weekday_median": 229237.0,
+      "ratio": 0.0,
+      "flag": "missing"
+    },
+    {
+      "date": "2026-01-13",
+      "ridership": 0,
+      "routes_with_riders": 0,
+      "weekday": "Tuesday",
+      "holiday": "",
+      "event": "",
+      "missing": true,
+      "same_weekday_median": 242139.0,
+      "ratio": 0.0,
+      "flag": "missing"
+    },
+    {
+      "date": "2026-01-14",
+      "ridership": 0,
+      "routes_with_riders": 0,
+      "weekday": "Wednesday",
+      "holiday": "",
+      "event": "",
+      "missing": true,
+      "same_weekday_median": 247912.0,
+      "ratio": 0.0,
+      "flag": "missing"
+    },
+    {
+      "date": "2026-01-15",
+      "ridership": 0,
+      "routes_with_riders": 0,
+      "weekday": "Thursday",
+      "holiday": "",
+      "event": "",
+      "missing": true,
+      "same_weekday_median": 250096.0,
+      "ratio": 0.0,
+      "flag": "missing"
+    },
+    {
+      "date": "2026-01-19",
+      "ridership": 177847,
+      "routes_with_riders": 41,
+      "weekday": "Monday",
+      "holiday": "Martin Luther King Jr. Day",
+      "event": "",
+      "missing": false,
+      "same_weekday_median": 233463.0,
+      "ratio": 0.762,
+      "flag": ""
+    },
+    {
+      "date": "2026-01-25",
+      "ridership": 37626,
+      "routes_with_riders": 40,
+      "weekday": "Sunday",
+      "holiday": "",
+      "event": "Snowstorm (Jan 25-26, over a foot of snow; articulated buses pulled)",
+      "missing": false,
+      "same_weekday_median": 120376.0,
+      "ratio": 0.313,
+      "flag": "low"
+    },
+    {
+      "date": "2026-01-26",
+      "ridership": 87722,
+      "routes_with_riders": 41,
+      "weekday": "Monday",
+      "holiday": "",
+      "event": "Snowstorm (Jan 25-26, over a foot of snow; articulated buses pulled)",
+      "missing": false,
+      "same_weekday_median": 233463.0,
+      "ratio": 0.376,
+      "flag": "low"
+    },
+    {
+      "date": "2026-02-16",
+      "ridership": 165836,
+      "routes_with_riders": 40,
+      "weekday": "Monday",
+      "holiday": "Presidents' Day",
+      "event": "",
+      "missing": false,
+      "same_weekday_median": 239326.5,
+      "ratio": 0.693,
+      "flag": "low"
+    },
+    {
+      "date": "2026-02-22",
+      "ridership": 90194,
+      "routes_with_riders": 41,
+      "weekday": "Sunday",
+      "holiday": "",
+      "event": "Blizzard (Feb 22-23; city travel ban 9pm Sun - noon Mon, buses exempt)",
+      "missing": false,
+      "same_weekday_median": 129893.0,
+      "ratio": 0.694,
+      "flag": "low"
+    },
+    {
+      "date": "2026-02-23",
+      "ridership": 37962,
+      "routes_with_riders": 41,
+      "weekday": "Monday",
+      "holiday": "",
+      "event": "Blizzard (Feb 22-23; city travel ban 9pm Sun - noon Mon, buses exempt)",
+      "missing": false,
+      "same_weekday_median": 237614.0,
+      "ratio": 0.16,
+      "flag": "low"
+    },
+    {
+      "date": "2026-02-24",
+      "ridership": 181586,
+      "routes_with_riders": 41,
+      "weekday": "Tuesday",
+      "holiday": "",
+      "event": "Day after blizzard (likely recovery from Feb 22-23 storm)",
+      "missing": false,
+      "same_weekday_median": 243713.5,
+      "ratio": 0.745,
+      "flag": "low"
+    },
+    {
+      "date": "2026-05-25",
+      "ridership": 154226,
+      "routes_with_riders": 40,
+      "weekday": "Monday",
+      "holiday": "Memorial Day",
+      "event": "",
+      "missing": false,
+      "same_weekday_median": 251918.5,
+      "ratio": 0.612,
+      "flag": "low"
+    },
+    {
+      "date": "2026-06-19",
+      "ridership": 214242,
+      "routes_with_riders": 41,
+      "weekday": "Friday",
+      "holiday": "Juneteenth",
+      "event": "",
+      "missing": false,
+      "same_weekday_median": 254333.0,
+      "ratio": 0.842,
+      "flag": ""
+    },
+    {
+      "date": "2026-07-03",
+      "ridership": 164452,
+      "routes_with_riders": 40,
+      "weekday": "Friday",
+      "holiday": "Independence Day (observed)",
+      "event": "",
+      "missing": false,
+      "same_weekday_median": 245634.0,
+      "ratio": 0.67,
+      "flag": "low"
+    },
+    {
+      "date": "2026-07-04",
+      "ridership": 136520,
+      "routes_with_riders": 40,
+      "weekday": "Saturday",
+      "holiday": "Independence Day",
+      "event": "",
+      "missing": false,
+      "same_weekday_median": 166105.5,
+      "ratio": 0.822,
+      "flag": ""
+    },
+    {
+      "date": "2026-09-07",
+      "ridership": 162388,
+      "routes_with_riders": 40,
+      "weekday": "Monday",
+      "holiday": "Labor Day",
+      "event": "",
+      "missing": false,
+      "same_weekday_median": 226278.0,
+      "ratio": 0.718,
+      "flag": "low"
+    },
+    {
+      "date": "2026-09-14",
+      "ridership": 283762,
+      "routes_with_riders": 41,
+      "weekday": "Monday",
+      "holiday": "",
+      "event": "",
+      "missing": false,
+      "same_weekday_median": 226278.0,
+      "ratio": 1.254,
+      "flag": "high"
+    }
+  ]
+}

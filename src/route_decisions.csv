@@ -1,0 +1,47 @@
+route,decision,reason
+M1,keep,
+M2,keep,
+M3,keep,
+M4,keep,
+M5,keep,
+M7,keep,
+M8,keep,
+M9,keep,
+M10,keep,
+M11,keep,
+M12,keep,
+M14A+,keep,Select Bus Service
+M14D+,keep,Select Bus Service
+M15,keep,
+M15+,keep,Select Bus Service
+M20,keep,
+M21,keep,
+M22,keep,
+M23+,keep,Select Bus Service
+M31,keep,
+M34+,keep,Select Bus Service
+M34A+,keep,Select Bus Service
+M35,keep,
+M42,keep,
+M50,keep,
+M55,keep,
+M57,keep,
+M60+,keep,Select Bus Service
+M66,keep,
+M72,keep,
+M79+,keep,Select Bus Service
+M86+,keep,Select Bus Service
+M96,keep,
+M98,keep,"Regular limited-stop route (194,630 riders in 2026) with trips in every Manhattan GTFS version; not a shuttle"
+M101,keep,
+M102,keep,
+M103,keep,
+M104,keep,
+M106,keep,
+M116,keep,
+M125,keep,
+M14A,drop,"Pre-SBS code replaced by M14A+; zero ridership and transfers in every hour of 2026"
+M14D,drop,"Pre-SBS code replaced by M14D+; zero ridership and transfers in every hour of 2026"
+M90,drop,"Shuttle standing in for subway service (31 riders, 23 May - 9 Jun 2026 only); no GTFS trips"
+M99,drop,"Shuttle standing in for subway service; zero ridership in 2026; no GTFS trips"
+M100,drop,"Timetable is in the Bronx GTFS feed, not the Manhattan feed; out of scope for Milestone 1"
