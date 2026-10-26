@@ -199,6 +199,12 @@ def build_matched_hourly():
         (matched["ridership"] / matched["trips_running"]).round(4),
         np.nan,
     )
+    # Milestone 2 Step 2: riders_per_service_hour = ridership / service_hours
+    matched["riders_per_service_hour"] = np.where(
+        matched["service_hours"] > 0,
+        (matched["ridership"] / matched["service_hours"]).round(4),
+        np.nan,
+    )
 
     # Step 12: Add time features
     dt_series = pd.to_datetime(matched["date"])
@@ -234,7 +240,9 @@ def build_matched_hourly():
         "transfers",
         "trips_starting",
         "trips_running",
+        "service_hours",
         "riders_per_trip",
+        "riders_per_service_hour",
         "snapshot_id",
     ]
     matched = matched[col_order]

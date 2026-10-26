@@ -78,6 +78,14 @@ def test_clock_dates_outside_window_dropped():
     assert g == {}
 
 
+def test_service_hours_calculation_unit():
+    # 08:15 to 09:45 (1.5 total service hours: 45 min = 0.75 hr in hour 8, 45 min = 0.75 hr in hour 9)
+    g = defaultdict(lambda: [0, 0, 0.0])
+    count_trip_hours(datetime(2026, 5, 18), [("M1", 8 * H + 900, 9 * H + 2700)], g, "2026-01-01", "2026-12-31")
+    assert g[("M1", "2026-05-18", 8)] == [1, 1, 0.75]
+    assert g[("M1", "2026-05-18", 9)] == [0, 1, 0.75]
+
+
 # ---------- Real-data tests ----------
 
 @pytest.fixture(scope="module")
@@ -136,10 +144,11 @@ def test_step_8_every_date_assigned_and_only_3_jan_partial(date_info):
 def test_step_9_schedule_hourly_output():
     path = ROOT / "data" / "processed" / "schedule_hourly.parquet"
     df = pd.read_parquet(path)
-    assert list(df.columns) == ["route", "date", "hour", "trips_starting", "trips_running", "snapshot_id"]
+    assert list(df.columns) == ["route", "date", "hour", "trips_starting", "trips_running", "service_hours", "snapshot_id"]
     assert len(df) == 41 * 24 * 271
     assert not df.duplicated(["route", "date", "hour"]).any()
     assert (df.trips_starting >= 0).all() and (df.trips_running >= df.trips_starting).all()
+    assert (df.service_hours >= 0).all()
     # after-midnight carry-over: early hours of a normal Tuesday have trips running
     tue = df[(df.date == "2026-05-19") & (df.hour.isin([0, 1]))]
     assert tue.trips_running.sum() > 0
@@ -152,6 +161,7 @@ def test_dst_night_8_march_hour_2_has_zero_trips():
     assert len(dst_h2) == 41
     assert (dst_h2.trips_starting == 0).all(), "DST hour 2 must have 0 trips starting"
     assert (dst_h2.trips_running == 0).all(), "DST hour 2 must have 0 trips running"
+    assert (dst_h2.service_hours == 0).all(), "DST hour 2 must have 0 service hours"
 
 
 def test_memorial_day_exact_sunday_equivalence(feeds):
@@ -212,8 +222,8 @@ def test_step_11_12_matched_hourly_output():
     expected_cols = [
         "route", "date", "hour", "month", "day_of_week", "is_weekend",
         "is_public_holiday", "holiday_schedule", "is_storm", "is_outlier", "time_band",
-        "ridership", "transfers", "trips_starting", "trips_running",
-        "riders_per_trip", "snapshot_id"
+        "ridership", "transfers", "trips_starting", "trips_running", "service_hours",
+        "riders_per_trip", "riders_per_service_hour", "snapshot_id"
     ]
     assert list(df.columns) == expected_cols
     # Step 11: hours with neither dropped + artifact exclusions (4 Jan 0-4, 9 Jan 22-23, 28 Mar 1-4, 16 Aug 21-22) -> 233,227 rows
@@ -235,6 +245,10 @@ def test_step_11_12_matched_hourly_output():
     with_trips = df[df["trips_running"] > 0]
     expected_rpt = (with_trips["ridership"] / with_trips["trips_running"]).round(4)
     assert np.allclose(with_trips["riders_per_trip"], expected_rpt, equal_nan=True)
+    # Milestone 2 Step 2: riders_per_service_hour = ridership / service_hours only where service_hours > 0
+    with_sh = df[df["service_hours"] > 0]
+    expected_rpsh = (with_sh["ridership"] / with_sh["service_hours"]).round(4)
+    assert np.allclose(with_sh["riders_per_service_hour"], expected_rpsh, equal_nan=True)
     # Maximum riders per trip should be ~64.86 on M35 (not the artificial 104.0 on M15)
     max_row = df.loc[df["riders_per_trip"].idxmax()]
     assert max_row["route"] == "M35"

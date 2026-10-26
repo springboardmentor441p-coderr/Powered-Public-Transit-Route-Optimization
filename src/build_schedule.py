@@ -236,12 +236,15 @@ def select_snapshot_schedule(feeds: dict[str, GTFSFeed], start_d: str, end_d: st
 
 
 def count_trip_hours(service_date: datetime, trips, grid: dict, start: str, end: str) -> None:
-    """Add one service day's trips to grid[(route, clock_date, clock_hour)] = [starting, running].
+    """Add one service day's trips to grid[(route, clock_date, clock_hour)] = [starting, running, service_hours].
 
     trips: iterable of (route_id, dep_sec, arr_sec), seconds from the service day's midnight.
     Times >= 24:00:00 roll over to the next calendar date (25:10 on 3 Mar -> 01:10 on 4 Mar).
     DST adjustment: On 8 March 2026, clocks sprang forward 01:59:59 -> 03:00:00, so hour 2 did not
     exist in wall-clock time; trips falling in nominal hour 2 are shifted to hour 3.
+
+    Step 2: Scheduled service-hours are calculated by counting the exact seconds each trip spends running
+    in each clock hour (overlap_sec / 3600.0). Summing across hours gives total scheduled trip duration.
     """
     for route_id, dep_sec, arr_sec in trips:
         start_dt = service_date + timedelta(days=dep_sec // 86400)
@@ -268,18 +271,21 @@ def count_trip_hours(service_date: datetime, trips, grid: dict, start: str, end:
 
             if start <= run_str <= end:
                 grid[(route_id, run_str, run_hour)][1] += 1
+                if len(grid[(route_id, run_str, run_hour)]) > 2:
+                    overlap_sec = max(0, min(arr_sec, (h + 1) * 3600) - max(dep_sec, h * 3600))
+                    grid[(route_id, run_str, run_hour)][2] += overlap_sec / 3600.0
 
 
 def build_hourly_schedule(feeds: dict[str, GTFSFeed], date_to_snap: dict[str, str]) -> pd.DataFrame:
-    """Step 9: Accumulate trips_starting and trips_running across real clock hours."""
+    """Step 9: Accumulate trips_starting, trips_running, and service_hours across real clock hours."""
     print("\n--- Running Step 9: Aggregating Hourly Scheduled Trips ---")
     # All routes present in feeds
     all_routes = sorted(list({r for f in feeds.values() for r in f.routes}))
     start_dt = datetime.strptime(START_DATE, "%Y-%m-%d")
     end_dt = datetime.strptime(END_DATE, "%Y-%m-%d")
 
-    # Map: (route, date_str, hour) -> [trips_starting, trips_running]
-    grid = defaultdict(lambda: [0, 0])
+    # Map: (route, date_str, hour) -> [trips_starting, trips_running, service_hours]
+    grid = defaultdict(lambda: [0, 0, 0.0])
 
     curr = start_dt
     while curr <= end_dt:
@@ -297,13 +303,14 @@ def build_hourly_schedule(feeds: dict[str, GTFSFeed], date_to_snap: dict[str, st
         snap = date_to_snap[d_str]
         for route in all_routes:
             for hour in range(24):
-                counts = grid.get((route, d_str, hour), [0, 0])
+                counts = grid.get((route, d_str, hour), [0, 0, 0.0])
                 rows.append({
                     "route": route,
                     "date": d_str,
                     "hour": hour,
                     "trips_starting": counts[0],
                     "trips_running": counts[1],
+                    "service_hours": round(counts[2], 4),
                     "snapshot_id": snap,
                 })
         curr += timedelta(days=1)
@@ -312,6 +319,7 @@ def build_hourly_schedule(feeds: dict[str, GTFSFeed], date_to_snap: dict[str, st
     df_out["hour"] = df_out["hour"].astype("int8")
     df_out["trips_starting"] = df_out["trips_starting"].astype("int32")
     df_out["trips_running"] = df_out["trips_running"].astype("int32")
+    df_out["service_hours"] = df_out["service_hours"].astype("float32")
 
     return df_out
 
