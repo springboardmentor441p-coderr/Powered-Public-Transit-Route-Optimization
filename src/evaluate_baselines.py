@@ -50,9 +50,17 @@ def evaluate_baselines():
     val_df = pd.read_parquet(VAL_PATH)
     print(f"Validation rows: {len(val_df):,}, dates: {val_df['date'].min()} to {val_df['date'].max()} (41 routes)")
 
-    y_true = val_df["ridership"]
-    y_pred_lag7 = val_df["lag_7d"]
-    y_pred_4wk = val_df["lag_mean_available"]
+    common_mask = (
+        val_df["ridership"].notnull()
+        & val_df["lag_7d"].notnull()
+        & val_df["lag_mean_available"].notnull()
+    )
+    val_eval = val_df[common_mask].copy()
+    print(f"Fair comparison evaluation rows (both baselines non-null): {len(val_eval):,} / {len(val_df):,} ({len(val_eval)/len(val_df)*100:.2f}%)")
+
+    y_true = val_eval["ridership"]
+    y_pred_lag7 = val_eval["lag_7d"]
+    y_pred_4wk = val_eval["lag_mean_available"]
 
     # 1. Overall evaluation
     m_lag7 = compute_metrics(y_true, y_pred_lag7)
@@ -83,12 +91,12 @@ def evaluate_baselines():
     print(f"\nSaved overall metrics: {overall_csv.relative_to(ROOT)}")
     print(overall_df.to_string())
 
-    # 2. Per-route evaluation
+    # 2. Per-route evaluation on the common evaluated rows
     route_records = []
-    routes = sorted(val_df["route"].unique())
+    routes = sorted(val_eval["route"].unique())
 
     for r in routes:
-        r_sub = val_df[val_df["route"] == r]
+        r_sub = val_eval[val_eval["route"] == r]
         y_r = r_sub["ridership"]
         p7 = r_sub["lag_7d"]
         p4 = r_sub["lag_mean_available"]

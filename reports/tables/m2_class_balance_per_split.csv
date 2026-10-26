@@ -1,0 +1,5 @@
+split,total_hours,positive_hours,negative_hours,positive_share_pct
+Training,125445,30936,94509,24.66
+Validation,54046,12992,41054,24.04
+Test,53736,13455,40281,25.04
+Total Window,233227,57383,175844,24.6

@@ -60,6 +60,7 @@ def test_generated_figures_and_tables_exist():
         "m2_top_15_route_overlaps.csv",
         "m2_low_riders_per_trip.csv",
         "m2_data_splits_summary.csv",
+        "m2_class_balance_per_split.csv",
         "m2_clustering_features_scaled.csv",
         "m2_baseline_forecast_overall.csv",
         "m2_baseline_forecast_per_route.csv",
@@ -75,10 +76,19 @@ def test_top_15_route_overlap_analysis():
     assert len(top15) == 15
     assert list(top15["rank"]) == list(range(1, 16))
     
-    # Check that planned pairs (e.g. M101/M103, M34+/M34A+, M15/M15+) are labeled Planned Pair
+    # Check planned pairs: same route family (e.g. M34+/M34A+, M15/M15+, M14A+/M14D+) labeled 'planned'
+    m34_m34a = top15[((top15["route_1"] == "M34+") & (top15["route_2"] == "M34A+")) | ((top15["route_1"] == "M34A+") & (top15["route_2"] == "M34+"))]
+    assert len(m34_m34a) == 1
+    assert m34_m34a.iloc[0]["design_classification"] == "planned"
+
+    m15_m15p = top15[((top15["route_1"] == "M15") & (top15["route_2"] == "M15+")) | ((top15["route_1"] == "M15+") & (top15["route_2"] == "M15"))]
+    assert len(m15_m15p) == 1
+    assert m15_m15p.iloc[0]["design_classification"] == "planned"
+
+    # Check shared corridor pairs: different routes sharing stops (e.g. M101/M103) labeled 'review'
     m101_m103 = top15[((top15["route_1"] == "M101") & (top15["route_2"] == "M103")) | ((top15["route_1"] == "M103") & (top15["route_2"] == "M101"))]
     assert len(m101_m103) == 1
-    assert m101_m103.iloc[0]["design_classification"] == "Planned Pair"
+    assert m101_m103.iloc[0]["design_classification"] == "review"
 
 
 def test_route_stop_coverage_metrics():
@@ -169,7 +179,27 @@ def test_baseline_forecast_benchmarks():
     row_lag7 = base[base["model_name"].str.contains("lag_7d")].iloc[0]
     row_4wk = base[base["model_name"].str.contains("lag_mean_available")].iloc[0]
 
+    # Verify fair comparison on exact same rows
+    assert row_lag7["evaluated_rows"] == 53585
+    assert row_4wk["evaluated_rows"] == 53585
+    assert row_lag7["evaluated_rows"] == row_4wk["evaluated_rows"], "Baselines must be scored on identical rows"
+
     # Verify benchmark performance hurdles
     assert row_lag7["wape_pct"] < 20.0
     assert row_4wk["wape_pct"] < 15.0
     assert row_4wk["wape_pct"] < row_lag7["wape_pct"], "4-week average should beat lag-7d"
+
+
+def test_class_balance_per_split():
+    cb = pd.read_csv(TAB_DIR / "m2_class_balance_per_split.csv")
+    assert len(cb) == 4
+    assert list(cb["split"]) == ["Training", "Validation", "Test", "Total Window"]
+
+    # Training class balance ~24.66% (~25% by construction)
+    train_row = cb[cb["split"] == "Training"].iloc[0]
+    assert 24.0 <= train_row["positive_share_pct"] <= 26.0
+
+    # Total rows sum to 233,227
+    total_row = cb[cb["split"] == "Total Window"].iloc[0]
+    assert total_row["total_hours"] == 233227
+    assert total_row["positive_hours"] + total_row["negative_hours"] == 233227

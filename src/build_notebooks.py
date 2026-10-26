@@ -354,12 +354,12 @@ def build_nb03():
         "# 03: Route Overlap & Network Coverage\n"
         "**Milestone 2: Week 3 — Step 6**\n\n"
         "Using the Spring timetable (`2026-04-09`), this notebook evaluates corridor-level redundancy vs planned coordination:\n"
-        "- Stop sets per route and direction\n"
-        "- Pairwise shared stops, overlap share (shared $\\div$ smaller route stops), and Jaccard similarity\n"
-        "- Detailed analysis of top 15 pairs (continuity, direction alignment, hours, peak combined buses/hr)\n"
-        "- Classification of planned pairs (Select Bus Service + local versions, SBS branch pairs)\n"
-        "- Network coverage metric: share of stops served by no other route\n"
-        "- Interactive Folium map of top overlapping corridors"
+        "- **Overlapping Pairs Definition:** Any pair sharing at least one stop ($|S_A \\cap S_B| \\ge 1$). 127 pairs meet this criterion out of 820 possible Manhattan pairs.\n"
+        "- **Classification Rule:**\n"
+        "  - **Same route family (`planned`):** A local route and its Select Bus Service version, or two variants of the same route (`M15/M15+`, `M34+/M34A+`, `M14A+/M14D+`).\n"
+        "  - **Shared corridor (`review`):** Different routes sharing corridor stops (`M101/M103`, `M101/M102`, `M1/M2`, etc.). Labeled 'review', not 'planned' or 'redundant'.\n"
+        "- **Network coverage metric:** Share of stops served by no other route (stop exclusivity).\n"
+        "- **Interactive Folium map:** Visualizes top overlapping corridors."
     ))
 
     # Cell 1: Setup
@@ -368,12 +368,12 @@ def build_nb03():
     # Step 6.1: Pairwise Overlap Summary
     nb.cells.append(nbf.v4.new_markdown_cell(
         "## Step 6.1: Pairwise Route Overlap (Spring 2026-04-09 Timetable)\n"
-        "Analyzes stop-level overlap across all 127 overlapping route pairs in Manhattan."
+        "Analyzes stop-level overlap across all 127 route pairs that share at least one stop ($|S_A \\cap S_B| \\ge 1$)."
     ))
 
     nb.cells.append(nbf.v4.new_code_cell(
         "pairs_df = pd.read_csv(TAB / 'm2_route_overlap_all_pairs.csv')\n"
-        "print(f'Total overlapping route pairs: {len(pairs_df)}')\n"
+        "print(f'Total overlapping route pairs (>= 1 shared stop): {len(pairs_df)}')\n"
         "print('\\nTop 10 Route Pairs by Overlap Share:')\n"
         "pairs_df.head(10)"
     ))
@@ -381,7 +381,7 @@ def build_nb03():
     # Step 6.2: Top 15 Pairs In-Depth Evaluation
     nb.cells.append(nbf.v4.new_markdown_cell(
         "## Step 6.2: Top 15 Overlapping Pairs In-Depth Analysis\n"
-        "Profiles corridor continuity, direction alignment, operating hours, peak frequency, and design intent."
+        "Profiles corridor continuity, direction alignment, operating hours, peak frequency, and design classification ('planned' vs 'review')."
     ))
 
     nb.cells.append(nbf.v4.new_code_cell(
@@ -392,12 +392,12 @@ def build_nb03():
     # Step 6.3: Network Coverage (Stop Exclusivity)
     nb.cells.append(nbf.v4.new_markdown_cell(
         "## Step 6.3: Network Coverage & Exclusive Stop Share\n"
-        "Measures the share of stops served by no other route. Routes with high exclusivity provide essential coverage."
+        "Measures the share of stops served by no other route. M35 is the only route serving 100% of its stops."
     ))
 
     nb.cells.append(nbf.v4.new_code_cell(
         "coverage = pd.read_csv(TAB / 'm2_route_stop_coverage.csv')\n"
-        "print('Top 10 Lifeline Coverage Routes (High Stop Exclusivity):')\n"
+        "print('Top 10 Routes with Highest Stop Exclusivity:')\n"
         "print(coverage.head(10)[['route', 'total_stops', 'exclusive_stops', 'exclusive_stop_share']])\n\n"
         "print('\\nTop 5 Routes with Lowest Stop Exclusivity (Parallel Corridors):')\n"
         "print(coverage.tail(5)[['route', 'total_stops', 'exclusive_stops', 'exclusive_stop_share']])"
@@ -450,7 +450,7 @@ def build_nb04():
         "  - Exclusive stop coverage share (stops served by no other route)\n"
         "  - Top overlapping partner route and overlap share\n\n"
         "> **Important Principle:** We explicitly call this list **'low riders per trip'**, never 'inefficient routes'. "
-        "It is a screening list for operational review, not a verdict. Low patronage often reflects essential lifeline coverage (e.g., M35)."
+        "It is a screening list for operational review, not a verdict. Low patronage often occurs on routes serving essential access without redundancy (e.g., M35 is the only route serving 100% of its stops)."
     ))
 
     # Cell 1: Setup
@@ -487,11 +487,11 @@ def build_nb04():
         "low_df.head(15)"
     ))
 
-    # Step 7.3: Contextual Discussion on Lifeline & Feeder Routes
+    # Step 7.3: Policy Context & Network Role Analysis
     nb.cells.append(nbf.v4.new_markdown_cell(
         "## Step 7.3: Policy Context & Network Role Analysis\n"
         "A low riders-per-trip figure does not imply a route should be cut. We examine coverage roles:\n"
-        "1. **M35 (Randall's Island Shuttle):** Averages 0.71–3.48 riders/trip, but has **100% exclusive stops**. It is the only transit connection to Randall's Island social service and municipal facilities.\n"
+        "1. **M35 (Randall's Island Shuttle):** Averages 0.71–3.48 riders/trip, but is the only route serving 100% of its stops (23/23 exclusive stops). It is the sole transit connection to Randall's Island social service and municipal facilities.\n"
         "2. **M22 / M8 (Crosstown / Lower Manhattan Coverage):** Maintain 72–86% exclusive stops, ensuring access where avenue routes do not reach.\n"
         "3. **M55 / M20 (Off-Peak Avenue Feeders):** Have parallel alternatives (e.g. M1, M7), making them candidates for schedule coordination rather than route elimination."
     ))
@@ -567,19 +567,33 @@ def build_nb05():
         "feat_all[['route', 'date', 'hour', 'ridership', 'high_demand_per_trip'] + lag_cols].dropna().head(10)"
     ))
 
-    # Step 11: Date Splits
+    # Step 11: Date Splits & Class Balance
     nb.cells.append(nbf.v4.new_markdown_cell(
-        "## Step 11: Chronological Date Splits\n"
+        "## Step 11: Chronological Date Splits & Class Balance\n"
         "Data is partitioned chronologically with zero row shuffling:\n"
         "- **Training:** 4 January to 31 May (125,445 rows)\n"
         "- **Validation:** 1 June to 31 July (54,046 rows)\n"
         "- **Test:** 1 August to 30 September (53,736 rows)\n\n"
+        "> **Note on M35 Outlier Surge:** The 6-hour M35 ridership surge (Saturday 19 September 2026, 14:00 to 19:00) falls in the test period. "
+        "Excluding outliers from training removed 0 rows from training. In Milestone 3, test results must be reported with and without is_outlier hours.\n\n"
         "> **Known Seasonal Weakness:** Training data contains no summer months (July-August), while test data includes school reopenings in September."
     ))
 
     nb.cells.append(nbf.v4.new_code_cell(
         "splits_summary = pd.read_csv(TAB / 'm2_data_splits_summary.csv')\n"
         "splits_summary"
+    ))
+
+    # Class Balance per Split
+    nb.cells.append(nbf.v4.new_markdown_cell(
+        "### Class Balance per Split\n"
+        "Training has ~25% positive hours by construction (75th percentile of riders per trip on training dates with service). "
+        "Validation (24.04%) drops during summer, while Test (25.04%) rises during the September school and commuter rebound."
+    ))
+
+    nb.cells.append(nbf.v4.new_code_cell(
+        "class_balance = pd.read_csv(TAB / 'm2_class_balance_per_split.csv')\n"
+        "class_balance"
     ))
 
     # Step 12: Preprocessor Pipeline
@@ -709,12 +723,12 @@ def build_nb07():
     # Step 14.1: Overall Benchmark Performance
     nb.cells.append(nbf.v4.new_markdown_cell(
         "## Step 14.1: Overall Network Baseline Performance\n"
-        "Evaluated across all 54,046 validation rows (June–July 2026)."
+        "To ensure a fair head-to-head comparison, both baselines are scored on the identical 53,585 rows where both lag features are non-null (99.15% coverage of the 54,046 validation rows)."
     ))
 
     nb.cells.append(nbf.v4.new_code_cell(
         "overall = pd.read_csv(TAB / 'm2_baseline_forecast_overall.csv')\n"
-        "print('Overall Validation Baseline Metrics:')\n"
+        "print('Overall Validation Baseline Metrics (Scored on identical 53,585 rows):')\n"
         "overall"
     ))
 
@@ -762,7 +776,12 @@ def build_nb07():
 
 
 if __name__ == "__main__":
+    print("Building and executing updated notebooks...")
+    build_nb03()
+    build_nb04()
+    build_nb05()
     build_nb07()
+    print("Notebooks 03, 04, 05, 07 successfully rebuilt and executed!")
 
 
 

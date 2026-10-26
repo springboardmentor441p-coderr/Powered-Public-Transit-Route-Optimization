@@ -150,6 +150,12 @@ def split_datasets(df: pd.DataFrame):
     test_mask = (df["date"] >= "2026-08-01") & (df["date"] <= "2026-09-30")
 
     # Rows to leave out of training: is_outlier hours
+    train_outliers_count = int(df[train_mask]["is_outlier"].sum())
+    test_outliers_count = int(df[test_mask]["is_outlier"].sum())
+    print(f"Outlier hours check: {train_outliers_count} in training window, {test_outliers_count} in test window.")
+    print("Note: The M35 surge (19 Sept 14:00-19:00) falls in the test period. Leaving outliers out of training")
+    print("removed 0 rows from training. In Milestone 3, test results must be reported with and without is_outlier hours.")
+
     train_df = df[train_mask & (~df["is_outlier"])].copy()
     val_df = df[val_mask].copy()
     test_df = df[test_mask].copy()
@@ -165,6 +171,37 @@ def split_datasets(df: pd.DataFrame):
     split_summary.to_csv(split_summary_csv, index=False)
     print(f"Saved: {split_summary_csv.relative_to(ROOT)}")
     print(split_summary.to_string())
+
+    # Calculate class balance per split for classification task (Step 9)
+    balance_records = []
+    for s_name, s_df in [("Training", train_df), ("Validation", val_df), ("Test", test_df)]:
+        n_tot = len(s_df)
+        n_pos = int((s_df["high_demand_per_trip"] == 1).sum())
+        n_neg = n_tot - n_pos
+        pct_pos = round((n_pos / n_tot) * 100.0, 2)
+        balance_records.append({
+            "split": s_name,
+            "total_hours": n_tot,
+            "positive_hours": n_pos,
+            "negative_hours": n_neg,
+            "positive_share_pct": pct_pos,
+        })
+    
+    tot_hours = len(df)
+    tot_pos = int((df["high_demand_per_trip"] == 1).sum())
+    balance_records.append({
+        "split": "Total Window",
+        "total_hours": tot_hours,
+        "positive_hours": tot_pos,
+        "negative_hours": tot_hours - tot_pos,
+        "positive_share_pct": round((tot_pos / tot_hours) * 100.0, 2),
+    })
+
+    balance_df = pd.DataFrame(balance_records)
+    balance_csv = TAB_DIR / "m2_class_balance_per_split.csv"
+    balance_df.to_csv(balance_csv, index=False)
+    print(f"\nSaved class balance: {balance_csv.relative_to(ROOT)}")
+    print(balance_df.to_string())
 
     return train_df, val_df, test_df
 

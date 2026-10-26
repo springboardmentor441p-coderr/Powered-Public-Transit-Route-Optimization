@@ -146,26 +146,17 @@ def analyze_route_pairs(route_stops: dict, route_dir_stops: dict, dir_sequences:
     # Analyze Top 15 pairs in detail
     top15 = pairs_df.head(15).copy()
 
-    # Planned SBS / local pairs & branch corridors in Manhattan
-    # M15/M15+ (1st/2nd Ave SBS+local), M34+/M34A+ (34th St SBS branches), M14A+/M14D+ (14th St SBS branches),
-    # M101/M102/M103 (Lexington/3rd Ave trunk-and-branch corridor), M1/M2/M3/M4 (Madison/5th Ave corridor trunk)
-    PLANNED_PAIRS = {
-        ("M15", "M15+"): "Planned SBS/Local Pair (1st/2nd Ave)",
-        ("M34+", "M34A+"): "Planned SBS Branches (34th St)",
-        ("M14A+", "M14D+"): "Planned SBS Branches (14th St)",
-        ("M101", "M103"): "Planned Corridor Trunk/Branch (Lexington/3rd Ave)",
-        ("M102", "M103"): "Planned Corridor Trunk/Branch (Lexington/3rd Ave)",
-        ("M101", "M102"): "Planned Corridor Trunk/Branch (Lexington/3rd Ave)",
-        ("M1", "M2"): "Planned Corridor Trunk (5th/Madison Ave)",
-        ("M2", "M3"): "Planned Corridor Trunk (5th/Madison Ave)",
-        ("M1", "M3"): "Planned Corridor Trunk (5th/Madison Ave)",
-        ("M3", "M4"): "Planned Corridor Trunk (5th/Madison Ave)",
-        ("M1", "M4"): "Planned Corridor Trunk (5th/Madison Ave)",
-        ("M2", "M4"): "Planned Corridor Trunk (5th/Madison Ave)",
-        ("M31", "M57"): "Planned Crosstown Trunk/Branch (57th St)",
-        ("M96", "M106"): "Planned Crosstown Trunk/Branch (96th St)",
-        ("M101", "M125"): "Planned Shared Crosstown Trunk (125th St)",
-    }
+    # What counts as an overlapping pair: Any pair sharing at least one stop (|shared| >= 1).
+    # Classification rule:
+    # 1. Same route family: local and Select Bus version, or two variants of the same route
+    #    (M15/M15+, M34+/M34A+, M14A+/M14D+). Label: 'planned'.
+    # 2. Shared corridor: different routes sharing stops along a corridor
+    #    (M101/M103, M101/M102, M1/M2, M2/M3, etc.). Label: 'review'.
+    def classify_pair(r1: str, r2: str) -> tuple[str, str]:
+        b1, b2 = r1.rstrip("+"), r2.rstrip("+")
+        if b1 == b2 or (b1.startswith("M34") and b2.startswith("M34")) or (b1.startswith("M14") and b2.startswith("M14")):
+            return "planned", "Same route family (local/SBS or route variants)"
+        return "review", "Shared corridor (different routes sharing stops)"
 
     # Load matched table to compute combined buses per hour at morning & evening peak
     matched = pd.read_parquet(MATCHED_PATH)
@@ -208,10 +199,8 @@ def analyze_route_pairs(route_stops: dict, route_dir_stops: dict, dir_sequences:
         buses_r2 = route_peak_buses.get(r2, 0.0)
         combined_peak_buses = buses_r1 + buses_r2
 
-        # Planned vs redundant label
-        pair_key = (min(r1, r2), max(r1, r2))
-        planned_label = PLANNED_PAIRS.get(pair_key, PLANNED_PAIRS.get((r1, r2), "Co-running Corridor"))
-        is_planned = "Planned Pair" if (pair_key in PLANNED_PAIRS or (r1, r2) in PLANNED_PAIRS) else "Overlapping"
+        # Apply classification rule: planned vs review
+        design_class, design_notes = classify_pair(r1, r2)
 
         top15_details.append({
             "rank": idx + 1,
@@ -226,8 +215,8 @@ def analyze_route_pairs(route_stops: dict, route_dir_stops: dict, dir_sequences:
             "direction_alignment": dir_alignment,
             "operating_hours": hours_desc,
             "combined_peak_buses_per_hr": round(combined_peak_buses, 1),
-            "design_classification": is_planned,
-            "design_notes": planned_label,
+            "design_classification": design_class,
+            "design_notes": design_notes,
         })
 
     top15_df = pd.DataFrame(top15_details)

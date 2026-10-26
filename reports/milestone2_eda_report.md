@@ -145,26 +145,34 @@ Demand stability is quantified for every route and hour across typical weekdays 
 
 ## 7. Route Overlap & Network Coverage (Step 6)
 
-Using the Spring 2026 GTFS timetable (`2026-04-09`), stop sets were computed for all 41 routes. Across all $\binom{41}{2} = 820$ potential route pairs, 127 pairs share at least one stop.
+### Definition of Overlapping Pairs (127 Pairs)
+Using the Spring 2026 GTFS timetable (`2026-04-09`), stop sets $S_r$ were computed for all 41 routes. Across all $\binom{41}{2} = 820$ potential route combinations in Manhattan, an **overlapping pair** is defined as any pair sharing at least one stop:
+$$|S_A \cap S_B| \ge 1$$
+This yields exactly **127 overlapping route pairs** across the Manhattan network.
+
+### Planned Pairs vs Shared Corridors Classification Rule
+To avoid asserting planning intent without empirical evidence, route pairs are classified by a consistent, verifiable rule applied across the network:
+1. **Planned Pair (`planned`):** Same route family — a local route and its Select Bus Service (SBS) version, or two variants/branches of the same route (`M15 & M15+`, `M34+ & M34A+`, `M14A+ & M14D+`). These pairs are deliberately co-designed by MTA transit planners to operate complementary stop patterns (local vs limited-stop skip-stop) or branching terminal spurs along the same primary corridor.
+2. **Shared Corridor (`review`):** Different distinct routes that share stops along a corridor (`M101 & M103`, `M102 & M103`, `M101 & M102`, `M1 & M2`, `M2 & M3`, `M31 & M57`, `M106 & M96`, `M1 & M3`, `M101 & M125`, `M7 & M116`, `M3 & M4`, `M1 & M4`). These routes originate from different historical streetcar lines and serve distinct northern or southern terminal markets. They are categorized as **review** (not "planned" or "redundant") to indicate corridors where headway coordination, bus bunching, and capacity balance warrant operational attention.
 
 ### Table 2: Top 15 Overlapping Route Pairs in Manhattan
 | Rank | Route Pair | Smaller Route Stops | Shared Stops | Overlap Share | Jaccard | Corridor Type | Combined Peak Buses/Hr | Design Classification |
 | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :---: | :--- |
-| **1** | **M101 & M103** | 106 (M103) | 82 | **77.4%** | 45.8% | Continuous (3rd/Lexington Ave) | 66.7 | **Planned Pair** (Trunk / Branch) |
-| **2** | **M34+ & M34A+** | 29 (M34A+) | 22 | **75.9%** | 53.7% | Continuous (34th St Crosstown) | 31.7 | **Planned Pair** (SBS Branches) |
-| **3** | **M102 & M103** | 106 (M103) | 77 | **72.6%** | 53.9% | Continuous (3rd/Lexington Ave) | 49.5 | **Planned Pair** (Trunk / Branch) |
-| **4** | **M101 & M102** | 114 (M102) | 76 | **66.7%** | 39.4% | Continuous (3rd/Lexington Ave) | 70.8 | **Planned Pair** (Trunk / Branch) |
-| **5** | **M1 & M2** | 134 (M1) | 77 | **57.5%** | 38.3% | Continuous (5th/Madison Ave) | 64.0 | **Planned Pair** (Avenue Trunk) |
-| **6** | **M2 & M3** | 144 (M2) | 79 | **54.9%** | 34.8% | Continuous (5th/Madison Ave) | 60.0 | **Planned Pair** (Avenue Trunk) |
-| **7** | **M31 & M57** | 42 (M57) | 23 | **54.8%** | 30.3% | Continuous (57th St Crosstown) | 41.5 | **Planned Pair** (Crosstown Branches) |
-| **8** | **M106 & M96** | 24 (M96) | 12 | **50.0%** | 26.7% | Continuous (96th St Crosstown) | 49.7 | Overlapping Trunk |
-| **9** | **M1 & M3** | 134 (M1) | 64 | **47.8%** | 27.6% | Continuous (5th/Madison Ave) | 65.7 | **Planned Pair** (Avenue Trunk) |
-| **10** | **M14A+ & M14D+** | 42 (M14A+) | 19 | **45.2%** | 28.4% | Continuous (14th St Crosstown) | 61.5 | **Planned Pair** (SBS Branches) |
-| **11** | **M101 & M125** | 41 (M125) | 18 | **43.9%** | 10.1% | Continuous (125th St Crosstown) | 71.2 | **Planned Pair** (Shared Trunk) |
-| **12** | **M116 & M7** | 42 (M116) | 18 | **42.9%** | 12.7% | Segmented (Harlem Corridor) | 48.4 | Overlapping Corridor |
-| **13** | **M3 & M4** | 152 (M4) | 62 | **40.8%** | 24.6% | Continuous (5th/Madison Ave) | 73.5 | **Planned Pair** (Avenue Trunk) |
-| **14** | **M15 & M15+** | 42 (M15+) | 15 | **35.7%** | 10.1% | Continuous (1st/2nd Ave) | 84.2 | **Planned Pair** (SBS + Local) |
-| **15** | **M1 & M4** | 134 (M1) | 47 | **35.1%** | 19.7% | Continuous (5th/Madison Ave) | 77.5 | **Planned Pair** (Avenue Trunk) |
+| **1** | **M101 & M103** | 106 (M103) | 82 | **77.4%** | 45.8% | Continuous (3rd/Lexington Ave) | 66.7 | **review** (Shared corridor) |
+| **2** | **M34+ & M34A+** | 29 (M34A+) | 22 | **75.9%** | 53.7% | Continuous (34th St Crosstown) | 31.7 | **planned** (Same route family: SBS branches) |
+| **3** | **M102 & M103** | 106 (M103) | 77 | **72.6%** | 53.9% | Continuous (3rd/Lexington Ave) | 49.5 | **review** (Shared corridor) |
+| **4** | **M101 & M102** | 114 (M102) | 76 | **66.7%** | 39.4% | Segmented (3rd/Lexington Ave) | 70.8 | **review** (Shared corridor) |
+| **5** | **M1 & M2** | 134 (M1) | 77 | **57.5%** | 38.3% | Continuous (5th/Madison Ave) | 64.0 | **review** (Shared corridor) |
+| **6** | **M2 & M3** | 144 (M2) | 79 | **54.9%** | 34.8% | Segmented (5th/Madison Ave) | 60.0 | **review** (Shared corridor) |
+| **7** | **M31 & M57** | 42 (M57) | 23 | **54.8%** | 30.3% | Continuous (57th St Crosstown) | 41.5 | **review** (Shared corridor) |
+| **8** | **M106 & M96** | 24 (M96) | 12 | **50.0%** | 26.7% | Continuous (96th St Crosstown) | 49.7 | **review** (Shared corridor) |
+| **9** | **M1 & M3** | 134 (M1) | 64 | **47.8%** | 27.6% | Segmented (5th/Madison Ave) | 65.7 | **review** (Shared corridor) |
+| **10** | **M14A+ & M14D+** | 42 (M14A+) | 19 | **45.2%** | 28.4% | Continuous (14th St Crosstown) | 61.5 | **planned** (Same route family: SBS branches) |
+| **11** | **M101 & M125** | 41 (M125) | 18 | **43.9%** | 10.1% | Continuous (125th St Crosstown) | 71.2 | **review** (Shared corridor) |
+| **12** | **M116 & M7** | 42 (M116) | 18 | **42.9%** | 12.7% | Segmented (Harlem Corridor) | 48.4 | **review** (Shared corridor) |
+| **13** | **M3 & M4** | 152 (M4) | 62 | **40.8%** | 24.6% | Continuous (5th/Madison Ave) | 73.5 | **review** (Shared corridor) |
+| **14** | **M15 & M15+** | 42 (M15+) | 15 | **35.7%** | 10.1% | Segmented (1st/2nd Ave) | 84.2 | **planned** (Same route family: SBS + Local) |
+| **15** | **M1 & M4** | 134 (M1) | 47 | **35.1%** | 19.7% | Continuous (5th/Madison Ave) | 77.5 | **review** (Shared corridor) |
 
 *Interactive Folium Map of top corridors:* [`reports/figures/route_overlaps.html`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/reports/figures/route_overlaps.html).
 
@@ -192,10 +200,10 @@ This identified **47 qualified route-band combinations** (17 weekday, 15 Saturda
 
 | Day Type | Route | Time Band | Riders / Trip | Riders / Service-Hour | Avg Trips / Day | Days | Exclusive Stops | Top Overlap Partner | Operational Context |
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
-| **Typical Saturday** | **M35** | Night | **0.71** | 3.57 | 65.6 | 36 | **100.0%** | None (0.0%) | Lifeline island access; zero route redundancy. |
-| **Typical Saturday** | **M35** | Morning Peak | **1.66** | 8.63 | 27.0 | 36 | **100.0%** | None (0.0%) | Lifeline island access; cannot be eliminated. |
-| **Typical Saturday** | **M35** | Evening Peak | **2.40** | 11.52 | 41.0 | 35 | **100.0%** | None (0.0%) | Lifeline island access; low weekend patronage. |
-| **Typical Saturday** | **M35** | Midday | **3.48** | 17.68 | 59.3 | 36 | **100.0%** | None (0.0%) | Lifeline island access. |
+| **Typical Saturday** | **M35** | Night | **0.71** | 3.57 | 65.6 | 36 | **100.0%** | None (0.0%) | The only route serving 100% of its stops (23/23 exclusive); sole transit connection to Randall's Island. |
+| **Typical Saturday** | **M35** | Morning Peak | **1.66** | 8.63 | 27.0 | 36 | **100.0%** | None (0.0%) | The only route serving 100% of its stops; sole transit connection. |
+| **Typical Saturday** | **M35** | Evening Peak | **2.40** | 11.52 | 41.0 | 35 | **100.0%** | None (0.0%) | The only route serving 100% of its stops; low weekend evening patronage. |
+| **Typical Saturday** | **M35** | Midday | **3.48** | 17.68 | 59.3 | 36 | **100.0%** | None (0.0%) | The only route serving 100% of its stops; daytime connectivity. |
 | **Typical Saturday** | **M22** | Night | **3.94** | 10.93 | 19.9 | 36 | **72.1%** | M20 (9.3%) | Lower Manhattan coverage; 72.1% unique stops. |
 | **Typical Saturday** | **M8** | Morning Peak | **3.96** | 13.46 | 11.0 | 36 | **85.7%** | M1 (7.1%) | West Village crosstown coverage; 85.7% unique. |
 | **Typical Saturday** | **M20** | Night | **4.16** | 8.89 | 65.9 | 36 | **51.2%** | M7 (18.8%) | Late-night 7th/8th Ave feeder service. |
@@ -237,7 +245,21 @@ An hour is labelled `high_demand_per_trip = 1` if its `riders_per_trip` exceeds 
 | **Test** | 2026-08-01 to 2026-09-30 | 61 | **53,736** | 23.0% | 41 | Summer trough + September school reopening. |
 | **Total** | 2026-01-04 to 2026-09-30 | 264 | **233,227** | 100.0% | 41 | Strict chronological split; zero row shuffling. |
 
+**M35 Surge Sits in Test Set:** The 6-hour M35 ridership surge (Saturday 19 September 2026, 14:00 to 19:00) falls entirely within the Test period (1 August to 30 September). Because the training period concludes on 31 May, the rule excluding outlier hours from training (`train_mask & (~is_outlier)`) removed 0 rows from the training set. The outlier hours reside in the Test set. In Milestone 3, model test evaluations will be reported both **with and without** these `is_outlier` hours to measure forecast stability under unannounced external surges without distorting routine performance.
+
 **Known Seasonal Limitation:** The training set contains no summer months (July–August), while the validation set captures the summer transition and the test set captures the September school reopening rebound. Machine learning models must generalize across this structural shift.
+
+### Class Balance per Split (Step 9 / Step 11)
+The classification target `high_demand_per_trip` is defined by the 75th percentile threshold of `riders_per_trip` per route and day type, computed strictly from training dates with scheduled service.
+
+| Split Set | Calendar Window | Total Hours | Positive Hours (`=1`) | Negative Hours (`=0`) | Positive Share (%) |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **Training** | 2026-01-04 to 2026-05-31 | 125,445 | 30,936 | 94,509 | **24.66%** |
+| **Validation** | 2026-06-01 to 2026-07-31 | 54,046 | 12,992 | 41,054 | **24.04%** |
+| **Test** | 2026-08-01 to 2026-09-30 | 53,736 | 13,455 | 40,281 | **25.04%** |
+| **Total Window** | 2026-01-04 to 2026-09-30 | 233,227 | 57,383 | 175,844 | **24.60%** |
+
+*Methodological Impact:* Training contains ~25% positive hours by mathematical construction (75th percentile on non-zero service hours; hours without scheduled service are labeled 0). In Validation (June–July summer slowdown), the positive share dips slightly to 24.04%. In Test (incorporating the September school and commuter rebound), the share rises to 25.04%. This variation reflects real seasonal ridership shifts and will directly inform precision, recall, and PR-AUC evaluation of classifiers in Milestone 3.
 
 ### Step 12: Preprocessing Pipeline Architecture
 A scikit-learn `Pipeline` with `ColumnTransformer` was fitted strictly on training data and saved to [`models/preprocessor.joblib`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/models/preprocessor.joblib):
@@ -272,13 +294,13 @@ All 9 features were normalized via `StandardScaler` and saved to [`data/processe
 
 ## 11. Baseline Forecasting Benchmarks (Step 14)
 
-Two simple empirical forecasts were evaluated on the 54,046 validation rows (June–July 2026). In Milestone 3, all predictive machine learning models must beat these baseline scores.
+Two simple empirical heuristic forecasts were evaluated on the validation period (June–July 2026). To ensure a strictly fair, unskewed comparison, both baseline models are scored on the exact identical subset of **53,585 rows** where both forecasts have valid non-null values (99.15% coverage of the 54,046 total validation rows). In Milestone 3, all predictive machine learning models must beat these baseline scores.
 
-### Table 4: Overall Baseline Forecast Benchmark Performance
+### Table 4: Overall Baseline Forecast Benchmark Performance (Scored on Identical 53,585 Rows)
 | Baseline Model | Form | Evaluated Rows | Coverage | MAE (Riders) | RMSE (Riders) | WAPE (%) |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Same Hour Last Week** | $y_{t-7\text{d}}$ | 53,632 | 99.23% | 44.23 | 81.42 | **17.48%** |
-| **4-Week Average** | $\frac{1}{K}\sum_{k=1}^4 y_{t-7k\text{d}}$ | 53,745 | 99.44% | **35.56** | **63.15** | **14.08%** |
+| **Same Hour Last Week** | $y_{t-7\text{d}}$ | 53,585 | 99.15% | 44.27 | 81.45 | **17.48%** |
+| **4-Week Average** | $\frac{1}{K}\sum_{k=1}^4 y_{t-7k\text{d}}$ | 53,585 | 99.15% | **35.66** | **63.24** | **14.08%** |
 
 *Error formulas:*
 - $\text{MAE} = \frac{1}{N} \sum |y - \hat{y}|$
@@ -286,14 +308,14 @@ Two simple empirical forecasts were evaluated on the 54,046 validation rows (Jun
 - $\text{WAPE} = \frac{\sum |y - \hat{y}|}{\sum y} \times 100\%$
 
 ### Key Baseline Takeaways & Per-Route Summary:
-1. The 4-week average baseline substantially outperforms the 7-day lag baseline across all 41 routes, reducing overall WAPE from 17.48% to 14.08% and RMSE from 81.42 to 63.15 riders. Smoothing across 4 historical weeks dampens idiosyncratic weekly traffic and weather fluctuations.
+1. When evaluated on the exact same rows, the 4-week average baseline substantially outperforms the 7-day lag baseline across all 41 routes, reducing overall WAPE from 17.48% to 14.08% and RMSE from 81.45 to 63.24 riders. Smoothing across 4 historical weeks dampens idiosyncratic weekly traffic and weather fluctuations.
 2. Large avenue trunk routes achieve the lowest relative errors:
    - `M15+`: 4-week average WAPE = **11.45%** (MAE 84.1, RMSE 134.2 on 1,409,000 riders).
-   - `M11`: 4-week average WAPE = **11.64%** (MAE 39.2, RMSE 58.0).
+   - `M11`: 4-week average WAPE = **11.64%** (MAE 39.3, RMSE 58.1).
    - `M86+`: 4-week average WAPE = **12.18%** (MAE 52.8, RMSE 76.5).
-   - `M1`: 4-week average WAPE = **12.92%** (MAE 39.6, RMSE 61.2).
+   - `M1`: 4-week average WAPE = **12.92%** (MAE 40.0, RMSE 61.5).
 3. Low-volume and feeder routes exhibit higher percentage errors despite small absolute errors:
    - `M35`: 4-week average WAPE = **36.42%** (MAE 5.9, RMSE 9.8).
-   - `M106`: 4-week average WAPE = **25.84%** (MAE 19.8, RMSE 28.5).
+   - `M106`: 4-week average WAPE = **25.86%** (MAE 19.9, RMSE 28.6).
    - `M12`: 4-week average WAPE = **22.72%** (MAE 15.1, RMSE 21.1).
 4. Detailed per-route baseline metrics are recorded in [`reports/tables/m2_baseline_forecast_per_route.csv`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/reports/tables/m2_baseline_forecast_per_route.csv). Milestone 3 model development will target beating the 14.08% network WAPE hurdle.
