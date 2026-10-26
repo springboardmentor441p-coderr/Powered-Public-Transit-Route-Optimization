@@ -1,0 +1,47 @@
+route_code,in_ridership,in_gtfs,match_status,service_type,ridership_2026_total,route_long_name,decision,decision_reason
+M1,True,True,matched,Local,1802019,Harlem - East Village,keep,Active regular route present with scheduled trips and ridership.
+M10,True,True,matched,Local,736479,Harlem - Columbus Circle,keep,Active regular route present with scheduled trips and ridership.
+M100,True,False,ridership_only_unmatched,Bronx Feed,1136720,Inwood - Harlem,drop,Manhattan route whose timetable is published in the Bronx GTFS feed. Out of scope for Manhattan GTFS.
+M101,True,True,matched,Local,2876067,East Village - Fort George,keep,Active regular route present with scheduled trips and ridership.
+M102,True,True,matched,Local,1774032,Harlem - East Village,keep,Active regular route present with scheduled trips and ridership.
+M103,True,True,matched,Local,1642012,East Harlem - City Hall,keep,Active regular route present with scheduled trips and ridership.
+M104,True,True,matched,Local,1371440,West Harlem - Times Square,keep,Active regular route present with scheduled trips and ridership.
+M106,True,True,matched,Local,303459,East Harlem - West Side,keep,Active regular route present with scheduled trips and ridership.
+M11,True,True,matched,Local,1954566,Riverbank Park & Harlem - West Village,keep,Active regular route present with scheduled trips and ridership.
+M116,True,True,matched,Local,1005607,West Side - East Harlem,keep,Active regular route present with scheduled trips and ridership.
+M12,True,True,matched,Local,283150,Midtown West - West Village,keep,Active regular route present with scheduled trips and ridership.
+M125,True,True,matched,Local,972268,Manhattanville - The Hub,keep,Active regular route present with scheduled trips and ridership.
+M14A,True,False,ridership_only_unmatched,Legacy Code,0,,drop,Replaced by Select Bus Service M14A+. Zero ridership across all of 2026; no GTFS trips.
+M14A+,True,True,matched,Select Bus Service (+),1369230,Lower East Side - Abingdon Sq,keep,Active regular route present with scheduled trips and ridership.
+M14D,True,False,ridership_only_unmatched,Legacy Code,0,,drop,Replaced by Select Bus Service M14D+. Zero ridership across all of 2026; no GTFS trips.
+M14D+,True,True,matched,Select Bus Service (+),2580907,Lower East Side - Chelsea Piers,keep,Active regular route present with scheduled trips and ridership.
+M15,True,True,matched,Local,3330367,East Harlem - South Ferry,keep,Active regular route present with scheduled trips and ridership.
+M15+,True,True,matched,Select Bus Service (+),5239765,East Harlem - South Ferry,keep,Active regular route present with scheduled trips and ridership.
+M2,True,True,matched,Local,1430704,Washington Heights - East Village,keep,Active regular route present with scheduled trips and ridership.
+M20,True,True,matched,Local,329175,Lincoln Center - South Ferry,keep,Active regular route present with scheduled trips and ridership.
+M21,True,True,matched,Local,248967,Lower East Side - West Village,keep,Active regular route present with scheduled trips and ridership.
+M22,True,True,matched,Local,309117,Lower East Side - Battery Park City,keep,Active regular route present with scheduled trips and ridership.
+M23+,True,True,matched,Select Bus Service (+),1766983,Chelsea Piers - East Side,keep,Active regular route present with scheduled trips and ridership.
+M3,True,True,matched,Local,2027909,Fort George - East Village,keep,Active regular route present with scheduled trips and ridership.
+M31,True,True,matched,Local,1781821,Yorkville - Clinton,keep,Active regular route present with scheduled trips and ridership.
+M34+,True,True,matched,Select Bus Service (+),1090168,East Side - Javits Center,keep,Active regular route present with scheduled trips and ridership.
+M34A+,True,True,matched,Select Bus Service (+),1054779,Waterside - Port Authority Terminal,keep,Active regular route present with scheduled trips and ridership.
+M35,True,True,matched,Local,57567,Ward's Island - East Harlem,keep,Active regular route present with scheduled trips and ridership.
+M4,True,True,matched,Local,2500589,The Cloisters - 32 St,keep,Active regular route present with scheduled trips and ridership.
+M42,True,True,matched,Local,1590057,United Nations - W 42 St Pier,keep,Active regular route present with scheduled trips and ridership.
+M5,True,True,matched,Local,1179188,George Washington Bridge - 31 St & 6 Av,keep,Active regular route present with scheduled trips and ridership.
+M50,True,True,matched,Local,416901,W 42 St Pier - East Side,keep,Active regular route present with scheduled trips and ridership.
+M55,True,True,matched,Local,360159,W 44 St  - South Ferry,keep,Active regular route present with scheduled trips and ridership.
+M57,True,True,matched,Local,1182000,East Side - West Side,keep,Active regular route present with scheduled trips and ridership.
+M60+,True,True,matched,Select Bus Service (+),1934593,West Side - LaGuardia Airport,keep,Active regular route present with scheduled trips and ridership.
+M66,True,True,matched,Local,1241785,East Side - Lincoln Center,keep,Active regular route present with scheduled trips and ridership.
+M7,True,True,matched,Local,1775755,Harlem - 14th Street,keep,Active regular route present with scheduled trips and ridership.
+M72,True,True,matched,Local,744679,East Side - West Side,keep,Active regular route present with scheduled trips and ridership.
+M79+,True,True,matched,Select Bus Service (+),1864674,Yorkville - West Side,keep,Active regular route present with scheduled trips and ridership.
+M8,True,True,matched,Local,233392,West Village - East Village,keep,Active regular route present with scheduled trips and ridership.
+M86+,True,True,matched,Select Bus Service (+),3085839,Yorkville - West Side,keep,Active regular route present with scheduled trips and ridership.
+M9,True,True,matched,Local,872089,Battery Park City - Kips Bay,keep,Active regular route present with scheduled trips and ridership.
+M90,True,False,ridership_only_unmatched,Shuttle,31,M Shuttle Bus - Metropolitan Av - Myrtle Av,drop,Subway shuttle bus; only 31 riders in 2026; no GTFS trips.
+M96,True,True,matched,Local,2127241,East Side - West Side,keep,Active regular route present with scheduled trips and ridership.
+M98,True,True,matched,Local,194630,Washington Heights - Upper East Side LTD,keep,Active regular route present with scheduled trips and ridership.
+M99,True,False,ridership_only_unmatched,Shuttle,0,,drop,Subway shuttle bus; 0 riders in 2026; no GTFS trips.
