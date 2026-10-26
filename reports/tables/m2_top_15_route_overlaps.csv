@@ -1,0 +1,16 @@
+rank,route_1,route_2,smaller_route,larger_route,shared_stops,overlap_share,jaccard,stretch_type,direction_alignment,operating_hours,combined_peak_buses_per_hr,design_classification,design_notes
+1,M101,M103,M103,M101,82,77.4%,45.8%,Continuous Corridor,Same Direction,Concurrent (24/7),66.7,Planned Pair,Planned Corridor Trunk/Branch (Lexington/3rd Ave)
+2,M34+,M34A+,M34A+,M34+,22,75.9%,53.7%,Continuous Corridor,Same Direction,Concurrent (24/7),31.7,Planned Pair,Planned SBS Branches (34th St)
+3,M102,M103,M103,M102,77,72.6%,53.8%,Continuous Corridor,Same Direction,Concurrent (24/7),49.5,Planned Pair,Planned Corridor Trunk/Branch (Lexington/3rd Ave)
+4,M101,M102,M102,M101,76,66.7%,39.4%,Segmented / Multi-Stretch,Same Direction,Concurrent (24/7),70.8,Planned Pair,Planned Corridor Trunk/Branch (Lexington/3rd Ave)
+5,M1,M2,M1,M2,77,57.5%,38.3%,Continuous Corridor,Same Direction,Concurrent (24/7),64.0,Planned Pair,Planned Corridor Trunk (5th/Madison Ave)
+6,M2,M3,M2,M3,79,54.9%,34.8%,Segmented / Multi-Stretch,Same Direction,Concurrent (24/7),60.0,Planned Pair,Planned Corridor Trunk (5th/Madison Ave)
+7,M31,M57,M57,M31,23,54.8%,30.3%,Continuous Corridor,Same Direction,Concurrent (23 hrs/day),41.5,Planned Pair,Planned Crosstown Trunk/Branch (57th St)
+8,M106,M96,M96,M106,12,50.0%,26.7%,Continuous Corridor,Same Direction,Concurrent (24/7),49.7,Overlapping,Co-running Corridor
+9,M1,M3,M1,M3,64,47.8%,27.6%,Segmented / Multi-Stretch,Same Direction,Concurrent (24/7),65.7,Planned Pair,Planned Corridor Trunk (5th/Madison Ave)
+10,M14A+,M14D+,M14A+,M14D+,19,45.2%,28.4%,Continuous Corridor,Same Direction,Concurrent (24/7),61.5,Planned Pair,Planned SBS Branches (14th St)
+11,M101,M125,M125,M101,18,43.9%,10.1%,Continuous Corridor,Same Direction,Concurrent (24/7),71.2,Planned Pair,Planned Shared Crosstown Trunk (125th St)
+12,M116,M7,M116,M7,18,42.9%,12.7%,Continuous Corridor,Same Direction,Concurrent (24/7),48.4,Overlapping,Co-running Corridor
+13,M3,M4,M4,M3,62,40.8%,24.6%,Continuous Corridor,Same Direction,Concurrent (24/7),73.5,Planned Pair,Planned Corridor Trunk (5th/Madison Ave)
+14,M15,M15+,M15+,M15,15,35.7%,10.1%,Segmented / Multi-Stretch,Same Direction,Concurrent (24/7),84.2,Planned Pair,Planned SBS/Local Pair (1st/2nd Ave)
+15,M1,M4,M1,M4,47,35.1%,19.7%,Continuous Corridor,Same Direction,Concurrent (24/7),77.5,Planned Pair,Planned Corridor Trunk (5th/Madison Ave)
