@@ -1,0 +1,163 @@
+route,day_type,threshold_p75
+M1,Special/Excluded,9.512799999999999
+M1,Typical Saturday,18.76
+M1,Typical Sunday,18.0
+M1,Typical Weekday,17.1944
+M10,Special/Excluded,7.07085
+M10,Typical Saturday,11.280775
+M10,Typical Sunday,9.73635
+M10,Typical Weekday,12.19525
+M101,Special/Excluded,12.638875
+M101,Typical Saturday,18.710475
+M101,Typical Sunday,16.182675
+M101,Typical Weekday,17.631125
+M102,Special/Excluded,12.093174999999999
+M102,Typical Saturday,17.762300000000003
+M102,Typical Sunday,15.5455
+M102,Typical Weekday,19.72405
+M103,Special/Excluded,12.41665
+M103,Typical Saturday,19.192875
+M103,Typical Sunday,17.313775
+M103,Typical Weekday,19.472225
+M104,Special/Excluded,9.309949999999999
+M104,Typical Saturday,11.820174999999999
+M104,Typical Sunday,12.397475
+M104,Typical Weekday,16.42145
+M106,Special/Excluded,7.466675
+M106,Typical Saturday,9.5
+M106,Typical Sunday,7.5
+M106,Typical Weekday,16.0
+M11,Special/Excluded,16.0
+M11,Typical Saturday,24.25175
+M11,Typical Sunday,23.337775
+M11,Typical Weekday,23.633699999999997
+M116,Special/Excluded,9.858525
+M116,Typical Saturday,14.25
+M116,Typical Sunday,12.2727
+M116,Typical Weekday,15.15
+M12,Special/Excluded,10.466675
+M12,Typical Saturday,16.700000000000003
+M12,Typical Sunday,13.4
+M12,Typical Weekday,15.4
+M125,Special/Excluded,6.9582999999999995
+M125,Typical Saturday,8.896025
+M125,Typical Sunday,8.0
+M125,Typical Weekday,11.151075
+M14A+,Special/Excluded,12.541675
+M14A+,Typical Saturday,18.4391
+M14A+,Typical Sunday,17.984375
+M14A+,Typical Weekday,21.309375
+M14D+,Special/Excluded,12.49805
+M14D+,Typical Saturday,17.9372
+M14D+,Typical Sunday,17.56745
+M14D+,Typical Weekday,20.8337
+M15,Special/Excluded,22.447924999999998
+M15,Typical Saturday,30.270075000000002
+M15,Typical Sunday,28.3077
+M15,Typical Weekday,27.479300000000002
+M15+,Special/Excluded,27.197499999999998
+M15+,Typical Saturday,35.752700000000004
+M15+,Typical Sunday,36.03985
+M15+,Typical Weekday,35.960525000000004
+M2,Special/Excluded,9.936675
+M2,Typical Saturday,14.86365
+M2,Typical Sunday,13.2514
+M2,Typical Weekday,15.064
+M20,Special/Excluded,5.75
+M20,Typical Saturday,8.0769
+M20,Typical Sunday,7.75
+M20,Typical Weekday,9.0
+M21,Special/Excluded,7.6
+M21,Typical Saturday,11.75
+M21,Typical Sunday,11.375
+M21,Typical Weekday,10.7
+M22,Special/Excluded,6.75
+M22,Typical Saturday,9.1429
+M22,Typical Sunday,7.0
+M22,Typical Weekday,9.6667
+M23+,Special/Excluded,11.97645
+M23+,Typical Saturday,21.493575
+M23+,Typical Sunday,17.6875
+M23+,Typical Weekday,23.39615
+M3,Special/Excluded,12.9375
+M3,Typical Saturday,18.795499999999997
+M3,Typical Sunday,16.4828
+M3,Typical Weekday,19.4839
+M31,Special/Excluded,16.415824999999998
+M31,Typical Saturday,20.1389
+M31,Typical Sunday,19.803125
+M31,Typical Weekday,25.968725
+M34+,Special/Excluded,15.5625
+M34+,Typical Saturday,20.35
+M34+,Typical Sunday,22.0625
+M34+,Typical Weekday,24.819525
+M34A+,Special/Excluded,15.79165
+M34A+,Typical Saturday,20.0
+M34A+,Typical Sunday,19.14585
+M34A+,Typical Weekday,24.2404
+M35,Special/Excluded,0.3333
+M35,Typical Saturday,1.5857
+M35,Typical Sunday,1.1716000000000002
+M35,Typical Weekday,0.8
+M4,Special/Excluded,14.985625
+M4,Typical Saturday,20.475025
+M4,Typical Sunday,19.28335
+M4,Typical Weekday,19.390700000000002
+M42,Special/Excluded,13.59495
+M42,Typical Saturday,16.095950000000002
+M42,Typical Sunday,14.7122
+M42,Typical Weekday,19.4737
+M5,Special/Excluded,9.3529
+M5,Typical Saturday,12.6667
+M5,Typical Sunday,12.56385
+M5,Typical Weekday,14.64855
+M50,Special/Excluded,8.1875
+M50,Typical Saturday,14.75
+M50,Typical Sunday,13.0
+M50,Typical Weekday,13.5
+M55,Special/Excluded,5.5333
+M55,Typical Saturday,8.800699999999999
+M55,Typical Sunday,8.8462
+M55,Typical Weekday,8.0
+M57,Special/Excluded,14.5333
+M57,Typical Saturday,20.0625
+M57,Typical Sunday,17.24305
+M57,Typical Weekday,23.4737
+M60+,Special/Excluded,11.883775
+M60+,Typical Saturday,16.125
+M60+,Typical Sunday,14.7976
+M60+,Typical Weekday,18.960700000000003
+M66,Special/Excluded,10.369025
+M66,Typical Saturday,14.3125
+M66,Typical Sunday,13.2143
+M66,Typical Weekday,18.1765
+M7,Special/Excluded,11.014275
+M7,Typical Saturday,17.5587
+M7,Typical Sunday,15.63355
+M7,Typical Weekday,18.801299999999998
+M72,Special/Excluded,10.703125
+M72,Typical Saturday,12.132200000000001
+M72,Typical Sunday,13.65625
+M72,Typical Weekday,17.0
+M79+,Special/Excluded,12.536775
+M79+,Typical Saturday,19.94
+M79+,Typical Sunday,18.0
+M79+,Typical Weekday,20.3226
+M8,Special/Excluded,6.25
+M8,Typical Saturday,9.75
+M8,Typical Sunday,9.25
+M8,Typical Weekday,8.3333
+M86+,Special/Excluded,18.1899
+M86+,Typical Saturday,24.6071
+M86+,Typical Sunday,24.875
+M86+,Typical Weekday,30.0
+M9,Special/Excluded,11.805575
+M9,Typical Saturday,15.694225
+M9,Typical Sunday,15.36665
+M9,Typical Weekday,16.7778
+M96,Special/Excluded,13.8125
+M96,Typical Saturday,18.0
+M96,Typical Sunday,17.130975
+M96,Typical Weekday,20.3864
+M98,Special/Excluded,7.123725
+M98,Typical Weekday,17.8571
