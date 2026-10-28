@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# Node / React
+node_modules/
+dist/
+build/
+.npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment & Credentials
+.env
+.env.local
+*.log
+
+# Large Datasets / Processed Artifacts (Optional / Raw data)
+# Note: Keep repo clean
+*.duckdb
+*.duckdb.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing and generated files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/
+
+# Environment variables
+.env.*
+!.env.example
+
+# Temporary files
+*.tmp
+
+# Large GTFS source datasets
+data/google_transit/
+data/mdb-389-202609160157/
+
+# Generated processed datasets
+data/processed/
+
+# Local model artifacts
+models/*.joblib

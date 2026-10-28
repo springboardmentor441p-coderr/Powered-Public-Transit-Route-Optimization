@@ -1,0 +1,97 @@
+{
+  "workspace": "C:\\Users\\LENOVO\\OneDrive\\RouteRanker",
+  "files": {
+    "ridership_csv": {
+      "filename": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261028.csv",
+      "path": "data\\CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261028.csv",
+      "size_bytes": 33731688,
+      "sha256": "6a999ea344084036310a779886bc6a72de6bad24cbb696e90822c83a337e608a"
+    }
+  },
+  "gtfs_snapshots": {
+    "google_transit": {
+      "agency.txt": {
+        "size_bytes": 221,
+        "sha256": "cbcdf0fa2981959f2eda970a5d520a0413a30a39be52a9d67b28ebefd26bb30f"
+      },
+      "calendar.txt": {
+        "size_bytes": 5085,
+        "sha256": "8303b79748d0d4d9d09594abe4aa057573de3855070c6d439e9e281c3f8f9dfa"
+      },
+      "calendar_dates.txt": {
+        "size_bytes": 1605,
+        "sha256": "395c5f58183d6e93e967155eecad96dbc33a38bf5b697137bef95ab4c090db96"
+      },
+      "frequencies.txt": {
+        "size_bytes": 42,
+        "sha256": "5ba50d0c3af49afac0084c1e69c2b9019b6f0dd57f454cd4669f232e35eefab3"
+      },
+      "routes.txt": {
+        "size_bytes": 10851,
+        "sha256": "39a63dec2f83fff7dea65ee507da19ce9150c44468681c0b60b934f201b0b75c"
+      },
+      "shapes.txt": {
+        "size_bytes": 54423937,
+        "sha256": "f8716544c54874d89c96db5edf0558efe626e92a55cf8ce6f187575a872e3907"
+      },
+      "stop_times.txt": {
+        "size_bytes": 367361926,
+        "sha256": "4a436b9e11ca814f87153db1477d98ee020f177316395c0ca05a7ffdd516d8d1"
+      },
+      "stops.txt": {
+        "size_bytes": 1281406,
+        "sha256": "dee19f9d31a7ce1896d044ef8eda3683bede7309880ef8ef01f46f5021fe4928"
+      },
+      "transfers.txt": {
+        "size_bytes": 2334,
+        "sha256": "2de6f47ab836c7ac0209b643cc303f5c81a50b387c8ec10edbc182afa511307d"
+      },
+      "trips.txt": {
+        "size_bytes": 6182916,
+        "sha256": "291681a2d47ae2915528a0490115b3e20ed2484c4214ccd789b5343814adc091"
+      }
+    },
+    "mdb-389-202609160157": {
+      "agency.txt": {
+        "size_bytes": 221,
+        "sha256": "cbcdf0fa2981959f2eda970a5d520a0413a30a39be52a9d67b28ebefd26bb30f"
+      },
+      "calendar.txt": {
+        "size_bytes": 5085,
+        "sha256": "8303b79748d0d4d9d09594abe4aa057573de3855070c6d439e9e281c3f8f9dfa"
+      },
+      "calendar_dates.txt": {
+        "size_bytes": 1605,
+        "sha256": "395c5f58183d6e93e967155eecad96dbc33a38bf5b697137bef95ab4c090db96"
+      },
+      "frequencies.txt": {
+        "size_bytes": 42,
+        "sha256": "5ba50d0c3af49afac0084c1e69c2b9019b6f0dd57f454cd4669f232e35eefab3"
+      },
+      "routes.txt": {
+        "size_bytes": 10851,
+        "sha256": "39a63dec2f83fff7dea65ee507da19ce9150c44468681c0b60b934f201b0b75c"
+      },
+      "shapes.txt": {
+        "size_bytes": 54423937,
+        "sha256": "f8716544c54874d89c96db5edf0558efe626e92a55cf8ce6f187575a872e3907"
+      },
+      "stop_times.txt": {
+        "size_bytes": 367361926,
+        "sha256": "4a436b9e11ca814f87153db1477d98ee020f177316395c0ca05a7ffdd516d8d1"
+      },
+      "stops.txt": {
+        "size_bytes": 1281406,
+        "sha256": "dee19f9d31a7ce1896d044ef8eda3683bede7309880ef8ef01f46f5021fe4928"
+      },
+      "transfers.txt": {
+        "size_bytes": 2334,
+        "sha256": "2de6f47ab836c7ac0209b643cc303f5c81a50b387c8ec10edbc182afa511307d"
+      },
+      "trips.txt": {
+        "size_bytes": 6182916,
+        "sha256": "291681a2d47ae2915528a0490115b3e20ed2484c4214ccd789b5343814adc091"
+      }
+    }
+  }
+}
