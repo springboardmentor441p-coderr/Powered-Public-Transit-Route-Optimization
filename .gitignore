@@ -1,0 +1,30 @@
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+data/raw/
+data/processed/
+data/app/
+tmp/
+.tools/
+*.log
+node_modules/
+frontend/dist/
+.env
+playwright-artifacts/
+handoff/
+
+# Local notes, supplied documents and generated analysis evidence.
+/AGENTS.md
+/START_HERE.md
+/docs/
+/journal/
+/reports/
+/.vscode/
+*.docx
+*.pdf
+
+# Private handoff and document-generation helpers.
+/scripts/prepare_dataset_handoff.py
+/scripts/build_dataset_links_document.py
+/scripts/build_week1_deliverables.py
