@@ -1,4 +1,4 @@
-"""Week 1 only: inventory immutable inputs, load GTFS and inspect original records.
+"""Inventory immutable inputs, load GTFS and inspect original records.
 
 No cleaning, model features, clustering, training, predictions, scenarios or application services.
 """
@@ -137,10 +137,10 @@ def run():
     sample_summary={'rows':len(sample),'duplicate_full_rows':int(sample.duplicated().sum()),'missing_values':sample.isna().sum().astype(int).to_dict(),'scope':'Bounded 10,000-row sample only, not an audit of every original fare-category row.'}
     gtfs=[inspect_gtfs(path) for path in sorted((RAW/'gtfs').glob('*/*.zip'))]
     pd.DataFrame([{'feed':q['feed'],**q['table_counts'],'routes_referenced_by_trips':q['routes_referenced_by_trips'],'calendar_start':q['calendar_start'],'calendar_end':q['calendar_end']} for q in gtfs]).to_csv(REPORT/'gtfs_inventory.csv',index=False)
-    result={'inspected_utc':datetime.now(timezone.utc).isoformat(),'active_stage':'Week 1 only','verified_source_receipts':len(sources),'gtfs_snapshots':len(gtfs),'current_gtfs_snapshots':len(list((RAW/'gtfs/current').glob('*.zip'))),'historical_gtfs_snapshots':len(list((RAW/'gtfs/archive').glob('*.zip'))),
+    result={'inspected_utc':datetime.now(timezone.utc).isoformat(),'active_stage':'Source inspection','verified_source_receipts':len(sources),'gtfs_snapshots':len(gtfs),'current_gtfs_snapshots':len(list((RAW/'gtfs/current').glob('*.zip'))),'historical_gtfs_snapshots':len(list((RAW/'gtfs/archive').glob('*.zip'))),
         'hourly_source':hourly,'daily_source':daily,'bounded_raw_sample':sample_summary,'gtfs':gtfs,
-        'completion':'Collection, loading and initial inspection completed for the user-approved New York adaptation. Original Lepton/23 Indian cities scope not fulfilled.',
-        'deferred':'Cleaning/features, EDA, training preprocessing, models, inference, scenarios, API/database implementation and Streamlit dashboard are not active Week 1 achievements.'}
+        'completion':'Collection, loading and initial inspection completed for the selected New York sources.',
+        'deferred':'Downstream cleaning, feature engineering and EDA are documented in separate notebooks; modelling and application development are outside this inspection module.'}
     write_json(REPORT/'inspection_summary.json',result)
     return result
 

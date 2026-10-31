@@ -34,7 +34,7 @@ def download(url, path, kind):
         raise ValueError(f'Unreceipted file exists; inspect before replacing: {path}')
     for attempt in range(3):
         try:
-            req = urllib.request.Request(url, headers={'User-Agent': 'RouteRanker internship reproducible research'})
+            req = urllib.request.Request(url, headers={'User-Agent': 'RouteRanker reproducible research'})
             with urllib.request.urlopen(req, timeout=120) as response:
                 body = response.read(150 * 1024 * 1024 + 1)
                 final_url = response.url

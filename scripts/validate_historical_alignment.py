@@ -158,7 +158,7 @@ def write_report(summary):
         last_date=("service_date", "max"))
     per_route.reset_index().to_csv(OUT / "eligible_coverage_by_route.csv", index=False)
     text = ["# Historical Manhattan alignment validation", "",
-            f"Validated: {summary['validated_utc']}. User-authorized extension before feature engineering.", "",
+            f"Validated: {summary['validated_utc']}. Historical schedule and route/date compatibility audit.", "",
             "## Results", "",
             f"- {summary['sources_verified']} input files verified against original SHA-256 receipts; all five GTFS ZIP CRC checks passed.",
             f"- {summary['raw_ridership_rows']:,} route/payment-date observations over {summary['raw_ridership_dates']} dates in the full demand collection.",

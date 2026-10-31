@@ -1,4 +1,4 @@
-"""Regression checks for the mentor's historical alignment requirements."""
+"""Regression checks for historical schedule selection and route/date alignment."""
 
 from pathlib import Path
 import sys

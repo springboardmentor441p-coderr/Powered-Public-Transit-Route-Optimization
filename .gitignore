@@ -14,7 +14,7 @@ frontend/dist/
 playwright-artifacts/
 handoff/
 
-# Local notes, supplied documents and generated analysis evidence.
+# Local resources and generated artifacts.
 /AGENTS.md
 /START_HERE.md
 /docs/
@@ -24,7 +24,7 @@ handoff/
 *.docx
 *.pdf
 
-# Private handoff and document-generation helpers.
+# Local export helpers.
 /scripts/prepare_dataset_handoff.py
 /scripts/build_dataset_links_document.py
 /scripts/build_week1_deliverables.py
