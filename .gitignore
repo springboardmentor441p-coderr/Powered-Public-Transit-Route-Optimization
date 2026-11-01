@@ -1,0 +1,12 @@
+# Python virtual environment
+.venv/
+__pycache__/
+*.pyc
+
+# Local Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Data files (Do not push heavy GTFS ZIPs or raw CSVs to GitHub)
+data/raw/
+data/processed/
+backend/models/*.pkl
