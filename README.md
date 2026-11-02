@@ -66,15 +66,20 @@ training stops if invalid or conflicting records are found.
 
 ## Latest Colab training run
 
-The first Colab run and fitted artifact are saved in this repository. Its
-**rolling one-step retrospective** HistGradientBoosting score was **341.6 MAE**,
-**591.4 RMSE**, and **6.87% WAPE** on the 2026-05-01 through 2026-07-31 test
-window. The past-four-same-weekdays baseline scored 382.8 MAE and 7.70% WAPE
-on those dates. Each test-day prediction could use actual rides from earlier
-test days, so these scores do not measure a single forecast issued before May.
-The updated Colab notebook now also calculates a recursive fixed-origin
-forecast from 2026-04-30 without feeding in actual test-period rides. Rerun
-that notebook to generate and save those new metrics.
+The latest Colab report and fitted artifact are saved in this repository. The
+selected HistGradientBoosting model's **fixed-origin recursive** forecast,
+issued on 2026-04-30 for 2026-05-01 through 2026-07-31, scored **466.9 MAE**,
+**748.6 RMSE**, and **9.39% WAPE**. It scored all 10,608 observed test rows.
+The past-four-same-weekdays baseline scored 479.5 MAE and 9.64% WAPE on the
+same rows, so the model improved MAE and WAPE by about **2.6%**. This is a
+modest improvement and should be reported as such.
+
+For comparison, the rolling one-step retrospective score was 341.6 MAE and
+6.87% WAPE; it is easier because each test-day prediction could use actual
+rides from earlier test days. The fixed-origin score is the more relevant
+result for a forecast issued before the test period. Its day-type feature uses
+CTA's reported daytype as known calendar metadata; verify an independent
+calendar source before claiming operational forecasting.
 
 See [model_metrics.json](outputs/reports/model_metrics.json) for route/day-type
 breakdowns, split row counts, fallbacks, and the source CSV fingerprint. The
@@ -82,8 +87,7 @@ trained artifact is [cta_ridership.joblib](models/cta_ridership.joblib). The
 source CSV itself is not stored here, so retain the exact input file whose
 SHA-256 appears in the report when reproducing this run. Metrics are
 retrospective; CTA publication timing for the lag observations remains
-unverified. The report currently in the repository predates the fixed-origin
-evaluation.
+unverified.
 
 ## Structure
 
