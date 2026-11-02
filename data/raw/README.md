@@ -15,3 +15,8 @@ Counts may contain thousands separators. Exact duplicate observations are
 deduplicated; conflicting route/date rows and malformed values stop training
 for investigation. Missing route/date rows remain missing and true zero rides
 remain valid observations. The CSV is intentionally not committed.
+
+Historical GTFS archive paths and expected SHA-256 values are tracked in
+gtfs_archive_manifest.csv. Keep each downloaded ZIP under its own
+data/raw/gtfs/<archive_id>/original.zip directory; the ZIPs are excluded from
+Git.

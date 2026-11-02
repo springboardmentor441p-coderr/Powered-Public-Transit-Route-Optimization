@@ -98,9 +98,43 @@ models/         Saved model artifacts
 outputs/reports/ Evaluation metrics
 ```
 
-Schedule-aware features, GTFS archive matching, route clustering, ranking,
-API, and dashboard remain later project work. Do not interpret route-level
-boardings as crowding or a causal measure of service quality.
+Route clustering, review ranking, API, and dashboard remain later project
+work. Do not interpret route-level boardings as crowding or a causal measure
+of service quality.
+
+## Historical GTFS service import
+
+The eight dated archive IDs and SHA-256 values from the intern guide are listed
+in [gtfs_archive_manifest.csv](data/raw/gtfs_archive_manifest.csv). Download
+each matching ZIP and place it at the path in that manifest, keeping versions
+in separate directories. The ZIPs are intentionally excluded from Git.
+
+With the CTA ridership CSV at its documented path, run:
+
+    python -m src.gtfs_service
+
+The importer validates each archive hash, filters GTFS bus routes
+(route_type=3), applies weekly calendars and date exceptions, and selects one
+feed globally per service date (latest retrieval date on or before that date).
+It counts active scheduled trips and calculates trip-hours only when every
+counted trip has valid first-departure/last-arrival times. Frequency-based
+templates are rejected explicitly if present. Exact route/date demand and
+service values are written to
+data/processed/cta_route_date_demand_service.csv; unmatched rows remain
+visible with a match_status. An import audit is written to
+outputs/reports/gtfs_service_import.json.
+
+Then compare demand-only with service-aware models on the same matched rows:
+
+    python -m src.compare_service_models
+
+The comparison uses the guide's matched-date partitions (train through
+2026-03-31, validation through 2026-05-31, test 2026-06-01 through 2026-07-31)
+and writes outputs/reports/service_model_comparison.json. It reports matched
+coverage, errors by day type and route, seasonal baselines, service feature
+missingness, and the schedule snapshots used. This comparison is retrospective:
+the schedule snapshot is selected as-of each service date, so it does not claim
+to represent one forecast issued before the full test period.
 
 ## Branch workflow
 
