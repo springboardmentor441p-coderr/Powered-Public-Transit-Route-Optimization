@@ -1,0 +1,101 @@
+{
+  "task": "daily route ridership regression",
+  "target": "measured rides",
+  "evaluation_note": "Retrospective only; publication availability of lag observations is unverified.",
+  "source_sha256": "d9675570e50a1b3d1fe7142ea9b10ba76099c1312ab0c227745ac57205eb5c04",
+  "selected_model": "hist_gradient_boosting",
+  "splits": {
+    "train": {
+      "start": "2024-08-01",
+      "end": "2026-01-31",
+      "rows": 63143
+    },
+    "validation": {
+      "start": "2026-02-01",
+      "end": "2026-04-30",
+      "rows": 10246
+    },
+    "test": {
+      "start": "2026-05-01",
+      "end": "2026-07-31",
+      "rows": 10608
+    }
+  },
+  "validation_model_metrics": {
+    "pooled_ridge": {
+      "mae": 400.69318805881255,
+      "rmse": 600.0450229322773,
+      "wape": 0.08158547794944035
+    },
+    "hist_gradient_boosting": {
+      "mae": 321.81795223918135,
+      "rmse": 515.9756518626159,
+      "wape": 0.06552562466395123
+    },
+    "random_forest": {
+      "mae": 322.93242240815766,
+      "rmse": 523.0091641617747,
+      "wape": 0.06575254287495656
+    }
+  },
+  "test_model_metrics": {
+    "mae": 341.6191313889074,
+    "rmse": 591.429939590182,
+    "wape": 0.06867703261908989
+  },
+  "test_seasonal_baselines": {
+    "last_week_same_day": {
+      "mae": 459.99095022624437,
+      "rmse": 819.4497291458977,
+      "wape": 0.09247378320042095
+    },
+    "past_four_same_weekdays": {
+      "mae": 382.84900546757166,
+      "rmse": 702.5644044994385,
+      "wape": 0.0769656357645557
+    }
+  },
+  "test_metrics_by_daytype": {
+    "A": {
+      "mae": 423.48025965692943,
+      "rmse": 817.645239369164,
+      "wape": 0.08290289208030814
+    },
+    "U": {
+      "mae": 429.6121194562879,
+      "rmse": 730.4746592742086,
+      "wape": 0.09881465597943746
+    },
+    "W": {
+      "mae": 314.62209293056014,
+      "rmse": 520.4442002632388,
+      "wape": 0.062212479736407186
+    }
+  },
+  "test_metrics_by_demand_quartile": {
+    "(0.999, 1143.75]": {
+      "mae": 101.33825977325033,
+      "rmse": 244.81405258765864,
+      "wape": 0.17460977578965142
+    },
+    "(1143.75, 3371.0]": {
+      "mae": 206.0463612299324,
+      "rmse": 306.54215955745764,
+      "wape": 0.09834718690710867
+    },
+    "(3371.0, 7818.0]": {
+      "mae": 405.29363074771385,
+      "rmse": 587.8870995060821,
+      "wape": 0.07520484459190738
+    },
+    "(7818.0, 21586.0]": {
+      "mae": 654.0423323419238,
+      "rmse": 948.705999761551,
+      "wape": 0.05525220268359814
+    }
+  },
+  "fallbacks": {
+    "model": "training median imputation with missing indicators",
+    "baselines": "lag 7, then lag 1, then training target median"
+  }
+}

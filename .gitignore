@@ -1,0 +1,9 @@
+.DS_Store
+.venv/
+__pycache__/
+*.py[cod]
+
+# Keep downloaded source data out of Git.
+data/raw/*.csv
+data/raw/*.zip
+data/raw/gtfs/
