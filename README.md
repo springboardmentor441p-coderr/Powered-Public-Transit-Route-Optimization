@@ -225,6 +225,20 @@ regressions against the seasonal baseline are routes **47, 54, 74, 82, and
 counts are descriptive and do not account for the routes' different ridership
 volumes. Full route and day-type breakdowns are in the comparison JSON.
 
+The Colab comparison cell also runs a **walk-forward hybrid development
+analysis**. It refits each model monthly, produces rolling one-day-ahead
+predictions, and selects among the two ML models and seasonal baselines for
+each route/day type using only error history from completed earlier folds.
+The policy falls back to the past-four-same-weekdays baseline when there is
+not enough route/day-type history. This is a different, easier prediction
+setting than the recursive fixed-origin August forecast: actual rides from
+previous days are available as lag features. The hybrid results help develop
+a daily updated strategy; they do not establish a long-range fixed-origin
+forecast. August was already inspected during project development, so these
+backtests are development evidence, not a fresh final holdout. CTA's exact
+intra-day publication times for rides and schedule archives also remain
+unverified.
+
 ## Branch workflow
 
 Project work belongs on `users/bidhubhusan`; do not commit or push directly to

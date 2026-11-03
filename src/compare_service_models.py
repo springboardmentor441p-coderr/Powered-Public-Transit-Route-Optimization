@@ -263,6 +263,200 @@ def _fixed_origin_results(
     }
 
 
+def walk_forward_hybrid_development(
+    ridership_path: str | Path,
+    service_path: str | Path,
+    min_route_daytype_rows: int = 42,
+    min_daytype_rows: int = 80,
+) -> dict:
+    """Prequentially compare model/baseline selection on monthly rolling folds.
+
+    Model fitting is refreshed monthly. Test predictions are rolling one-step
+    predictions with earlier observed rides available as lags. Hybrid choices
+    for each fold use errors from completed earlier folds only.
+    """
+    demand = load_bus_ridership(ridership_path)
+    featured = make_route_features(demand)
+    service = pd.read_csv(service_path, dtype={"route": "string", "source_snapshot": "string"})
+    required = {"route", "date", *SERVICE_FEATURES, "match_status", "archive_available_from"}
+    if not required.issubset(service.columns):
+        raise ValueError(f"Service table must contain {sorted(required)}")
+    service["date"] = pd.to_datetime(service["date"], errors="coerce").dt.normalize()
+    service = service.loc[service["match_status"].eq("matched")].copy()
+    service["scheduled_trips"] = pd.to_numeric(service["scheduled_trips"], errors="coerce")
+    service["scheduled_service_hours"] = pd.to_numeric(service["scheduled_service_hours"], errors="coerce")
+    aligned = featured.merge(
+        service[["route", "date", *SERVICE_FEATURES, "archive_available_from"]],
+        on=["route", "date"], how="inner", validate="one_to_one",
+    )
+    available = pd.to_datetime(aligned["archive_available_from"], errors="coerce")
+    if available.isna().any() or (available.dt.normalize() > aligned["date"]).any():
+        raise ValueError("A historical service snapshot was unavailable on its service date")
+
+    windows = [
+        ("2026-02-28", "2026-03-01", "2026-03-31"),
+        ("2026-03-31", "2026-04-01", "2026-04-30"),
+        ("2026-04-30", "2026-05-01", "2026-05-31"),
+        ("2026-05-31", "2026-06-01", "2026-06-30"),
+        ("2026-06-30", "2026-07-01", "2026-07-31"),
+        ("2026-07-31", "2026-08-01", "2026-08-31"),
+    ]
+    candidates = ["past_four_same_weekdays", "last_week_same_day", "demand_only", "service_aware"]
+    model_features = {
+        "demand_only": FEATURE_COLUMNS,
+        "service_aware": [*FEATURE_COLUMNS, *SERVICE_FEATURES],
+    }
+    prior_errors: list[dict] = []
+    all_predictions: list[dict] = []
+    folds = []
+    policy_counts: dict[str, dict[str, int]] = {}
+
+    for origin_text, start_text, end_text in windows:
+        origin, test_start, test_end = map(pd.Timestamp, (origin_text, start_text, end_text))
+        fit_rows = aligned.loc[aligned["date"].le(origin)]
+        test = aligned.loc[aligned["date"].between(test_start, test_end)].copy()
+        if fit_rows.empty or test.empty:
+            continue
+        fallback = float(fit_rows["rides"].median())
+        predictions = {}
+        for name in ("demand_only", "service_aware"):
+            model = _pipeline(model_features[name])
+            model.fit(fit_rows[model_features[name]], fit_rows["rides"])
+            predictions[name] = np.maximum(model.predict(test[model_features[name]]), 0)
+        seasonal = test[[f"lag_{days}" for days in SEASONAL_LAGS]]
+        past_four = seasonal.mean(axis=1).where(test["seasonal_lag_count"] >= 2)
+        predictions["past_four_same_weekdays"] = np.maximum(
+            past_four.fillna(test["lag_7"]).fillna(test["lag_1"]).fillna(fallback).to_numpy(dtype=float), 0
+        )
+        predictions["last_week_same_day"] = np.maximum(
+            test["lag_7"].fillna(test["lag_1"]).fillna(fallback).to_numpy(dtype=float), 0
+        )
+
+        history = pd.DataFrame(prior_errors)
+        error_columns = [f"abs_error_{candidate}" for candidate in candidates]
+        if not history.empty:
+            route_day_means = history.groupby(["route", "daytype"])[error_columns].mean()
+            route_day_counts = history.groupby(["route", "daytype"]).size()
+            day_means = history.groupby("daytype")[error_columns].mean()
+            day_counts = history.groupby("daytype").size()
+        else:
+            route_day_means = pd.DataFrame()
+            route_day_counts = pd.Series(dtype=int)
+            day_means = pd.DataFrame()
+            day_counts = pd.Series(dtype=int)
+        hybrid_values, chosen_models, choice_sources = [], [], []
+        for row in test[["route", "daytype"]].itertuples(index=False):
+            route, daytype = str(row.route), str(row.daytype)
+            route_key = (route, daytype)
+            if route_key in route_day_counts.index and route_day_counts[route_key] >= min_route_daytype_rows:
+                historical_mae = route_day_means.loc[route_key].to_dict()
+                source = "route_daytype"
+            elif daytype in day_counts.index and day_counts[daytype] >= min_daytype_rows:
+                historical_mae = day_means.loc[daytype].to_dict()
+                source = "daytype"
+            else:
+                historical_mae, source = None, "cold_start_baseline"
+            if historical_mae is None:
+                selected = "past_four_same_weekdays"
+            else:
+                historical_mae = {
+                    column.removeprefix("abs_error_"): float(value)
+                    for column, value in historical_mae.items()
+                }
+                selected = min(candidates, key=lambda name: historical_mae[name])
+            row_index = len(hybrid_values)
+            hybrid_values.append(float(predictions[selected][row_index]))
+            chosen_models.append(selected)
+            choice_sources.append(source)
+            policy_counts.setdefault(source, {})[selected] = (
+                policy_counts.setdefault(source, {}).get(selected, 0) + 1
+            )
+
+        fold_frame = test[["route", "date", "daytype", "rides"]].copy()
+        fold_frame["route"] = fold_frame["route"].astype(str)
+        for name, values in predictions.items():
+            fold_frame[f"predicted_{name}"] = values
+        fold_frame["predicted_hybrid"] = hybrid_values
+        fold_frame["hybrid_choice"] = chosen_models
+        fold_frame["policy_source"] = choice_sources
+        all_predictions.extend(fold_frame.to_dict("records"))
+
+        fold_metrics = {
+            name: _score(fold_frame["rides"], fold_frame[f"predicted_{name}"].to_numpy())
+            for name in [*candidates, "hybrid"]
+        }
+        folds.append({
+            "forecast_origin": origin_text,
+            "forecast_window": [start_text, end_text],
+            "matched_rows": int(len(fold_frame)),
+            "demand_rows": int(demand["date"].between(test_start, test_end).sum()),
+            "matched_coverage_pct": float(
+                100 * len(fold_frame) / demand["date"].between(test_start, test_end).sum()
+            ) if demand["date"].between(test_start, test_end).sum() else None,
+            "metrics": fold_metrics,
+            "hybrid_choice_counts": fold_frame["hybrid_choice"].value_counts().to_dict(),
+        })
+        # Only after scoring the fold do its outcomes become policy history.
+        for row in fold_frame.itertuples(index=False):
+            record = {"route": str(row.route), "daytype": str(row.daytype)}
+            for candidate in candidates:
+                record[f"abs_error_{candidate}"] = abs(
+                    float(row.rides) - float(getattr(row, f"predicted_{candidate}"))
+                )
+            prior_errors.append(record)
+
+    scored = pd.DataFrame(all_predictions)
+    if scored.empty:
+        raise ValueError("No walk-forward folds have matched train and test rows")
+    total_demand_rows = int(sum(
+        demand["date"].between(pd.Timestamp(start), pd.Timestamp(end)).sum()
+        for _, start, end in windows
+    ))
+    metric_names = [*candidates, "hybrid"]
+    overall = {
+        name: _score(scored["rides"], scored[f"predicted_{name}"].to_numpy())
+        for name in metric_names
+    }
+    by_daytype = {
+        str(daytype): {
+            name: _score(group["rides"], group[f"predicted_{name}"].to_numpy())
+            for name in metric_names
+        }
+        for daytype, group in scored.groupby("daytype")
+    }
+    by_route = {
+        str(route): {
+            name: {
+                **_score(group["rides"], group[f"predicted_{name}"].to_numpy()),
+                "scored_rows": int(len(group)),
+            }
+            for name in metric_names
+        }
+        for route, group in scored.groupby("route")
+    }
+    return {
+        "evaluation_type": (
+            "Monthly-refit, daily rolling one-step development folds. Hybrid policy is chosen from completed prior folds only; "
+            "test-day lags use observed earlier rides and schedule snapshots available by each service date. August was previously inspected."
+        ),
+        "policy": {
+            "candidates": candidates,
+            "route_daytype_min_history_rows": min_route_daytype_rows,
+            "daytype_min_history_rows": min_daytype_rows,
+            "fallback": "past_four_same_weekdays",
+            "policy_selection_uses_current_fold_outcomes": False,
+        },
+        "folds": folds,
+        "matched_rows": int(len(scored)),
+        "demand_rows": total_demand_rows,
+        "matched_coverage_pct": float(100 * len(scored) / total_demand_rows) if total_demand_rows else None,
+        "overall_metrics": overall,
+        "metrics_by_daytype": by_daytype,
+        "metrics_by_route": by_route,
+        "hybrid_choice_counts_by_policy_source": policy_counts,
+    }
+
+
 def compare(
     ridership_path: str | Path,
     service_path: str | Path,
