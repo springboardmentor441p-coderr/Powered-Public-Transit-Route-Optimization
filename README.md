@@ -108,6 +108,10 @@ The eight dated archive IDs and SHA-256 values from the intern guide are listed
 in [gtfs_archive_manifest.csv](data/raw/gtfs_archive_manifest.csv). Download
 each matching ZIP and place it at the path in that manifest, keeping versions
 in separate directories. The ZIPs are intentionally excluded from Git.
+If your browser automatically extracted a ZIP, the Colab notebook accepts the
+extracted folder in place of original.zip. In that case its archive SHA-256
+cannot be checked, so the import report records a fingerprint of the extracted
+GTFS tables and marks the ZIP hash as unverified.
 
 With the CTA ridership CSV at its documented path, run:
 

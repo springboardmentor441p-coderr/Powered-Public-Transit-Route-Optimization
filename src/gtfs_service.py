@@ -7,6 +7,7 @@ import io
 import json
 import zipfile
 from collections import defaultdict
+from contextlib import nullcontext
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -28,23 +29,49 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _member(archive: zipfile.ZipFile, filename: str) -> str:
-    matches = [name for name in archive.namelist() if Path(name).name == filename]
+def _member(archive: zipfile.ZipFile | Path, filename: str) -> str | Path:
+    if isinstance(archive, Path):
+        matches = [name for name in archive.rglob(filename) if name.name == filename]
+    else:
+        matches = [name for name in archive.namelist() if Path(name).name == filename]
     if len(matches) != 1:
-        raise ValueError(f"Expected exactly one {filename} in {archive.filename}; found {len(matches)}")
+        label = archive.filename if isinstance(archive, zipfile.ZipFile) else archive
+        raise ValueError(f"Expected exactly one {filename} in {label}; found {len(matches)}")
     return matches[0]
 
 
-def _rows(archive: zipfile.ZipFile, filename: str):
-    with archive.open(_member(archive, filename)) as binary:
+def _rows(archive: zipfile.ZipFile | Path, filename: str):
+    member = _member(archive, filename)
+    binary_file = archive.open(member) if isinstance(archive, zipfile.ZipFile) else member.open("rb")
+    with binary_file as binary:
         text = io.TextIOWrapper(binary, encoding="utf-8-sig", newline="")
         yield from csv.DictReader(text)
 
 
-def _optional_rows(archive: zipfile.ZipFile, filename: str):
-    if not any(Path(name).name == filename for name in archive.namelist()):
+def _optional_rows(archive: zipfile.ZipFile | Path, filename: str):
+    if isinstance(archive, Path):
+        present = any(archive.rglob(filename))
+    else:
+        present = any(Path(name).name == filename for name in archive.namelist())
+    if not present:
         return
     yield from _rows(archive, filename)
+
+
+def _directory_fingerprint(path: Path) -> str:
+    """Fingerprint important extracted table bytes, independent of folder order."""
+    digest = hashlib.sha256()
+    names = ("routes.txt", "trips.txt", "stop_times.txt", "calendar.txt", "calendar_dates.txt", "frequencies.txt")
+    for filename in names:
+        matches = sorted(path.rglob(filename))
+        if len(matches) > 1:
+            raise ValueError(f"Expected at most one extracted {filename} in {path}; found {len(matches)}")
+        if matches:
+            digest.update(filename.encode("utf-8"))
+            with matches[0].open("rb") as source:
+                for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                    digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _gtfs_date(value: str) -> date:
@@ -79,8 +106,8 @@ def _read_manifest(path: Path, base: Path) -> list[dict]:
     rows.sort(key=lambda row: row["retrieved_date_obj"])
     if len({row["retrieved_date_obj"] for row in rows}) != len(rows):
         raise ValueError("Archive retrieval dates must be unique")
-    if not rows or any(not row["zip_path_obj"].is_file() for row in rows):
-        missing = [str(row["zip_path_obj"]) for row in rows if not row["zip_path_obj"].is_file()]
+    if not rows or any(not row["zip_path_obj"].exists() for row in rows):
+        missing = [str(row["zip_path_obj"]) for row in rows if not row["zip_path_obj"].exists()]
         raise FileNotFoundError(f"Missing one or more GTFS archives: {missing}")
     return rows
 
@@ -88,14 +115,16 @@ def _read_manifest(path: Path, base: Path) -> list[dict]:
 def _load_snapshot(entry: dict) -> dict:
     """Read a ZIP and aggregate route/service trip counts and trip durations."""
     path = entry["zip_path_obj"]
-    archive_hash = _sha256(path)
+    is_archive = path.is_file()
+    archive_hash = _sha256(path) if is_archive else None
     expected_hash = str(entry["expected_sha256"]).strip().lower()
-    if expected_hash and archive_hash != expected_hash:
+    if is_archive and expected_hash and archive_hash != expected_hash:
         raise ValueError(
             f"SHA-256 mismatch for {entry['archive_id']}: expected {expected_hash}, got {archive_hash}"
         )
 
-    with zipfile.ZipFile(path) as archive:
+    source_context = zipfile.ZipFile(path) if is_archive else nullcontext(path)
+    with source_context as archive:
         routes = {}
         short_name_to_ids = defaultdict(set)
         for row in _rows(archive, "routes.txt"):
@@ -220,6 +249,9 @@ def _load_snapshot(entry: dict) -> dict:
         "calendars": calendars,
         "exceptions": exceptions,
         "archive_hash": archive_hash,
+        "source_hash": archive_hash or _directory_fingerprint(path),
+        "archive_hash_verified": bool(is_archive and (not expected_hash or archive_hash == expected_hash)),
+        "source_kind": "zip" if is_archive else "extracted_directory",
         "route_count": len(routes),
         "bus_trip_count": len(trip_ids),
         "duration_complete_trip_count": sum(value is not None for value in durations.values()),
@@ -309,7 +341,11 @@ def build_service_table(
         "date_range_processed": [start.isoformat(), end.isoformat()],
         "archive_versions": [
             {"archive_id": entry["archive_id"], "retrieved_date": entry["retrieved_date_obj"].isoformat(),
-             "sha256": entry["snapshot"]["archive_hash"], "bus_routes": entry["snapshot"]["route_count"],
+             "archive_sha256": entry["snapshot"]["archive_hash"],
+             "archive_sha256_verified": entry["snapshot"]["archive_hash_verified"],
+             "source_kind": entry["snapshot"]["source_kind"],
+             "source_fingerprint": entry["snapshot"]["source_hash"],
+             "bus_routes": entry["snapshot"]["route_count"],
              "bus_trip_templates": entry["snapshot"]["bus_trip_count"]}
             for entry in snapshots
         ],
