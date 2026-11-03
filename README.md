@@ -155,22 +155,32 @@ instead of actual test-period rides.
 
 ## Latest demand versus service comparison
 
-The Colab run matched **7,014 of 7,109** demand rows in the June-July test
-window (**98.66%** coverage). On those same rows, the demand-only model scored
-**384.4 MAE / 7.80% WAPE** and the service-aware model scored
-**382.3 MAE / 7.76% WAPE**. That is about a **0.5%** test improvement. On
-validation, the service-aware model's MAE was slightly worse (356.1 versus
-351.8). This is not convincing evidence yet that schedule features improve
-forecasts. Both models beat the past-four-same-weekdays test baseline
-(402.7 MAE / 8.17% WAPE).
+The matched rolling test covered **7,014 of 7,109** demand rows for June-July
+(**98.66%**). The service-aware model scored **382.3 MAE / 7.76% WAPE** versus
+**384.4 MAE / 7.80% WAPE** for demand-only, a modest 0.5% improvement. It was
+slightly worse on validation, so this does not establish a robust improvement.
+Both models beat the rolling past-four-same-weekdays baseline (402.7 MAE /
+8.17% WAPE).
 
-The outputs are saved in [service_model_comparison.json](outputs/reports/service_model_comparison.json),
+The fixed-origin simulation assumes a forecast origin of **2026-05-31** for
+June 1-July 31, uses ridership through May 31, and freezes the **2026-05-30**
+GTFS snapshot for the full horizon. It scored the same 7,014 rows. Demand-only
+scored **600.7 MAE / 12.19% WAPE**; service-aware scored **581.1 MAE /
+11.79% WAPE**, about 3.3% better. However, the recursive past-four-same-weekdays
+baseline was stronger at **552.4 MAE / 11.21% WAPE**. Schedule features helped
+relative to demand-only, but neither model beat this baseline in the harder
+fixed-origin setting.
+
+Ridership publication timing has not been verified, so availability of the
+May 31 boardings at that assumed origin remains an operational assumption.
+
+Full metrics and artifacts are in
+[service_model_comparison.json](outputs/reports/service_model_comparison.json),
 [gtfs_service_import.json](outputs/reports/gtfs_service_import.json),
 [cta_demand_only.joblib](models/cta_demand_only.joblib), and
-[cta_service_aware.joblib](models/cta_service_aware.joblib). The test uses
-date-selected schedule snapshots, including versions retrieved during the
-test window, and rolling one-step ridership lags. Treat it as a retrospective
-matched-date comparison, not a fixed-origin operational forecast.
+[cta_service_aware.joblib](models/cta_service_aware.joblib). Day type is treated
+as known calendar metadata; verify an independent calendar source before
+claiming operational forecasts.
 
 The eight feeds were uploaded as extracted directories, so the import report
 contains fingerprints of the GTFS table contents but marks original ZIP

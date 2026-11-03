@@ -4,7 +4,8 @@
   "target": "measured daily route boardings (rides)",
   "source_sha256": {
     "ridership": "fa687b55d4049c9330e8088c6b79947cabfc46e010d89e77f32d7abe46aba977",
-    "demand_service_table": "f06cf865545cea1e05936bf1ed4974a60826c399b6c6a8ad1beec16631b7e4f7"
+    "demand_service_table": "f06cf865545cea1e05936bf1ed4974a60826c399b6c6a8ad1beec16631b7e4f7",
+    "fixed_origin_schedule_table": "121f313b072d291e1a4d84ec2899e9ada52fe2837c74712a3b319d6590f1abba"
   },
   "partitions": {
     "train": {
@@ -364,5 +365,82 @@
       }
     }
   },
-  "interpretation": "The comparison measures association/predictive value on historically matched dates. It is not causal and does not establish an operational fixed-origin forecast."
+  "interpretation": "The comparison measures association/predictive value on historically matched dates. It is not causal and does not establish an operational fixed-origin forecast.",
+  "fixed_origin_evaluation": {
+    "forecast_origin": "2026-05-31",
+    "forecast_window": [
+      "2026-06-01",
+      "2026-07-31"
+    ],
+    "schedule_snapshot": "mdb-389-202605300003",
+    "schedule_available_from": "2026-05-30",
+    "test_observation_rows": 7109,
+    "scored_rows": 7014,
+    "coverage_pct": 98.66366577577719,
+    "models": {
+      "demand_only": {
+        "metrics": {
+          "mae": 600.6845881633255,
+          "rmse": 924.6933735880624,
+          "wape": 0.12188694939027953
+        },
+        "metrics_by_daytype": {
+          "A": {
+            "mae": 591.3397994479175,
+            "rmse": 970.5150521443079,
+            "wape": 0.11392854478472758
+          },
+          "U": {
+            "mae": 622.0964880126859,
+            "rmse": 985.4133097726235,
+            "wape": 0.14089816465766633
+          },
+          "W": {
+            "mae": 598.8864486674246,
+            "rmse": 909.2797413845375,
+            "wape": 0.12059439252621142
+          }
+        },
+        "scored_rows": 7014
+      },
+      "service_aware": {
+        "metrics": {
+          "mae": 581.0803210307243,
+          "rmse": 878.1921388960727,
+          "wape": 0.11790898098071685
+        },
+        "metrics_by_daytype": {
+          "A": {
+            "mae": 588.3971333348978,
+            "rmse": 958.1132033097219,
+            "wape": 0.11336160566045986
+          },
+          "U": {
+            "mae": 561.0250541410718,
+            "rmse": 876.6878787354365,
+            "wape": 0.12706614163337465
+          },
+          "W": {
+            "mae": 582.9580784326187,
+            "rmse": 867.0735964521549,
+            "wape": 0.11738698628639231
+          }
+        },
+        "scored_rows": 7014
+      }
+    },
+    "seasonal_baselines": {
+      "last_week_same_day": {
+        "mae": 782.5500427715997,
+        "rmse": 1222.0225420934996,
+        "wape": 0.15878988630340657
+      },
+      "past_four_same_weekdays": {
+        "mae": 552.3653818761643,
+        "rmse": 863.8374102558138,
+        "wape": 0.11208233517617164
+      }
+    },
+    "daytype_assumption": "CTA daytype is treated as known date/calendar metadata; confirm the operational calendar source"
+  }
 }
