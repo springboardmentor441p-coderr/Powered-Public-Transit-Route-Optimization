@@ -212,12 +212,18 @@ day type is read from the CTA ridership table as known calendar metadata.
 Treat this as a historical simulation rather than a confirmed operational
 forecast. The GTFS folders were extracted before upload, so original ZIP
 SHA-256 verification is unavailable; table-content fingerprints are recorded
-in the import report. The current report shows the service-aware model's
-largest day-type MAE on weekdays (`W`: 497.6), then Sunday/holiday (`U`:
-406.9) and Saturday (`A`: 363.8). These are model errors only; the saved
-results do not yet show seasonal-baseline error by day type or fixed-origin
-route comparisons. The updated Colab notebook now exports those diagnostics;
-rerun its comparison cell to populate the full route breakdown in the report.
+in the import report.
+
+The route/day-type diagnostic shows where the overall gap comes from. On
+weekdays (`W`), service-aware MAE is **497.6** versus **459.3** for the
+past-four-same-weekdays baseline. On Sunday/holiday (`U`), it is **406.9**
+versus **399.0**; on Saturday (`A`), **363.8** versus **366.3**, a small model
+advantage. Across routes, service-aware beats the seasonal baseline on **38 of
+125** routes, while it beats demand-only on **81 of 125**. The largest MAE
+regressions against the seasonal baseline are routes **47, 54, 74, 82, and
+94**; the largest gains are routes **9, 29, 53, 151, and 36**. These route
+counts are descriptive and do not account for the routes' different ridership
+volumes. Full route and day-type breakdowns are in the comparison JSON.
 
 ## Branch workflow
 
