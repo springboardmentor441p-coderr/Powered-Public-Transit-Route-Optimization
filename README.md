@@ -239,6 +239,19 @@ backtests are development evidence, not a fresh final holdout. CTA's exact
 intra-day publication times for rides and schedule archives also remain
 unverified.
 
+The completed six-fold walk-forward development run scored **20,899 of
+21,197** route-days (**98.59%** coverage). In the daily rolling setting,
+service-aware had the lowest overall error (**376.4 MAE / 7.51% WAPE**),
+followed by the hybrid (**387.3 MAE / 7.73% WAPE**) and past-four-same-weekdays
+baseline (**390.7 MAE / 7.79% WAPE**). The hybrid beat the seasonal baseline on
+53 of 125 routes, but it did not beat the service-aware model overall. By day
+type, service-aware led on weekdays and Sunday/holidays; demand-only had a
+slight edge on Saturdays. The adaptive route policy therefore has not shown
+enough aggregate gain to justify preferring it over service-aware for daily
+rolling predictions. This result does not overturn the fixed-origin August
+finding, where the seasonal baseline remained better for the full recursive
+horizon.
+
 ## Branch workflow
 
 Project work belongs on `users/bidhubhusan`; do not commit or push directly to
