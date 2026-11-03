@@ -117,8 +117,8 @@ With the CTA ridership CSV at its documented path, run:
 
     python -m src.gtfs_service
 
-For the fixed-origin schedule scenario, add the May 31 origin and June-July
-forecast window:
+For the earlier fixed-origin development scenario, add the May 31 origin and
+June-July forecast window:
 
     python -m src.gtfs_service --fixed-origin-date 2026-05-31 --fixed-start-date 2026-06-01 --fixed-end-date 2026-07-31
 
@@ -142,9 +142,11 @@ above:
 
     python -m src.compare_service_models --fixed-origin-service-data data/processed/cta_service_fixed_origin.csv --fixed-origin 2026-05-31
 
-The comparison uses the guide's matched-date partitions (train through
+The earlier comparison uses the guide's matched-date partitions (train through
 2026-03-31, validation through 2026-05-31, test 2026-06-01 through 2026-07-31)
-and writes outputs/reports/service_model_comparison.json. It reports matched
+and writes outputs/reports/service_model_comparison.json. Those June-July
+outcomes have now been examined and are development results, not an untouched
+final holdout. It reports matched
 coverage, errors by day type and route, seasonal baselines, service feature
 missingness, and the schedule snapshots used. This comparison is retrospective:
 the schedule snapshot is selected as-of each service date, so it does not claim
@@ -187,6 +189,23 @@ contains fingerprints of the GTFS table contents but marks original ZIP
 SHA-256 verification as false. Most unmatched ridership rows are from dates
 outside the archived schedule window; the test-period coverage figure above
 is restricted to the model's matched test window.
+
+## Final August holdout
+
+The Colab notebook `notebooks/cta_gtfs_service_colab.ipynb` now runs the next
+evaluation with August kept out of model fitting: train through 2026-03-31,
+use April-July as the development/validation period, refit through 2026-07-31,
+then score 2026-08-01 through 2026-08-31 once. The fixed-origin forecast is
+issued at the end of July and freezes `mdb-389-202607110020`, the latest
+provided schedule archive available by that origin. It recursively feeds
+predictions into later lag features and compares against the past-four-same-
+weekdays baseline. The notebook still prints retrospective August metrics as
+a secondary diagnostic; use the fixed-origin block as the primary result.
+
+This is the cleanest holdout available in the current data, but the model
+family and feature choices were selected using earlier dates, and day type is
+read from the CTA ridership table as known calendar metadata. Treat the result
+as a historical simulation rather than a confirmed operational forecast.
 
 ## Branch workflow
 
