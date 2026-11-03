@@ -19,6 +19,7 @@ from .data_loader import load_bus_ridership
 from .preprocessing import FEATURE_COLUMNS, make_route_features
 
 SERVICE_FEATURES = ["scheduled_trips", "scheduled_service_hours"]
+SEASONAL_LAGS = (7, 14, 21, 28)
 
 
 def _score(actual: pd.Series, predicted: np.ndarray) -> dict:
@@ -47,6 +48,169 @@ def _pipeline(features: list[str]) -> Pipeline:
     ])
 
 
+def _fixed_origin_results(
+    models: dict,
+    fit_rows: pd.DataFrame,
+    demand: pd.DataFrame,
+    fixed_service: pd.DataFrame,
+    origin: pd.Timestamp,
+    test_start: pd.Timestamp,
+    test_end: pd.Timestamp,
+) -> dict:
+    """Evaluate both models recursively with one schedule version and no test rides as lags."""
+    required = {"route", "date", *SERVICE_FEATURES, "source_snapshot", "archive_available_from"}
+    if not required.issubset(fixed_service.columns):
+        raise ValueError(f"Fixed-origin service table must contain {sorted(required)}")
+    fixed_service = fixed_service.copy()
+    fixed_service["date"] = pd.to_datetime(fixed_service["date"], errors="coerce").dt.normalize()
+    fixed_service = fixed_service.loc[
+        fixed_service["scheduled_trips"].notna()
+        & fixed_service["date"].between(test_start, test_end)
+    ].copy()
+    if fixed_service.empty:
+        raise ValueError("Fixed-origin schedule table has no service rows for the test window")
+    fixed_service["scheduled_trips"] = pd.to_numeric(fixed_service["scheduled_trips"], errors="coerce")
+    fixed_service["scheduled_service_hours"] = pd.to_numeric(
+        fixed_service["scheduled_service_hours"], errors="coerce"
+    )
+    if fixed_service.duplicated(["route", "date"]).any():
+        raise ValueError("Fixed-origin schedule table contains duplicate route/date rows")
+    snapshots = fixed_service["source_snapshot"].dropna().astype(str).unique().tolist()
+    available_dates = pd.to_datetime(fixed_service["archive_available_from"], errors="coerce")
+    if len(snapshots) != 1:
+        raise ValueError(f"Expected exactly one frozen schedule snapshot; found {snapshots}")
+    if available_dates.isna().any() or (available_dates > origin).any():
+        raise ValueError("Fixed-origin schedule includes a snapshot unavailable at the forecast origin")
+
+    observed = demand.loc[demand["date"].le(origin)].copy()
+    date_daytype = demand.groupby("date")["daytype"].agg(lambda values: values.mode().iloc[0]).to_dict()
+    history_by_model = {
+        name: {
+            (str(row.route), pd.Timestamp(row.date).normalize()): float(row.rides)
+            for row in observed[["route", "date", "rides"]].itertuples(index=False)
+        }
+        for name in models
+    }
+    baseline_week_history = {
+        (str(row.route), pd.Timestamp(row.date).normalize()): float(row.rides)
+        for row in observed[["route", "date", "rides"]].itertuples(index=False)
+    }
+    baseline_mean_history = baseline_week_history.copy()
+    fallback = float(fit_rows["rides"].median())
+    model_outputs = {name: [] for name in models}
+    baseline_week, baseline_mean = [], []
+    for date in pd.date_range(test_start, test_end, freq="D"):
+        schedule_day = fixed_service.loc[fixed_service["date"].eq(date)]
+        if schedule_day.empty:
+            continue
+        default_daytype = "U" if date.dayofweek == 6 else "A" if date.dayofweek == 5 else "W"
+        daytype = date_daytype.get(date, default_daytype)
+        routes = schedule_day["route"].astype(str).tolist()
+        future = pd.DataFrame({
+            "route": routes,
+            "date": date,
+            "daytype": daytype,
+            "scheduled_trips": schedule_day["scheduled_trips"].to_numpy(),
+            "scheduled_service_hours": schedule_day["scheduled_service_hours"].to_numpy(),
+        })
+        future["day_of_week"] = date.dayofweek
+        future["month"] = date.month
+        future["is_weekend"] = int(date.dayofweek >= 5)
+        future["is_sunday_holiday"] = int(daytype == "U")
+        # Demand-history features differ after each model starts feeding back its predictions.
+        rows_by_model = {}
+        for name in models:
+            rows = future.copy()
+            for days in (1, 7, 14, 21, 28):
+                rows[f"lag_{days}"] = [
+                    history_by_model[name].get((route, date - pd.Timedelta(days=days)))
+                    for route in routes
+                ]
+            seasonal = rows[[f"lag_{days}" for days in SEASONAL_LAGS]]
+            rows["seasonal_lag_count"] = seasonal.notna().sum(axis=1)
+            rows["seasonal_lag_mean"] = seasonal.mean(axis=1).where(rows["seasonal_lag_count"] >= 2)
+            feature_columns = models[name]["features"]
+            values = np.maximum(models[name]["pipeline"].predict(rows[feature_columns]), 0)
+            rows["predicted"] = values
+            rows_by_model[name] = rows
+            model_outputs[name].extend(rows[["route", "date", "predicted"]].to_dict("records"))
+        # Each baseline has its own recursive history, independent of observed test rides.
+        for row in future.itertuples(index=False):
+            route = str(row.route)
+            key = (route, date)
+            week_lag = baseline_week_history.get((route, date - pd.Timedelta(days=7)))
+            one_lag = baseline_week_history.get((route, date - pd.Timedelta(days=1)))
+            week_value = week_lag if week_lag is not None else one_lag if one_lag is not None else fallback
+            baseline_week.append({"route": route, "date": date, "predicted": float(week_value)})
+            baseline_week_history[key] = float(week_value)
+            seasonal_values = [
+                baseline_mean_history.get((route, date - pd.Timedelta(days=days)))
+                for days in SEASONAL_LAGS
+            ]
+            available = [value for value in seasonal_values if value is not None]
+            seasonal_value = (
+                float(np.mean(available)) if len(available) >= 2
+                else week_lag if week_lag is not None
+                else one_lag if one_lag is not None
+                else fallback
+            )
+            baseline_mean.append({"route": route, "date": date, "predicted": float(seasonal_value)})
+            baseline_mean_history[key] = float(seasonal_value)
+        for name, rows in rows_by_model.items():
+            for row in rows[["route", "predicted"]].itertuples(index=False):
+                history_by_model[name][(str(row.route), date)] = float(row.predicted)
+
+    truth = demand.loc[demand["date"].between(test_start, test_end), ["route", "date", "rides", "daytype"]].copy()
+    truth["route"] = truth["route"].astype(str)
+    baseline_week_frame = pd.DataFrame(baseline_week).rename(columns={"predicted": "last_week_same_day"})
+    baseline_mean_frame = pd.DataFrame(baseline_mean).rename(columns={"predicted": "past_four_same_weekdays"})
+    forecast_frames = {
+        name: truth.merge(pd.DataFrame(values), on=["route", "date"], how="inner", validate="one_to_one")
+        for name, values in model_outputs.items()
+    }
+    scored_keys = set.intersection(*[
+        set(zip(frame["route"], frame["date"])) for frame in forecast_frames.values()
+    ])
+    scored_frames = {}
+    for name, frame in forecast_frames.items():
+        frame = frame.loc[
+            pd.MultiIndex.from_frame(frame[["route", "date"]]).isin(
+                pd.MultiIndex.from_tuples(sorted(scored_keys))
+            )
+        ].copy()
+        frame = frame.merge(baseline_week_frame, on=["route", "date"], validate="one_to_one")
+        frame = frame.merge(baseline_mean_frame, on=["route", "date"], validate="one_to_one")
+        scored_frames[name] = frame
+    denominator = int(demand["date"].between(test_start, test_end).sum())
+    metrics = {
+        name: {
+            "metrics": _score(frame["rides"], frame["predicted"].to_numpy()),
+            "metrics_by_daytype": {
+                str(daytype): _score(group["rides"], group["predicted"].to_numpy())
+                for daytype, group in frame.groupby("daytype")
+            },
+            "scored_rows": int(len(frame)),
+        }
+        for name, frame in scored_frames.items()
+    }
+    common = next(iter(scored_frames.values()))
+    return {
+        "forecast_origin": origin.date().isoformat(),
+        "forecast_window": [test_start.date().isoformat(), test_end.date().isoformat()],
+        "schedule_snapshot": snapshots[0],
+        "schedule_available_from": str(available_dates.min().date()),
+        "test_observation_rows": denominator,
+        "scored_rows": int(len(common)),
+        "coverage_pct": float(100 * len(common) / denominator) if denominator else None,
+        "models": metrics,
+        "seasonal_baselines": {
+            "last_week_same_day": _score(common["rides"], common["last_week_same_day"].to_numpy()),
+            "past_four_same_weekdays": _score(common["rides"], common["past_four_same_weekdays"].to_numpy()),
+        },
+        "daytype_assumption": "CTA daytype is treated as known date/calendar metadata; confirm the operational calendar source",
+    }
+
+
 def compare(
     ridership_path: str | Path,
     service_path: str | Path,
@@ -58,6 +222,8 @@ def compare(
     validation_end: str = "2026-05-31",
     test_start: str = "2026-06-01",
     test_end: str = "2026-07-31",
+    fixed_origin_service_path: str | Path | None = None,
+    fixed_origin: str = "2026-05-31",
 ) -> dict:
     """Fit both feature sets on the same matched route/date partitions."""
     demand = load_bus_ridership(ridership_path)
@@ -171,6 +337,18 @@ def compare(
         "models": results,
         "interpretation": "The comparison measures association/predictive value on historically matched dates. It is not causal and does not establish an operational fixed-origin forecast.",
     }
+    if fixed_origin_service_path is not None:
+        fixed_origin_service = pd.read_csv(
+            fixed_origin_service_path, dtype={"route": "string", "source_snapshot": "string"}
+        )
+        fit_rows = aligned.loc[aligned["date"].between(start, va_end)]
+        report["fixed_origin_evaluation"] = _fixed_origin_results(
+            artifacts, fit_rows, demand, fixed_origin_service,
+            pd.Timestamp(fixed_origin), te_start, te_end,
+        )
+        report["source_sha256"]["fixed_origin_schedule_table"] = hashlib.sha256(
+            Path(fixed_origin_service_path).read_bytes()
+        ).hexdigest()
     report_path.write_text(json.dumps(report, indent=2) + "\n")
     return report
 
@@ -181,8 +359,14 @@ def main() -> None:
     parser.add_argument("--service-data", default="data/processed/cta_route_date_demand_service.csv")
     parser.add_argument("--report", default="outputs/reports/service_model_comparison.json")
     parser.add_argument("--model-dir", default="models")
+    parser.add_argument("--fixed-origin-service-data")
+    parser.add_argument("--fixed-origin", default="2026-05-31")
     args = parser.parse_args()
-    print(json.dumps(compare(args.ridership, args.service_data, args.report, args.model_dir), indent=2))
+    print(json.dumps(compare(
+        args.ridership, args.service_data, args.report, args.model_dir,
+        fixed_origin_service_path=args.fixed_origin_service_data,
+        fixed_origin=args.fixed_origin,
+    ), indent=2))
 
 
 if __name__ == "__main__":

@@ -117,6 +117,11 @@ With the CTA ridership CSV at its documented path, run:
 
     python -m src.gtfs_service
 
+For the fixed-origin schedule scenario, add the May 31 origin and June-July
+forecast window:
+
+    python -m src.gtfs_service --fixed-origin-date 2026-05-31 --fixed-start-date 2026-06-01 --fixed-end-date 2026-07-31
+
 The importer validates each archive hash, filters GTFS bus routes
 (route_type=3), applies weekly calendars and date exceptions, and selects one
 feed globally per service date (latest retrieval date on or before that date).
@@ -132,13 +137,21 @@ Then compare demand-only with service-aware models on the same matched rows:
 
     python -m src.compare_service_models
 
+To include a fixed-origin evaluation, pass the fixed schedule table produced
+above:
+
+    python -m src.compare_service_models --fixed-origin-service-data data/processed/cta_service_fixed_origin.csv --fixed-origin 2026-05-31
+
 The comparison uses the guide's matched-date partitions (train through
 2026-03-31, validation through 2026-05-31, test 2026-06-01 through 2026-07-31)
 and writes outputs/reports/service_model_comparison.json. It reports matched
 coverage, errors by day type and route, seasonal baselines, service feature
 missingness, and the schedule snapshots used. This comparison is retrospective:
 the schedule snapshot is selected as-of each service date, so it does not claim
-to represent one forecast issued before the full test period.
+to represent one forecast issued before the full test period. The optional
+fixed-origin result freezes the latest snapshot available at the origin for
+the full test horizon and feeds predicted ridership into later lag features
+instead of actual test-period rides.
 
 ## Latest demand versus service comparison
 

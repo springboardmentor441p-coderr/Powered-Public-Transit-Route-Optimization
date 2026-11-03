@@ -271,13 +271,40 @@ def _active_services(snapshot: dict, day: date) -> set[str]:
     return active
 
 
+def _route_service_rows(snapshot: dict, entry: dict, service_day: date) -> list[dict]:
+    """Aggregate all active bus templates for one route/date."""
+    active = _active_services(snapshot, service_day)
+    aggregate = defaultdict(lambda: {"scheduled_trips": 0, "valid_duration_trips": 0, "duration_seconds": 0})
+    for service_id in active:
+        for route, counts in snapshot["by_service"].get(service_id, {}).items():
+            for key in aggregate[route]:
+                aggregate[route][key] += counts[key]
+    rows = []
+    for route, values in aggregate.items():
+        complete = values["scheduled_trips"] == values["valid_duration_trips"]
+        rows.append({
+            "route": route,
+            "date": pd.Timestamp(service_day),
+            "scheduled_trips": values["scheduled_trips"],
+            "scheduled_service_hours": values["duration_seconds"] / 3600 if complete else None,
+            "duration_complete": complete,
+            "source_snapshot": entry["archive_id"],
+            "archive_available_from": entry["retrieved_date_obj"],
+        })
+    return rows
+
+
 def build_service_table(
     ridership_path: str | Path,
     manifest_path: str | Path,
     output_path: str | Path,
     report_path: str | Path,
+    fixed_origin_date: str | None = None,
+    fixed_start_date: str | None = None,
+    fixed_end_date: str | None = None,
+    fixed_output_path: str | Path | None = None,
 ) -> dict:
-    """Select one globally dated feed per service date and exact-join boardings."""
+    """Select historical feeds and optionally make a future table from one frozen feed."""
     root = Path.cwd()
     ridership_path, manifest_path = Path(ridership_path), Path(manifest_path)
     manifest = _read_manifest(manifest_path, root)
@@ -304,22 +331,7 @@ def build_service_table(
         if not active:
             no_active_service_dates.append(service_day.isoformat())
             continue
-        aggregate = defaultdict(lambda: {"scheduled_trips": 0, "valid_duration_trips": 0, "duration_seconds": 0})
-        for service_id in active:
-            for route, counts in snapshot["by_service"].get(service_id, {}).items():
-                for key in aggregate[route]:
-                    aggregate[route][key] += counts[key]
-        for route, values in aggregate.items():
-            complete = values["scheduled_trips"] == values["valid_duration_trips"]
-            schedule_rows.append({
-                "route": route,
-                "date": pd.Timestamp(service_day),
-                "scheduled_trips": values["scheduled_trips"],
-                "scheduled_service_hours": values["duration_seconds"] / 3600 if complete else None,
-                "duration_complete": complete,
-                "source_snapshot": entry["archive_id"],
-                "archive_available_from": entry["retrieved_date_obj"],
-            })
+        schedule_rows.extend(_route_service_rows(snapshot, entry, service_day))
 
     schedules = pd.DataFrame(schedule_rows)
     if schedules.empty:
@@ -336,6 +348,55 @@ def build_service_table(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.parent.mkdir(parents=True, exist_ok=True)
     merged.to_csv(output_path, index=False)
+    fixed_origin_report = None
+    supplied_fixed_args = (fixed_origin_date, fixed_start_date, fixed_end_date, fixed_output_path)
+    if any(value is not None for value in supplied_fixed_args):
+        if not all(value is not None for value in supplied_fixed_args):
+            raise ValueError("Provide fixed_origin_date, fixed_start_date, fixed_end_date, and fixed_output_path together")
+        origin = pd.Timestamp(fixed_origin_date).date()
+        fixed_start = pd.Timestamp(fixed_start_date).date()
+        fixed_end = pd.Timestamp(fixed_end_date).date()
+        if not (origin < fixed_start <= fixed_end):
+            raise ValueError("Fixed-origin forecast dates must follow the origin date")
+        eligible = [i for i, retrieved in enumerate(retrieval_dates) if retrieved <= origin]
+        if not eligible:
+            raise ValueError(f"No archived schedule was available by fixed forecast origin {origin}")
+        fixed_entry = snapshots[eligible[-1]]
+        fixed_snapshot = fixed_entry["snapshot"]
+        fixed_schedule_rows, fixed_dates_without_service = [], []
+        for service_day in (fixed_start + timedelta(days=offset)
+                            for offset in range((fixed_end - fixed_start).days + 1)):
+            rows = _route_service_rows(fixed_snapshot, fixed_entry, service_day)
+            if rows:
+                fixed_schedule_rows.extend(rows)
+            else:
+                fixed_dates_without_service.append(service_day.isoformat())
+        fixed_schedules = pd.DataFrame(fixed_schedule_rows)
+        if fixed_schedules.empty:
+            raise ValueError("Frozen schedule has no active services during the fixed-origin test window")
+        fixed_schedules["route"] = fixed_schedules["route"].astype("string")
+        fixed_schedules["date"] = pd.to_datetime(fixed_schedules["date"]).dt.normalize()
+        if fixed_schedules.duplicated(["route", "date"]).any():
+            raise ValueError("Fixed-origin schedule table has duplicate route/date keys")
+        fixed_merged = demand.merge(
+            fixed_schedules, on=["route", "date"], how="outer", validate="one_to_one", indicator=True
+        )
+        fixed_merged["match_status"] = fixed_merged.pop("_merge").map({
+            "both": "matched", "left_only": "ridership_without_schedule", "right_only": "schedule_without_ridership"
+        })
+        fixed_output_path = Path(fixed_output_path)
+        fixed_output_path.parent.mkdir(parents=True, exist_ok=True)
+        fixed_merged.to_csv(fixed_output_path, index=False)
+        fixed_origin_report = {
+            "forecast_origin": origin.isoformat(),
+            "snapshot_id": fixed_entry["archive_id"],
+            "snapshot_available_from": fixed_entry["retrieved_date_obj"].isoformat(),
+            "forecast_dates": [fixed_start.isoformat(), fixed_end.isoformat()],
+            "schedule_route_date_rows": int(len(fixed_schedules)),
+            "matched_route_date_rows": int((fixed_merged["match_status"] == "matched").sum()),
+            "dates_without_active_service": fixed_dates_without_service,
+            "output_csv": str(fixed_output_path),
+        }
     report = {
         "ridership_sha256": _sha256(Path(ridership_path)),
         "date_range_processed": [start.isoformat(), end.isoformat()],
@@ -358,6 +419,7 @@ def build_service_table(
         "service_hours_policy": "Null unless every counted trip for route/date has valid first-departure and last-arrival duration",
         "archive_selection_policy": "Globally select latest retrieval date on or before each service date; never route-level fallback",
         "output_csv": str(output_path),
+        "fixed_origin_schedule": fixed_origin_report,
     }
     report_path.write_text(json.dumps(report, indent=2) + "\n")
     return report
@@ -369,8 +431,17 @@ def main() -> None:
     parser.add_argument("--manifest", default="data/raw/gtfs_archive_manifest.csv")
     parser.add_argument("--output", default="data/processed/cta_route_date_demand_service.csv")
     parser.add_argument("--report", default="outputs/reports/gtfs_service_import.json")
+    parser.add_argument("--fixed-origin-date")
+    parser.add_argument("--fixed-start-date")
+    parser.add_argument("--fixed-end-date")
+    parser.add_argument("--fixed-output", default="data/processed/cta_service_fixed_origin.csv")
     args = parser.parse_args()
-    print(json.dumps(build_service_table(args.ridership, args.manifest, args.output, args.report), indent=2))
+    fixed_args = (args.fixed_origin_date, args.fixed_start_date, args.fixed_end_date)
+    fixed_output = args.fixed_output if any(fixed_args) else None
+    print(json.dumps(build_service_table(
+        args.ridership, args.manifest, args.output, args.report,
+        *fixed_args, fixed_output_path=fixed_output
+    ), indent=2))
 
 
 if __name__ == "__main__":
