@@ -96,15 +96,15 @@
   "archive_selection_policy": "Globally select latest retrieval date on or before each service date; never route-level fallback",
   "output_csv": "data/processed/cta_route_date_demand_service.csv",
   "fixed_origin_schedule": {
-    "forecast_origin": "2026-05-31",
-    "snapshot_id": "mdb-389-202605300003",
-    "snapshot_available_from": "2026-05-30",
+    "forecast_origin": "2026-07-31",
+    "snapshot_id": "mdb-389-202607110020",
+    "snapshot_available_from": "2026-07-11",
     "forecast_dates": [
-      "2026-06-01",
-      "2026-07-31"
+      "2026-08-01",
+      "2026-08-31"
     ],
-    "schedule_route_date_rows": 7018,
-    "matched_route_date_rows": 7014,
+    "schedule_route_date_rows": 3525,
+    "matched_route_date_rows": 3522,
     "dates_without_active_service": [],
     "output_csv": "data/processed/cta_service_fixed_origin.csv"
   }

@@ -192,20 +192,27 @@ is restricted to the model's matched test window.
 
 ## Final August holdout
 
-The Colab notebook `notebooks/cta_gtfs_service_colab.ipynb` now runs the next
-evaluation with August kept out of model fitting: train through 2026-03-31,
-use April-July as the development/validation period, refit through 2026-07-31,
-then score 2026-08-01 through 2026-08-31 once. The fixed-origin forecast is
-issued at the end of July and freezes `mdb-389-202607110020`, the latest
-provided schedule archive available by that origin. It recursively feeds
-predictions into later lag features and compares against the past-four-same-
-weekdays baseline. The notebook still prints retrospective August metrics as
-a secondary diagnostic; use the fixed-origin block as the primary result.
+The Colab notebook reserved August from fitting: train through 2026-03-31,
+validate on April-July, refit through 2026-07-31, and score August 1-31. The
+fixed-origin forecast freezes `mdb-389-202607110020` (available July 11),
+recursively feeds predictions into later demand lags, and scored **3,522 of
+3,566** observed route-days (**98.77%** coverage).
 
-This is the cleanest holdout available in the current data, but the model
-family and feature choices were selected using earlier dates, and day type is
-read from the CTA ridership table as known calendar metadata. Treat the result
-as a historical simulation rather than a confirmed operational forecast.
+On this fixed-origin holdout, demand-only scored **489.8 MAE / 813.2 RMSE /
+9.95% WAPE** and service-aware scored **468.9 MAE / 771.6 RMSE / 9.52% WAPE**.
+Adding schedule features improved MAE and WAPE by about **4.3%** relative to
+demand-only. The past-four-same-weekdays baseline was still stronger at
+**439.6 MAE / 724.0 RMSE / 8.93% WAPE**. So service features helped, but this
+model is not yet the best forecaster. The easier retrospective rolling August
+comparison showed 392.6 MAE for service-aware and 398.2 for demand-only; it
+uses actual preceding August rides and is secondary to the fixed-origin score.
+
+The model family and feature choices were selected using earlier dates, and
+day type is read from the CTA ridership table as known calendar metadata.
+Treat this as a historical simulation rather than a confirmed operational
+forecast. The GTFS folders were extracted before upload, so original ZIP
+SHA-256 verification is unavailable; table-content fingerprints are recorded
+in the import report.
 
 ## Branch workflow
 
