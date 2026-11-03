@@ -212,7 +212,12 @@ day type is read from the CTA ridership table as known calendar metadata.
 Treat this as a historical simulation rather than a confirmed operational
 forecast. The GTFS folders were extracted before upload, so original ZIP
 SHA-256 verification is unavailable; table-content fingerprints are recorded
-in the import report.
+in the import report. The current report shows the service-aware model's
+largest day-type MAE on weekdays (`W`: 497.6), then Sunday/holiday (`U`:
+406.9) and Saturday (`A`: 363.8). These are model errors only; the saved
+results do not yet show seasonal-baseline error by day type or fixed-origin
+route comparisons. The updated Colab notebook now exports those diagnostics;
+rerun its comparison cell to populate the full route breakdown in the report.
 
 ## Branch workflow
 

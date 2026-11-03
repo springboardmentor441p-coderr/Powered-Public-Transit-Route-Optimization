@@ -189,11 +189,60 @@ def _fixed_origin_results(
                 str(daytype): _score(group["rides"], group["predicted"].to_numpy())
                 for daytype, group in frame.groupby("daytype")
             },
+            "metrics_by_route": {
+                str(route): {
+                    **_score(group["rides"], group["predicted"].to_numpy()),
+                    "scored_rows": int(len(group)),
+                }
+                for route, group in frame.groupby("route")
+            },
             "scored_rows": int(len(frame)),
         }
         for name, frame in scored_frames.items()
     }
     common = next(iter(scored_frames.values()))
+    baseline_columns = {
+        "last_week_same_day": "last_week_same_day",
+        "past_four_same_weekdays": "past_four_same_weekdays",
+    }
+    seasonal_baselines_by_daytype = {
+        baseline_name: {
+            str(daytype): _score(group["rides"], group[column].to_numpy())
+            for daytype, group in common.groupby("daytype")
+        }
+        for baseline_name, column in baseline_columns.items()
+    }
+    seasonal_baselines_by_route = {
+        baseline_name: {
+            str(route): _score(group["rides"], group[column].to_numpy())
+            for route, group in common.groupby("route")
+        }
+        for baseline_name, column in baseline_columns.items()
+    }
+
+    def mae_delta_by_route(left: pd.Series, right: pd.Series) -> dict[str, dict]:
+        rows = common.assign(_left=left.to_numpy(), _right=right.to_numpy())
+        output = {}
+        for route, group in rows.groupby("route"):
+            left_mae = float(mean_absolute_error(group["rides"], group["_left"]))
+            right_mae = float(mean_absolute_error(group["rides"], group["_right"]))
+            output[str(route)] = {
+                "left_mae": left_mae,
+                "right_mae": right_mae,
+                "mae_delta": left_mae - right_mae,
+                "mae_delta_pct": (100 * (left_mae - right_mae) / right_mae) if right_mae else None,
+                "scored_rows": int(len(group)),
+            }
+        return output
+
+    model_comparison_by_route = {
+        "service_aware_vs_demand_only": mae_delta_by_route(
+            scored_frames["service_aware"]["predicted"], scored_frames["demand_only"]["predicted"]
+        ),
+        "service_aware_vs_past_four_same_weekdays": mae_delta_by_route(
+            scored_frames["service_aware"]["predicted"], common["past_four_same_weekdays"]
+        ),
+    }
     return {
         "forecast_origin": origin.date().isoformat(),
         "forecast_window": [test_start.date().isoformat(), test_end.date().isoformat()],
@@ -207,6 +256,9 @@ def _fixed_origin_results(
             "last_week_same_day": _score(common["rides"], common["last_week_same_day"].to_numpy()),
             "past_four_same_weekdays": _score(common["rides"], common["past_four_same_weekdays"].to_numpy()),
         },
+        "seasonal_baselines_by_daytype": seasonal_baselines_by_daytype,
+        "seasonal_baselines_by_route": seasonal_baselines_by_route,
+        "model_mae_comparison_by_route": model_comparison_by_route,
         "daytype_assumption": "CTA daytype is treated as known date/calendar metadata; confirm the operational calendar source",
     }
 
