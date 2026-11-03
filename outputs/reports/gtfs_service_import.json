@@ -1,0 +1,98 @@
+{
+  "ridership_sha256": "fa687b55d4049c9330e8088c6b79947cabfc46e010d89e77f32d7abe46aba977",
+  "date_range_processed": [
+    "2025-11-23",
+    "2026-08-31"
+  ],
+  "archive_versions": [
+    {
+      "archive_id": "mdb-389-202511230128",
+      "retrieved_date": "2025-11-23",
+      "archive_sha256": null,
+      "archive_sha256_verified": false,
+      "source_kind": "extracted_directory",
+      "source_fingerprint": "c888012db87939626005b6cb4bf8b48ceee39d7e7f00be12552936ed482721f7",
+      "bus_routes": 123,
+      "bus_trip_templates": 89536
+    },
+    {
+      "archive_id": "mdb-389-202512190112",
+      "retrieved_date": "2025-12-19",
+      "archive_sha256": null,
+      "archive_sha256_verified": false,
+      "source_kind": "extracted_directory",
+      "source_fingerprint": "86f99c8d04254550e1ef98dbbfcc90705c5997992af69df387679467dbed3ab1",
+      "bus_routes": 123,
+      "bus_trip_templates": 89646
+    },
+    {
+      "archive_id": "mdb-389-202601080131",
+      "retrieved_date": "2026-01-08",
+      "archive_sha256": null,
+      "archive_sha256_verified": false,
+      "source_kind": "extracted_directory",
+      "source_fingerprint": "07c0cc22eccc9eaeb8dc8328e03a9411223254de1e7fef5a493ce3cc35a1cbc8",
+      "bus_routes": 123,
+      "bus_trip_templates": 44878
+    },
+    {
+      "archive_id": "mdb-389-202602100132",
+      "retrieved_date": "2026-02-10",
+      "archive_sha256": null,
+      "archive_sha256_verified": false,
+      "source_kind": "extracted_directory",
+      "source_fingerprint": "e707dfbb2c2c32ceaba51aee659e7e1b74dd873a8a175026b9960ab128acd7e7",
+      "bus_routes": 123,
+      "bus_trip_templates": 44878
+    },
+    {
+      "archive_id": "mdb-389-202603260020",
+      "retrieved_date": "2026-03-26",
+      "archive_sha256": null,
+      "archive_sha256_verified": false,
+      "source_kind": "extracted_directory",
+      "source_fingerprint": "394f2a11d1ce948ed1925b26eac610741993af9412b6670269ab468a57b03130",
+      "bus_routes": 123,
+      "bus_trip_templates": 89438
+    },
+    {
+      "archive_id": "mdb-389-202604240144",
+      "retrieved_date": "2026-04-24",
+      "archive_sha256": null,
+      "archive_sha256_verified": false,
+      "source_kind": "extracted_directory",
+      "source_fingerprint": "5798f83b844a193b26f16297239acbb9d0530592cf20f7aae48e34a153ba2b66",
+      "bus_routes": 123,
+      "bus_trip_templates": 44560
+    },
+    {
+      "archive_id": "mdb-389-202605300003",
+      "retrieved_date": "2026-05-30",
+      "archive_sha256": null,
+      "archive_sha256_verified": false,
+      "source_kind": "extracted_directory",
+      "source_fingerprint": "3fc702195ecc6fdcb28794f922f56925219e0b3cc30a75c7ed0537f78421edd9",
+      "bus_routes": 125,
+      "bus_trip_templates": 89367
+    },
+    {
+      "archive_id": "mdb-389-202607110020",
+      "retrieved_date": "2026-07-11",
+      "archive_sha256": null,
+      "archive_sha256_verified": false,
+      "source_kind": "extracted_directory",
+      "source_fingerprint": "6415e0c25ea1206c1b2155fb2045ba8e6d8f8578123129b0b4fa12a974596407",
+      "bus_routes": 125,
+      "bus_trip_templates": 89614
+    }
+  ],
+  "schedule_route_date_rows": 31923,
+  "matched_route_date_rows": 31896,
+  "ridership_without_schedule_rows": 1092274,
+  "schedule_without_ridership_rows": 27,
+  "dates_without_snapshot": [],
+  "dates_without_active_service": [],
+  "service_hours_policy": "Null unless every counted trip for route/date has valid first-departure and last-arrival duration",
+  "archive_selection_policy": "Globally select latest retrieval date on or before each service date; never route-level fallback",
+  "output_csv": "data/processed/cta_route_date_demand_service.csv"
+}

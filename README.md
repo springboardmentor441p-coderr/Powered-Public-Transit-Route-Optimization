@@ -140,6 +140,31 @@ missingness, and the schedule snapshots used. This comparison is retrospective:
 the schedule snapshot is selected as-of each service date, so it does not claim
 to represent one forecast issued before the full test period.
 
+## Latest demand versus service comparison
+
+The Colab run matched **7,014 of 7,109** demand rows in the June-July test
+window (**98.66%** coverage). On those same rows, the demand-only model scored
+**384.4 MAE / 7.80% WAPE** and the service-aware model scored
+**382.3 MAE / 7.76% WAPE**. That is about a **0.5%** test improvement. On
+validation, the service-aware model's MAE was slightly worse (356.1 versus
+351.8). This is not convincing evidence yet that schedule features improve
+forecasts. Both models beat the past-four-same-weekdays test baseline
+(402.7 MAE / 8.17% WAPE).
+
+The outputs are saved in [service_model_comparison.json](outputs/reports/service_model_comparison.json),
+[gtfs_service_import.json](outputs/reports/gtfs_service_import.json),
+[cta_demand_only.joblib](models/cta_demand_only.joblib), and
+[cta_service_aware.joblib](models/cta_service_aware.joblib). The test uses
+date-selected schedule snapshots, including versions retrieved during the
+test window, and rolling one-step ridership lags. Treat it as a retrospective
+matched-date comparison, not a fixed-origin operational forecast.
+
+The eight feeds were uploaded as extracted directories, so the import report
+contains fingerprints of the GTFS table contents but marks original ZIP
+SHA-256 verification as false. Most unmatched ridership rows are from dates
+outside the archived schedule window; the test-period coverage figure above
+is restricted to the model's matched test window.
+
 ## Branch workflow
 
 Project work belongs on `users/bidhubhusan`; do not commit or push directly to
