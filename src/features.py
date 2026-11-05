@@ -19,16 +19,29 @@ def trip_table(feed):
     g = st.groupby("trip_id").agg(start_sec=("dep_sec", "first"), end_sec=("arr_sec", "last"),
                                   n_stops=("stop_id", "size"), dist_km=("seg_km", "sum")).reset_index()
     t = feed["trips"][["trip_id", "route_id", "service_id", "direction_id"]].merge(g, on="trip_id")
+<<<<<<< HEAD
     cal = feed["calendar"].copy()
     cal["day_type"] = np.where(cal[WD_COLS].sum(axis=1) >= 3, "weekday", "weekend")
     t = t.merge(cal[["service_id", "day_type"]], on="service_id", how="left")
     t["day_type"] = t.day_type.fillna("weekday")
+=======
+    from .gtfs_validation import reference_days
+    ref = reference_days(feed); sid = t.service_id; known = ref["known"]
+    unknown = ~sid.isin(known) if known else pd.Series(True, index=t.index)       # unknown service ids are assumed to run every day
+    t["runs_weekday"] = unknown | (sid.isin(ref["weekday"]) if ref["weekday"] is not None else True)
+    t["runs_weekend"] = unknown | (sid.isin(ref["weekend"]) if ref["weekend"] is not None else True)
+    t["day_type"] = np.where(t.runs_weekday, "weekday", "weekend")
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)
     t["duration_min"] = (t.end_sec - t.start_sec) / 60
     t["hour"] = (t.start_sec // 3600).astype(int) % 24
     return t, st
 
 def route_supply_features(t):
+<<<<<<< HEAD
     wd = t[t.day_type == "weekday"]
+=======
+    wd = t[t.runs_weekday]
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)
     hr = wd.groupby(["route_id", "hour"]).size().unstack(fill_value=0).reindex(columns=range(24), fill_value=0)
     gaps = (wd.sort_values(["route_id", "direction_id", "start_sec"])
               .assign(gap=lambda d: d.groupby(["route_id", "direction_id"]).start_sec.diff() / 60))
@@ -36,7 +49,11 @@ def route_supply_features(t):
     out = wd.groupby("route_id").agg(trips_per_day=("trip_id", "size"), route_length_km=("dist_km", "median"),
                                      n_stops=("n_stops", "median"), trip_duration_min=("duration_min", "median"),
                                      service_start_hr=("hour", "min"), service_end_hr=("hour", "max"))
+<<<<<<< HEAD
     we = t[t.day_type == "weekend"].groupby("route_id").size().rename("weekend_trips")
+=======
+    we = t[t.runs_weekend].groupby("route_id").size().rename("weekend_trips")
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)
     out = out.join(we).fillna({"weekend_trips": 0})
     out["weekend_ratio"] = out.weekend_trips / out.trips_per_day
     out["service_span_hr"] = out.service_end_hr - out.service_start_hr + 1
@@ -50,7 +67,11 @@ def route_supply_features(t):
     out["headway_cv"] = (gs["std"] / gs["mean"]).reindex(out.index)
     out = out.fillna({"headway_peak_min": 120, "headway_offpeak_min": 120, "headway_cv": 0})
     sup = hr.stack().rename("trips").reset_index(); sup["day_type"] = "weekday"
+<<<<<<< HEAD
     wk = t[t.day_type == "weekend"].groupby(["route_id", "hour"]).size().rename("trips").reset_index(); wk["day_type"] = "weekend"
+=======
+    wk = t[t.runs_weekend].groupby(["route_id", "hour"]).size().rename("trips").reset_index(); wk["day_type"] = "weekend"
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)
     return out.reset_index(), pd.concat([sup, wk], ignore_index=True)[lambda d: d.trips > 0]
 
 def stop_and_overlap_features(feed, t, st, routes):
@@ -62,7 +83,11 @@ def stop_and_overlap_features(feed, t, st, routes):
     scale = max(1.02 * stops.dist_center_km.median(), 0.5)
     stops["attraction"] = stop_attraction(stops.dist_center_km, scale)
     stops["n_routes"] = stops.stop_id.map(rs.groupby("stop_id").route_id.nunique())
+<<<<<<< HEAD
     wd_ids = t[t.day_type == "weekday"].trip_id
+=======
+    wd_ids = t[t.runs_weekday].trip_id
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)
     stops["departures_day"] = stops.stop_id.map(st[st.trip_id.isin(wd_ids)].groupby("stop_id").size()).fillna(0)
     rs = rs.merge(stops[["stop_id", "attraction", "dist_center_km", "n_routes"]], on="stop_id")
     g = rs.groupby("route_id").agg(sum_attr=("attraction", "sum"), mean_stop_attr=("attraction", "mean"),
@@ -72,6 +97,7 @@ def stop_and_overlap_features(feed, t, st, routes):
     # pairwise overlap
     ids = sorted(rs.route_id.unique()); stop_ids = sorted(rs.stop_id.unique())
     ri = {r: i for i, r in enumerate(ids)}; si = {s: i for i, s in enumerate(stop_ids)}
+<<<<<<< HEAD
     M = np.zeros((len(ids), len(stop_ids)), dtype=np.int32)
     M[rs.route_id.map(ri).values, rs.stop_id.map(si).values] = 1
     C = M @ M.T; n = np.diag(C)
@@ -82,6 +108,14 @@ def stop_and_overlap_features(feed, t, st, routes):
                 ratio = C[i, j] / min(n[i], n[j]); jac = C[i, j] / (n[i] + n[j] - C[i, j])
                 if ratio >= 0.2: pairs.append((ids[i], ids[j], int(C[i, j]), ratio, jac))
     pairs = pd.DataFrame(pairs, columns=["route_a", "route_b", "shared_stops", "overlap_ratio", "jaccard"])
+=======
+    M = np.zeros((len(ids), len(stop_ids)), dtype=np.int8)
+    M[rs.route_id.map(ri).values, rs.stop_id.map(si).values] = 1
+    Mf = M.astype(np.float32); C = Mf @ Mf.T; n = np.diag(C)
+    ii, jj = np.nonzero(np.triu(C, 1) > 0)                         # vectorised: scales to thousands of routes
+    sh = C[ii, jj]; ratio = sh / np.minimum(n[ii], n[jj]); jac = sh / (n[ii] + n[jj] - sh); k = ratio >= 0.2
+    pairs = pd.DataFrame(dict(route_a=np.array(ids)[ii[k]], route_b=np.array(ids)[jj[k]], shared_stops=sh[k].astype(int), overlap_ratio=ratio[k], jaccard=jac[k]))
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)
     mx = pd.concat([pairs.set_index("route_a").overlap_ratio, pairs.set_index("route_b").overlap_ratio]).groupby(level=0).max() if len(pairs) else pd.Series(dtype=float)
     g["max_overlap"] = mx.reindex(g.index).fillna(0)
     stops["stop_uid_dummy"] = 0

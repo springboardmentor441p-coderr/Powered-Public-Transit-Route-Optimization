@@ -1,0 +1,26 @@
+[
+ {
+  "version": "20261102-59ba8f7cc6",
+  "trained_at": "2026-11-02T13:16:23",
+  "cities": [
+   "Bengaluru",
+   "Chennai",
+   "Pune"
+  ],
+  "n_routes": 8641,
+  "best": "gradient_boosting",
+  "cv_mae": 1.0419440681339571,
+  "loco_mae": {
+   "Bengaluru": 1.4433145261435085,
+   "Chennai": 1.0884998806790902,
+   "Pune": 2.9625282512597058
+  },
+  "promoted": true,
+  "reason": "first model",
+  "within_city_skill": {
+   "Bengaluru": 0.3313273024515121,
+   "Chennai": 0.32467730735024003,
+   "Pune": 0.2672739993381047
+  }
+ }
+]

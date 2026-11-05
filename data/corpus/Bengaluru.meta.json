@@ -1,0 +1,19 @@
+{
+ "name": "Bengaluru",
+ "source": "Bengaluru_BMTC_gtfs.zip",
+ "added": "2026-11-02T13:01:16",
+ "routes": 4408,
+ "rows": 39182,
+ "validation": {
+  "status": "pass",
+  "errors": 0,
+  "warnings": 0
+ },
+ "rows_after": {
+  "routes": 4416,
+  "trips": 57715,
+  "stop_times": 1540565,
+  "stops": 9960
+ },
+ "discard_flags": []
+}

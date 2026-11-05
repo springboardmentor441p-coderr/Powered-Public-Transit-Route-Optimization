@@ -14,6 +14,12 @@ from src.config import *
 from src import pipeline, data_loader
 from src.forecast import apply_scenario
 from src.optimizer import optimize, DEFAULTS
+<<<<<<< HEAD
+=======
+from server.model_api import router as model_router
+import logging, os
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)
 
 ST = dict(art=None, demo=None, metrics=None, sessions={}, cache={})
 PKEYS = ["capacity", "target_lf", "min_tph", "max_tph", "merge_overlap", "split_km"]
@@ -31,7 +37,18 @@ async def lifespan(app):
     ST["metrics"] = json.load(open(OUT_DIR / "metrics.json")); yield
 
 app = FastAPI(title="RouteRanker API", lifespan=lifespan)
+<<<<<<< HEAD
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+=======
+_ORIGINS = [o.strip() for o in os.environ.get("RR_CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if o.strip()]
+app.add_middleware(CORSMiddleware, allow_origins=_ORIGINS, allow_methods=["GET", "POST"], allow_headers=["Content-Type", "X-Admin-Token"])
+app.include_router(model_router)
+
+@app.exception_handler(Exception)
+async def _unhandled(request, exc):                      # never leak tracebacks or paths to clients
+    logging.getLogger("routeranker").exception("unhandled error on %s", request.url.path)
+    return JSONResponse({"detail": "Internal server error."}, status_code=500)
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)
 
 def clean(o):
     if isinstance(o, dict): return {str(k): clean(v) for k, v in o.items()}
@@ -191,7 +208,11 @@ async def upload(city: str = Form("MyCity"), gtfs: UploadFile = File(...), rider
         hist = pd.read_csv(io.BytesIO(await history.read())).assign(city=city) if history and history.filename else None
         res = pipeline.analyze(pipeline.build_bundle({city: (feed, rid)}, hist), ST["art"])
         return J(_store(f"Upload – {city}", res))
+<<<<<<< HEAD
     except Exception as e: raise HTTPException(400, f"Could not process the feed: {e}")
+=======
+    except Exception as e: raise HTTPException(400, "Could not process the feed. Check that it is a valid GTFS zip.")
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)
 
 class GenReq(BaseModel):
     city: str = "Pune"; seed: int = 123

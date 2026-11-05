@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🚌 RouteRanker – AI-powered public transit route optimisation (React + FastAPI)
 
 Finds **overcrowded / under-used bus routes** in Indian cities, **forecasts the next 12 months of demand from past ridership**, and recommends
@@ -50,3 +51,70 @@ src/        data_loader · cleaning · features · eda · preprocessing · model
 train.py    full pipeline → outputs/ + models/       app.py   legacy Streamlit dashboard (optional)
 docs/REPORT.md   technical report                    tests/   pytest suite
 ```
+=======
+# 🚌 RouteRanker – a machine-learning model that learns from real transit data
+
+RouteRanker **learns from real GTFS bus feeds** (Pune PMPML, Chennai MTC, Bengaluru BMTC – included, with sources), saves the trained model as a file,
+shows every step in a **Jupyter notebook**, serves it through a **React website + FastAPI**, and can **learn again when you add a new city**.
+
+## What the model learns (read this first)
+Real feeds contain schedules, **not passenger counts**. So the model learns how each operator **allocates service**: trips per route-hour from route length,
+stops, connectivity, position in the city, overlap and hour of day. Routes that get far fewer/more trips than comparable routes are flagged
+*relatively under-/over-served versus peers*. It is a **screening signal**; it does not prove crowding. See `docs/ML_MODEL.md`.
+
+| Measured on real data (routes the model never saw) | Baseline (hour average) | Learned model |
+|---|---|---|
+| Bengaluru, error in trips per route-hour | 1.59 | **1.06** |
+| Chennai | 1.25 | **0.84** |
+| Pune | 2.15 | **1.58** |
+Honest limit: on a *completely unseen city* the pooled model transfers weakly (Pune is worse than baseline), so RouteRanker learns **from the feed you give it** (needs >= 200 routes) and says so.
+
+## Files you get
+| What | Where |
+|---|---|
+| Trained model (file) | `models/service_model.joblib`, `models/model_card.json` (metrics, features), `models/registry.json` (versions) |
+| Notebook with all steps and outputs | `notebooks/RouteRanker_ML_Model.ipynb` |
+| Real data + sources + checksums | `real_data/` (`SOURCES.md`, `SHA256SUMS.txt`); re-download with `scripts/fetch_real_data.py` |
+| Learning code | `src/learning.py`, `src/learn.py`, `src/gtfs_validation.py`, `src/cleaning.py`, `src/features.py` |
+| Website | `frontend/` (React) + `server/` (FastAPI) |
+
+## Windows PowerShell (VS Code terminal)
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+# 1) (optional) re-learn from the real feeds: build corpus, then train (about 6 minutes)
+python -m src.learn corpus --gtfs real_data\Pune_PMPML_gtfs.zip --name Pune
+python -m src.learn corpus --gtfs real_data\Chennai_MTC_gtfs.zip --name Chennai
+python -m src.learn corpus --gtfs real_data\Bengaluru_BMTC_gtfs.zip --name Bengaluru
+python -m src.learn train
+
+# 2) apply the saved model to any GTFS zip
+python -m src.learn predict --gtfs real_data\Pune_PMPML_gtfs.zip --name Pune --out peer_gap.csv
+
+# 3) teach it a NEW city (retrains, champion/challenger decides whether to promote)
+python -m src.learn add --gtfs C:\path\to\new_city_gtfs.zip --name Hyderabad
+
+# 4) notebook
+jupyter notebook notebooks\RouteRanker_ML_Model.ipynb
+
+# 5) website (built site is included; Node is only needed to rebuild it)
+uvicorn server.main:app --port 8000        # open http://localhost:8000  -> tab "Learned model"
+$env:RR_ADMIN_TOKEN = "choose-a-secret"    # optional: enables "teach the model" in the website
+```
+Frontend development: `cd frontend; npm install; npm run dev` (API on port 8000). Tests: `python -m pytest tests -q` and, with the API running, `cd frontend; npm test`.
+
+## Website tabs
+**Learned model** (what was learned, metrics vs baselines, learning curve, peer comparison, analyse your own feed, teach the model, version history) plus the earlier tabs
+(Overview, Explore, Clusters, Predictions, Forecast, Recommendations, Impact, Your data). **Note:** those earlier tabs run on *synthetic demonstration data*
+(the demo dataset) and use a rule-labelled classifier and a demand proxy; do not read them as findings about real cities. Real-city results are in the Learned-model tab.
+
+## Put it online
+`docker build -t routeranker . && docker run -p 8000:8000 routeranker` (Render, Railway, Fly.io, Hugging Face Docker Space). Set `RR_CORS_ORIGINS`,
+`RR_MAX_UPLOAD_MB` and (only if you want public learning, which is not recommended) `RR_ADMIN_TOKEN`. There is no user authentication.
+
+## Security notes
+Uploads are size-capped, must be ZIPs, are read in memory with zip-slip / archive-bomb / member-count limits, stored privately (`data/uploads/`, never served), and errors never expose paths or tracebacks.
+Learning from uploaded data is disabled unless an admin token is set (otherwise visitors could poison the model).
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)

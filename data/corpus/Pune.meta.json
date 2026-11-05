@@ -1,0 +1,19 @@
+{
+ "name": "Pune",
+ "source": "Pune_PMPML_gtfs.zip",
+ "added": "2026-11-02T13:00:06",
+ "routes": 315,
+ "rows": 3383,
+ "validation": {
+  "status": "pass",
+  "errors": 0,
+  "warnings": 0
+ },
+ "rows_after": {
+  "routes": 315,
+  "trips": 10128,
+  "stop_times": 429302,
+  "stops": 6745
+ },
+ "discard_flags": []
+}

@@ -16,5 +16,9 @@ async function handle(r) {
 export const get = (path, params, signal) => fetch(`${BASE}/api${path}?${qs(params)}`, { signal }).then(handle)
 export const post = (path, body) => fetch(`${BASE}/api${path}`, {
   method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(handle)
+<<<<<<< HEAD
 export const upload = (path, form) => fetch(`${BASE}/api${path}`, { method: 'POST', body: form }).then(handle)
+=======
+export const upload = (path, form, headers) => fetch(`${BASE}/api${path}`, { method: 'POST', body: form, headers }).then(handle)
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)
 export const url = (path, params) => `${BASE}/api${path}?${qs(params)}`

@@ -12,7 +12,11 @@ describe('RouteRanker web app (against the live API)', () => {
     await waitFor(() => expect(screen.getByText('Routes analysed')).toBeInTheDocument(), { timeout: 40000 })
     expect(await screen.findByText('Top 10 priority routes')).toBeInTheDocument()
 
+<<<<<<< HEAD
     const steps = [['Explore', 'Busiest stops (bigger circle = more boardings)'], ['Clusters', 'Groups of similar routes'], ['Predictions', 'Route predictions'],
+=======
+    const steps = [['Learned model', 'What the model learned'], ['Explore', 'Busiest stops (bigger circle = more boardings)'], ['Clusters', 'Groups of similar routes'], ['Predictions', 'Route predictions'],
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)
       ['Forecast', 'One route, with 80% range'], ['Recommendations', 'Recommended changes'], ['Impact', 'Current vs optimised service (weekday)'], ['Your data', 'Analyse your own bus feed']]
     for (const [name, text] of steps) {
       fireEvent.click(tab(name))

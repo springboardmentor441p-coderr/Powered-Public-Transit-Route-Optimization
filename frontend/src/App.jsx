@@ -9,8 +9,14 @@ import Forecast from './tabs/Forecast.jsx'
 import Recommendations from './tabs/Recommendations.jsx'
 import Impact from './tabs/Impact.jsx'
 import YourData from './tabs/YourData.jsx'
+<<<<<<< HEAD
 
 const TABS = [['Overview', Overview], ['Explore', Explore], ['Clusters', Clusters], ['Predictions', Predictions], ['Forecast', Forecast],
+=======
+import LearnedModel from './tabs/LearnedModel.jsx'
+
+const TABS = [['Overview', Overview], ['Learned model', LearnedModel], ['Explore', Explore], ['Clusters', Clusters], ['Predictions', Predictions], ['Forecast', Forecast],
+>>>>>>> 8eff1e4 (Fix import paths and resolve directory structure issues)
   ['Recommendations', Recommendations], ['Impact', Impact], ['Your data', YourData]]
 const SCEN = [['today', 'Today'], ['avg', 'Next 12 months'], ['peak', 'Busiest month']]
 

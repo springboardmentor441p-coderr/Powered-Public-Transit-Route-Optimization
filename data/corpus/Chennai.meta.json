@@ -1,0 +1,26 @@
+{
+ "name": "Chennai",
+ "source": "Chennai_MTC_gtfs.zip",
+ "added": "2026-11-02T13:00:36",
+ "routes": 3918,
+ "rows": 34682,
+ "validation": {
+  "status": "warn",
+  "errors": 0,
+  "warnings": 1
+ },
+ "rows_after": {
+  "routes": 3934,
+  "trips": 47047,
+  "stop_times": 1360443,
+  "stops": 6542
+ },
+ "discard_flags": [
+  {
+   "table": "routes",
+   "fraction_removed": 0.147,
+   "severity": "warning",
+   "message": "15% of routes rows were removed during cleaning; review the validation report before trusting results."
+  }
+ ]
+}

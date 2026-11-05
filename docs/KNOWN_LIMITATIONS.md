@@ -1,0 +1,8 @@
+# Known limitations (honest list)
+1. **No passenger data.** The model learns service allocation, not demand. "Under-served vs peers" may just be a low-demand route. Validate with ridership/APC data before changing service.
+2. **Cross-city transfer is weak** with three cities (Pune is worse than baseline when unseen). More real cities will help; the per-feed learning mode is the supported path, and needs >= 200 routes (70 routes measured worse than baseline).
+3. **Data quality.** Bengaluru is an unofficial, partial (live-tracked routes only) feed; Pune is auto-generated; Chennai has non-bus modes and junk identifiers. Results describe these feeds, not necessarily the true networks.
+4. Only a typical Tuesday and Sunday are modelled (no Saturdays, no holidays); shapes.txt geometry is not used (straight-line stop distances).
+5. **Older website tabs use synthetic data** (demo) and a rule-labelled classifier plus a demand proxy; they are demonstrations, not findings. The earlier "Impact" simulation always improves by construction and must not be read as evidence.
+6. Items from the extended specification **not implemented yet**: the multi-candidate optimisation engine with constraints and rejected-candidate reporting, `python -m src.benchmark`, per-mode (A/B/C) dashboards and CSV/Markdown report exports, updating the legacy Streamlit app to the new core, and performance benchmarks at several dataset sizes. Implemented from it: GTFS validation module (safe ZIP, calendar_dates, frequencies, ledger), provenance definitions, security hardening of the new endpoints, tests.
+7. No authentication; analyses/jobs are held in memory and lost on restart.

@@ -1,0 +1,367 @@
+{
+ "version": "20261102-59ba8f7cc6",
+ "trained_at": "2026-11-02T13:16:23",
+ "best_model": "gradient_boosting",
+ "task": "predict scheduled trips per route-hour from route/network features",
+ "target": "trips relative to the city mean (predictions are multiplied back by the city scale)",
+ "features": [
+  "hour",
+  "hour_sin",
+  "hour_cos",
+  "rel_pos",
+  "hrs_from_start",
+  "hrs_to_end",
+  "is_am_peak",
+  "is_pm_peak",
+  "route_length_km",
+  "n_stops",
+  "avg_stop_spacing_km",
+  "trip_duration_min",
+  "avg_speed_kmph",
+  "service_span_hr",
+  "service_start_hr",
+  "frac_stops_shared",
+  "hub_frac",
+  "max_overlap",
+  "mean_conn",
+  "max_conn",
+  "mean_dist_norm",
+  "min_dist_norm",
+  "other_service_log"
+ ],
+ "trained_on": [
+  {
+   "name": "Bengaluru",
+   "routes": 4408,
+   "source": "Bengaluru_BMTC_gtfs.zip"
+  },
+  {
+   "name": "Chennai",
+   "routes": 3918,
+   "source": "Chennai_MTC_gtfs.zip"
+  },
+  {
+   "name": "Pune",
+   "routes": 315,
+   "source": "Pune_PMPML_gtfs.zip"
+  }
+ ],
+ "n_routes": 8641,
+ "n_rows": 77247,
+ "cv_grouped": {
+  "baseline_mean": {
+   "mae": 1.4869296299908379,
+   "rmse": 2.4232288643975504,
+   "r2": 0.01777525763357657,
+   "poisson_deviance": 2.667930232052464,
+   "route_day_r2": 0.20862120213730118,
+   "route_day_mae": 11.91303355839443
+  },
+  "baseline_hour_mean": {
+   "mae": 1.4744597376213922,
+   "rmse": 2.4176197467705083,
+   "r2": 0.022317162690279724,
+   "poisson_deviance": 2.6416844940905775,
+   "route_day_r2": 0.22214702829329813,
+   "route_day_mae": 11.745961948515255
+  },
+  "poisson_linear": {
+   "mae": 1.3530409370730863,
+   "rmse": 2.212624093468233,
+   "r2": 0.18108792062611845,
+   "poisson_deviance": 2.116679314430508,
+   "route_day_r2": 0.3932182320481995,
+   "route_day_mae": 10.037527119085013
+  },
+  "random_forest": {
+   "mae": 1.0754753725113972,
+   "rmse": 1.921134565725683,
+   "r2": 0.38264129674046743,
+   "poisson_deviance": 1.5075686657682867,
+   "route_day_r2": 0.5441342427426973,
+   "route_day_mae": 7.6069914680171555
+  },
+  "gradient_boosting": {
+   "mae": 1.0419440681339571,
+   "rmse": 1.908651624380822,
+   "r2": 0.39063804568242566,
+   "poisson_deviance": 1.4939127522607336,
+   "route_day_r2": 0.5472830965618865,
+   "route_day_mae": 7.371597943682423
+  }
+ },
+ "within_city": {
+  "Bengaluru": {
+   "skill": 0.3313273024515121,
+   "reliable": true,
+   "baseline_hour_mean": {
+    "mae": 1.591447607313612,
+    "rmse": 2.7291979901475854,
+    "r2": 0.012271051005359745,
+    "poisson_deviance": 3.086058266868889,
+    "route_day_r2": 0.1942934147529446,
+    "route_day_mae": 12.875890581265528
+   },
+   "gradient_boosting": {
+    "mae": 1.0641575645894796,
+    "rmse": 2.1115633494254125,
+    "r2": 0.4087435008328255,
+    "poisson_deviance": 1.6456834532617923,
+    "route_day_r2": 0.5436701899190671,
+    "route_day_mae": 7.587064524737454
+   }
+  },
+  "Chennai": {
+   "skill": 0.32467730735024003,
+   "reliable": true,
+   "baseline_hour_mean": {
+    "mae": 1.2483928069718273,
+    "rmse": 1.913213306970489,
+    "r2": 0.005848464858406066,
+    "poisson_deviance": 2.099021484336848,
+    "route_day_r2": 0.2603002957617381,
+    "route_day_mae": 9.704376658706042
+   },
+   "gradient_boosting": {
+    "mae": 0.8430679918888064,
+    "rmse": 1.4511678310423686,
+    "r2": 0.42804601944724985,
+    "poisson_deviance": 1.1498901478314865,
+    "route_day_r2": 0.6222619148895668,
+    "route_day_mae": 5.61341908177691
+   }
+  },
+  "Pune": {
+   "skill": 0.2672739993381047,
+   "reliable": true,
+   "baseline_hour_mean": {
+    "mae": 2.1507067361074212,
+    "rmse": 2.854615696708498,
+    "r2": 0.0905178986764692,
+    "poisson_deviance": 2.4219246631222453,
+    "route_day_r2": 0.1935249373509833,
+    "route_day_mae": 21.133831778461783
+   },
+   "gradient_boosting": {
+    "mae": 1.575878745344589,
+    "rmse": 2.4018028149772443,
+    "r2": 0.35616652032245943,
+    "poisson_deviance": 1.6611320013186661,
+    "route_day_r2": 0.4289036080894396,
+    "route_day_mae": 14.639469531493255
+   }
+  }
+ },
+ "loco": {
+  "baseline_mean": {
+   "Bengaluru": {
+    "mae": 1.6183683771752106,
+    "rmse": 2.7460987566835424,
+    "r2": 0.0,
+    "poisson_deviance": 3.1469009636617993,
+    "route_day_r2": 0.16940478512829205,
+    "route_day_mae": 13.170797921857707
+   },
+   "Chennai": {
+    "mae": 1.2586955149697723,
+    "rmse": 1.918832647802948,
+    "r2": 0.0,
+    "poisson_deviance": 2.114778712186069,
+    "route_day_r2": 0.24895047962243244,
+    "route_day_mae": 9.814364002445732
+   },
+   "Pune": {
+    "mae": 2.3013960449252924,
+    "rmse": 2.993302243978073,
+    "r2": 0.0,
+    "poisson_deviance": 2.76851914583878,
+    "route_day_r2": 0.22455624044602185,
+    "route_day_mae": 20.410617044137588
+   }
+  },
+  "baseline_hour_mean": {
+   "Bengaluru": {
+    "mae": 1.599406645629819,
+    "rmse": 2.7366323302160676,
+    "r2": 0.006882571125915837,
+    "poisson_deviance": 3.111852038698625,
+    "route_day_r2": 0.1763749908012353,
+    "route_day_mae": 12.998729171459324
+   },
+   "Chennai": {
+    "mae": 1.2642880242718628,
+    "rmse": 1.9196672163868556,
+    "r2": -0.0008700603219853331,
+    "poisson_deviance": 2.1133209183539887,
+    "route_day_r2": 0.27089603463379763,
+    "route_day_mae": 9.798256698852212
+   },
+   "Pune": {
+    "mae": 2.393276813810983,
+    "rmse": 3.0938580453622406,
+    "r2": -0.06831573211624309,
+    "poisson_deviance": 2.9745391148430675,
+    "route_day_r2": 0.21961425704201643,
+    "route_day_mae": 20.24285501155558
+   }
+  },
+  "poisson_linear": {
+   "Bengaluru": {
+    "mae": 1.5265828404188257,
+    "rmse": 2.5587515536644383,
+    "r2": 0.13179169525093248,
+    "poisson_deviance": 2.6009216644099804,
+    "route_day_r2": 0.3152012961234466,
+    "route_day_mae": 11.879320071194213
+   },
+   "Chennai": {
+    "mae": 1.1702312094627398,
+    "rmse": 1.748984583252217,
+    "r2": 0.16919755797382885,
+    "poisson_deviance": 1.8158333702275085,
+    "route_day_r2": 0.42561390945266075,
+    "route_day_mae": 8.535160120038512
+   },
+   "Pune": {
+    "mae": 2.653432088071718,
+    "rmse": 3.792773006819249,
+    "r2": -0.6055083195946229,
+    "poisson_deviance": 4.365787896700519,
+    "route_day_r2": -0.8180703778846514,
+    "route_day_mae": 24.01679337521539
+   }
+  },
+  "random_forest": {
+   "Bengaluru": {
+    "mae": 1.5789993681623558,
+    "rmse": 2.6732907010056364,
+    "r2": 0.052323585021676444,
+    "poisson_deviance": 2.644483621235787,
+    "route_day_r2": 0.2139127351474609,
+    "route_day_mae": 12.511330912958112
+   },
+   "Chennai": {
+    "mae": 1.1826083020108482,
+    "rmse": 1.8179802375531622,
+    "r2": 0.10235603057771092,
+    "poisson_deviance": 1.6942903414242283,
+    "route_day_r2": 0.3303769302384335,
+    "route_day_mae": 8.895366935892142
+   },
+   "Pune": {
+    "mae": 3.2043968983229383,
+    "rmse": 4.739363467891985,
+    "r2": -1.5069108538372995,
+    "poisson_deviance": 6.1961697336511525,
+    "route_day_r2": -2.4488128583469684,
+    "route_day_mae": 30.126458578317408
+   }
+  },
+  "gradient_boosting": {
+   "Bengaluru": {
+    "mae": 1.4433145261435085,
+    "rmse": 2.6356054846467685,
+    "r2": 0.07885393278757902,
+    "poisson_deviance": 2.77107032519078,
+    "route_day_r2": 0.23403480525409293,
+    "route_day_mae": 11.381328937355319
+   },
+   "Chennai": {
+    "mae": 1.0884998806790902,
+    "rmse": 1.8859253381597247,
+    "r2": 0.03400519086206644,
+    "poisson_deviance": 2.0098212047656965,
+    "route_day_r2": 0.2609097802700031,
+    "route_day_mae": 8.01770056882533
+   },
+   "Pune": {
+    "mae": 2.9625282512597058,
+    "rmse": 4.231576670969307,
+    "r2": -0.9984960113397274,
+    "poisson_deviance": 7.054595537370551,
+    "route_day_r2": -1.3022382898529856,
+    "route_day_mae": 27.320730996424015
+   }
+  }
+ },
+ "learning_curve": {
+  "points": [
+   {
+    "frac": 0.02,
+    "n_routes": 138,
+    "mae": 1.2771813349099572,
+    "mae_sd": 0.06461473792980846,
+    "r2": -0.08380778779936737
+   },
+   {
+    "frac": 0.05,
+    "n_routes": 345,
+    "mae": 1.181610571546775,
+    "mae_sd": 0.016290043572738184,
+    "r2": 0.0818061851822423
+   },
+   {
+    "frac": 0.1,
+    "n_routes": 691,
+    "mae": 1.1140003498637148,
+    "mae_sd": 0.011235197059759576,
+    "r2": 0.1573483459773651
+   },
+   {
+    "frac": 0.25,
+    "n_routes": 1728,
+    "mae": 1.0798909184604757,
+    "mae_sd": 0.01686521854381075,
+    "r2": 0.24275203600940978
+   },
+   {
+    "frac": 0.5,
+    "n_routes": 3456,
+    "mae": 1.0453086136739953,
+    "mae_sd": 0.0031088685118459075,
+    "r2": 0.3185862698138459
+   },
+   {
+    "frac": 1.0,
+    "n_routes": 6913,
+    "mae": 1.020871945307943,
+    "mae_sd": 0.0,
+    "r2": 0.35250748400875065
+   }
+  ],
+  "baseline_hour_mean_mae": 1.4481346384608622,
+  "n_test_routes": 1728
+ },
+ "permutation_importance": {
+  "service_span_hr": 0.2858434303181593,
+  "other_service_log": 0.06166365635632043,
+  "avg_speed_kmph": 0.04519116609434045,
+  "min_dist_norm": 0.032341256596957,
+  "trip_duration_min": 0.026830096469737625,
+  "rel_pos": 0.026097346088951756,
+  "hrs_to_end": 0.020712627601938965,
+  "hour_cos": 0.018328486389979637,
+  "n_stops": 0.01757461926159602,
+  "avg_stop_spacing_km": 0.016732320674423613,
+  "max_conn": 0.016537123907540103,
+  "mean_dist_norm": 0.016249921610602198,
+  "route_length_km": 0.014317070313776529,
+  "mean_conn": 0.012487272120032866,
+  "hub_frac": 0.00739319634066334
+ },
+ "interval_log_ratio": {
+  "q_lo": -1.1636172332726415,
+  "q_hi": 0.8876290180873664
+ },
+ "peer_gap_flag_counts": {
+  "in line with peers": 7775,
+  "relatively over-served vs peers": 433,
+  "relatively under-served vs peers": 433
+ },
+ "data_honesty": {
+  "kind": "real published GTFS schedules",
+  "passenger_data": false,
+  "limitation": "Learns operator service allocation, not passenger demand. Flags are screening signals that require ridership data to confirm."
+ },
+ "seconds": 306.7
+}
