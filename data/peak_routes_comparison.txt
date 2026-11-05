@@ -1,0 +1,41 @@
+
+NYC BUS ROUTE OPTIMIZATION
+PEAK HOUR ROUTE COMPARISON
+
+MORNING PEAK - 7 AM
+
+1. M15+ - 1,133,335
+2. Q25  - 798,538
+3. Q58  - 789,643
+4. B6   - 782,584
+5. Q44+ - 752,771
+6. BX12+ - 745,882
+7. Q27  - 569,222
+8. Q65  - 551,995
+9. M86+ - 536,072
+10. B8  - 520,393
+
+EVENING PEAK - 5 PM
+
+1. M15+ - 1,101,420
+2. Q25  - 732,052
+3. B6   - 681,856
+4. M86+ - 670,008
+5. Q58  - 651,872
+6. M15  - 631,535
+7. M4   - 614,777
+8. Q44+ - 590,989
+9. M101 - 578,738
+10. BX12+ - 540,722
+
+KEY FINDINGS:
+
+1. M15+ ranks first in both periods.
+2. Q25 ranks second in both periods.
+3. B6 ranks third in both periods.
+4. Several routes appear in both peak-hour lists.
+
+Note:
+These are cumulative ridership totals across all
+matching records in the dataset period, not
+average ridership per day.

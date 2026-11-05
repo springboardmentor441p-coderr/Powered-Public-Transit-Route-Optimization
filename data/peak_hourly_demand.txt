@@ -1,0 +1,32 @@
+
+NYC BUS ROUTE OPTIMIZATION
+PEAK PASSENGER DEMAND ANALYSIS
+
+Dataset: MTA Bus Hourly Ridership Beginning 2025
+
+TOP PASSENGER DEMAND HOURS:
+
+1. 7 AM  - 59,600,405 riders
+2. 8 AM  - 58,195,415 riders
+3. 5 PM  - 58,075,302 riders
+4. 4 PM  - 56,200,486 riders
+5. 3 PM  - 52,594,351 riders
+
+KEY FINDINGS:
+
+1. 7 AM records the highest passenger demand.
+2. 8 AM is the second busiest hour.
+3. 4 PM and 5 PM show high evening demand.
+4. 2 AM records the lowest passenger demand.
+
+CONCLUSION:
+
+Morning and evening commuting periods show
+substantial passenger demand.
+
+These periods should be investigated further
+for potential bus service optimization.
+
+Note:
+Values represent summed ridership across all
+routes in the queried dataset.

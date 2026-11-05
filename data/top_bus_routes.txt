@@ -1,0 +1,31 @@
+
+NYC BUS ROUTE OPTIMIZATION
+TOP 10 BUSIEST BUS ROUTES
+
+Analysis: Passenger Demand Analysis
+Dataset: MTA Bus Hourly Ridership Beginning 2025
+
+Results:
+
+1. M15+  - 12,891,630 riders
+2. Q25   - 9,469,397 riders
+3. B6    - 9,377,700 riders
+4. Q58   - 9,234,004 riders
+5. Q44+  - 8,847,952 riders
+6. M15   - 8,460,683 riders
+7. BX12+ - 7,656,623 riders
+8. M101  - 7,605,179 riders
+9. M86+  - 7,594,098 riders
+10. Q27  - 7,307,438 riders
+
+Key Findings:
+
+1. M15+ has the highest recorded ridership.
+2. Several Queens routes appear among the top 10.
+3. Several Manhattan routes also show high passenger demand.
+4. These routes can be investigated further for
+   potential service improvements.
+
+Note:
+These values represent total recorded ridership
+in the queried dataset, not average daily ridership.

@@ -1,0 +1,41 @@
+NYC BUS ROUTE OPTIMIZATION
+BOROUGH-WISE HOURLY BUS SPEED ANALYSIS
+
+Dataset: MTA Bus Route Segment Speeds Beginning 2025
+
+Findings:
+
+1. Bronx:
+   Slowest hour: 3 PM
+   Average speed: 6.924272
+
+2. Brooklyn:
+   Slowest hour: 4 PM
+   Average speed: 6.778660
+
+3. Manhattan:
+   Slowest hour: 2 PM
+   Average speed: 5.400375
+
+4. Other:
+   Slowest hour: 4 PM
+   Average speed: 8.285070
+
+5. Queens:
+   Slowest hour: 3 PM
+   Average speed: 7.958415
+
+6. Staten Island:
+   Slowest hour: 2 PM
+   Average speed: 10.608783
+
+Conclusion:
+The lowest average bus speeds generally occur between
+2 PM and 4 PM across the borough categories.
+
+This period can be investigated further for potential
+bus route optimization.
+
+Note:
+The speed measurement unit must be verified before
+reporting speeds as mph or km/h.
