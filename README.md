@@ -98,9 +98,10 @@ models/         Saved model artifacts
 outputs/reports/ Evaluation metrics
 ```
 
-The route review dashboard is available in `app.py`; route clustering and a
-live API remain later project work. Do not interpret route-level boardings as
-crowding or a causal measure of service quality.
+The route review dashboard and a read-only evaluation API are available;
+route clustering and a live prediction API remain later project work. Do not
+interpret route-level boardings as crowding or a causal measure of service
+quality.
 
 ## Route review dashboard
 
@@ -117,6 +118,18 @@ backtest. Choose a model or baseline, compare errors by day type, and sort or
 filter route-level MAE differences against the past-four-same-weekdays
 baseline. It reviews saved evaluation results; it does not issue live forecasts
 or recommend service changes.
+
+The same saved evaluation report is available through a local read-only API:
+
+```bash
+uvicorn src.api:app --reload
+```
+
+Open `http://127.0.0.1:8000/docs` for interactive API documentation. Main
+endpoints are `/api/v1/evaluations`, `/api/v1/summary?mode=fixed_origin`,
+`/api/v1/daytypes?mode=daily_rolling`, `/api/v1/routes?mode=fixed_origin&model=service_aware`,
+and `/api/v1/routes/47?mode=fixed_origin`. The API serves saved model metrics;
+it does not generate new predictions.
 
 ## Historical GTFS service import
 
