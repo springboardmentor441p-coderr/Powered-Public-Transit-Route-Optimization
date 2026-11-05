@@ -1,0 +1,75 @@
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Docker
+.docker/
+Dockerfile*
+docker-compose*.yml
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+frontend/*.log
+
+# Backend
+backend/venv/
+backend/.pytest_cache/
+backend/htmlcov/
+backend/*.log
+backend/__pycache__/
+backend/**/__pycache__/
+
+# Models
+backend/models/
+*.joblib
+*.pkl
+*.h5
+
+# Data
+data/
+*.csv
+*.parquet
+
+# Secrets
+*.pem
+*.key
+*.crt
+*.p12
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
