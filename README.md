@@ -98,9 +98,25 @@ models/         Saved model artifacts
 outputs/reports/ Evaluation metrics
 ```
 
-Route clustering, review ranking, API, and dashboard remain later project
-work. Do not interpret route-level boardings as crowding or a causal measure
-of service quality.
+The route review dashboard is available in `app.py`; route clustering and a
+live API remain later project work. Do not interpret route-level boardings as
+crowding or a causal measure of service quality.
+
+## Route review dashboard
+
+Install the project dependencies, then launch the local review app:
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+The dashboard reads the committed comparison report and lets you inspect the
+fixed-origin August forecast separately from the daily rolling development
+backtest. Choose a model or baseline, compare errors by day type, and sort or
+filter route-level MAE differences against the past-four-same-weekdays
+baseline. It reviews saved evaluation results; it does not issue live forecasts
+or recommend service changes.
 
 ## Historical GTFS service import
 
