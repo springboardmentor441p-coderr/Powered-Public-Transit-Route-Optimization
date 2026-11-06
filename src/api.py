@@ -1,10 +1,14 @@
-"""Read-only HTTP API for saved CTA route evaluation results."""
+"""HTTP API for saved CTA evaluation results and planning scenarios."""
 
 import json
 from pathlib import Path
 from typing import Literal
 
+import pandas as pd
 from fastapi import FastAPI, HTTPException, Query
+from pydantic import BaseModel, Field, StrictInt
+
+from .scenarios import optimize_trip_allocation
 
 REPORT_PATH = Path(__file__).resolve().parents[1] / "outputs" / "reports" / "service_model_comparison.json"
 REFERENCE = "past_four_same_weekdays"
@@ -12,11 +16,25 @@ REFERENCE = "past_four_same_weekdays"
 app = FastAPI(
     title="CTA Route Review API",
     description=(
-        "Read-only route and day-type forecast evaluation results. "
-        "Endpoints return saved evaluation metrics, not live forecasts."
+        "Route forecast evaluation results and bounded planning scenarios. "
+        "Forecast endpoints return saved evaluation metrics, not live predictions."
     ),
     version="1.0.0",
 )
+
+
+class ScenarioRoute(BaseModel):
+    route: str = Field(min_length=1, max_length=20)
+    predicted_rides: float = Field(ge=0)
+    scheduled_trips: StrictInt = Field(ge=1)
+
+
+class TripAllocationRequest(BaseModel):
+    routes: list[ScenarioRoute] = Field(min_items=1, max_items=300)
+    max_shift_pct: float = Field(
+        default=0.10, ge=0, le=0.5,
+        description="Maximum proportional change per route; 0.10 means 10 percent.",
+    )
 
 
 def _load_report() -> dict:
@@ -177,3 +195,18 @@ def route_detail(
             ),
         }
     return {"mode": mode, "route": route, "reference_method": REFERENCE, "methods": comparison}
+
+
+@app.post("/api/v1/scenarios/rebalance-trips", tags=["scenarios"])
+def rebalance_trips(request: TripAllocationRequest) -> dict:
+    """Optimize a bounded, trip-neutral allocation scenario from route forecasts."""
+    route_rows = [
+        row.model_dump() if hasattr(row, "model_dump") else row.dict()
+        for row in request.routes
+    ]
+    try:
+        return optimize_trip_allocation(
+            pd.DataFrame(route_rows), max_shift_pct=request.max_shift_pct
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc

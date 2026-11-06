@@ -207,3 +207,83 @@ with st.expander("How to read this review"):
         "- The fixed-origin and daily rolling modes use different forecast assumptions and should not be compared as if they were the same task."
     )
     st.caption(f"Report source: `{REPORT_PATH.relative_to(Path(__file__).parent)}`")
+
+st.divider()
+st.header("Trip allocation scenario sandbox")
+st.write(
+    "Upload one row per route with predicted daily boardings and current scheduled daily trips. "
+    "The scenario keeps the systemwide trip total unchanged and limits each route's trip change."
+)
+st.warning(
+    "This balances an aggregate boardings-per-trip proxy. It does not estimate vehicle load or crowding, "
+    "and it omits fleet, travel-time, peak-period, transfer, equity, and route-overlap constraints. "
+    "Review scenarios with a transit planner before using them."
+)
+
+sample_routes = pd.DataFrame({
+    "route": ["Example A", "Example B", "Example C"],
+    "predicted_rides": [12000, 7000, 5000],
+    "scheduled_trips": [20, 16, 14],
+})
+blank_template = pd.DataFrame(columns=["route", "predicted_rides", "scheduled_trips"])
+scenario_template, scenario_example = st.columns(2)
+scenario_template.download_button(
+    "Download blank CSV template",
+    blank_template.to_csv(index=False),
+    file_name="route_scenario_template.csv",
+    mime="text/csv",
+)
+scenario_example.download_button(
+    "Download synthetic example CSV",
+    sample_routes.to_csv(index=False),
+    file_name="synthetic_route_scenario_example.csv",
+    mime="text/csv",
+    help="Contains invented example values for trying the calculator; it is not CTA data.",
+)
+
+scenario_upload = st.file_uploader(
+    "Upload route forecast and scheduled trips CSV",
+    type=["csv"],
+    help="Required columns: route, predicted_rides, scheduled_trips. Use forecasts and trip counts for the same route and date/window.",
+)
+max_shift_percent = st.slider(
+    "Maximum change allowed per route",
+    min_value=0,
+    max_value=50,
+    value=10,
+    step=5,
+    format="%d%%",
+)
+if scenario_upload is not None:
+    try:
+        from src.scenarios import optimize_trip_allocation
+
+        scenario_input = pd.read_csv(scenario_upload, dtype={"route": "string"})
+        scenario_result = optimize_trip_allocation(
+            scenario_input, max_shift_pct=max_shift_percent / 100
+        )
+        result_routes = pd.DataFrame(scenario_result["routes"])
+        metric_a, metric_b, metric_c = st.columns(3)
+        metric_a.metric("Scheduled trips", f"{scenario_result['scenario_total_trips']:,}",
+                        delta=f"{scenario_result['scenario_total_trips'] - scenario_result['total_scheduled_trips']:+,} vs current")
+        metric_b.metric("Highest boardings per trip", f"{scenario_result['scenario_max_boardings_per_trip']:.1f}",
+                        delta=f"{scenario_result['scenario_max_boardings_per_trip'] - scenario_result['current_max_boardings_per_trip']:+.1f} vs current",
+                        delta_color="inverse")
+        metric_c.metric("Mean across routes", f"{scenario_result['scenario_mean_route_boardings_per_trip']:.1f}",
+                        delta=f"{scenario_result['scenario_mean_route_boardings_per_trip'] - scenario_result['current_mean_route_boardings_per_trip']:+.1f} vs current",
+                        delta_color="inverse")
+        st.caption(scenario_result["objective"])
+        st.dataframe(
+            result_routes.style.format({
+                "predicted_rides": "{:,.0f}",
+                "current_scheduled_trips": "{:,.0f}",
+                "scenario_scheduled_trips": "{:,.0f}",
+                "trip_change": "{:+,.0f}",
+                "boardings_per_current_trip": "{:,.1f}",
+                "boardings_per_scenario_trip": "{:,.1f}",
+            }),
+            use_container_width=True,
+            hide_index=True,
+        )
+    except (OSError, UnicodeDecodeError, pd.errors.ParserError, ValueError) as exc:
+        st.error(f"Could not calculate this scenario: {exc}")

@@ -98,8 +98,8 @@ models/         Saved model artifacts
 outputs/reports/ Evaluation metrics
 ```
 
-The route review dashboard and a read-only evaluation API are available;
-route clustering and a live prediction API remain later project work. Do not
+The route review dashboard and evaluation/scenario API are available; route
+clustering and a live prediction API remain later project work. Do not
 interpret route-level boardings as crowding or a causal measure of service
 quality.
 
@@ -116,10 +116,10 @@ The dashboard reads the committed comparison report and lets you inspect the
 fixed-origin August forecast separately from the daily rolling development
 backtest. Choose a model or baseline, compare errors by day type, and sort or
 filter route-level MAE differences against the past-four-same-weekdays
-baseline. It reviews saved evaluation results; it does not issue live forecasts
-or recommend service changes.
+baseline. It also accepts a route forecast CSV for a bounded trip-allocation
+scenario.
 
-The same saved evaluation report is available through a local read-only API:
+The saved evaluation report and scenario calculator are available through a local API:
 
 ```bash
 uvicorn src.api:app --reload
@@ -129,7 +129,39 @@ Open `http://127.0.0.1:8000/docs` for interactive API documentation. Main
 endpoints are `/api/v1/evaluations`, `/api/v1/summary?mode=fixed_origin`,
 `/api/v1/daytypes?mode=daily_rolling`, `/api/v1/routes?mode=fixed_origin&model=service_aware`,
 and `/api/v1/routes/47?mode=fixed_origin`. The API serves saved model metrics;
-it does not generate new predictions.
+it does not generate new predictions. Its
+`POST /api/v1/scenarios/rebalance-trips` endpoint accepts route-level predicted
+boardings, current scheduled trips, and an optional per-route change bound.
+
+Example request body:
+
+```json
+{
+  "routes": [
+    {"route": "1", "predicted_rides": 12000, "scheduled_trips": 20},
+    {"route": "2", "predicted_rides": 7000, "scheduled_trips": 16}
+  ],
+  "max_shift_pct": 0.1
+}
+```
+
+### Trip allocation scenario input
+
+For a scenario, prepare one row per route with these columns:
+
+```csv
+route,predicted_rides,scheduled_trips
+1,12000,20
+2,7000,16
+```
+
+The dashboard provides a blank template and a synthetic example. The scenario
+keeps the total number of trips fixed and minimizes the highest predicted
+boardings-per-trip ratio while respecting the selected route change limit.
+This ratio is a screening proxy, not a passenger load or crowding estimate.
+The scenario omits fleet cycles, travel times, peak-period demand, capacity,
+transfers, route overlap, and equity constraints; review it with a transit
+planner before using it to inform service changes.
 
 ## Historical GTFS service import
 
