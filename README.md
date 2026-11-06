@@ -163,6 +163,9 @@ The scenario omits fleet cycles, travel times, peak-period demand, capacity,
 transfers, route overlap, and equity constraints; review it with a transit
 planner before using it to inform service changes.
 
+See [MENTOR_REVIEW.md](docs/MENTOR_REVIEW.md) for the current assumptions and
+decisions to confirm before presenting scenario outputs as planning advice.
+
 ## Historical GTFS service import
 
 The eight dated archive IDs and SHA-256 values from the intern guide are listed
