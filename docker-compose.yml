@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: metroflow-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: transit
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d transit"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: metroflow-backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_SERVER: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: transit
+      JWT_SECRET_KEY: super-secret-key-metroflow-ai
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: admin123
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+      - ./data:/app/data
+    command: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: metroflow-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  pgdata:

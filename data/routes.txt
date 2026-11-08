@@ -1,0 +1,316 @@
+route_id,agency_id,route_short_name,route_long_name,route_type
+100,PMPML,100,Hinjawadi Maan Phase 3 ⇆ Ma Na Pa Dengle Pul Nadikathi,3
+103,PMPML,103,Kothrud Depot ⇆ Katraj,3
+104,PMPML,104,Dsk Vishwa ⇆ Shivaji Nagar,3
+107,PMPML,107,Pimplegurav ⇆ Ganpati Matha,3
+108,PMPML,108,Pune Station Moledina Road ⇆ Sutardara,3
+111M,PMPML,111M,Ma Na Pa Congress Bhavan ⇆ Bhekrai Nagar,3
+113,PMPML,113,Sangvi Vasantdada Putala ⇆ Vasant Talkies,3
+114,PMPML,114,Bajirao Padale Chowk Mhalunge ⇆ Ma Na Pa Main Gate,3
+115,PMPML,115,Hinjawadi Maan Phase 3 ⇆ Pune Station Moledina Stand,3
+117,PMPML,117,Dhayareshwar Mandir ⇆ Swargate Natraj Stand,3
+118A,PMPML,118A,Suncity ⇆ Swargate Natraj Stand,3
+118,PMPML,118,Vadgaon Budruk Stand ⇆ Swargate Natraj Stand,3
+119A,PMPML,119A,Charholigaon ⇆ Ma Na Pa Daphale Garage,3
+119,PMPML,119,Alandi ⇆ Ma Na Pa Daphale Garage,3
+11A,PMPML,11A,Kasarwadi Railway Station ⇆ Marketyard Depot,3
+11C,PMPML,11C,Pimplegurav ⇆ Katraj,3
+11,PMPML,11,Pimplegurav ⇆ Marketyard Depot,3
+120,PMPML,120,Endurance Systems Chakan Mahalunge ⇆ Bhosari Chakan Road,3
+121,PMPML,121,Bhosari Terminal ⇆ Ma Na Pa Main Stand,3
+122,PMPML,122,Chinchwadgaon ⇆ Ma Na Pa Main Stand,3
+123,PMPML,123,Nigdi Bhakti Shakti ⇆ Ma Na Pa Main Stand,3
+124,PMPML,124,Neilsoft Company infosys Phase 3 ⇆ Aundhgaon,3
+126,PMPML,126,Pimple Nilakh ⇆ Bopkhel,3
+12,PMPML,12,Shivaji Nagar ⇆ Upper Depot,3
+130,PMPML,130,Swargate ⇆ Narhegaon,3
+131,PMPML,131,Golegaon Gram Panchayat ⇆ Ma Na Pa Dengle Pul Nadikhathi,3
+132,PMPML,132,Shubham Society Nagar Road ⇆ Ma Na Pa Shramik Bhavan,3
+133A,PMPML,133A,Columbia Hospital ⇆ Ma Na Pa Shramik Bhavan,3
+133,PMPML,133,Anand Park Vadgaon Sheri Road ⇆ Ma Na Pa Shramik Bhavan,3
+135,PMPML,135,Ranjangaon Sandas ⇆ Ma Na Pa Shramik Bhavan,3
+136,PMPML,136,Vadegaon ⇆ Kesnand Phata Wagholi,3
+137,PMPML,137,Pargaon Salu Malu ⇆ Ma Na Pa Shramik Bhavan,3
+139A,PMPML,139A,Nigdi Bhakti Shakti Stand ⇆ Bhekrai Nagar,3
+139,PMPML,139,Nigdi Bhakti Shakti ⇆ Shewalewadi Depot,3
+13,PMPML,13,Shivaji Nagar ⇆ Upper Depot,3
+140A,PMPML,140A,Pune Station Jayprakash Stand ⇆ Katraj Kondhwa Road,3
+140,PMPML,140,Pune Station Jayprakash Stand ⇆ Upper Depot,3
+141,PMPML,141,Pune Station Jayprakash Stand ⇆ Kumar Pruthvi Kondhwa,3
+142,PMPML,142,Ghotawade Phata ⇆ Pune Station Moledina Stand,3
+143,PMPML,143,Pune Station Moledina Stand ⇆ Galinde Path,3
+144A,PMPML,144A,Pune Station Moledina Stand ⇆ Aditya Garden City,3
+144,PMPML,144,Pune Station Moledina Stand ⇆ Nda 10 No. Gate,3
+145,PMPML,145,Sutarwadi Depot ⇆ Pune Station Depot,3
+146,PMPML,146,Gokhale Nagar Police Line ⇆ Pune Station Jayprakash Stand,3
+147,PMPML,147,Nhavi Sandas ⇆ Ma Na Pa Shramik Bhavan,3
+148A,PMPML,148A,Bhosari Terminal ⇆ Bhekrai Nagar,3
+148,PMPML,148,Pimplegurav ⇆ Shewalewadi Depot,3
+149,PMPML,149,Nigdi Bhakti Shakti Stand ⇆ Hadapsar Gadital,3
+151,PMPML,151,Alandi ⇆ Pune Station Moledina Stand,3
+152,PMPML,152,Lohegaon ⇆ Ma Na Pa Daphale Garage,3
+153,PMPML,153,Alandi ⇆ Kharadi Gaon,3
+154,PMPML,154,Dimond Water Park ⇆ Pune Station Moledina Stand,3
+155,PMPML,155,Dimond Water Park ⇆ Pune Station Moledina Stand,3
+157,PMPML,157,JSPM Vidhyapith Wagholi ⇆ Ma Na Pa Shramik Bhavan,3
+158A,PMPML,158A,Dimond Water Park ⇆ Ma Na Pa Dengle Pul Nadikathi,3
+158,PMPML,158,Prime City Charholi ⇆ Ma Na Pa Dengle Pul Nadikathi,3
+159B,PMPML,159B,Loni Dhamni ⇆ Ma Na Pa Shramik Bhavan,3
+159,PMPML,159,Talegaon Dhamdhere Bazar ⇆ Ma Na Pa Shramik Bhavan,3
+15,PMPML,15,Dsk Vishwa ⇆ Bhekrai Nagar,3
+160,PMPML,160,Manjari Budruk ⇆ Shaniwarwada Stand,3
+161,PMPML,161,Zilla Parishad Shala Karegaon ⇆ Kesnand Phata Wagholi,3
+162,PMPML,162,Pabal Gaon ⇆ Ma Na Pa Shramik Bhavan,3
+163,PMPML,163,Dhole Patil Collage ⇆ Pune Station Ambedkar Putala,3
+164,PMPML,164,Nhavare ⇆ Ma Na Pa Shramik Bhavan,3
+165,PMPML,165,Vadgaon Sheri ⇆ Ma Na Pa Dengle Pul Nadikhathi,3
+166,PMPML,166,Lohgaon Airport ⇆ Pune Station Ambedkar Putala,3
+167,PMPML,167,Kesnand Phata Wagholi ⇆ Bhekrai Nagar,3
+168,PMPML,168,Keshav Nagar ⇆ Shaniwarwada Stand,3
+169,PMPML,169,Keshav Nagar ⇆ Shaniwarwada Stand,3
+172,PMPML,172,Pune Station Jayprakash Stand ⇆ Yewalewadi,3
+174,PMPML,174,Nda 10 No. Gate ⇆ Pune Station Moledina Stand,3
+175,PMPML,175,Hadapsar Gadital ⇆ Shaniwarwada Stand,3
+176,PMPML,176,Vadachi Wadi ⇆ Pune Station Depot,3
+177,PMPML,177,Bhangire Nagar Mahamadwadi ⇆ Pune Station Depot,3
+179,PMPML,179,Lohegaon Khandoba Mal ⇆ Hadapsar Gadital,3
+17,PMPML,17,Narhegaon ⇆ Shivaji Nagar,3
+180,PMPML,180,Bhekrai Nagar ⇆ Na Ta Wadi,3
+183,PMPML,183,Wagholi Kesnand Phata ⇆ Hadapsar Gadital Solapur Road,3
+184,PMPML,184,Ramdara ⇆ Hadapsar Gadital Solapur Road,3
+185,PMPML,185,Kesnand Phata Wagholi ⇆ Hadapsar Gadital,3
+186,PMPML,186,Jspm College ⇆ Hadapsar Gadital,3
+188,PMPML,188,Katraj Kondhwa Road ⇆ Hadapsar Gadital,3
+189,PMPML,189,Dhangar Vasti ⇆ Hadapsar Gadital,3
+192,PMPML,192,Vadachi Wadi ⇆ Hadapsar Gadital,3
+193,PMPML,193,Khutbav Gaon ⇆ Hadapsar Gadital Solapur Road,3
+195,PMPML,195,Holkarwadi ⇆ Hadapsar Gadital,3
+199,PMPML,199,Shewalewadi Depot ⇆ Kothrud Depot,3
+19A,PMPML,19A,Swargate ⇆ Yewalewadi,3
+19,PMPML,19,Swargate ⇆ Yewalewadi,3
+200,PMPML,200,Alandi ⇆ Shewalewadi Depot,3
+201,PMPML,201,Alandi ⇆ Bhekrai Nagar,3
+202,PMPML,202,Ganpati Matha ⇆ Shewalewadi Depot,3
+203,PMPML,203,Pune Station Moledina Stand ⇆ Shewalewadi Depot,3
+204,PMPML,204,Chinchwadgaon ⇆ Bhekrai Nagar,3
+205,PMPML,205,Sangvi Vasantdada Putala ⇆ Shewalewadi Depot,3
+207A,PMPML,207A,Saswad ⇆ Hadapsar Gadital,3
+207,PMPML,207,Saswad ⇆ Swargate,3
+208,PMPML,208,Hinjawadi Maan Phase 3 ⇆ Bhekrai Nagar,3
+209A,PMPML,209A,Saswad ⇆ Swargate,3
+209,PMPML,209,Saswad ⇆ Katraj Kondhwa Road,3
+210,PMPML,210,Midc Jejuri ⇆ Hadapsar Gadital,3
+211,PMPML,211,Uruli Kanchan ⇆ Saswad,3
+212,PMPML,212,Morgaon St Stand ⇆ Hadapsar Gadital,3
+213,PMPML,213,Nira ⇆ Hadapsar Gadital,3
+214,PMPML,214,Shingad Collage Ambegaon ⇆ Katraj,3
+215,PMPML,215,Swargate ⇆ Chintamani Dnyanpith,3
+216,PMPML,216,Shivaji Nagar ⇆ Bharati Vidyapeeth,3
+219,PMPML,219,Alandi ⇆ Kothrud Depot,3
+21,PMPML,21,Sangvi Vasantdada Putala ⇆ Swargate,3
+221,PMPML,221,I V Estate Wagholi ⇆ Wagholi Kesnand Phata,3
+225,PMPML,225,Hinjawadi Maan Phase 3 ⇆ Kharadi Gaon,3
+227A,PMPML,227A,Mhasoba Mandir Kharawade ⇆ Marketyard Depot,3
+227,PMPML,227,Marnewadi ⇆ Marketyard Depot,3
+228,PMPML,228,Vadgaon Mawal ⇆ Katraj,3
+231,PMPML,231,Shilim Gaon ⇆ Marketyard Depot,3
+232,PMPML,232,Gram Panchayat Belawade ⇆ Marketyard Depot,3
+233A,PMPML,233A,Kolwan Gaon ⇆ Marketyard Depot,3
+233B,PMPML,233B,Bhadasgaon ⇆ Marketyard Depot,3
+233,PMPML,233,Paud Shashkiy Vishram Gruh ⇆ Marketyard Depot,3
+234,PMPML,234,Dhole Patil Collage ⇆ Ma Na Pa Shramik Bhavan,3
+235,PMPML,235,Kharadi Gaon ⇆ Katraj,3
+236,PMPML,236,Kesnand Phata Wagholi ⇆ Katraj,3
+24A,PMPML,24A,Lohegaon Haran Tale ⇆ Katraj,3
+24,PMPML,24,Maharashtra Housing Board Samta Nagar ⇆ Katraj,3
+256,PMPML,256,Balewadi Depot ⇆ Pune Station Moledina Stand,3
+257A,PMPML,257A,Indian Oil Petrol Pump Tulapur ⇆ Wagholi Kesnand Phata,3
+257,PMPML,257,Alandi ⇆ Panaychi Taki Markal,3
+258,PMPML,258,Nilanjan Society Soosgaon ⇆ Ma Na Pa Main Gate,3
+262,PMPML,262,Sant Tukaram Maharaj Krida Sankul Dehugaon ⇆ Pune Station Moledina Stand,3
+264,PMPML,264,Pabal Gaon ⇆ Bhosari Pmt Chowk,3
+26,PMPML,26,Shivaji Nagar ⇆ Dhankawadi,3
+276,PMPML,276,Chinchwadgaon ⇆ Ganpati Matha,3
+277,PMPML,277,Bhosari Terminal ⇆ Kothrud Depot,3
+279,PMPML,279,Katar Khadak ⇆ Marketyard Depot,3
+281,PMPML,281,Nigdi Bhakti Shakti ⇆ Ganpati Matha,3
+282,PMPML,282,Bhosari Terminal ⇆ Ganpati Matha,3
+283,PMPML,283,Pune Station Moledina Stand ⇆ Kumbare Park,3
+290,PMPML,290,Swargate ⇆ Jambhulwadi,3
+291,PMPML,291,Hadapsar Gadital ⇆ Katraj Kondhwa Road,3
+292,PMPML,292,Kondhanpur ⇆ Balaji Nagar Corner Satara Road,3
+293,PMPML,293,Saswad ⇆ Balaji Nagar Corner Satara Road,3
+296A,PMPML,296A,Vangniwadi ⇆ Balaji Nagar Corner Satara Road,3
+296,PMPML,296,Velhe ⇆ Balaji Nagar Corner Satara Road,3
+297,PMPML,297,Shivaji Nagar ⇆ Rajas Society,3
+298,PMPML,298,Chinchwadgaon ⇆ Gujarwadi Pmt Bus Stand,3
+299,PMPML,299,Bhosari Terminal ⇆ Gujarwadi Pmt Bus Stand,3
+29,PMPML,29,Alandi ⇆ Swargate,3
+2A,PMPML,2A,Shivaji Nagar ⇆ Katraj,3
+2,PMPML,2,Shivaji Nagar ⇆ Swargate,3
+301A,PMPML,301A,Bhekrai Nagar ⇆ Katraj,3
+301,PMPML,301,Shewalewadi Depot ⇆ Katraj,3
+302A,PMPML,302A,Alandi ⇆ Pimprigaon,3
+302,PMPML,302,Bhosari Gavhane Vasti ⇆ Pimprigaon,3
+303A,PMPML,303A,Gahunjegaon ⇆ Nigdi Pawale Chowk,3
+303,PMPML,303,Akurdi Railway Station ⇆ Nigdi Pawale Chowk,3
+304,PMPML,304,Bhosari Gavhane Vasti ⇆ Chinchwadgaon,3
+305A,PMPML,305A,Greenbase Industrial Park Navlakh Umbre ⇆ Nigdi Pawale Chowk,3
+305B,PMPML,305B,Mindewadi Navlakh Umbre ⇆ Nigdi Pawale Chowk,3
+305,PMPML,305,Vadgaon Mawal ⇆ Nigdi Pawale Chowk,3
+306A,PMPML,306A,Hinjewadi Hills Dattawadi ⇆ Dange Chowk,3
+306,PMPML,306,Megapolis Phase 3 ⇆ Dange Chowk,3
+307,PMPML,307,ISKCON Mandir in Shindewasti Ravet ⇆ Chinchwadgaon,3
+308,PMPML,308,Gharkul Vasahat Chikhali ⇆ Nigdi Pawale Chowk,3
+309,PMPML,309,Sant Tukaram Maharaj Krida Sankul Dehugaon ⇆ Alandi,3
+30,PMPML,30,Ghotawade Phata ⇆ Marketyard Depot,3
+312,PMPML,312,Chinchwadgaon ⇆ Pune Station Depot,3
+313,PMPML,313,Chandkhed ⇆ Chinchwadgaon,3
+314,PMPML,314,Chakan Ambethan Chowk ⇆ Nigdi Pawale Chowk,3
+315,PMPML,315,Bhosari Pmt Chowk ⇆ Pune Station Sassoon Road,3
+316,PMPML,316,Katar Khadak ⇆ Chinchwadgaon,3
+317,PMPML,317,Sambhaji Nagar ⇆ Pune Station Depot,3
+320,PMPML,320,Hinjawadi Maan Phase 3 ⇆ Chinchwadgaon,3
+321,PMPML,321,Megapolis Phase 3 ⇆ Neilsoft Company infosys Phase 3,3
+322A,PMPML,322A,Akurdi Railway Station ⇆ Ganpati Matha,3
+322,PMPML,322,Akurdi Railway Station ⇆ Ma Na Pa Main Gate,3
+323A,PMPML,323A,Gharkul Vasahat Chikhali ⇆ Ma Na Pa Main Stand,3
+323,PMPML,323,Nageshwar Vidyalaya Chikhli ⇆ Ma Na Pa Main Stand,3
+324,PMPML,324,Hinjawadi Maan Phase 3 ⇆ Bhosari Terminal,3
+326,PMPML,326,Nageshwar Vidyalaya Chikhli ⇆ Pimprigaon,3
+327,PMPML,327,Hinjawadi Maan Phase 3 ⇆ Alandi,3
+329,PMPML,329,Siddhanta College Sudumbare ⇆ Pimpri Road,3
+330,PMPML,330,Talegaon Dhabhade Maruti Mandir ⇆ Sant Tukaram Maharaj Krida Sankul Wadacha Mal Dehugaon,3
+331A,PMPML,331A,Pimple Saudagar- Mahadev Mandir / Pimple Saudagar ⇆ Charholigaon Burde Vasti,3
+331B,PMPML,331B,Pimple Saudagar- Mahadev Mandir / Pimple Saudagar ⇆ Charholigaon,3
+331,PMPML,331,Pimple Saudagar- Mahadev Mandir / Pimple Saudagar ⇆ Bhosari Gavhane Vasti,3
+332,PMPML,332,Tata Motors Bebadohal ⇆ Nigdi Pawale Chowk,3
+333,PMPML,333,Hinjawadi Maan Phase 3 ⇆ Pune Station Moledina Stand,3
+334,PMPML,334,Gharkul Vasahat Chikhali ⇆ Pimprigaon,3
+336,PMPML,336,Nigdi Bhakti Shakti ⇆ Kesnand Phata Wagholi,3
+337,PMPML,337,Dsk Vishwa ⇆ Nigdi Bhakti Shakti Stand,3
+339,PMPML,339,Sant Nagar Rto Office ⇆ Gujarwadi Pmt Bus Stand,3
+340,PMPML,340,Alandi ⇆ Nigdi Pawale Chowk,3
+341,PMPML,341,Urse Gaon Vasudev Aashram ⇆ Nigdi Pawale Chowk,3
+342,PMPML,342,Vasudev Aashram Ursegaon ⇆ Nigdi Pawale Chowk,3
+343,PMPML,343,Talegaon Dhabhade Maruti Mandir ⇆ Chakan Ambethan Chowk,3
+344,PMPML,344,Baner Depot ⇆ Alandi,3
+345,PMPML,345,Hinjawadi Maan Phase 3 ⇆ Bhosari Terminal,3
+346,PMPML,346,Bhosari Pmt Chowk ⇆ Kesnand Phata Wagholi,3
+348,PMPML,348,Nigdi Bhakti Shakti ⇆ Pune Station Moledina Stand,3
+34,PMPML,34,Nigdi Pawale Chowk ⇆ Aundhgaon,3
+350,PMPML,350,Sant Tukaram Maharaj Krida Sankul Dehugaon ⇆ Nigdi Tilak Chowk,3
+351,PMPML,351,Jambe ⇆ Alandi,3
+352,PMPML,352,Rajguru Nagar Low Collage ⇆ Pune Station Sassoon Road,3
+353,PMPML,353,Shikrapur Phata ⇆ Chakan Ambethan Chowk,3
+354,PMPML,354,Pimprigaon ⇆ Marketyard Depot,3
+355A,PMPML,355A,Nageshwar Vidyalaya Chikhli ⇆ Radha Hotel,3
+355,PMPML,355,Nageshwar Vidyalaya Chikhli ⇆ Radha Hotel,3
+355M,PMPML,355M,Nageshwar Vidyalaya Chikhli ⇆ Dange Chowk,3
+356,PMPML,356,Sector no. 12 PM Awas Yojana Bhosari ⇆ Nashik Phata Metro Station,3
+357,PMPML,357,Bhosari Terminal ⇆ Pune Station Sassoon Road,3
+358A,PMPML,358A,Bhamchandra Vidhyalay Vasuli ⇆ Bhosari Chakan Road,3
+358,PMPML,358,Rajguru Nagar Low Collage ⇆ Bhosari Chakan Road,3
+359A,PMPML,359A,Rajguru Nagar Low Collage ⇆ Pimplegurav,3
+35,PMPML,35,Mukai Chowk ⇆ Ma Na Pa Dengle Pul Nadikathi,3
+360A,PMPML,360A,Aundhgaon ⇆ Alandi,3
+360,PMPML,360,Bajirao Padale Chowk Mhalunge ⇆ Alandi,3
+361,PMPML,361,Bhosari Pmt Chowk ⇆ Alandi,3
+362,PMPML,362,Ycm Hospital ⇆ Alandi,3
+363,PMPML,363,Samir Lawns Ravet ⇆ Pimpri Road,3
+364,PMPML,364,Chakan Ambethan Chowk ⇆ Alandi,3
+366,PMPML,366,Nigdi Bhakti Shakti ⇆ Pune Station Depot,3
+367,PMPML,367,Mukai Chowk ⇆ Bhosari Gavhane Vasti,3
+367M,PMPML,367M,Mukai Chowk ⇆ Bhosari Gavhane Vasti,3
+368,PMPML,368,Lonavala Railway Station ⇆ Nigdi Pawale Chowk,3
+369,PMPML,369,Bhamchandra Vidhyalay Vasuli ⇆ Nigdi Tilak Chowk,3
+370,PMPML,370,Davdigaon ⇆ Bhosari Chakan Road,3
+371,PMPML,371,Takve Bhoyregaon ⇆ Nigdi Pawale Chowk,3
+372,PMPML,372,Megapolis Phase 3 ⇆ Nigdi Bhakti Shakti Stand,3
+372M,PMPML,372M,Megapolis Phase 3 ⇆ Nigdi Bhakti Shakti Stand,3
+373,PMPML,373,Neilsoft Company infosys Phase 3 ⇆ Sangvi Vasantdada Putala,3
+374A,PMPML,374A,Gahunjegaon ⇆ Nigdi Pawale Chowk,3
+374,PMPML,374,Virbaba Chowk Sai Nagar ⇆ Nigdi Pawale Chowk,3
+375,PMPML,375,Neilsoft Company infosys Phase 3 ⇆ Nigdi Pawale Chowk,3
+376,PMPML,376,Pimprigaon ⇆ Ma Na Pa Main Stand,3
+37,PMPML,37,Wakdewadi Navin ST Stand ⇆ Sahakar Nagar,3
+380,PMPML,380,Hinjawadi Maan Phase 3 ⇆ Bhosari Terminal,3
+381,PMPML,381,Megapolis Phase 3 ⇆ Nageshwar Vidyalaya Chikhli,3
+38,PMPML,38,Na Ta Wadi ⇆ Dhankawadi,3
+39,PMPML,39,Pune Station Jayprakash Stand ⇆ Dhankawadi,3
+41,PMPML,41,Sangvi Vasantdada Putala ⇆ Upper Depot,3
+42,PMPML,42,Nigdi Bhakti Shakti ⇆ Gujarwadi Pmt Bus Stand,3
+43A,PMPML,43A,Hinjawadi Maan Phase 3 ⇆ Katraj,3
+43,PMPML,43,Nigdi Bhakti Shakti Stand ⇆ Katraj,3
+44,PMPML,44,Akurdi Railway Station ⇆ Katraj,3
+47,PMPML,47,Sanaswadi Nandoshi ⇆ Swargate,3
+4,PMPML,4,Shivaji Nagar ⇆ Swargate,3
+50,PMPML,50,Sinhgad ⇆ Shaniwarwada Stand,3
+51,PMPML,51,Dsk Vishwa ⇆ Shivaji Nagar,3
+52A,PMPML,52A,Varasgaon Goradwadi ⇆ Swargate,3
+52,PMPML,52,Khanapur ⇆ Swargate,3
+55,PMPML,55,Shanipar Stand ⇆ Suncity,3
+57,PMPML,57,Vadgaon Budruk Stand ⇆ Pune Station Jayprakash Stand,3
+58,PMPML,58,Gokhale Nagar Police Line ⇆ Shanipar Stand,3
+59,PMPML,59,Niljyoti Society ⇆ Shanipar Stand,3
+5,PMPML,5,Pune Station Moledina Stand ⇆ Swargate,3
+60,PMPML,60,Ghule Nagar Vadgaon Budruk ⇆ Swargate,3
+61,PMPML,61,Sarola ⇆ Balaji Nagar Corner Satara Road,3
+64,PMPML,64,Nda 10 No. Gate ⇆ Bhekrai Nagar,3
+64M,PMPML,64M,Ganpati Matha ⇆ Hadapsar Gadital,3
+65A,PMPML,65A,Patas ⇆ Hadapsar Gadital Solapur Road,3
+66,PMPML,66,Thakarwadi ⇆ Marketyard Depot,3
+67A,PMPML,67A,Uruli Kanchan ⇆ Swargate,3
+67,PMPML,67,Uruli Kanchan ⇆ Hadapsar Gadital Solapur Road,3
+68,PMPML,68,Upper Depot ⇆ Sutardara,3
+69,PMPML,69,Ghotawadegaon ⇆ Marketyard Depot,3
+6,PMPML,6,Pune Station Moledina Stand ⇆ Swargate,3
+70,PMPML,70,Mulshi Gaon ⇆ Marketyard Depot,3
+72,PMPML,72,Nda 10 No. Gate ⇆ Sukhsagar Nagar,3
+73,PMPML,73,Gada Modi Chowk Khamgaon ⇆ Hadapsar Gadital Solapur Road,3
+74,PMPML,74,Paud Shashkiy Vishram Gruh ⇆ Chinchwadgaon,3
+77,PMPML,77,Hinjawadi Maan Phase 3 ⇆ Ganpati Matha,3
+78,PMPML,78,Nda 10 No. Gate ⇆ Marketyard Depot,3
+81,PMPML,81,Pune Station Moledina Stand ⇆ Kumbare Park,3
+83,PMPML,83,Alandi ⇆ Nda 10 No. Gate,3
+84A,PMPML,84A,Sangrun ⇆ Deccan Gymkhana,3
+84,PMPML,84,Mutha Gaon ⇆ Deccan Gymkhana,3
+85,PMPML,85,Khadewadi ⇆ Ma Na Pa Congress Bhavan,3
+86,PMPML,86,Paud St Stand ⇆ Deccan Gymkhana,3
+87A,PMPML,87A,Zilla Parishad School Chande ⇆ Deccan Gymkhana,3
+87,PMPML,87,Sutarwadi Depot ⇆ Deccan Gymkhana,3
+90,PMPML,90,Gokhale Nagar Police Line ⇆ Katraj,3
+91,PMPML,91,Isha Nagari ⇆ Ma Na Pa Congress Bhavan,3
+92,PMPML,92,Venutai Chavan College ⇆ Kothrud Depot,3
+94,PMPML,94,Pune Station Moledina Stand ⇆ Matalwadi Bhugaon,3
+95,PMPML,95,PVPIT College Bawdhan ⇆ Deccan Gymkhana,3
+97,PMPML,97,Sahakar Nagar ⇆ Ganpati Matha,3
+98,PMPML,98,Kesnand Phata Wagholi ⇆ Ganpati Matha,3
+99,PMPML,99,Kekan Gas ⇆ Kothrud Depot,3
+AP2,PMPML,AP2,Upper Depot ⇆ Katraj Kondhwa Road,3
+B2,PMPML,B2,DY Patil College Charholi ⇆ Alandi,3
+H11,PMPML,H11,Sanket Vihar Lane No 18 ⇆ Hadapsar Gadital,3
+H3,PMPML,H3,Saswad Road Railway Station ⇆ Mantri Market Hadapsar,3
+H8,PMPML,H8,Fursungi ⇆ Hadapsar Gadital,3
+H9,PMPML,H9,Manjari Budruk ⇆ Hadapsar Gadital Solapur Road,3
+K11,PMPML,K11,Katraj ⇆ Jambhulwadi,3
+K12A,PMPML,K12A,Katraj ⇆ Nandanvan City Narhe,3
+K12,PMPML,K12,Katraj ⇆ Abhinav Collage Narhe,3
+K14,PMPML,K14,Gujarwadi ⇆ Katraj,3
+K16,PMPML,K16,Yewalewadi ⇆ Katraj,3
+K18,PMPML,K18,Katraj ⇆ Waghjai Nagar Shivaji Chowk,3
+K7,PMPML,K7,Sneha Vihar Dangat Patil Nagar ⇆ Deccan Gymkhana,3
+METRO SHUTTLE 13,PMPML,METRO SHUTTLE 13,Swargate ⇆ Upper Depot,3
+METRO SHUTTLE 17,PMPML,METRO SHUTTLE 17,Shivaji Nagar Civil Court Metro Station ⇆ Hadapsar Gadital,3
+METRO SHUTTLE 20,PMPML,METRO SHUTTLE 20,PANCHSHIL TOWERS E VON GATE NO. 2 Kharadi ⇆ Ramwadi Metro Station,3
+METRO SHUTTLE 2,PMPML,METRO SHUTTLE 2,Ganpati Matha ⇆ Deccan Gymkhana,3
+METRO SHUTTLE 31,PMPML,METRO SHUTTLE 31,Kalewadi Phata ⇆ Pimpri Chowk Metro Station,3
+METRO SHUTTLE 32,PMPML,METRO SHUTTLE 32,Nigdi Bhakti Shakti ⇆ Nashik Phata,3
+N15,PMPML,N15,Rupee Nagar ⇆ Nigdi Pawale Chowk,3
+N16,PMPML,N16,Nageshwar Vidyalaya Chikhli ⇆ Akurdi Khandoba Maal,3
+P13,PMPML,P13,Walhekarwadi ⇆ Pimpri Chowk Metro Station,3
+RATRANI 1,PMPML,RATRANI 1,Mariaai Gate Navin St Stand ⇆ Katraj,3
+RATRANI 2,PMPML,RATRANI 2,Pune Station Moledina Stand ⇆ Katraj,3
+RATRANI 3,PMPML,RATRANI 3,Hadapsar Gadital ⇆ Swargate,3
+RATRANI 4,PMPML,RATRANI 4,Pune Station St. Helena'S Stand ⇆ Hadapsar Gadital,3
+RATRANI 7,PMPML,RATRANI 7,Nda 10 No. Gate ⇆ Pune Station Moledina Stand,3
