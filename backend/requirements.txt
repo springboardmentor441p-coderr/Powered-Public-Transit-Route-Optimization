@@ -1,0 +1,12 @@
+fastapi[all]
+uvicorn
+SQLAlchemy
+psycopg2-binary
+python-jose[cryptography]
+passlib
+pandas
+alembic
+scikit-learn
+joblib
+pytest
+tensorflow
