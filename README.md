@@ -5,24 +5,53 @@ route. The intern guide sets the core requirements: preserve real observations,
 align by route and exact date, compare forecasts with seasonal baselines, and
 describe results as retrospective until CTA publication timing is verified.
 
-## Mentor guide v3 work in progress
+## Mentor guide v3: selected development model
 
-The current Colab workflow is being aligned to the mentor's 10 Nov 2026 v3
-guide. Open [notebooks/cta_ridership_colab.ipynb](notebooks/cta_ridership_colab.ipynb)
-in Colab and run from the top. It compares last-week and past-four-weekday
+The Colab workflow follows the mentor's 10 Nov 2026 v3 guide. Open
+[notebooks/cta_ridership_colab.ipynb](notebooks/cta_ridership_colab.ipynb) in
+Colab and run from the top. It compares last-week and past-four-weekday
 baselines with pooled Linear Regression, Random Forest, and the earlier
 HistGradientBoosting model. Validation MAE selects the serving method; the
 matched demand-only/service-aware comparison uses identical route/date rows.
-The v3 model bundle and report are separate from the existing v2 artifacts.
+
+The first v3 run selected the **demand-only Random Forest** on paired validation
+data (MAE 340.96, WAPE 6.51% on 6,859 rows). On the matched June-July test rows,
+it scored MAE 373.60, RMSE 632.49, and WAPE 7.58% on 7,014 rows. The matched
+past-four-same-weekdays baseline scored MAE 402.65 and WAPE 8.17%, so the
+selected model reduced MAE and WAPE by about 7.2%. The service-aware Random
+Forest was slightly better on this test (MAE 371.89) but worse on validation
+(MAE 350.88), so validation-based selection correctly keeps demand-only as the
+current development champion; the test-period difference alone is not grounds
+to switch models.
+
+This is a daily rolling one-step replay: each test-day prediction may use
+observed ridership through the assumed D-1 cutoff, including actual rides from
+earlier test days. It is not a forecast issued once for the full two-month
+horizon. June-July was also evaluated in earlier project iterations, so this
+is development evidence rather than a fresh final holdout.
 
 The mentor's frozen ridership CSV was not supplied with the updated guide. The
 notebook therefore downloads the current official export unless
 My Drive/cta_bus_ridership.csv is present, fingerprints the exact bytes, and
 records whether its hash matches the guide. If it does not match, treat the run
-as updated-source development evidence, not an exact reproduction. June–July
-2026 was already evaluated in earlier iterations, so those scores are not a
-fresh final holdout. The one-day ridership reporting delay is an explicit but
-unverified assumption.
+as updated-source development evidence, not an exact reproduction. The
+one-day ridership reporting delay is an explicit but unverified assumption.
+
+For this run the input SHA-256 was
+`d9675570e50a1b3d1fe7142ea9b10ba76099c1312ab0c227745ac57205eb5c04`, which
+does not match the mentor snapshot hash. The training targets nevertheless
+covered the guide's demand-only date windows and row counts. For the paired
+window, strict same-day GTFS exclusion left 2025-11-23 without an eligible
+snapshot; there were 14,415 matched training rows (86 fewer than the guide's
+reference count), 6,859 validation rows, and 7,014 test rows. The test schedule
+coverage was 7,014 of 7,109 demand rows (98.66%). Because the eight schedules
+were uploaded as extracted folders, their table fingerprints are recorded but
+the original ZIP SHA-256 values are unverified.
+
+The reviewed metrics, GTFS import audit, forecast-only replay, and separate
+actuals-for-scoring file are preserved in `outputs/reports/` and
+`outputs/predictions/`. The 161 MB trained joblib file is in the Colab result
+bundle saved under My Drive/CTA_RouteRanker_v3; it is not committed to Git.
 
 After training, `src.predict_v3.predict_daily_routes` loads the selected v3
 bundle and forecasts one issue date at a time. It rejects ridership newer than
@@ -58,12 +87,12 @@ evaluating the test period. Current lag features use observed historical
 boardings; the source publication delay has not been established, so outputs
 are retrospective experiments and not operational next-day forecasts.
 
-## Run training
+## Run previous v2 training locally
 
-For browser-based training, open
-[notebooks/cta_ridership_colab.ipynb](notebooks/cta_ridership_colab.ipynb)
-in Google Colab and follow the cells. It can read the CSV from Google Drive or
-from a direct upload, then downloads the fitted model and metrics report.
+For the current mentor-guide v3 workflow, use the Colab notebook described
+above; its final cell downloads a ZIP containing the selected model, reports,
+and forecast/scoring CSVs. The local commands below continue to reproduce the
+older v2 pipeline for comparison.
 
 1. Create an environment and install dependencies:
 
