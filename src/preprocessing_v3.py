@@ -23,6 +23,7 @@ TARGET = "rides"
 def make_forecasting_features(
     observations: pd.DataFrame,
     reporting_delay_days: int = 1,
+    target_rows: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """Build exact route/calendar lags visible under a reporting-delay policy.
 
@@ -31,20 +32,44 @@ def make_forecasting_features(
     """
     if not isinstance(reporting_delay_days, int) or reporting_delay_days < 1:
         raise ValueError("reporting_delay_days must be a positive integer")
-    required = {"route", "date", "daytype", "rides"}
-    if not required.issubset(observations.columns):
-        raise ValueError(f"Observations must contain {sorted(required)}")
-    frame = observations[["route", "date", "daytype", "rides"]].copy()
-    frame["route"] = frame["route"].astype("string").str.strip()
-    frame["date"] = pd.to_datetime(frame["date"], errors="coerce").dt.normalize()
-    frame["daytype"] = frame["daytype"].astype("string").str.strip().str.upper()
-    frame["rides"] = pd.to_numeric(frame["rides"], errors="coerce")
-    if frame[["route", "date", "daytype", "rides"]].isna().any().any():
+    required_history = {"route", "date", "daytype", "rides"}
+    if not required_history.issubset(observations.columns):
+        raise ValueError(f"Observations must contain {sorted(required_history)}")
+    history = observations[["route", "date", "daytype", "rides"]].copy()
+    history["route"] = history["route"].astype("string").str.strip()
+    history["date"] = pd.to_datetime(history["date"], errors="coerce").dt.normalize()
+    history["daytype"] = history["daytype"].astype("string").str.strip().str.upper()
+    history["rides"] = pd.to_numeric(history["rides"], errors="coerce")
+    if history[["route", "date", "daytype", "rides"]].isna().any().any():
         raise ValueError("Observations contain missing route/date/daytype/rides values")
-    if frame.duplicated(["route", "date"]).any():
+    if history.duplicated(["route", "date"]).any():
         raise ValueError("Observations must be unique by route/date")
-    if not frame["daytype"].isin(["W", "A", "U"]).all():
+    if not history["daytype"].isin(["W", "A", "U"]).all():
         raise ValueError("daytype must contain only W, A, or U")
+
+    if target_rows is None:
+        frame = history.copy()
+    else:
+        required_targets = {"route", "date", "daytype"}
+        if not required_targets.issubset(target_rows.columns):
+            raise ValueError(f"target_rows must contain {sorted(required_targets)}")
+        target_columns = ["route", "date", "daytype"]
+        if "rides" in target_rows.columns:
+            target_columns.append("rides")
+        frame = target_rows[target_columns].copy()
+        frame["route"] = frame["route"].astype("string").str.strip()
+        frame["date"] = pd.to_datetime(frame["date"], errors="coerce").dt.normalize()
+        frame["daytype"] = frame["daytype"].astype("string").str.strip().str.upper()
+        if "rides" in frame.columns:
+            frame["rides"] = pd.to_numeric(frame["rides"], errors="coerce")
+        if frame[["route", "date", "daytype"]].isna().any().any():
+            raise ValueError("target_rows contain missing route/date/daytype values")
+        if "rides" in frame.columns and frame["rides"].notna().any():
+            raise ValueError("target_rows must not include observed rides")
+        if frame.duplicated(["route", "date"]).any():
+            raise ValueError("target_rows must be unique by route/date")
+        if not frame["daytype"].isin(["W", "A", "U"]).all():
+            raise ValueError("target daytype must contain only W, A, or U")
 
     frame["day_of_week"] = frame["date"].dt.dayofweek.astype("int8")
     frame["month"] = frame["date"].dt.month.astype("int8")
@@ -53,7 +78,7 @@ def make_forecasting_features(
     # calendar predictor under the guide's declared known-calendar assumption.
     frame["is_sunday_holiday_daytype"] = frame["daytype"].eq("U").astype("int8")
 
-    lookup_base = frame[["route", "date", "rides"]]
+    lookup_base = history[["route", "date", "rides"]]
     for days, column in LAG_COLUMNS.items():
         lookup = lookup_base.rename(columns={"date": "source_date", "rides": column}).copy()
         lookup["date"] = lookup["source_date"] + pd.to_timedelta(days, unit="D")

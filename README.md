@@ -24,6 +24,14 @@ as updated-source development evidence, not an exact reproduction. June–July
 fresh final holdout. The one-day ridership reporting delay is an explicit but
 unverified assumption.
 
+After training, `src.predict_v3.predict_daily_routes` loads the selected v3
+bundle and forecasts one issue date at a time. It rejects ridership newer than
+the assumed reporting cutoff and, when the selected configuration needs
+schedules, requires route/date schedules with capture dates strictly before
+the forecast date. Pass known target routes and day types as a dataframe with
+`route`, `date`, and `daytype`; operational use still requires verifying CTA's
+publication timing and the calendar inputs.
+
 ## Previous v2 ML pipeline (kept for comparison)
 
 The target is measured daily rides for one route/date. Features include route,
