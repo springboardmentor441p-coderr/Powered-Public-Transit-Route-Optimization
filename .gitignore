@@ -1,0 +1,22 @@
+# Python environments and generated artifacts
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Reproducible processed data; keep the supplied raw feed tracked locally
+data/processed/
+
+# Frontend dependencies, build output, local environment, and package cache
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.npm-cache/
+
+# Common editor and operating system files
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini

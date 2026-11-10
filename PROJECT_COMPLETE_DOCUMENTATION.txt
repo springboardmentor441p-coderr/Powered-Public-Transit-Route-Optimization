@@ -1,0 +1,661 @@
+ROUTERANKER - COMPLETE PROJECT DOCUMENTATION
+Documentation snapshot: 2026-11-05
+Project: Chennai MTC GTFS schedule analytics and route clustering
+
+This document describes what is present in the source files, manifests and
+generated reports in this workspace. Planned capabilities are identified as
+future work. This is not deployment approval.
+
+======================================================================
+1. PROJECT OVERVIEW
+======================================================================
+
+Title
+RouteRanker - AI-Powered Public Transport Route Analysis and Optimization
+
+Problem statement and solution
+GTFS feeds contain linked route, trip, stop and timetable tables. Inspecting a
+large feed manually makes it hard to compare scheduled service, stop coverage
+and route overlap. RouteRanker validates the supplied Chennai Metropolitan
+Transport Corporation (MTC) feed, generates descriptive analyses and
+route/stop features, groups routes using unsupervised models, and presents the
+processed results in a web application.
+
+Implemented objectives
+- Read and validate the actual GTFS ZIP and produce typed Parquet tables.
+- Analyze routes, stops, scheduled trips, service times, headways, route-stop
+  coverage and shared-stop Jaccard similarity.
+- Build documented raw and normalized route, stop and route-pair features.
+- Fit K-Means and DBSCAN on supported schedule and stop-network features.
+- Expose generated summaries and saved results through a read-only API.
+- Display API results in a responsive React and TypeScript application.
+
+Scope and potential users
+Potential users include students, mentors, analysts and transit planners who
+need to examine this feed. Current use cases are route/stop search, scheduled
+feature comparison, headway/hour inspection, stop membership exploration and
+cluster profile review. There is no login system or external deployment.
+Despite the project title, there is no schedule optimization solver or
+explainable schedule what-if module in the current source. Models do not
+recommend adopted service changes. There is no passenger demand, occupancy,
+congestion, actual travel-time or real-time vehicle prediction.
+
+======================================================================
+2. PROJECT ARCHITECTURE
+======================================================================
+
+Architecture and data flow
+1. data/raw/mtc-gtfs.zip is the preserved source.
+2. backend/src/routeranker/ingestion reads GTFS text members, validates them,
+   and writes Parquet and quality reports to data/processed/gtfs/.
+3. The analysis module reads GTFS Parquet and writes EDA outputs to
+   data/processed/eda/.
+4. Feature engineering checks source/EDA values and writes route, stop and
+   pair features to data/processed/features/.
+5. Clustering fits/evaluates models and writes predictions, profiles and
+   models to data/processed/clustering/.
+6. FastAPI reads and caches these local files and returns typed JSON. API
+   requests do not ingest or retrain models.
+7. React pages call the API with Axios and render tables, Recharts charts and
+   Leaflet stop markers.
+
+Storage and database status
+Persistence is local files: Parquet, CSV, JSON, Markdown, PNG and joblib.
+There is no active SQL database or database server. DuckDB is declared only as
+an optional analytics dependency and is not imported by the current code.
+Pandas is not imported. Polars is the dataframe engine used by preprocessing
+and API reads.
+
+The default browser API base is http://127.0.0.1:8000/api/v1. CORS is
+restricted to configured origins. The map uses actual GTFS stop coordinates
+and does not connect markers into invented route geometry.
+
+======================================================================
+3. COMPLETE FOLDER AND FILE EXPLANATION
+======================================================================
+
+Root files
+- AGENTS.md: data integrity, code organization and safe-rendering rules.
+- PROJECT_PLAN.md: initial archive inventory and plan, phase implementation
+  statuses and current validation/deployment caveats. Later status sections
+  supersede historical notes where status changed.
+- README.md: architecture, setup, tests, build and deployment preparation.
+- PROJECT_COMPLETE_DOCUMENTATION.txt: this detailed reference.
+- .gitignore: ignores Python environments/caches, processed data, frontend
+  node_modules/dist, local configuration and editor/OS files.
+- .venv/: local Python 3.12 virtual environment and installed packages;
+  ignored by Git. Its internals are excluded from this file-by-file listing.
+
+Data folders
+- data/raw/mtc-gtfs.zip: supplied source archive; preserve it.
+- data/processed/gtfs/: source-preserving Parquet tables and Phase 1 reports.
+- data/processed/eda/: summaries, overlap tables, charts and EDA reports.
+- data/processed/features/: raw/normalized features, dictionary, parameters
+  and validation reports.
+- data/processed/clustering/: model files, predictions, metrics, profiles,
+  PCA files and ML reports.
+Processed data is ignored by Git and must be regenerated if missing.
+
+Backend files
+- backend/pyproject.toml: Python metadata and dependencies; pins
+  scikit-learn 1.5.0 and NumPy below 2.0 for saved models.
+- backend/.env.example: example artifact root and local CORS values. Uvicorn
+  does not load it automatically.
+- backend/README.md: processing commands, API reference examples, limitations
+  and compatibility notes.
+- backend/src/routeranker/__init__.py: root package marker.
+- ingestion/__init__.py: ingestion exports.
+- ingestion/schemas.py: required/optional GTFS file and key schemas.
+- ingestion/time.py: GTFS time parsing, including hour values above 24.
+- ingestion/pipeline.py: ZIP reading, validation, typed columns, Parquet and
+  JSON/Markdown quality reports.
+- analysis/__init__.py: analysis package marker.
+- analysis/eda.py: route, stop, schedule, headway, coverage, overlap, chart and
+  report calculations.
+- features/__init__.py: feature package marker.
+- features/source_validation.py: independent source ZIP snapshot/metric
+  checks against feature outputs.
+- features/engineering.py: raw and normalized route, stop and pair features,
+  dictionary and validation.
+- clustering/__init__.py: clustering package marker.
+- clustering/route_clusters.py: quality checks, preprocessing, models,
+  candidate evaluation, profiles, PCA outputs and model persistence.
+- api/__init__.py: API package marker.
+- api/app.py: FastAPI app, routers, CORS, health and error handlers.
+- api/config.py: artifact path and CORS environment settings.
+- api/data_access.py: Polars CSV/Parquet/report repository.
+- api/schemas.py: explicit Pydantic API response models.
+- api/services.py: joins, filters, comparisons, summaries, assignments and
+  cached trusted-local model metadata reads.
+- api/routes/__init__.py: route group package marker.
+- api/routes/dependencies.py: dependency injection.
+- api/routes/routes.py: route list, detail, features, assignments and compare.
+- api/routes/stops.py: stop list/detail, routes-at-stop and route counts.
+- api/routes/analytics.py: dataset summaries, hours, headways, similarity
+  and cluster profiles.
+- api/routes/machine_learning.py: saved models, assignments, clusters and
+  evaluation metrics.
+- backend/src/routeranker_backend.egg-info/: generated editable-install
+  package metadata, not application logic.
+
+Backend tests
+- tests/test_ingestion.py: schemas, references, duplicates, calendars,
+  after-midnight values and Parquet output.
+- tests/test_eda.py: schedule, route, stop and headway calculations.
+- tests/test_features.py: features, normalization and source consistency.
+- tests/test_clustering.py: cluster outputs, inactive routes, missingness and
+  random-seed repeatability.
+- tests/test_api_services.py: service joins, filters and missing files.
+- tests/test_api.py: four FastAPI TestClient tests; HTTPX is required.
+- tests/test_live_api_integration.py: five optional live HTTP tests using
+  urllib; enabled with ROUTERANKER_TEST_API_BASE_URL.
+
+Frontend files
+- frontend/package.json: npm scripts and dependency ranges.
+- frontend/package-lock.json: resolved dependency lockfile for npm ci.
+- frontend/.env.example: local API URL template.
+- frontend/.env.production.example: production URL template; Vite values are
+  public browser configuration and must not contain secrets.
+- frontend/.env.local: ignored local configuration; values are not included.
+- frontend/index.html: Vite HTML entry and page metadata.
+- frontend/vite.config.ts: React/Tailwind plugins and Vite server settings.
+- frontend/tsconfig.json: TypeScript project references.
+- frontend/tsconfig.app.json: strict application TypeScript settings.
+- frontend/tsconfig.node.json: strict Vite-config TypeScript settings.
+- frontend/src/main.tsx: React startup and stylesheet import.
+- frontend/src/App.tsx: BrowserRouter routes, lazy pages and loading fallback.
+- frontend/src/styles.css: Tailwind and shared/Leaflet styles.
+- frontend/src/types/api.ts: API response types.
+- frontend/src/services/api.ts: Axios methods, cache, API base URL, pagination
+  for map stops and error messages.
+- frontend/src/hooks/useResource.ts: reusable loading/error/retry state.
+- frontend/src/components/AppShell.tsx: navigation, responsive page frame and
+  health indicator.
+- frontend/src/components/ui.tsx: shared panels, notices, loading/error/empty
+  states, metrics and formatters.
+- frontend/src/pages/OverviewPage.tsx: totals, hourly chart, headways, cluster
+  counts and data limitations.
+- frontend/src/pages/RoutesPage.tsx: search, filters, pagination, route
+  details, features and saved assignments.
+- frontend/src/pages/StopsPage.tsx: stop search/pagination and route membership.
+- frontend/src/pages/NetworkMapPage.tsx: actual stop-coordinate map and
+  shapes.txt limitation.
+- frontend/src/pages/InsightsPage.tsx: cluster profiles and metrics; no PCA
+  chart because no API PCA-coordinate endpoint exists.
+- frontend/src/pages/ComparePage.tsx: select 2-20 routes and compare values.
+- frontend/scripts/e2e-smoke.mjs: Chrome/Edge DevTools Protocol workflows.
+- frontend/node_modules/: installed third-party packages, not described
+  individually.
+- frontend/dist/: generated production files, not source.
+- frontend/.npm-cache/: local package cache.
+
+======================================================================
+4. DATASET AND DATA PREPROCESSING
+======================================================================
+
+Source and files
+The community source is https://github.com/ungalsoththu/ChennaiGTFS. The local
+input data/raw/mtc-gtfs.zip contains these available files and Phase 1 row
+counts, excluding headers:
+agency.txt 1; calendar.txt 6; feed_info.txt 1; routes.txt 4,611;
+stop_times.txt 1,360,443; stops.txt 5,580; trips.txt 47,047.
+
+GTFS table purpose
+- agency.txt: operator name, ID, URL and timezone.
+- routes.txt: route_id, route labels, route_type and agency association.
+- trips.txt: trip_id linked to route_id, service_id and direction_id.
+- stops.txt: stop_id, stop_name and stop_lat/stop_lon.
+- stop_times.txt: trip/stop links, stop_sequence and scheduled arrival/
+  departure time.
+- calendar.txt: weekday service flags and date interval.
+- calendar_dates.txt (absent): date-specific service additions/removals.
+- frequencies.txt (absent): headway-based service patterns.
+- shapes.txt (absent): route geometry points.
+- feed_info.txt: publisher/feed information.
+
+Validation and outputs
+Ingestion reads text values as strings first. It checks required files and
+columns, key duplicates, blank values, numeric conversions, coordinate bounds,
+GTFS time syntax, stop sequence and within-trip time regressions, and agency/
+route/trip/service/stop relationships. It preserves raw columns and adds
+numeric/time convenience fields such as stop_lat_value, route_type_value and
+arrival_time_seconds. Issues are reported; data is not silently discarded.
+Critical errors produce failed status while warnings remain visible. If
+calendar_dates.txt is absent, an empty typed calendar_dates.parquet is written
+and the report records its absence.
+
+The report records 4,611 routes, 3,934 routes referenced by trips (677 unused),
+5,580 stops, 5,477 stops referenced in stop_times, 47,047 trips and 1,360,443
+stop_time rows. Four calendar service rows are not used by trips. EDA records
+96,013 route-stop pairs. It reports no full-row duplicates, no duplicate
+primary keys and no unresolved unique references, plus two Phase 1 blank-value
+warnings. These are facts about this archive snapshot, not current live
+operations.
+
+Time parsing
+GTFS allows hours above 24 for after-midnight schedules. parse_gtfs_time
+converts HH:MM:SS to seconds since service-day start and preserves the original
+text. For example 25:10:00 is 90,600 seconds. The source report found a maximum
+hour of 25 and 1,904 stop-time rows after 24:00; tests cover this behavior.
+
+Missing files and data limits
+calendar_dates.txt, frequencies.txt and shapes.txt are unavailable. The
+analysis has no date-specific exceptions, frequency-based service, supplied
+route geometry, route length or geographic route area. Stop markers do not
+represent bus paths. No real-time, fare, passenger, occupancy or traffic data
+is present. The community feed is a snapshot, not a guarantee of current
+official operations.
+
+======================================================================
+5. EXPLORATORY DATA ANALYSIS
+======================================================================
+
+backend/src/routeranker/analysis/eda.py reads Phase 1 Parquet and creates:
+route_summary.csv, stop_summary.csv, service_calendar_summary.csv,
+scheduled_trips_by_weekday.csv, route_scheduled_trips_by_weekday.csv,
+scheduled_trips_by_service_hour.csv, route_service_headways.csv,
+route_stop_coverage.parquet, route_pair_overlap.parquet,
+top_shared_route_pairs.csv, eda_report.json, eda_report.md, and charts:
+scheduled_trip_starts_by_service_hour.png,
+top_routes_by_scheduled_trip_records.png,
+stop_route_coverage_distribution.png.
+
+Analyses include route and stop counts, scheduled trips, weekday templates,
+service-hour trip starts, first/last times, first-stop departure headway gaps
+grouped by route/service/direction, stop coverage and route-pair overlap.
+The report records 3,072 headway groups with estimates, 869 without estimates,
+246 groups with zero-sized gaps, and a median of group median headways of
+3,900 seconds. Service hour 14 has the highest count: 3,021 scheduled trip
+records. There are 923,449 route pairs with shared stops.
+
+Headways and calendar counts describe schedule templates, not observed
+operations or passenger demand. calendar_dates.txt and frequencies.txt are
+absent. Coverage is based on stop records, not a geographic service area.
+
+======================================================================
+6. FEATURE ENGINEERING
+======================================================================
+
+backend/src/routeranker/features/engineering.py generates raw and normalized
+route, stop and route-pair data. source_validation.py independently checks
+source-derived route metrics. The report records 42 validation checks passed,
+39 dictionary definitions, 4,611 route rows, 5,580 stop rows and 923,449
+route-pair rows.
+
+Route features include scheduled trip record count, unique stops, average
+scheduled first-stop headway, headway interval count, template-week peak and
+off-peak departures, first/last departure time, service span, shared-stop
+count/ratio, source labels and missingness indicators. Peak windows are
+07:00-10:00 and 16:00-19:00 by project definition, not official MTC labels.
+
+Stop features include routes serving each stop and scheduled trip/stop-time
+references. These references are not boardings. Pair features include shared
+stop count, unique-stop counts for each route and Jaccard similarity
+(intersection divided by union of stop sets). Jaccard is network overlap, not
+congestion or passenger substitution.
+
+Numeric normalization is median imputation followed by StandardScaler
+z-scores. Identifiers are not scaled. Missing raw values and indicators are
+retained; normalization parameters are output. Generated files include route,
+stop and pair features in CSV/Parquet, normalized counterparts,
+feature_dictionary.csv/.md, normalization_parameters.json,
+feature_engineering_report.json/.md and feature_validation_report.json/.md.
+
+======================================================================
+7. MACHINE LEARNING
+======================================================================
+
+Purpose and models
+This is unsupervised grouping, not prediction of a labeled target. The feed
+has no passenger-demand or occupancy labels.
+
+K-Means partitions feature vectors around centroids. The pipeline evaluates
+k=2 through 10 and saves k=6, n_init=20, seed=42.
+DBSCAN identifies dense groups and labels sparse routes as noise. The saved
+configuration uses eps=1.1435182896, min_samples=8, Euclidean distance; eps
+candidates use nearest-neighbor distance quantiles. DBSCAN cannot predict for
+unseen routes without refitting.
+
+The algorithms are complementary: K-Means provides a fixed partition that is
+easy to profile, while DBSCAN can represent dense groups and mark sparse
+routes as noise without requiring a preset cluster count. They were selected
+for these unsupervised grouping behaviors, not because either is proven
+superior on a labelled outcome. Evaluation uses internal metrics and profiles.
+
+The seven selected features are total_scheduled_trip_records,
+unique_stop_count, average_first_stop_headway_seconds, peak_departure_share,
+scheduled_service_span_seconds, shared_stop_ratio and headway_missing.
+Selected positive magnitude/time fields receive log1p; preprocessing applies
+median imputation and StandardScaler fitted on active routes. A missingness
+indicator retains the fact of headway imputation. 677 routes with no trip
+records are excluded from fit but retained with an exclusion status. IDs and
+names are not model inputs; redundant or constant columns are documented in
+feature_selection.json.
+
+Each saved joblib dictionary contains a fitted preprocessing/model pipeline
+and feature-schema/fit metadata. Its preprocessing applies selected log1p
+transforms, median imputation and scaling before K-Means prediction or DBSCAN
+fit-label inspection. Phase 4 creates these artifacts; the API reads them
+only for saved metadata and does not refit on requests.
+
+Profiles compare original-scale features. Noise is only a feature-space
+density label. Silhouette and Davies-Bouldin are internal diagnostics without
+ground-truth labels; silhouette is computed on a 2,000-route sample here.
+
+Actual saved/reproduced metrics:
+- K-Means: 6 clusters, 3,934 inliers, zero noise; silhouette 0.3854219,
+  Davies-Bouldin 0.939803. Cluster sizes for IDs 0-5 are 722, 793, 1,451,
+  668, 63 and 237.
+- DBSCAN: 4 non-noise clusters, 3,898 inliers and 36 noise routes; silhouette
+  0.3891479, Davies-Bouldin 0.670619. Cluster sizes 0-3 are 3,024, 198, 667
+  and 9; noise label -1 has 36 routes.
+
+Generated artifacts include kmeans_model.joblib, dbscan_model.joblib,
+cluster_predictions.csv/.parquet, cluster_sizes.csv,
+cluster_profiles.csv/.parquet, model_comparison.csv, candidate metric CSVs,
+feature_selection.json, feature_quality_profile.csv,
+feature_quality_report.json, standardized model matrices,
+model_parameters.json, selected_feature_correlations.csv, PCA coordinate/
+variance tables and chart, and machine_learning_report.json/.md. The API does
+not expose PCA coordinates, so the frontend does not draw PCA.
+
+Compatibility issue
+The saved joblib pipelines were serialized with scikit-learn 1.5.0.
+backend/pyproject.toml pins scikit-learn==1.5.0 and numpy<2.0. The active
+project .venv has scikit-learn 1.9.1 and NumPy 2.5.4. It emits
+InconsistentVersionWarning and a real K-Means prediction fails with
+AttributeError because SimpleImputer lacks _fill_dtype. With a separate
+Python 3.12 installation using scikit-learn 1.5.0 and NumPy 1.26.4, model
+loading worked and K-Means predictions/DBSCAN saved labels matched all 3,934
+active routes. A seed-42 actual-feature workflow run also succeeded in
+temporary output without replacing the saved Phase 4 models. The active .venv
+still needs alignment. API assignments come from saved tables; no per-request
+retraining or new-route prediction endpoint exists. Load only trusted joblib
+files.
+
+======================================================================
+8. BACKEND
+======================================================================
+
+FastAPI has separate route modules, Pydantic schemas, services, configuration
+and Polars data access. Endpoints are read-only GETs under /api/v1. Paginated
+responses contain items, total, limit and offset, with bounded page sizes.
+Unknown IDs return 404; invalid parameters/filters return 422; missing
+processed artifacts return generic 503 errors. CORS uses explicit origins,
+allows GET and disables credentials. Swagger/OpenAPI schemas come from FastAPI.
+
+Endpoint catalogue
+System:
+GET /health
+GET /docs
+GET /redoc
+GET /openapi.json
+
+Routes:
+GET /api/v1/routes?limit=100&offset=0
+GET /api/v1/routes/{route_id}
+GET /api/v1/routes/{route_id}/features
+GET /api/v1/routes/{route_id}/clusters
+GET /api/v1/routes/compare?route_ids=ID1&route_ids=ID2
+Route filters: q, min_trips, max_trips, min_stops, min_headway_seconds,
+max_headway_seconds, algorithm (kmeans or dbscan), cluster_id.
+
+Stops:
+GET /api/v1/stops?limit=100&offset=0&q=...&min_routes=...
+GET /api/v1/stops/{stop_id}
+GET /api/v1/stops/{stop_id}/routes
+GET /api/v1/stops/route-counts?limit=100&offset=0
+
+Analytics:
+GET /api/v1/analytics/statistics
+GET /api/v1/analytics/routes/statistics
+GET /api/v1/analytics/stops/statistics
+GET /api/v1/analytics/scheduled-trips/by-hour
+GET /api/v1/analytics/headways?route_id=...
+GET /api/v1/analytics/route-similarity?route_id=...&limit=100
+GET /api/v1/analytics/clusters
+
+Machine learning:
+GET /api/v1/ml/models
+GET /api/v1/ml/assignments/{route_id}
+GET /api/v1/ml/clusters
+GET /api/v1/ml/metrics
+
+The common page shape is {"items":[],"total":0,"limit":100,"offset":0}.
+Field-level contracts are in backend/src/routeranker/api/schemas.py. Route
+similarity is exposed by the API but has no dedicated frontend explorer.
+API data comes from processed GTFS, EDA, feature and clustering tables; missing
+files do not trigger fake fallback values.
+
+Declared backend dependencies: Python >=3.10, Polars >=1,<2,
+Matplotlib >=3.7,<4, NumPy >=1.24,<2, scikit-learn ==1.5.0,
+joblib >=1.3,<2, FastAPI >=0.110,<1, Pydantic >=2,<3,
+Uvicorn[standard] >=0.27,<1. Dev extra HTTPX >=0.27,<1. Optional DuckDB
+analytics >=1. Active .venv versions observed: Python 3.12.7, FastAPI
+0.162.0, Pydantic 2.14.3, Polars 1.44.2, NumPy 2.5.4,
+scikit-learn 1.9.1, joblib 1.6.0 and Uvicorn 0.54.0. HTTPX is absent.
+
+======================================================================
+9. FRONTEND
+======================================================================
+
+React 19, TypeScript and Vite 8 build the client. Tailwind CSS is provided
+through a Vite plugin. React Router switches among six lazy-loaded pages.
+Axios methods use typed responses, an API base URL, caching, pagination and
+error translation. useResource manages loading, error and retry states.
+
+Pages:
+- Overview: counts, scheduled hour chart, headways, cluster counts and limits.
+- Route Explorer: search, supported filters, pagination, feature details and
+  saved assignments.
+- Stop Explorer: stop search, pagination, coordinates and route membership.
+- Transit Network Map: actual stop markers only; no invented paths.
+- ML Insights: saved cluster profiles and metrics; no PCA chart because the
+  API does not provide PCA coordinates.
+- Route Comparison: select 2-20 routes and compare trips/stops/headways,
+  span, peak/off-peak and cluster fields.
+
+Shared components provide page titles, panels, data notices, metrics, loading,
+error, empty states and formatters. Recharts renders charts. Leaflet and
+React-Leaflet show stop points on OpenStreetMap tiles; tile access needs
+internet. Direct dependency ranges include React/ReactDOM ^19.3.1, React
+Router ^7.18.5, Vite ^8.3.6, TypeScript ~5.6.3, React Vite plugin ^6.2.1,
+Tailwind Vite plugin ^4.3.4, Axios ^1.21.0, Recharts ^3.10.1, Leaflet
+^1.9.4, React-Leaflet ^5.0.0 and Lucide React ^1.69.0. package-lock.json
+holds resolved dependencies.
+
+======================================================================
+10. TOOLS AND TECHNOLOGIES
+======================================================================
+
+Python: backend processing, analysis, models and API.
+TypeScript: frontend types and browser code.
+React: reusable UI/pages.
+Vite: dev server and frontend bundling.
+Tailwind CSS: utility styling.
+FastAPI: API routing, validation and OpenAPI.
+Pydantic: response schemas.
+Polars: tabular GTFS and API file processing.
+NumPy: numerical feature matrices.
+scikit-learn: imputation, scaling, clustering, PCA and metrics.
+Joblib: model persistence.
+Matplotlib: static analytical charts.
+Axios: frontend HTTP requests.
+React Router: navigation.
+Recharts: browser charts.
+Leaflet/React-Leaflet: stop map.
+OpenStreetMap: map tiles only.
+Lucide React: icons.
+Parquet/CSV/JSON: generated analytical data; Markdown/PNG: reports/charts;
+joblib: saved estimator objects.
+Python unittest: backend test runner.
+Node and Chrome/Edge DevTools Protocol: browser smoke testing. No Playwright
+or Cypress dependency is declared.
+DuckDB is optional but not used; Pandas is not imported by source.
+
+======================================================================
+11. INSTALLATION AND EXECUTION
+======================================================================
+
+Prerequisites: Windows PowerShell, Python 3.12 recommended, Node.js 20.19+
+and npm, processed outputs for Phases 1-4. Chrome/Edge is needed for E2E.
+Latest inspected tools include Python 3.12.7, Node 26.13.0 and npm 12.2.1.
+
+Backend, from project root:
+  py -3.12 -m venv .venv
+  .\\.venv\\Scripts\\Activate.ps1
+  python -m pip install -e ".\\backend[dev]"
+  $env:PYTHONPATH = "backend\\src"
+  python -m uvicorn routeranker.api.app:app --host 127.0.0.1 --port 8000
+
+ROUTERANKER_PROCESSED_DIR defaults to data/processed.
+ROUTERANKER_CORS_ORIGINS is a comma-separated exact-origin list; defaults to
+http://localhost:5173 and http://127.0.0.1:5173. backend/.env.example shows
+sample values but Uvicorn does not automatically load it.
+
+Frontend, in a second window:
+  Set-Location frontend
+  npm ci
+  Copy-Item .env.example .env.local
+  npm run dev
+VITE_API_BASE_URL defaults to http://127.0.0.1:8000/api/v1.
+
+URLs:
+Frontend: http://127.0.0.1:5173
+Backend: http://127.0.0.1:8000
+Swagger: http://127.0.0.1:8000/docs
+ReDoc: http://127.0.0.1:8000/redoc
+OpenAPI: http://127.0.0.1:8000/openapi.json
+
+Optional Phase 1-4 commands from the root (they write generated outputs):
+  $env:PYTHONPATH = "backend\\src"
+  python -m routeranker.ingestion.pipeline --archive data/raw/mtc-gtfs.zip --output data/processed/gtfs
+  python -m routeranker.analysis.eda --input data/processed/gtfs --output data/processed/eda
+  python -m routeranker.features.engineering --archive data/raw/mtc-gtfs.zip --gtfs data/processed/gtfs --eda data/processed/eda --output data/processed/features
+  python -m routeranker.clustering.route_clusters --features data/processed/features --output data/processed/clustering --seed 42
+The final command retrains and can replace saved model outputs; only run it
+when regeneration is intended.
+
+Backend tests:
+  $env:PYTHONPATH = "backend\\src"
+  python -m unittest discover -s backend/tests -v
+For five live tests, start the API and set
+ROUTERANKER_TEST_API_BASE_URL=http://127.0.0.1:8000 before discovery. HTTPX
+is required to run the four TestClient cases.
+
+Frontend:
+  Set-Location frontend
+  npm ci
+  npm run build
+  npm audit
+  npm run test:e2e
+The browser test requires the API and Chrome/Edge. CHROME_PATH can select a
+nonstandard browser executable. npm run preview -- --host 127.0.0.1 --port
+4173 previews frontend/dist locally; it is not a production web server.
+
+======================================================================
+12. TESTING AND VALIDATION
+======================================================================
+
+Latest recorded results:
+- Backend discovered suite with live API configured: 23 tests, 19 passed,
+  4 skipped, 0 failed. All five live HTTP tests passed. Four skipped tests
+  are test_api.py FastAPI TestClient cases; HTTPX is declared in the dev extra
+  but missing from the active environment.
+- Frontend build: npm run build completed TypeScript tsc -b and Vite. It
+  transformed 2,544 modules. Largest JavaScript chunk 370.78 KB; no >500 KB
+  warning.
+- Browser: eight Chrome workflows passed: overview, route details/search,
+  empty search, comparison, stop routes, model insights, map limitation and
+  backend failure state.
+- Model: sklearn 1.5.0 environment loaded saved models; K-Means predictions
+  and DBSCAN saved labels matched all 3,934 active routes. A seed-42 actual
+  feature workflow run completed in temporary output and did not replace
+  existing Phase 4 models.
+- npm ci --offline restored locked packages. npm audit --offline reported
+  zero vulnerabilities from cached advisory data. A connected audit could
+  not reach registry.npmjs.org, so current online advisory status is unknown.
+
+The four skipped tests are not passes. The active .venv uses sklearn 1.9.1
+and NumPy 2.5.4; K-Means predict fails with saved sklearn 1.5.0 artifacts.
+PyPI access prevented installing the pinned runtime and HTTPX. Online
+dependency audit and deployment security/performance review remain pending.
+
+======================================================================
+13. PROJECT MILESTONES
+======================================================================
+
+Phase 1 - IMPLEMENTED: GTFS ingestion, validation, Parquet, quality reports,
+relationships, calendars and >24-hour schedule times.
+Phase 2 - IMPLEMENTED: route/stop/schedule EDA, headways, coverage, overlap,
+charts and reports.
+Phase 3 - IMPLEMENTED: route/stop/pair features, normalization, dictionary
+and 42 validation checks.
+Phase 4 - IMPLEMENTED: K-Means/DBSCAN, metrics, profiles, PCA outputs and
+saved models; active environment compatibility remains unresolved.
+Phase 5 - IMPLEMENTED: FastAPI endpoints, schemas, filters, pagination,
+CORS and Swagger. Four HTTPX tests are skipped; five live tests passed.
+Phase 6 - IMPLEMENTED: six React pages, API integration, charts, search,
+map, comparison and loading/error/empty states.
+Phase 7 - PARTIALLY COMPLETE: local integration, build, browser workflows and
+documentation are verified. Four tests remain skipped; active sklearn
+compatibility, fresh online audit and production infrastructure remain.
+No public deployment occurred.
+
+======================================================================
+14. LIMITATIONS AND FUTURE ENHANCEMENTS
+======================================================================
+
+calendar_dates.txt absence means date exceptions are unavailable.
+frequencies.txt absence means frequency-based service is not represented.
+shapes.txt absence means route geometry and lengths are unavailable.
+There is no real-time tracking, passenger-demand prediction, congestion
+prediction, occupancy classification or actual travel-time measurement.
+Headways and counts are schedule-derived, not delivered service observations.
+The community dataset is a snapshot and has no labelled ground truth for
+cluster evaluation. OpenStreetMap tile availability depends on network access.
+
+Possible future work, not implemented: use authorized updated GTFS feeds;
+incorporate exceptions/frequencies/shapes when provided; add clearly
+hypothetical schedule scenarios; expose PCA coordinates if wanted; add
+reproducible dependency locks, accessibility/browser testing, monitoring,
+security review and deployment automation. Never fill unsupported passenger
+or route-geometry values with fabricated data.
+
+======================================================================
+15. DEPLOYMENT STATUS
+======================================================================
+
+The app runs locally when processed data and compatible dependencies are
+available. The frontend production bundle builds. There has been no public
+deployment or publication.
+
+Before production: install scikit-learn 1.5.0 and NumPy 1.x into the backend
+environment and verify model prediction; install HTTPX and pass all tests;
+run a fresh online dependency audit; configure production VITE_API_BASE_URL
+and exact ROUTERANKER_CORS_ORIGINS; serve over HTTPS; run Uvicorn behind an
+approved ASGI process manager/reverse proxy; and arrange logs, monitoring,
+restart/recovery, artifact retention/backups, access policy and security
+review. Hosting options documented in README.md include internal IIS/reverse
+proxy, an approved VM/container platform, or separate frontend/backend
+hosting. No production provider configuration or Dockerfile is included.
+Public deployment requires separate approval.
+
+======================================================================
+16. PROJECT SUMMARY
+======================================================================
+
+RouteRanker implements a local GTFS-to-dashboard path: validation, descriptive
+schedule analytics, engineered route/stop/pair features, unsupervised route
+clusters, a typed API and a React frontend. It demonstrates Python data
+processing, feature engineering, clustering and evaluation, API design,
+TypeScript integration and automated testing.
+
+Phases 1-6 are implemented. Phase 7 local integration and build checks pass,
+but release readiness is partial: HTTPX-dependent tests are skipped and the
+active environment cannot safely predict with the saved models until its
+versions are aligned. A connected dependency audit and deployment
+infrastructure checks remain. The project has not been publicly deployed and
+does not make passenger-demand, congestion, occupancy or real-time
+predictions.
+

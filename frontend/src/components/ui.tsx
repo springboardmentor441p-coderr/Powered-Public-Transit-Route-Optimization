@@ -1,107 +1,101 @@
-import { Loader2 } from 'lucide-react';
+import type { ReactNode } from 'react'
+import type { LucideIcon } from 'lucide-react'
+import { AlertCircle, LoaderCircle, RefreshCw, SearchX } from 'lucide-react'
 
-export function LoadingSpinner({ text = 'Loading...' }: { text?: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-12">
-      <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
-      <p className="text-sm text-slate-500 dark:text-slate-400">{text}</p>
-    </div>
-  );
-}
-
-export function ErrorAlert({ message, onRetry }: { message: string; onRetry?: () => void }) {
-  return (
-    <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
-      <p className="text-red-700 dark:text-red-400 text-sm">{message}</p>
-      {onRetry && (
-        <button onClick={onRetry} className="mt-2 text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400">
-          Try Again
-        </button>
-      )}
-    </div>
-  );
-}
-
-export function StatCard({ title, value, subtitle, icon: Icon, color = 'blue' }: {
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  color?: 'blue' | 'green' | 'amber' | 'purple' | 'rose' | 'indigo';
+export function PageTitle({ eyebrow, title, description, action }: {
+  eyebrow?: string
+  title: string
+  description?: string
+  action?: ReactNode
 }) {
-  const colorMap = {
-    blue: 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-    green: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
-    amber: 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
-    purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-    rose: 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400',
-    indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
-  };
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{typeof value === 'number' ? value.toLocaleString() : value}</p>
-          {subtitle && <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{subtitle}</p>}
-        </div>
-        {Icon && (
-          <div className={`p-2.5 rounded-lg ${colorMap[color]}`}>
-            <Icon className="w-5 h-5" />
-          </div>
-        )}
+    <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        {eyebrow && <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-teal-700">{eyebrow}</p>}
+        <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">{title}</h1>
+        {description && <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">{description}</p>}
       </div>
+      {action}
     </div>
-  );
+  )
 }
 
-export function Card({ title, children, className = '' }: {
-  title?: string;
-  children: React.ReactNode;
-  className?: string;
+export function Panel({ title, subtitle, action, children, className = '' }: {
+  title?: string
+  subtitle?: string
+  action?: ReactNode
+  children: ReactNode
+  className?: string
 }) {
   return (
-    <div className={`bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm ${className}`}>
-      {title && (
-        <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-700">
-          <h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
+    <section className={`rounded-2xl border border-slate-200/80 bg-white p-5 shadow-panel sm:p-6 ${className}`}>
+      {(title || subtitle || action) && (
+        <div className="mb-5 flex items-start justify-between gap-3">
+          <div>
+            {title && <h2 className="font-semibold text-slate-900">{title}</h2>}
+            {subtitle && <p className="mt-1 text-xs leading-5 text-slate-500">{subtitle}</p>}
+          </div>
+          {action}
         </div>
       )}
-      <div className="p-5">{children}</div>
-    </div>
-  );
-}
-
-export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
-  return (
-    <div className="mb-6">
-      <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{title}</h1>
-      {subtitle && <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>}
-    </div>
-  );
-}
-
-export function Badge({ children, color = 'blue' }: { children: React.ReactNode; color?: string }) {
-  const colors: Record<string, string> = {
-    blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-    green: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-    amber: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-    red: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-    gray: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-  };
-  return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[color] || colors.blue}`}>
       {children}
-    </span>
-  );
+    </section>
+  )
 }
 
-export function EmptyState({ title, description }: { title: string; description?: string }) {
+export function LoadingState({ label = 'Loading data…' }: { label?: string }) {
+  return <div className="flex min-h-40 items-center justify-center gap-3 text-sm text-slate-500"><LoaderCircle className="h-5 w-5 animate-spin text-teal-600" />{label}</div>
+}
+
+export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="text-center py-12">
-      <p className="text-lg font-medium text-slate-500 dark:text-slate-400">{title}</p>
-      {description && <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">{description}</p>}
+    <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+      <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+      <div className="min-w-0 flex-1"><p className="font-semibold">Data could not be loaded</p><p className="mt-1 break-words text-rose-700">{message}</p></div>
+      {onRetry && <button onClick={onRetry} className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 font-medium hover:bg-rose-100"><RefreshCw className="h-3.5 w-3.5" />Retry</button>}
     </div>
-  );
+  )
 }
 
+export function EmptyState({ title = 'No matching records', detail = 'Try changing your search or filters.' }: { title?: string; detail?: string }) {
+  return <div className="flex min-h-40 flex-col items-center justify-center text-center"><SearchX className="mb-3 h-8 w-8 text-slate-300" /><p className="font-medium text-slate-700">{title}</p><p className="mt-1 text-sm text-slate-500">{detail}</p></div>
+}
+
+export function DataNotice({ children, tone = 'slate' }: { children: ReactNode; tone?: 'slate' | 'amber' | 'teal' }) {
+  const colors = {
+    slate: 'border-slate-200 bg-slate-50 text-slate-600',
+    amber: 'border-amber-200 bg-amber-50 text-amber-900',
+    teal: 'border-teal-100 bg-teal-50 text-teal-900',
+  }
+  return <div className={`rounded-xl border px-4 py-3 text-xs leading-5 ${colors[tone]}`}>{children}</div>
+}
+
+export function MetricCard({ label, value, detail, icon: Icon, accent = 'teal' }: {
+  label: string
+  value: string
+  detail: string
+  icon: LucideIcon
+  accent?: 'teal' | 'blue' | 'amber' | 'violet'
+}) {
+  const styles = { teal: 'bg-teal-50 text-teal-700', blue: 'bg-blue-50 text-blue-700', amber: 'bg-amber-50 text-amber-700', violet: 'bg-violet-50 text-violet-700' }
+  return (
+    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-panel">
+      <div className="flex items-center justify-between"><span className="text-sm font-medium text-slate-500">{label}</span><span className={`grid h-10 w-10 place-items-center rounded-xl ${styles[accent]}`}><Icon className="h-5 w-5" /></span></div>
+      <p className="mt-5 text-3xl font-bold tracking-tight text-slate-950">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-slate-500">{detail}</p>
+    </div>
+  )
+}
+
+export function formatNumber(value: number | null | undefined, digits = 0): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return '—'
+  return new Intl.NumberFormat('en-IN', { maximumFractionDigits: digits }).format(value)
+}
+
+export function formatDuration(seconds: number | null | undefined): string {
+  if (seconds === null || seconds === undefined || !Number.isFinite(seconds)) return '—'
+  const totalMinutes = Math.round(seconds / 60)
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  return hours ? `${hours}h ${minutes}m` : `${minutes}m`
+}

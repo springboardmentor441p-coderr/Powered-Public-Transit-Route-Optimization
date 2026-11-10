@@ -1,98 +1,141 @@
 # RouteRanker
 
-RouteRanker is a Chennai Metropolitan Transport Corporation (MTC) transit analytics application. It presents schedule-derived GTFS analysis and deterministic timetable scenario estimates. It does not model or report passenger demand, ridership, occupancy, congestion, live vehicle locations, or observed real-world travel times.
+RouteRanker is a modular analysis application for Chennai Metropolitan Transport Corporation (MTC) GTFS schedule data. It provides data validation and preprocessing, descriptive service analysis, route and stop features, unsupervised route clusters, a read-only FastAPI API, and a React analytics interface.
+
+All service measures describe the supplied timetable. The feed does not contain passenger ridership, demand, occupancy, traffic, live vehicle positions, or actual travel times. Clusters summarize schedule-derived characteristics; they do not predict demand or judge route quality.
+
+## Technology
+
+- Data processing and analysis: Python, Pandas, NumPy, DuckDB, scikit-learn, PyArrow/Parquet
+- API: FastAPI, Pydantic, Polars, Uvicorn
+- Frontend: React, TypeScript, Vite, Tailwind CSS, Axios, React Router, Recharts, Leaflet, OpenStreetMap
+- Tests: Python `unittest`, TypeScript/Vite production build, browser workflow smoke tests (Chrome or Edge)
 
 ## Architecture
 
-- `frontend/` is a React 19, TypeScript, Vite application styled with Tailwind CSS. React Router connects the dashboard pages; Axios calls the API through Vite's `/api` development proxy. Recharts powers analytical charts and React Leaflet displays GTFS stop locations and approximate stop sequences. Lucide React provides interface icons.
-- `backend/app/` is the FastAPI application, with API routers, Pydantic response/request schemas, and service-layer business logic.
-- `backend/data_processing/` loads and validates the GTFS feed, normalizes extended GTFS times, creates processed analytical tables, and engineers schedule-derived route features.
-- `backend/ml/` holds unsupervised route clustering, evaluation, and deterministic schedule scenario simulation.
-- `data/raw/` holds source GTFS files. `data/processed/` contains the existing analytical artifacts and audit report. `data/models/` contains the existing clustering artifacts. These source data and model artifacts are retained as-is by the frontend work.
-
-The API is served at `http://localhost:8000`; OpenAPI/Swagger documentation is at `http://localhost:8000/api/docs`. The Vite development server proxies API calls to that backend.
-
-## Frontend pages
-
-- **Overview Dashboard**: backend-provided network totals, route rankings, and service/stop distribution charts.
-- **Route Explorer**: searchable and paginated route list, route details, ordered stops, an approximate stop-to-stop map, and scheduled departures.
-- **Schedule Analytics**: service calendars and paginated route frequency/headway metrics, with local column sorting and the schedule-derived high-frequency filter.
-- **Stop Coverage**: coverage summary, filtered map of up to 500 high-coverage stops, and the most connected stops.
-- **Route Overlap**: Jaccard similarity threshold, network overlap ranking, and per-route comparison.
-- **ML Clustering**: cached/current clustering profiles, evaluation charts, and route assignments; clustering can be run with a selected K.
-- **Schedule Optimization**: route selection/search, frequency multiplier and stop-consolidation controls, and baseline-versus-simulated headway, duration, speed, trip, vehicle-hour, and fleet estimates.
-- **Data Quality**: backend audit, sanitization events, validation issues, and processed-table status.
-
-Navigation is responsive, and the pages expose loading, API error, and empty-data states where applicable. The route and stop maps use public OpenStreetMap tiles. A network connection is required to fetch those tiles.
-
-## Backend API integration
-
-The frontend pages call the existing `/api` endpoints: `/dashboard/summary`, `/routes`, `/routes/{route_id}`, route stops/trips/schedule, `/coverage/summary`, `/coverage/stops`, `/overlap`, `/analytics/frequency`, `/analytics/service`, `/ml/cluster`, `/ml/clusters`, `/optimization/simulate`, `/data/quality`, and `/data/status`. The API client also exposes health and insights calls for future presentation in the UI.
-
-Vite maps `/api/*` to `http://localhost:8000/api/*` during development. The browser does not call backend services directly through duplicated data-processing code. Route pagination and search, coverage pagination, and overlap threshold values use the parameter names and units accepted by the current FastAPI implementation.
-
-The optimization page submits `route_id`, `frequency_multiplier`, and `stop_consolidation_pct` to the existing deterministic simulator. Its outputs are clearly labeled hypothetical schedule-based estimates; fleet requirements depend on the modeled cycle time and recovery allowance.
-
-## Installation and startup
-
-Prerequisites: Python 3.12+ and Node.js/npm. Python 3.12 is recommended where binary package wheels are unavailable for newer Python releases.
-
-Install backend dependencies:
-
-```powershell
-cd "RouteRanker\backend"
-python -m pip install -r requirements.txt
+```text
+data/raw/mtc-gtfs.zip                 Original input feed (preserved)
+data/processed/gtfs/                  Phase 1 validated typed GTFS tables
+data/processed/eda/                   Phase 2 summaries, charts, reports
+data/processed/features/              Phase 3 raw and normalized features
+data/processed/clustering/            Phase 4 saved clusters, profiles, metrics
+backend/src/routeranker/              Ingestion, analysis, features, ML, API modules
+backend/tests/                        Unit and API integration tests
+frontend/src/services/                Typed API client and response caching
+frontend/src/pages/                   Overview, routes, stops, map, insights, comparison
+frontend/scripts/e2e-smoke.mjs        Local browser workflow smoke test
 ```
 
-Start the backend from `RouteRanker/backend`:
+The API reads the generated artifacts; it does not ingest the archive or retrain clustering models on requests. The frontend consumes the API and does not embed data fixtures.
+
+## Dataset and limitations
+
+The supplied archive is from [ChennaiGTFS](https://github.com/ungalsoththu/ChennaiGTFS). It contains scheduled GTFS data. `calendar_dates.txt`, `frequencies.txt`, and `shapes.txt` are unavailable in this feed. Accordingly, exception-date and frequency-based service are not represented, and the map shows only supplied stop coordinates. It does not draw or imply bus route geometry. See `data/processed/gtfs/data_quality_report.md` and the phase reports for feed-specific findings.
+
+Do not interpret scheduled trips or estimated headways as actual delivered operations, passenger demand, or passenger waiting times. Route clusters are descriptive unsupervised groups, not efficiency or overcrowding classifications.
+
+## Requirements
+
+- Windows PowerShell instructions below; Python 3.12 is the verified runtime (Python 3.10+ is specified by backend packaging)
+- Node.js 20.19+ and npm (the Vite 8 toolchain requires a current Node release)
+- Phase 1–4 processed outputs in `data/processed/` for the API
+- Chrome or Edge only for the optional browser workflow tests
+
+## Backend setup and startup
+
+From the project root:
 
 ```powershell
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".\backend[dev]"
+$env:PYTHONPATH = "backend\src"
+python -m uvicorn routeranker.api.app:app --host 127.0.0.1 --port 8000
 ```
 
-On startup, the backend checks processed data and existing model artifacts. It may run preprocessing or train baseline models if the required artifacts are absent; do not remove data or model artifacts unless that regeneration is intended.
+The default API URL is `http://127.0.0.1:8000`; Swagger UI is at `http://127.0.0.1:8000/docs`. `ROUTERANKER_PROCESSED_DIR` optionally points to another processed-artifact root. `ROUTERANKER_CORS_ORIGINS` is a comma-separated list of exact browser origins. By default, only `http://localhost:5173` and `http://127.0.0.1:5173` are allowed. The API is read-only.
 
-Install and start the frontend in a second terminal:
+For local deployment preparation, copy `backend/.env.example` only if using a dotenv loader of your choice; Uvicorn itself does not load `.env` automatically. Configure the variables in the process environment or service manager. Do not put secrets in frontend variables; Vite variables are public in browser bundles.
+
+## Frontend setup and startup
+
+In a second PowerShell window:
 
 ```powershell
-cd "RouteRanker\frontend"
-npm install
+Set-Location frontend
+npm ci
+Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Open the Vite URL (normally `http://localhost:5173`). API docs are available at `http://localhost:8000/api/docs`.
+Open `http://127.0.0.1:5173`. Set `VITE_API_BASE_URL` in `frontend/.env.local` if the API uses a different address; include the `/api/v1` suffix. For production builds, set this value before building or use `frontend/.env.production` based on `frontend/.env.production.example`.
 
-## Testing and validation
+## Testing and verification
 
-From the `RouteRanker` directory:
+Run backend unit and API client tests from the project root with the activated environment:
 
 ```powershell
-python backend/run_tests.py
+$env:PYTHONPATH = "backend\src"
+python -m unittest discover -s backend/tests -v
 ```
 
-From `RouteRanker/frontend`:
+The live integration tests are opt-in and exercise the running API over HTTP:
 
 ```powershell
+$env:ROUTERANKER_TEST_API_BASE_URL = "http://127.0.0.1:8000"
+python -m unittest backend.tests.test_live_api_integration -v
+```
+
+Run frontend strict TypeScript compilation and production bundle:
+
+```powershell
+Set-Location frontend
+npm ci
 npm run build
-npm run lint
-npx playwright install chromium
+```
+
+The browser workflow test starts a temporary Vite server and Chrome/Edge; start the API first:
+
+```powershell
 npm run test:e2e
 ```
 
-The backend suite reports 48 tests. Its preprocessing integration test writes to a temporary directory, leaving `data/processed/` untouched. The frontend build runs TypeScript project checks and Vite production bundling; Oxlint is the configured lint command. Playwright smoke tests require the backend running at `http://localhost:8000`; the test runner starts Vite automatically.
+The test uses `VITE_API_BASE_URL` (default `http://127.0.0.1:8000/api/v1`). Set `CHROME_PATH` if the browser is installed in a nonstandard location. It exercises overview, route search/details/comparison, stop membership, model insights, stop mapping and an API failure state. It is a smoke test, not exhaustive cross-browser or accessibility coverage.
+
+## Production build and restart
+
+The backend pins scikit-learn to `1.5.0` and NumPy below `2.0` for the saved
+Phase 4 joblib pipelines. Keep these versions aligned when installing or
+rebuilding the backend environment; scikit-learn does not guarantee
+cross-version pickle compatibility.
+
+Build the static frontend after setting its API URL:
+
+```powershell
+Set-Location frontend
+$env:VITE_API_BASE_URL = "https://api.example.com/api/v1"
+npm ci
+npm run build
+npm run preview -- --host 127.0.0.1 --port 4173
+```
+
+`frontend/dist/` is the generated static site. The preview server is for local verification, not a hardened production web server. Host the static files behind a TLS-enabled static host or reverse proxy, configure the API's `ROUTERANKER_CORS_ORIGINS` to the exact frontend origin, and expose Uvicorn behind a production ASGI process manager/reverse proxy. Keep both services private until infrastructure, TLS, monitoring, backups, and access policy are configured. For a rebuild/restart, install locked dependencies (`npm ci`), rebuild, replace the static `dist` artifact, and restart the backend process after changing server code or processed data.
+
+Deployment options include an internal Windows server with IIS/reverse proxy, an organization-approved VM/container platform, or separate static hosting and managed backend hosting. Each requires a supported Python/Node build environment, access to the processed Parquet/model artifacts, explicit CORS, HTTPS, and a process/service restart strategy. No container image or cloud provider configuration is included, and this project has not been publicly deployed.
+
+## Phase 7 local validation status
+
+- Frontend: `npm ci --offline` succeeded from the lockfile/cache, TypeScript and Vite production build passed, and eight Chrome browser workflows passed against the local API. `npm audit --offline` reported zero vulnerabilities from cached advisory data; run a connected audit before release.
+- Backend: 23 tests ran with 19 passing and four in-process API tests skipped because HTTPX is absent. The declared development extra includes HTTPX. Five live HTTP integration tests passed when the local API was started.
+- Models: the saved Phase 4 artifacts use scikit-learn 1.5.0. On matching Python 3.12/scikit-learn 1.5.0, K-Means inference and DBSCAN saved labels matched all 3,934 active routes. A deterministic run of both clustering workflows on actual processed features completed (K-Means: 6 clusters; DBSCAN: 4 clusters, 36 noise rows). The active `.venv` has scikit-learn 1.9.1; K-Means prediction fails with an `AttributeError` after an incompatibility warning. `backend/pyproject.toml` pins 1.5.0, but network restrictions prevented installing that pin into `.venv`.
+
+The project builds and local frontend/backend integration is verified. It is **not ready for production deployment** until the active backend environment is recreated/installed with the pinned scikit-learn version, HTTPX is installed and the four skipped tests pass, and a fresh online dependency audit and deployment-specific HTTPS/CORS/process configuration are completed. No public deployment has been performed.
 
 ## Known limitations
 
-- GTFS schedules are published timetable data, not evidence that trips ran as scheduled. The dashboard is not a real-time operations or ridership system.
-- Stop-to-stop route lines are approximations because the available feed has no GTFS shapes data; they are not road paths.
-- The coverage map requests a paginated subset (up to 500 stops per query) to keep rendering responsive.
-- The optimization simulator's speed, duration, and peak fleet figures are scenario estimates driven by schedule features and assumptions, not measured operating results or procurement recommendations.
-- Data quality endpoint results describe the current processed feed and can change when that feed is updated.
-- Map tiles and externally hosted Leaflet marker assets require network access.
-- Browser smoke tests cover the eight page routes, route detail search, the optimization submission flow, and mobile navigation. They are integration checks rather than exhaustive visual or component tests.
-
-## Delivery status
-
-Completed: the Vite starter view is replaced by routed dashboard navigation; all eight requested dashboard sections are connected; existing pages use the current backend APIs; simulator and data-quality views are implemented; API parameter mismatches and frontend TypeScript errors were corrected; page modules are lazy-loaded; preprocessing tests use disposable output; Playwright smoke tests cover navigation and core workflows.
-
-Remaining: browser tests cover core integration paths but not exhaustive UI states or screenshot baselines. Maps require network access to tile and marker assets.
+- Missing `calendar_dates.txt`, `frequencies.txt`, and `shapes.txt` limit service exception, frequency-based, and route geometry analysis.
+- Schedule-derived values cannot establish actual service delivery, demand, congestion, travel time, or vehicle locations.
+- K-Means and DBSCAN are fitted to this GTFS-derived route population. DBSCAN does not assign unseen routes without refitting; clustering quality metrics have no ground-truth labels.
+- OpenStreetMap tile display depends on network access and tile service availability.
+- Processed Parquet and model artifacts are local generated outputs and are ignored by Git; regenerate them from the preserved source archive using the documented backend phase commands if absent.
+- Security review and local integration tests do not replace a formal penetration test, operational monitoring, or deployment-specific review.
