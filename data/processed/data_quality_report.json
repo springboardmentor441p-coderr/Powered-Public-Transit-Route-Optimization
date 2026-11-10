@@ -1,0 +1,37 @@
+{
+  "agency_count": 1,
+  "route_count": 4611,
+  "stop_count": 5580,
+  "trip_count": 47047,
+  "stop_times_count": 1360443,
+  "calendar_count": 6,
+  "missing_files": [],
+  "sanitization_events": [
+    {
+      "table": "calendar",
+      "column": "service_id",
+      "original_value": "test ",
+      "sanitized_value": "test",
+      "issue_type": "XSS / Whitespace Sanitization",
+      "row_identifier": "row_4"
+    },
+    {
+      "table": "calendar",
+      "column": "service_id",
+      "original_value": "'/><script>alert(1)</script>",
+      "sanitized_value": "1)",
+      "issue_type": "XSS / Whitespace Sanitization",
+      "row_identifier": "row_5"
+    }
+  ],
+  "validation_issues": [],
+  "times_exceeding_24h_count": 1904,
+  "orphan_trips_count": 0,
+  "orphan_stop_times_count": 0,
+  "invalid_coordinates_count": 0,
+  "out_of_bounds_stops_count": 0,
+  "quality_score": 100.0,
+  "passed_validation": true,
+  "sanitization_count": 2,
+  "issues_count": 0
+}
