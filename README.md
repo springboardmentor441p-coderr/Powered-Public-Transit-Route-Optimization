@@ -24,6 +24,15 @@ Forest was slightly better on this test (MAE 371.89) but worse on validation
 current development champion; the test-period difference alone is not grounds
 to switch models.
 
+The broader demand-only reference split narrowly preferred
+HistGradientBoosting on validation (MAE 321.67 versus 322.36 for Random
+Forest), but it uses different dates and rows from the matched comparison. On
+the common matched split, Random Forest beat HistGradientBoosting on both
+validation (340.96 versus 352.27 MAE) and test (373.60 versus 384.36 MAE). The
+Random Forest is therefore the chosen v3 serving candidate for the matched
+configuration comparison; the broader split's HGB score is retained as a
+separate reference, not treated as a like-for-like result.
+
 This is a daily rolling one-step replay: each test-day prediction may use
 observed ridership through the assumed D-1 cutoff, including actual rides from
 earlier test days. It is not a forecast issued once for the full two-month
@@ -52,6 +61,7 @@ The reviewed metrics, GTFS import audit, forecast-only replay, and separate
 actuals-for-scoring file are preserved in `outputs/reports/` and
 `outputs/predictions/`. The 161 MB trained joblib file is in the Colab result
 bundle saved under My Drive/CTA_RouteRanker_v3; it is not committed to Git.
+Its SHA-256 is `4b9a48123942a2b942fe95d8b485d35f54c4db0d1ae744fd571b8cef58b970f3`.
 
 After training, `src.predict_v3.predict_daily_routes` loads the selected v3
 bundle and forecasts one issue date at a time. It rejects ridership newer than
