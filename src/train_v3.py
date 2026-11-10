@@ -346,6 +346,18 @@ def run_v3_experiment(
 
     test_actual_rows = demand_fit["test_rows"]
     selected_prediction = paired_test_predictions[selected_method]
+    selected_test_diagnostics = test_actual_rows[["route", "date", "daytype", "rides"]].copy()
+    selected_test_diagnostics["predicted_rides"] = np.maximum(
+        np.asarray(selected_prediction, dtype=float), 0
+    )
+    selected_route_metrics = {
+        str(route): _score(group["rides"], group["predicted_rides"])
+        for route, group in selected_test_diagnostics.groupby("route")
+    }
+    selected_daytype_metrics = {
+        str(daytype): _score(group["rides"], group["predicted_rides"])
+        for daytype, group in selected_test_diagnostics.groupby("daytype")
+    }
     selected_forecasts = pd.DataFrame({
         "route": test_actual_rows["route"].astype(str).to_numpy(),
         "target_date": test_actual_rows["date"].dt.strftime("%Y-%m-%d").to_numpy(),
@@ -446,6 +458,7 @@ def run_v3_experiment(
         "model_selection": {
             "selected_on": "validation MAE only; no test-period model selection",
             "paired_matched_validation_winner": selected_method,
+            "selected_validation_metrics": paired_validation[selected_method],
             "serving_configuration": selected_configuration,
             "serving_estimator": selected_estimator,
             "serving_model_requires_schedule": requires_schedule,
@@ -470,6 +483,10 @@ def run_v3_experiment(
             },
             "validation_metrics_common_methods": paired_validation,
             "test_metrics_common_methods": paired_test,
+            "selected_test_diagnostics": {
+                "route": selected_route_metrics,
+                "daytype": selected_daytype_metrics,
+            },
             "demand_only": _jsonable_configuration(demand_fit),
             "service_aware": _jsonable_configuration(service_fit),
             "service_schedule_rows_matched": service_demand_denominator,
