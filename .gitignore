@@ -8,3 +8,7 @@ data/raw/*.csv
 !data/raw/gtfs_archive_manifest.csv
 data/raw/*.zip
 data/raw/gtfs/
+
+# Large v3 model output is supplied separately from source control.
+models/cta_ridership_v3.joblib
+models/cta_route_ranker_v3_results.zip

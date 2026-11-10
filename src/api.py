@@ -1,6 +1,9 @@
 """HTTP API for saved CTA evaluation results and planning scenarios."""
 
 import json
+import os
+from datetime import date
+from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
@@ -8,18 +11,22 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field, StrictInt
 
+from .predict_v3 import load_v3_bundle, predict_daily_routes_from_bundle
 from .scenarios import optimize_trip_allocation
 
-REPORT_PATH = Path(__file__).resolve().parents[1] / "outputs" / "reports" / "service_model_comparison.json"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+REPORT_PATH = PROJECT_ROOT / "outputs" / "reports" / "service_model_comparison.json"
+V3_REPORT_PATH = PROJECT_ROOT / "outputs" / "reports" / "model_selection_v3.json"
+V3_BUNDLE_DEFAULT = PROJECT_ROOT / "models" / "cta_route_ranker_v3_results.zip"
 REFERENCE = "past_four_same_weekdays"
 
 app = FastAPI(
     title="CTA Route Review API",
     description=(
-        "Route forecast evaluation results and bounded planning scenarios. "
-        "Forecast endpoints return saved evaluation metrics, not live predictions."
+        "Route forecast evaluation, one-day forecasts from the v3 artifact, "
+        "and bounded planning scenarios."
     ),
-    version="1.0.0",
+    version="2.0.0",
 )
 
 
@@ -35,6 +42,64 @@ class TripAllocationRequest(BaseModel):
         default=0.10, ge=0, le=0.5,
         description="Maximum proportional change per route; 0.10 means 10 percent.",
     )
+
+
+class ForecastObservation(BaseModel):
+    route: str = Field(min_length=1, max_length=20)
+    date: date
+    daytype: Literal["W", "A", "U"]
+    rides: float = Field(ge=0)
+
+
+class ForecastTarget(BaseModel):
+    route: str = Field(min_length=1, max_length=20)
+    date: date
+    daytype: Literal["W", "A", "U"]
+
+
+class ForecastServiceRow(BaseModel):
+    route: str = Field(min_length=1, max_length=20)
+    date: date
+    scheduled_trips: float = Field(gt=0)
+    scheduled_service_hours: float | None = Field(default=None, ge=0)
+    archive_available_from: date
+    source_snapshot: str | None = None
+    match_status: str | None = None
+
+
+class OneDayForecastRequest(BaseModel):
+    history: list[ForecastObservation] = Field(min_items=1, max_items=10000)
+    targets: list[ForecastTarget] = Field(min_items=1, max_items=300)
+    service_rows: list[ForecastServiceRow] | None = Field(default=None, max_items=300)
+
+
+@lru_cache(maxsize=1)
+def _cached_v3_bundle(path: str, modified_ns: int, size: int) -> dict:
+    del modified_ns, size  # File metadata participates in the cache key.
+    return load_v3_bundle(path)
+
+
+def _v3_bundle_path() -> Path:
+    configured = os.environ.get("CTA_RANKER_V3_BUNDLE")
+    path = Path(configured).expanduser() if configured else V3_BUNDLE_DEFAULT
+    return path.resolve()
+
+
+def _load_v3_bundle() -> dict:
+    path = _v3_bundle_path()
+    if not path.is_file():
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                f"v3 model bundle not found at {path}. Set CTA_RANKER_V3_BUNDLE to the "
+                "Colab results ZIP or the extracted cta_ridership_v3.joblib file."
+            ),
+        )
+    try:
+        stat = path.stat()
+        return _cached_v3_bundle(str(path), stat.st_mtime_ns, stat.st_size)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Could not load the configured v3 model bundle: {exc}") from exc
 
 
 def _load_report() -> dict:
@@ -107,7 +172,76 @@ def _mode_data(mode: Literal["fixed_origin", "daily_rolling"], report: dict) -> 
 @app.get("/health", tags=["status"])
 def health() -> dict:
     """Report whether the API can find its evaluation report."""
-    return {"status": "ok" if REPORT_PATH.exists() else "report_missing"}
+    return {
+        "status": "ok" if REPORT_PATH.exists() else "report_missing",
+        "v3_bundle_available": _v3_bundle_path().is_file(),
+    }
+
+
+@app.get("/api/v1/forecasts/model", tags=["forecasts"])
+def forecast_model() -> dict:
+    """Describe the validation-selected v3 model and its evaluation caveats."""
+    if not V3_REPORT_PATH.exists():
+        raise HTTPException(status_code=503, detail="v3 model-selection report is not available")
+    try:
+        report = json.loads(V3_REPORT_PATH.read_text())
+        return {
+            "model_selection": report["model_selection"],
+            "paired_validation": report["paired_matched_experiment"]["validation_metrics_common_methods"],
+            "paired_test": report["paired_matched_experiment"]["test_metrics_common_methods"],
+            "source": report["source"],
+            "artifact_training": report.get("artifacts", {}).get("final_refit"),
+            "information_policy": report["information_policy"],
+            "prior_test_history_note": report["prior_test_history_note"],
+            "model_artifact_configured": _v3_bundle_path().is_file(),
+        }
+    except (OSError, json.JSONDecodeError, KeyError) as exc:
+        raise HTTPException(status_code=503, detail=f"v3 model-selection report is incomplete: {exc}") from exc
+
+
+@app.post("/api/v1/forecasts/one-day", tags=["forecasts"])
+def forecast_one_day(request: OneDayForecastRequest) -> dict:
+    """Predict one target date from eligible prior rides and optional service."""
+    bundle = _load_v3_bundle()
+    history = pd.DataFrame([row.model_dump() if hasattr(row, "model_dump") else row.dict()
+                            for row in request.history])
+    targets = pd.DataFrame([row.model_dump() if hasattr(row, "model_dump") else row.dict()
+                            for row in request.targets])
+    service = None
+    if request.service_rows is not None:
+        service = pd.DataFrame([
+            row.model_dump() if hasattr(row, "model_dump") else row.dict()
+            for row in request.service_rows
+        ])
+    try:
+        predictions = predict_daily_routes_from_bundle(bundle, history, targets, service)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    rows = predictions.to_dict(orient="records")
+    for row in rows:
+        for column in (
+            "date", "forecast_issue_date", "latest_permitted_ridership_date",
+            "archive_available_from",
+        ):
+            value = row.get(column)
+            if hasattr(value, "isoformat"):
+                row[column] = value.isoformat()
+    return {
+        "model": {
+            "serving_method": bundle["serving_method"],
+            "configuration": bundle["configuration"],
+            "model_name": bundle["model_name"],
+            "reporting_delay_days": bundle["reporting_delay_days"],
+            "training_cutoff": bundle.get("training_cutoff"),
+            "training_rows": bundle.get("training_rows"),
+        },
+        "prediction_mode": "daily rolling one-step forecast",
+        "predictions": rows,
+        "interpretation_limit": (
+            "Predicted daily route boardings are a demand forecast; they are not passenger load, "
+            "crowding, capacity, or a service-change recommendation."
+        ),
+    }
 
 
 @app.get("/api/v1/evaluations", tags=["evaluations"])

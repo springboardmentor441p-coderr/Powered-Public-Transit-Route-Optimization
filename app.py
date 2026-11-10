@@ -1,12 +1,18 @@
 """Streamlit route forecast evaluation and review dashboard."""
 
 import json
+from datetime import timedelta
+from io import BytesIO
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
+from src.data_loader import load_bus_ridership
+from src.predict_v3 import load_v3_bundle, predict_daily_routes_from_bundle
+
 REPORT_PATH = Path(__file__).parent / "outputs" / "reports" / "service_model_comparison.json"
+V3_REPORT_PATH = Path(__file__).parent / "outputs" / "reports" / "model_selection_v3.json"
 
 MODEL_LABELS = {
     "past_four_same_weekdays": "Past four same weekdays",
@@ -30,6 +36,21 @@ def _format_metric(value: float | None, metric: str) -> str:
 def load_report(path: str, modified_time: float) -> dict:
     del modified_time  # Include the file modification time in Streamlit's cache key.
     return json.loads(Path(path).read_text())
+
+
+@st.cache_data(max_entries=3)
+def load_uploaded_ridership(contents: bytes) -> pd.DataFrame:
+    return load_bus_ridership(BytesIO(contents))
+
+
+@st.cache_data(max_entries=3)
+def load_uploaded_service(contents: bytes) -> pd.DataFrame:
+    return pd.read_csv(BytesIO(contents), dtype={"route": "string", "source_snapshot": "string"})
+
+
+@st.cache_resource(max_entries=2)
+def load_uploaded_v3_bundle(contents: bytes) -> dict:
+    return load_v3_bundle(contents)
 
 
 def _fixed_origin_data(report: dict):
@@ -136,6 +157,28 @@ st.caption(
     "Positive route differences below mean the selected method has higher error."
 )
 
+if V3_REPORT_PATH.exists():
+    try:
+        v3_report = load_report(str(V3_REPORT_PATH), V3_REPORT_PATH.stat().st_mtime)
+        v3_selection = v3_report["model_selection"]
+        v3_validation = v3_selection["selected_validation_metrics"]
+        with st.container(border=True):
+            st.subheader("Selected v3 one-day model")
+            st.caption(
+                f"{v3_selection['serving_configuration']} · {v3_selection['serving_estimator']} · "
+                "selected by MAE on the matched validation split"
+            )
+            v3_col1, v3_col2, v3_col3 = st.columns(3)
+            v3_col1.metric("Validation MAE", f"{v3_validation['mae']:,.1f} rides")
+            v3_col2.metric("Validation RMSE", f"{v3_validation['rmse']:,.1f} rides")
+            v3_col3.metric("Validation WAPE", f"{v3_validation['wape']:.2%}")
+            st.caption(
+                "Development result: the source hash differs from the mentor's frozen export, "
+                "June–July was seen in earlier iterations, and the replay assumes rides through D−1 are available."
+            )
+    except (OSError, KeyError, json.JSONDecodeError, TypeError) as exc:
+        st.warning(f"The v3 model-selection summary could not be shown: {exc}")
+
 st.subheader("Error by day type")
 day_rows = []
 for daytype in sorted(daytype_metrics):
@@ -151,7 +194,7 @@ for daytype in sorted(daytype_metrics):
 if day_rows:
     day_frame = pd.DataFrame(day_rows).set_index("Day type")
     st.bar_chart(day_frame)
-    st.dataframe(day_frame.style.format("{:.1f} rides"), use_container_width=True)
+    st.dataframe(day_frame.style.format("{:.1f} rides"))
 else:
     st.info("Day-type metrics are unavailable for this report.")
 
@@ -195,7 +238,6 @@ else:
             "MAE difference": "{:+.1f}",
             "Difference %": "{:+.1f}%",
         }),
-        use_container_width=True,
         hide_index=True,
     )
 
@@ -207,6 +249,132 @@ with st.expander("How to read this review"):
         "- The fixed-origin and daily rolling modes use different forecast assumptions and should not be compared as if they were the same task."
     )
     st.caption(f"Report source: `{REPORT_PATH.relative_to(Path(__file__).parent)}`")
+
+st.divider()
+st.header("One-day forecast with the v3 model")
+st.write(
+    "Upload the Colab result ZIP and CTA ridership CSV to rank route boardings for one date. "
+    "The forecast date must follow the latest ride observation in the uploaded file."
+)
+st.info(
+    "Choose the CTA day type for the target date (W weekday, A Saturday, U Sunday/holiday). "
+    "Confirm holidays yourself; the app does not infer the official CTA holiday calendar."
+)
+
+forecast_model_upload = st.file_uploader(
+    "Colab results ZIP or v3 joblib model",
+    type=["zip", "joblib"],
+    key="v3_model_upload",
+    help="Use cta_route_ranker_v3_results.zip from the Colab final cell, or its cta_ridership_v3.joblib member.",
+)
+forecast_history_upload = st.file_uploader(
+    "CTA daily bus ridership CSV",
+    type=["csv"],
+    key="v3_ridership_upload",
+    help="Upload the real CTA export containing route, date, daytype, and rides.",
+)
+
+if forecast_model_upload is not None and forecast_history_upload is not None:
+    try:
+        model_bundle = load_uploaded_v3_bundle(forecast_model_upload.getvalue())
+        forecast_history = load_uploaded_ridership(forecast_history_upload.getvalue())
+    except Exception as exc:
+        st.error(f"Could not load the model or ridership CSV: {exc}")
+    else:
+        latest_observed_date = forecast_history["date"].max().date()
+        earliest_forecast_date = latest_observed_date + timedelta(
+            days=int(model_bundle["reporting_delay_days"])
+        )
+        available_routes = sorted(forecast_history["route"].astype(str).unique().tolist())
+        service_upload = None
+        if model_bundle.get("model_requires_schedule"):
+            service_upload = st.file_uploader(
+                "Route/date service schedule CSV",
+                type=["csv"],
+                key="v3_service_upload",
+                help="Required for a service-aware model; include archive_available_from and capture dates strictly before the target date.",
+            )
+
+        st.caption(
+            f"Latest ride date in this CSV: {latest_observed_date.isoformat()}. "
+            f"Earliest permitted target date with the model's one-day delay: {earliest_forecast_date.isoformat()}."
+        )
+        with st.form("v3_one_day_forecast"):
+            forecast_date = st.date_input(
+                "Forecast date",
+                value=earliest_forecast_date,
+                min_value=earliest_forecast_date,
+                key="v3_forecast_date",
+            )
+            daytype_label = st.selectbox(
+                "CTA day type",
+                ["W", "A", "U"],
+                format_func=lambda value: {
+                    "W": "W — Weekday",
+                    "A": "A — Saturday",
+                    "U": "U — Sunday/holiday",
+                }[value],
+                key="v3_forecast_daytype",
+            )
+            selected_routes = st.multiselect(
+                "Routes to rank",
+                available_routes,
+                default=available_routes,
+                key="v3_forecast_routes",
+            )
+            forecast_submitted = st.form_submit_button("Generate route forecasts")
+
+        if forecast_submitted:
+            if not selected_routes:
+                st.error("Select at least one route.")
+            elif model_bundle.get("model_requires_schedule") and service_upload is None:
+                st.error("This selected model requires the route/date service schedule CSV.")
+            else:
+                try:
+                    target_frame = pd.DataFrame({
+                        "route": selected_routes,
+                        "date": forecast_date,
+                        "daytype": daytype_label,
+                    })
+                    service_frame = (
+                        load_uploaded_service(service_upload.getvalue())
+                        if service_upload is not None else None
+                    )
+                    forecast_frame = predict_daily_routes_from_bundle(
+                        model_bundle, forecast_history, target_frame, service_frame
+                    )
+                except (OSError, KeyError, ValueError, pd.errors.ParserError, UnicodeDecodeError) as exc:
+                    st.error(f"Could not create the forecast: {exc}")
+                else:
+                    ranked_forecasts = forecast_frame.sort_values(
+                        "predicted_rides", ascending=False
+                    ).reset_index(drop=True)
+                    forecast_total = float(ranked_forecasts["predicted_rides"].sum())
+                    st.metric("Predicted boardings across selected routes", f"{forecast_total:,.0f}")
+                    st.caption(
+                        f"Method: {model_bundle['serving_method']} · model trained through "
+                        f"{model_bundle.get('training_cutoff', 'unknown date')} · issue date: {forecast_date.isoformat()} · "
+                        f"ridership inputs allowed through {(forecast_date - timedelta(days=model_bundle['reporting_delay_days'])).isoformat()}"
+                    )
+                    st.dataframe(
+                        ranked_forecasts,
+                        hide_index=True,
+                        column_config={
+                            "predicted_rides": st.column_config.NumberColumn(
+                                "Predicted daily boardings", format="%,.0f"
+                            ),
+                        },
+                    )
+                    st.download_button(
+                        "Download route forecast CSV",
+                        ranked_forecasts.to_csv(index=False),
+                        file_name=f"cta_route_forecast_{forecast_date.isoformat()}.csv",
+                        mime="text/csv",
+                    )
+                    st.caption(
+                        "Route order reflects predicted daily boardings only. It is not passenger load, crowding, "
+                        "route quality, or a service-change recommendation."
+                    )
 
 st.divider()
 st.header("Trip allocation scenario sandbox")
@@ -282,7 +450,6 @@ if scenario_upload is not None:
                 "boardings_per_current_trip": "{:,.1f}",
                 "boardings_per_scenario_trip": "{:,.1f}",
             }),
-            use_container_width=True,
             hide_index=True,
         )
     except (OSError, UnicodeDecodeError, pd.errors.ParserError, ValueError) as exc:

@@ -59,9 +59,14 @@ the original ZIP SHA-256 values are unverified.
 
 The reviewed metrics, GTFS import audit, forecast-only replay, and separate
 actuals-for-scoring file are preserved in `outputs/reports/` and
-`outputs/predictions/`. The 161 MB trained joblib file is in the Colab result
-bundle saved under My Drive/CTA_RouteRanker_v3; it is not committed to Git.
-Its SHA-256 is `4b9a48123942a2b942fe95d8b485d35f54c4db0d1ae744fd571b8cef58b970f3`.
+`outputs/predictions/`. The initially supplied 161 MB joblib artifact is in
+the Colab result bundle saved under My Drive/CTA_RouteRanker_v3; it was fit
+through 2026-05-31 for the test evaluation and is not committed to Git. Its
+SHA-256 is `4b9a48123942a2b942fe95d8b485d35f54c4db0d1ae744fd571b8cef58b970f3`.
+The trainer now leaves those evaluation metrics unchanged, then refits the
+selected model on all available history for the serving artifact. Rerun the
+updated Colab notebook to generate that refreshed model; its actual training
+cutoff and row count will be recorded in the report and model bundle.
 
 After training, `src.predict_v3.predict_daily_routes` loads the selected v3
 bundle and forecasts one issue date at a time. It rejects ridership newer than
@@ -180,10 +185,14 @@ streamlit run app.py
 
 The dashboard reads the committed comparison report and lets you inspect the
 fixed-origin August forecast separately from the daily rolling development
-backtest. Choose a model or baseline, compare errors by day type, and sort or
-filter route-level MAE differences against the past-four-same-weekdays
-baseline. It also accepts a route forecast CSV for a bounded trip-allocation
-scenario.
+backtest. It also shows the v3-selected model. Under **One-day forecast with
+the v3 model**, upload the Colab results ZIP and an up-to-date CTA ridership
+CSV, choose a target date/day type and routes, then download the ranked
+forecast. The date must follow the last ride observation; target day type is a
+user-supplied calendar value. If a future selected artifact is service-aware,
+the dashboard also requires a route/date schedule CSV with capture provenance.
+The existing trip-allocation scenario sandbox still accepts a separate route
+forecast CSV.
 
 The saved evaluation report and scenario calculator are available through a local API:
 
@@ -191,11 +200,45 @@ The saved evaluation report and scenario calculator are available through a loca
 uvicorn src.api:app --reload
 ```
 
-Open `http://127.0.0.1:8000/docs` for interactive API documentation. Main
-endpoints are `/api/v1/evaluations`, `/api/v1/summary?mode=fixed_origin`,
-`/api/v1/daytypes?mode=daily_rolling`, `/api/v1/routes?mode=fixed_origin&model=service_aware`,
-and `/api/v1/routes/47?mode=fixed_origin`. The API serves saved model metrics;
-it does not generate new predictions. Its
+Open `http://127.0.0.1:8000/docs` for interactive API documentation. Evaluation
+endpoints include `/api/v1/evaluations`, `/api/v1/summary?mode=fixed_origin`,
+`/api/v1/daytypes?mode=daily_rolling`, and `/api/v1/routes/47?mode=fixed_origin`.
+The v3 endpoints are `GET /api/v1/forecasts/model` for the selected-model
+summary and `POST /api/v1/forecasts/one-day` for live one-date predictions.
+The forecast endpoint reads the model ZIP by default from
+`models/cta_route_ranker_v3_results.zip`; set `CTA_RANKER_V3_BUNDLE` to another
+ZIP or extracted joblib path if needed. Keep the large artifact out of Git.
+For example, point the API at the ZIP in Downloads when starting it:
+
+```bash
+CTA_RANKER_V3_BUNDLE="/absolute/path/to/cta_route_ranker_v3_results.zip" uvicorn src.api:app --reload
+```
+
+Example one-day prediction request (illustrative values; include history
+through the latest permitted date and one target date):
+
+```json
+{
+  "history": [
+    {"route":"1","date":"2026-08-04","daytype":"W","rides":5100},
+    {"route":"1","date":"2026-08-11","daytype":"W","rides":5200},
+    {"route":"1","date":"2026-08-18","daytype":"W","rides":5300},
+    {"route":"1","date":"2026-08-25","daytype":"W","rides":5400},
+    {"route":"1","date":"2026-08-31","daytype":"W","rides":5500}
+  ],
+  "targets": [
+    {"route":"1","date":"2026-09-01","daytype":"W"}
+  ]
+}
+```
+
+The API rejects ride history later than the model's D−1 reporting cutoff and
+requires strictly earlier schedule captures for service-aware bundles. Daily
+requests are rolling one-step forecasts; send fresh eligible history for each
+new issue date. API requests accept at most 10,000 history rows and 300 target
+routes; send the required preceding route/date observations, not the entire
+CTA export. The forecast is measured route boardings, not passenger load or
+crowding. The existing
 `POST /api/v1/scenarios/rebalance-trips` endpoint accepts route-level predicted
 boardings, current scheduled trips, and an optional per-route change bound.
 
