@@ -303,8 +303,13 @@ def build_service_table(
     fixed_start_date: str | None = None,
     fixed_end_date: str | None = None,
     fixed_output_path: str | Path | None = None,
+    snapshot_selection_policy: str = "on_or_before_service_date",
 ) -> dict:
     """Select historical feeds and optionally make a future table from one frozen feed."""
+    if snapshot_selection_policy not in {
+        "on_or_before_service_date", "strictly_before_service_date"
+    }:
+        raise ValueError("Unsupported snapshot_selection_policy")
     root = Path.cwd()
     ridership_path, manifest_path = Path(ridership_path), Path(manifest_path)
     manifest = _read_manifest(manifest_path, root)
@@ -320,7 +325,10 @@ def build_service_table(
     retrieval_dates = [entry["retrieved_date_obj"] for entry in snapshots]
     schedule_rows, no_snapshot_dates, no_active_service_dates = [], [], []
     for service_day in (start + timedelta(days=offset) for offset in range((end - start).days + 1)):
-        eligible = [i for i, retrieved in enumerate(retrieval_dates) if retrieved <= service_day]
+        if snapshot_selection_policy == "strictly_before_service_date":
+            eligible = [i for i, retrieved in enumerate(retrieval_dates) if retrieved < service_day]
+        else:
+            eligible = [i for i, retrieved in enumerate(retrieval_dates) if retrieved <= service_day]
         if not eligible:
             no_snapshot_dates.append(service_day.isoformat())
             continue
@@ -358,7 +366,10 @@ def build_service_table(
         fixed_end = pd.Timestamp(fixed_end_date).date()
         if not (origin < fixed_start <= fixed_end):
             raise ValueError("Fixed-origin forecast dates must follow the origin date")
-        eligible = [i for i, retrieved in enumerate(retrieval_dates) if retrieved <= origin]
+        if snapshot_selection_policy == "strictly_before_service_date":
+            eligible = [i for i, retrieved in enumerate(retrieval_dates) if retrieved < origin]
+        else:
+            eligible = [i for i, retrieved in enumerate(retrieval_dates) if retrieved <= origin]
         if not eligible:
             raise ValueError(f"No archived schedule was available by fixed forecast origin {origin}")
         fixed_entry = snapshots[eligible[-1]]
@@ -417,7 +428,12 @@ def build_service_table(
         "dates_without_snapshot": no_snapshot_dates,
         "dates_without_active_service": no_active_service_dates,
         "service_hours_policy": "Null unless every counted trip for route/date has valid first-departure and last-arrival duration",
-        "archive_selection_policy": "Globally select latest retrieval date on or before each service date; never route-level fallback",
+        "archive_selection_policy": (
+            "Globally select latest retrieval date strictly before each service date; never route-level fallback"
+            if snapshot_selection_policy == "strictly_before_service_date"
+            else "Globally select latest retrieval date on or before each service date; never route-level fallback"
+        ),
+        "snapshot_selection_policy": snapshot_selection_policy,
         "output_csv": str(output_path),
         "fixed_origin_schedule": fixed_origin_report,
     }
@@ -435,12 +451,18 @@ def main() -> None:
     parser.add_argument("--fixed-start-date")
     parser.add_argument("--fixed-end-date")
     parser.add_argument("--fixed-output", default="data/processed/cta_service_fixed_origin.csv")
+    parser.add_argument(
+        "--snapshot-selection-policy",
+        choices=("on_or_before_service_date", "strictly_before_service_date"),
+        default="on_or_before_service_date",
+    )
     args = parser.parse_args()
     fixed_args = (args.fixed_origin_date, args.fixed_start_date, args.fixed_end_date)
     fixed_output = args.fixed_output if any(fixed_args) else None
     print(json.dumps(build_service_table(
         args.ridership, args.manifest, args.output, args.report,
-        *fixed_args, fixed_output_path=fixed_output
+        *fixed_args, fixed_output_path=fixed_output,
+        snapshot_selection_policy=args.snapshot_selection_policy,
     ), indent=2))
 
 

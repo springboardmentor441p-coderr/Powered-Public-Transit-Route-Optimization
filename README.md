@@ -5,7 +5,26 @@ route. The intern guide sets the core requirements: preserve real observations,
 align by route and exact date, compare forecasts with seasonal baselines, and
 describe results as retrospective until CTA publication timing is verified.
 
-## Current ML pipeline
+## Mentor guide v3 work in progress
+
+The current Colab workflow is being aligned to the mentor's 10 Nov 2026 v3
+guide. Open [notebooks/cta_ridership_colab.ipynb](notebooks/cta_ridership_colab.ipynb)
+in Colab and run from the top. It compares last-week and past-four-weekday
+baselines with pooled Linear Regression, Random Forest, and the earlier
+HistGradientBoosting model. Validation MAE selects the serving method; the
+matched demand-only/service-aware comparison uses identical route/date rows.
+The v3 model bundle and report are separate from the existing v2 artifacts.
+
+The mentor's frozen ridership CSV was not supplied with the updated guide. The
+notebook therefore downloads the current official export unless
+My Drive/cta_bus_ridership.csv is present, fingerprints the exact bytes, and
+records whether its hash matches the guide. If it does not match, treat the run
+as updated-source development evidence, not an exact reproduction. June–July
+2026 was already evaluated in earlier iterations, so those scores are not a
+fresh final holdout. The one-day ridership reporting delay is an explicit but
+unverified assumption.
+
+## Previous v2 ML pipeline (kept for comparison)
 
 The target is measured daily rides for one route/date. Features include route,
 reported day type, calendar fields, exact-date lags (1, 7, 14, 21, and 28 days),
@@ -64,7 +83,7 @@ Defaults write `models/cta_ridership.joblib` and
 `outputs/reports/model_metrics.json`. The real CTA input is not included;
 training stops if invalid or conflicting records are found.
 
-## Latest Colab training run
+## Previous v2 Colab training run (historical reference)
 
 The latest Colab report and fitted artifact are saved in this repository. The
 selected HistGradientBoosting model's **fixed-origin recursive** forecast,
@@ -219,7 +238,7 @@ fixed-origin result freezes the latest snapshot available at the origin for
 the full test horizon and feeds predicted ridership into later lag features
 instead of actual test-period rides.
 
-## Latest demand versus service comparison
+## Previous v2 demand versus service comparison (historical reference)
 
 The matched rolling test covered **7,014 of 7,109** demand rows for June-July
 (**98.66%**). The service-aware model scored **382.3 MAE / 7.76% WAPE** versus
@@ -254,7 +273,7 @@ SHA-256 verification as false. Most unmatched ridership rows are from dates
 outside the archived schedule window; the test-period coverage figure above
 is restricted to the model's matched test window.
 
-## Final August holdout
+## Previous v2 August evaluation (historical reference)
 
 The Colab notebook reserved August from fitting: train through 2026-03-31,
 validate on April-July, refit through 2026-07-31, and score August 1-31. The
