@@ -46,9 +46,10 @@ records whether its hash matches the guide. If it does not match, treat the run
 as updated-source development evidence, not an exact reproduction. The
 one-day ridership reporting delay is an explicit but unverified assumption.
 
-For this run the input SHA-256 was
-`d9675570e50a1b3d1fe7142ea9b10ba76099c1312ab0c227745ac57205eb5c04`, which
-does not match the mentor snapshot hash. The training targets nevertheless
+The latest supplied CSV has SHA-256
+`fa687b55d4049c9330e8088c6b79947cabfc46e010d89e77f32d7abe46aba977`, with
+1,124,170 validated route/date rows through 2026-08-31. It does not match the
+mentor snapshot hash. The training targets nevertheless
 covered the guide's demand-only date windows and row counts. For the paired
 window, strict same-day GTFS exclusion left 2025-11-23 without an eligible
 snapshot; there were 14,415 matched training rows (86 fewer than the guide's
@@ -186,8 +187,8 @@ streamlit run app.py
 The dashboard is organized as a Chicago planning workspace:
 
 - **Overview:** selected model, validation/test context, source fingerprint,
-  active-upload SHA-256 and a comparison with the evaluated source, plus recent
-  network totals when a ridership file is uploaded.
+  active-source SHA-256 and a comparison with the evaluated source, plus recent
+  network totals when local or uploaded ridership data is available.
 - **Routes:** route histories, matched-date route comparisons, day-type
   summaries, an optional GTFS-shape map, a review queue that equally weights
   weekday/Saturday/Sunday-holiday means when all three types have enough data,
@@ -209,7 +210,9 @@ The dashboard is organized as a Chicago planning workspace:
 - **Methods & data:** exposes model choice, source hashes, cutoff dates and
   assumptions, with a downloadable JSON evidence and data-lineage manifest.
 
-Upload the CTA CSV in the sidebar to unlock route exploration and forecasting.
+The dashboard loads `data/raw/cta_bus_ridership.csv` automatically when that
+local file is present; a sidebar upload overrides it. Use the validated source
+hash shown in the app to distinguish a current export from the mentor snapshot.
 The optional map expects a static GTFS ZIP containing `routes.txt`, `trips.txt`
 and `shapes.txt`. The map shows scheduled geometry, never live vehicles. The
 scenario sandbox is conditional arithmetic, not an executable timetable or

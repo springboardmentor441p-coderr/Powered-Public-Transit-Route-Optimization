@@ -20,6 +20,7 @@ REPORT_PATH = ROOT / "outputs" / "reports" / "model_selection_v3.json"
 FORECAST_PATH = ROOT / "outputs" / "predictions" / "cta_june_july_replay_v3.csv"
 ACTUALS_PATH = ROOT / "outputs" / "predictions" / "cta_june_july_replay_v3_actuals_for_scoring.csv"
 MODEL_PATH = ROOT / "models" / "cta_route_ranker_v3_results.zip"
+RIDERSHIP_PATH = ROOT / "data" / "raw" / "cta_bus_ridership.csv"
 
 
 @st.cache_data
@@ -31,6 +32,13 @@ def load_report(path: str, modified_time: float) -> dict:
 @st.cache_data(max_entries=3)
 def load_uploaded_ridership(contents: bytes) -> pd.DataFrame:
     return load_bus_ridership(BytesIO(contents))
+
+
+@st.cache_data(max_entries=2)
+def load_local_ridership(path: str, modified_time: float, size: int) -> tuple[pd.DataFrame, str]:
+    del modified_time, size
+    contents = Path(path).read_bytes()
+    return load_bus_ridership(BytesIO(contents)), hashlib.sha256(contents).hexdigest()
 
 
 @st.cache_data(max_entries=2)
@@ -897,7 +905,7 @@ def main() -> None:
             key="workspace_navigation",
         )
         st.divider()
-        st.caption("Upload a validated CTA daily route-ridership CSV for route exploration and forecasts.")
+        st.caption("Using the local validated CTA CSV when present; upload another CSV to override it.")
         source_upload = st.file_uploader("CTA ridership CSV", type=["csv"], key="shared_ridership")
         source = None
         source_sha256 = None
@@ -906,9 +914,17 @@ def main() -> None:
                 source_bytes = source_upload.getvalue()
                 source_sha256 = hashlib.sha256(source_bytes).hexdigest()
                 source = load_uploaded_ridership(source_bytes)
-                st.caption(f"Active CSV SHA-256: `{source_sha256}`")
             except (OSError, ValueError, pd.errors.ParserError, UnicodeDecodeError) as exc:
                 st.error(f"Ridership file rejected: {exc}")
+        elif RIDERSHIP_PATH.is_file():
+            try:
+                stat = RIDERSHIP_PATH.stat()
+                source, source_sha256 = load_local_ridership(str(RIDERSHIP_PATH), stat.st_mtime, stat.st_size)
+                st.caption(f"Active local CSV: `{RIDERSHIP_PATH.relative_to(ROOT)}`")
+            except (OSError, ValueError, pd.errors.ParserError, UnicodeDecodeError) as exc:
+                st.error(f"Local ridership file rejected: {exc}")
+        if source_sha256:
+            st.caption(f"Active CSV SHA-256: `{source_sha256}`")
         st.divider()
         st.caption("Route changes are never recommended automatically. Review scenario assumptions before use.")
     if workspace == "Overview":
