@@ -1,5 +1,6 @@
 """Chicago CTA RouteRanker planning and forecast review workspace."""
 
+import hashlib
 import json
 import math
 from datetime import timedelta
@@ -167,7 +168,7 @@ def fmt_rides(value: float) -> str:
     return f"{value:,.1f} rides"
 
 
-def render_overview(report: dict, source: pd.DataFrame | None) -> None:
+def render_overview(report: dict, source: pd.DataFrame | None, source_sha256: str | None) -> None:
     selection = report["model_selection"]
     paired = report["paired_matched_experiment"]
     winner = selection["paired_matched_validation_winner"]
@@ -216,6 +217,12 @@ def render_overview(report: dict, source: pd.DataFrame | None) -> None:
 
     if source is not None:
         st.markdown("#### Uploaded CTA ridership snapshot")
+        if source_sha256:
+            st.caption(f"Uploaded CSV SHA-256: `{source_sha256}`")
+            if source_sha256 == source_info["ridership_sha256"]:
+                st.success("Uploaded CSV is byte-for-byte the source used in the displayed model evaluation.")
+            else:
+                st.warning("Uploaded CSV differs from the source used for the displayed model evaluation. Route views and forecasts use this upload.")
         latest = source["date"].max()
         start = latest - pd.Timedelta(days=83)
         recent = source.loc[source["date"].between(start, latest)]
@@ -319,8 +326,9 @@ def render_routes(source: pd.DataFrame | None) -> None:
     prior_end = recent_start - pd.Timedelta(days=1)
     st.caption(
         f"Compares day-type-standardized means from {recent_start.date()}–{source['date'].max().date()} "
-        f"with {prior_start.date()}–{prior_end.date()}. Each day type needs at least five observations "
-        "in both windows. This is a review queue, not a service-quality or route-cut ranking."
+        f"with {prior_start.date()}–{prior_end.date()}. Routes need at least five observations for all "
+        "three day types in both windows; weekday, Saturday, and Sunday/holiday means receive equal weight. "
+        "This is a review queue, not a service-quality or route-cut ranking."
     )
     review = build_review_signals(source)
     if review.empty:
@@ -332,7 +340,8 @@ def render_routes(source: pd.DataFrame | None) -> None:
             review.rename(columns={
                 "route": "Route", "recent_mean": "Recent standardized rides/day",
                 "prior_mean": "Prior standardized rides/day", "change_pct": "Change (%)",
-                "matched_days": "Matched day-type observations",
+                "daytypes": "Day types represented",
+                "observed_days": "Observed route-days across both windows",
             }).style.format({
                 "Recent standardized rides/day": "{:,.1f}",
                 "Prior standardized rides/day": "{:,.1f}",
@@ -402,19 +411,24 @@ def build_review_signals(source: pd.DataFrame) -> pd.DataFrame:
     paired = paired.loc[(paired["recent_days"] >= 5) & (paired["prior_days"] >= 5)].copy()
     if paired.empty:
         return pd.DataFrame()
-    paired["weight"] = paired["recent_days"]
     rows = []
     for route, group in paired.groupby("route"):
-        total_weight = group["weight"].sum()
-        recent_mean = float((group["recent_mean"] * group["weight"]).sum() / total_weight)
-        prior_mean = float((group["prior_mean"] * group["weight"]).sum() / total_weight)
+        if len(group) != 3:
+            continue
+        # Standardize both periods to the same three-daytype mix. Equal
+        # weighting prevents differing data completeness from changing the mix.
+        recent_mean = float(group["recent_mean"].mean())
+        prior_mean = float(group["prior_mean"].mean())
         rows.append({
             "route": str(route),
             "recent_mean": recent_mean,
             "prior_mean": prior_mean,
             "change_pct": 100 * (recent_mean - prior_mean) / prior_mean if prior_mean else None,
-            "matched_days": int(group["recent_days"].sum()),
+            "daytypes": int(len(group)),
+            "observed_days": int(group["recent_days"].sum() + group["prior_days"].sum()),
         })
+    if not rows:
+        return pd.DataFrame(columns=["route", "recent_mean", "prior_mean", "change_pct", "daytypes", "observed_days"])
     return pd.DataFrame(rows).dropna(subset=["change_pct"])
 
 
@@ -542,7 +556,8 @@ def render_evaluation(report: dict) -> None:
         st.dataframe(daytype_frame, column_config={"Selected model MAE": st.column_config.NumberColumn(format="%,.1f")})
 
     st.warning(
-        "This is retrospective development evidence: the CSV hash differs from the mentor's frozen export, "
+        "This is retrospective development evidence: the evaluation CSV "
+        f"{'matches' if report['source']['matches_mentor_reference'] else 'does not match'} the mentor's frozen export, "
         "the June–July window was inspected in earlier iterations, and the D−1 reporting assumption is unverified."
     )
 
@@ -608,42 +623,34 @@ def render_replay() -> None:
     st.caption("Replay uses separated forecast and actuals files and the declared D−1 availability assumption.")
 
 
-def render_forecast(source: pd.DataFrame | None) -> None:
+def render_forecast(report: dict, source: pd.DataFrame | None, source_sha256: str | None) -> None:
     st.subheader("One-day route forecast")
     st.caption("Forecasts one date at a time from eligible observed rides and a user-confirmed CTA day type.")
     if source is None:
         st.info("Upload the CTA ridership CSV in the sidebar first.")
         return
 
-    bundle = None
-    if MODEL_PATH.exists():
-        try:
-            stat = MODEL_PATH.stat()
-            bundle = load_local_v3_bundle(str(MODEL_PATH), stat.st_mtime, stat.st_size)
-            st.caption("Using the refreshed local model bundle stored in `models/`.")
-        except Exception as exc:
-            st.warning(f"The local model bundle could not be loaded: {exc}")
-    if bundle is None:
-        upload = st.file_uploader("Upload Colab results ZIP or v3 joblib", type=["zip", "joblib"], key="forecast_bundle")
-        if upload is None:
-            st.info("The model ZIP is not available locally. Choose it here to continue.")
-            return
-        try:
-            bundle = load_uploaded_v3_bundle(upload.getvalue())
-        except Exception as exc:
-            st.error(f"Could not load this v3 model: {exc}")
-            return
-
+    reporting_delay = int(report["information_policy"]["reporting_delay_days"])
+    expected_method = report["model_selection"]["paired_matched_validation_winner"]
+    expected_source_sha256 = report["source"]["ridership_sha256"]
+    expected_cutoff = report["artifacts"]["final_refit"]["training_cutoff"]
+    model_requires_schedule = bool(report["model_selection"].get("serving_model_requires_schedule", False))
     latest = source["date"].max()
-    earliest = latest + pd.Timedelta(days=int(bundle["reporting_delay_days"]))
+    earliest = latest + pd.Timedelta(days=reporting_delay)
     routes = sorted(source["route"].astype(str).unique())
     st.info(
-        f"Latest ride in file: {latest.date()}. With the model's {bundle['reporting_delay_days']}-day delay, "
+        f"Planned model: `{expected_method}`. Latest ride in file: {latest.date()}. "
+        f"With the configured {reporting_delay}-day delay, "
         f"the earliest target date is {earliest.date()}. Day type is supplied by you; verify holidays."
     )
     service_upload = None
-    if bundle.get("model_requires_schedule"):
+    if model_requires_schedule:
         service_upload = st.file_uploader("Required route/date service CSV", type=["csv"], key="forecast_service")
+    model_upload = None
+    if not MODEL_PATH.exists():
+        model_upload = st.file_uploader("Colab results ZIP or v3 joblib", type=["zip", "joblib"], key="forecast_bundle")
+        if model_upload is None:
+            st.info("Upload the model artifact that matches the report's selected method and fingerprints.")
     with st.form("forecast_form"):
         cols = st.columns([1, 1, 2])
         target_date = cols[0].date_input(
@@ -660,9 +667,48 @@ def render_forecast(source: pd.DataFrame | None) -> None:
     if not selected_routes:
         st.error("Choose at least one route.")
         return
-    if bundle.get("model_requires_schedule") and service_upload is None:
+    if model_requires_schedule and service_upload is None:
         st.error("This service-aware model requires schedule rows with capture-date provenance.")
         return
+    if not MODEL_PATH.exists() and model_upload is None:
+        st.error("Upload the selected model artifact before generating a forecast.")
+        return
+
+    try:
+        with st.spinner("Loading the saved model artifact…"):
+            if MODEL_PATH.exists():
+                stat = MODEL_PATH.stat()
+                bundle = load_local_v3_bundle(str(MODEL_PATH), stat.st_mtime, stat.st_size)
+                model_origin = "local results bundle"
+            else:
+                bundle = load_uploaded_v3_bundle(model_upload.getvalue())
+                model_origin = "uploaded Colab artifact"
+    except Exception as exc:
+        st.error(f"Could not load the model artifact: {exc}")
+        return
+
+    artifact_source_sha256 = bundle.get("data_sha256")
+    mismatches = []
+    if bundle.get("serving_method") != expected_method:
+        mismatches.append(f"method `{bundle.get('serving_method')}` does not match report `{expected_method}`")
+    if int(bundle.get("reporting_delay_days", -1)) != reporting_delay:
+        mismatches.append("reporting-delay setting does not match the report")
+    if artifact_source_sha256 != expected_source_sha256:
+        mismatches.append("training source SHA-256 does not match the report")
+    if bundle.get("training_cutoff") != expected_cutoff:
+        mismatches.append("training cutoff does not match the report")
+    if mismatches:
+        st.error("Model artifact/report mismatch: " + "; ".join(mismatches) + ". Update the model and report together.")
+        return
+    st.caption(
+        f"Using {model_origin} · training source SHA-256: `{artifact_source_sha256}` · "
+        f"active inference CSV SHA-256: `{source_sha256 or 'not available'}`"
+    )
+    if source_sha256 and artifact_source_sha256 != source_sha256:
+        st.info(
+            "The uploaded history differs from the model's training CSV. The model will use this upload "
+            "for eligible lag features; its training and evaluation history remains the one recorded in the artifact."
+        )
     targets = pd.DataFrame({"route": selected_routes, "date": target_date, "daytype": daytype})
     service = load_uploaded_service(service_upload.getvalue()) if service_upload else None
     try:
@@ -735,7 +781,7 @@ def render_scenario() -> None:
     st.download_button("Download scenario CSV", route_results.to_csv(index=False), "cta_trip_allocation_scenario.csv", "text/csv")
 
 
-def render_methods(report: dict, source: pd.DataFrame | None) -> None:
+def render_methods(report: dict, source: pd.DataFrame | None, source_sha256: str | None) -> None:
     st.subheader("Data, assumptions, and model card")
     source_info = report["source"]
     model = report["model_selection"]
@@ -751,7 +797,8 @@ def render_methods(report: dict, source: pd.DataFrame | None) -> None:
     )
     if source is not None:
         st.caption(
-            f"Uploaded snapshot SHA-256 should be compared to the report before evaluation claims are made. "
+            f"Uploaded CSV SHA-256: `{source_sha256}`. "
+            f"This upload {'matches' if source_sha256 == source_info['ridership_sha256'] else 'differs from'} the evaluated source. "
             f"Rows: {len(source):,}; routes: {source['route'].nunique():,}; latest observation: {source['date'].max().date()}."
         )
     st.markdown("#### Model and evaluation policy")
@@ -774,6 +821,56 @@ def render_methods(report: dict, source: pd.DataFrame | None) -> None:
         "capacity, waiting, delays, or completed service. Route comparisons and trip scenarios are screening "
         "evidence only. Service changes need route geometry, travel-time and fleet constraints, accessibility "
         "and equity review, and a transit planner."
+    )
+    paired = report["paired_matched_experiment"]
+    winner = model["paired_matched_validation_winner"]
+    test = paired["test_metrics_common_methods"]
+    baseline = test["past_four_same_weekdays"]
+    selected_test = test[winner]
+    manifest = {
+        "project": "CTA RouteRanker",
+        "artifact_version": "3.0.0",
+        "selected_model": winner,
+        "evaluation": {
+            "selection_rule": model["selected_on"],
+            "validation": model["selected_validation_metrics"],
+            "test_selected_model": selected_test,
+            "test_past_four_same_weekdays_baseline": baseline,
+            "test_mae_reduction_vs_baseline_pct": round(
+                100 * (baseline["mae"] - selected_test["mae"]) / baseline["mae"], 3
+            ),
+            "window": source_info["ridership_date_range_used_for_evaluation"],
+        },
+        "data_lineage": {
+            "evaluation_source_sha256": source_info["ridership_sha256"],
+            "mentor_reference_sha256": source_info["mentor_reference_sha256"],
+            "evaluation_source_matches_mentor": source_info["matches_mentor_reference"],
+            "active_upload_sha256": source_sha256,
+            "active_upload_matches_evaluation_source": (
+                source_sha256 == source_info["ridership_sha256"] if source_sha256 else None
+            ),
+        },
+        "serving_policy": {
+            "reporting_delay_days": policy["reporting_delay_days"],
+            "publication_timing_verified": policy["publication_timing_verified"],
+            "daytype": policy["daytype"],
+            "final_refit_training_cutoff": artifacts["training_cutoff"],
+            "final_refit_training_rows": artifacts["training_rows"],
+        },
+        "limitations": [
+            "Retrospective development evidence; the June-July test window was previously inspected.",
+            "The assumed one-day ridership publication delay is unverified.",
+            "Daily boardings are not occupancy, crowding, service quality, or a causal service measure.",
+        ],
+    }
+    if not source_info["matches_mentor_reference"]:
+        manifest["limitations"].append("The evaluation source does not match the mentor frozen CSV.")
+    st.download_button(
+        "Download evidence and data-lineage JSON",
+        data=json.dumps(manifest, indent=2, sort_keys=True),
+        file_name="cta_routeranker_evidence_manifest.json",
+        mime="application/json",
+        help="Captures the displayed evaluation metrics, input fingerprints, serving assumptions, and known limits.",
     )
 
 
@@ -803,15 +900,19 @@ def main() -> None:
         st.caption("Upload a validated CTA daily route-ridership CSV for route exploration and forecasts.")
         source_upload = st.file_uploader("CTA ridership CSV", type=["csv"], key="shared_ridership")
         source = None
+        source_sha256 = None
         if source_upload is not None:
             try:
-                source = load_uploaded_ridership(source_upload.getvalue())
+                source_bytes = source_upload.getvalue()
+                source_sha256 = hashlib.sha256(source_bytes).hexdigest()
+                source = load_uploaded_ridership(source_bytes)
+                st.caption(f"Active CSV SHA-256: `{source_sha256}`")
             except (OSError, ValueError, pd.errors.ParserError, UnicodeDecodeError) as exc:
                 st.error(f"Ridership file rejected: {exc}")
         st.divider()
         st.caption("Route changes are never recommended automatically. Review scenario assumptions before use.")
     if workspace == "Overview":
-        render_overview(report, source)
+        render_overview(report, source, source_sha256)
     elif workspace == "Routes":
         render_routes(source)
     elif workspace == "Forecast evidence":
@@ -819,11 +920,11 @@ def main() -> None:
     elif workspace == "Historical replay":
         render_replay()
     elif workspace == "One-day forecast":
-        render_forecast(source)
+        render_forecast(report, source, source_sha256)
     elif workspace == "Scenarios":
         render_scenario()
     else:
-        render_methods(report, source)
+        render_methods(report, source, source_sha256)
 
 
 if __name__ == "__main__":

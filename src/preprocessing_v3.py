@@ -71,7 +71,7 @@ def make_forecasting_features(
         if not frame["daytype"].isin(["W", "A", "U"]).all():
             raise ValueError("target daytype must contain only W, A, or U")
 
-    frame["day_of_week"] = frame["date"].dt.dayofweek.astype("int8")
+    frame["day_of_week"] = frame["date"].dt.day_of_week.astype("int8")
     frame["month"] = frame["date"].dt.month.astype("int8")
     frame["is_weekend"] = (frame["day_of_week"] >= 5).astype("int8")
     # CTA's reported U marks Sundays and holidays. This flag is retained as a

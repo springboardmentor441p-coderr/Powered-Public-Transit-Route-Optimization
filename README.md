@@ -109,10 +109,13 @@ older v2 pipeline for comparison.
 1. Create an environment and install dependencies:
 
    ```bash
-   python -m venv .venv
+   python3.11 -m venv .venv
    source .venv/bin/activate
+   python --version  # confirm Python 3.11
    pip install -r requirements.txt
    ```
+
+   Scikit-learn is pinned to 1.6.1 to match the serialized v3 model artifact.
 
 2. Export CTA's **Ridership - Bus Routes - Daily Totals by Route** data to
    `data/raw/cta_bus_ridership.csv`. Required columns and validation behavior
@@ -174,19 +177,20 @@ service quality.
 
 ## Route review dashboard
 
-Install the project dependencies, then launch the local review app:
+With the Python 3.11 environment above active, launch the local review app:
 
 ```bash
-pip install -r requirements.txt
 streamlit run app.py
 ```
 
 The dashboard is organized as a Chicago planning workspace:
 
 - **Overview:** selected model, validation/test context, source fingerprint,
-  and recent network totals when a ridership file is uploaded.
+  active-upload SHA-256 and a comparison with the evaluated source, plus recent
+  network totals when a ridership file is uploaded.
 - **Routes:** route histories, matched-date route comparisons, day-type
-  summaries, an optional GTFS-shape map, day-type-standardized review signals,
+  summaries, an optional GTFS-shape map, a review queue that equally weights
+  weekday/Saturday/Sunday-holiday means when all three types have enough data,
   and exploratory route groups with minimum sample controls.
 - **Forecast evidence:** paired candidate/baseline metrics, route error
   diagnostics and day-type breakdowns.
@@ -194,13 +198,16 @@ The dashboard is organized as a Chicago planning workspace:
   with actuals revealed after the assumed reporting delay.
 - **One-day forecast:** uses the local
   `models/cta_route_ranker_v3_results.zip` bundle when present, plus an
-  up-to-date CTA ridership CSV. The date is limited to the next permitted day;
-  CTA day type is supplied by the user. A static GTFS ZIP can be uploaded to
-  draw the selected route's scheduled geometry.
+  up-to-date CTA ridership CSV. It displays the training and inference CSV
+  fingerprints so a changed lag-history source is visible. The large model is
+  loaded only after forecast submission and must match the report's selected
+  method, source hash, reporting delay, and training cutoff. The date is limited
+  to the next permitted day; CTA day type is supplied by the user. A static
+  GTFS ZIP can be uploaded to draw the selected route's scheduled geometry.
 - **Scenarios:** preserves the systemwide trip total and applies the selected
   route-level trip-change bound.
 - **Methods & data:** exposes model choice, source hashes, cutoff dates and
-  assumptions.
+  assumptions, with a downloadable JSON evidence and data-lineage manifest.
 
 Upload the CTA CSV in the sidebar to unlock route exploration and forecasting.
 The optional map expects a static GTFS ZIP containing `routes.txt`, `trips.txt`
