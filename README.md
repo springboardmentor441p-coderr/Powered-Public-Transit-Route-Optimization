@@ -190,7 +190,7 @@ The dashboard is organized as a Chicago planning workspace:
   active-source SHA-256 and a comparison with the evaluated source, plus recent
   network totals when local or uploaded ridership data is available.
 - **Routes:** route histories, matched-date route comparisons, day-type
-  summaries, an optional GTFS-shape map, a review queue that equally weights
+  summaries, an automatically loaded interactive CTA network map, a review queue that equally weights
   weekday/Saturday/Sunday-holiday means when all three types have enough data,
   and exploratory route groups with minimum sample controls.
 - **Forecast evidence:** paired candidate/baseline metrics, route error
@@ -203,8 +203,9 @@ The dashboard is organized as a Chicago planning workspace:
   fingerprints so a changed lag-history source is visible. The large model is
   loaded only after forecast submission and must match the report's selected
   method, source hash, reporting delay, and training cutoff. The date is limited
-  to the next permitted day; CTA day type is supplied by the user. A static
-  GTFS ZIP can be uploaded to draw the selected route's scheduled geometry.
+  to the next permitted day; CTA day type is supplied by the user. The app
+  uses the locally saved trained model when present; an upload is only needed
+  in a checkout where the matching model bundle is absent.
 - **Scenarios:** preserves the systemwide trip total and applies the selected
   route-level trip-change bound.
 - **Methods & data:** exposes model choice, source hashes, cutoff dates and
@@ -213,10 +214,18 @@ The dashboard is organized as a Chicago planning workspace:
 The dashboard loads `data/raw/cta_bus_ridership.csv` automatically when that
 local file is present; a sidebar upload overrides it. Use the validated source
 hash shown in the app to distinguish a current export from the mentor snapshot.
-The optional map expects a static GTFS ZIP containing `routes.txt`, `trips.txt`
-and `shapes.txt`. The map shows scheduled geometry, never live vehicles. The
-scenario sandbox is conditional arithmetic, not an executable timetable or
-service recommendation.
+The route map fetches the City of Chicago CTA Bus Routes GeoJSON export and
+caches it for 24 hours. A GeoJSON or static GTFS ZIP upload remains available
+as an override. Historical demand coloring uses route-level mean daily
+boardings for the selected dates and day types; it does not represent
+street-segment passenger loads. To show near-real-time bus positions, request a
+CTA Bus Tracker API key and set `CTA_BUS_TRACKER_API_KEY` in the environment or
+Streamlit secrets. The app then fetches positions for up to ten selected routes
+and offers a manual refresh button. CTA requires developers to apply for a key
+and states that its feed updates about every 30 seconds:
+<https://www.transitchicago.com/developers/bustracker/>. The scenario sandbox
+is conditional arithmetic, not an executable timetable or service
+recommendation.
 
 The saved evaluation report and scenario calculator are available through a local API:
 

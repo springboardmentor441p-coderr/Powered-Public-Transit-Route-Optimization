@@ -3,12 +3,14 @@
 import hashlib
 import json
 import math
+import os
 from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
 from zipfile import BadZipFile, ZipFile
 
 import pandas as pd
+import requests
 import streamlit as st
 
 from src.data_loader import load_bus_ridership
@@ -21,6 +23,8 @@ FORECAST_PATH = ROOT / "outputs" / "predictions" / "cta_june_july_replay_v3.csv"
 ACTUALS_PATH = ROOT / "outputs" / "predictions" / "cta_june_july_replay_v3_actuals_for_scoring.csv"
 MODEL_PATH = ROOT / "models" / "cta_route_ranker_v3_results.zip"
 RIDERSHIP_PATH = ROOT / "data" / "raw" / "cta_bus_ridership.csv"
+CTA_ROUTE_GEOJSON_URL = "https://data.cityofchicago.org/api/v3/views/6uva-a5ei/query.geojson?accessType=DOWNLOAD"
+CTA_BUS_VEHICLES_URL = "https://www.ctabustracker.com/bustime/api/v3/getvehicles"
 
 
 @st.cache_data
@@ -109,46 +113,220 @@ def load_gtfs_route_shapes(contents: bytes, route_name: str) -> tuple[pd.DataFra
     return pd.DataFrame(rows), route_ids[0]
 
 
-def render_route_map(route: str) -> None:
-    st.markdown("#### Versioned route geometry")
+@st.cache_data(max_entries=2)
+def load_route_geojson(contents: bytes) -> tuple[pd.DataFrame, str]:
+    """Convert the City of Chicago CTA bus-route GeoJSON export to map paths."""
+    if len(contents) > 100 * 1024 * 1024:
+        raise ValueError("GeoJSON exceeds the 100 MB upload limit.")
+    try:
+        payload = json.loads(contents)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("Could not read a valid GeoJSON document.") from exc
+    if payload.get("type") != "FeatureCollection" or not isinstance(payload.get("features"), list):
+        raise ValueError("Expected a GeoJSON FeatureCollection.")
+
+    rows = []
+    route_keys = set()
+    for feature in payload["features"]:
+        properties = feature.get("properties") or {}
+        route_key = next((key for key in properties if key.lower() in {
+            "route", "route_number", "route_num", "route_short_name", "rt", "name",
+        }), None)
+        if route_key is None:
+            continue
+        route_keys.add(route_key)
+        route = str(properties[route_key]).strip()
+        geometry = feature.get("geometry") or {}
+        coordinates = geometry.get("coordinates") or []
+        geom_type = geometry.get("type")
+        paths = [coordinates] if geom_type == "LineString" else coordinates if geom_type == "MultiLineString" else []
+        for path in paths:
+            # GeoJSON coordinates are [longitude, latitude].
+            points = [[float(point[0]), float(point[1])] for point in path if len(point) >= 2]
+            if len(points) >= 2 and route:
+                rows.append({"route": route, "path": points})
+    if not rows:
+        keys = sorted({key for feature in payload["features"] for key in (feature.get("properties") or {})})
+        raise ValueError(f"No route line geometries found. Available feature properties: {keys}")
+    if len(route_keys) > 1:
+        raise ValueError(f"Ambiguous route-name fields in GeoJSON: {sorted(route_keys)}")
+    return pd.DataFrame(rows), next(iter(route_keys))
+
+
+@st.cache_data(ttl=86400, max_entries=1, show_spinner=False)
+def fetch_official_route_geojson() -> bytes:
+    """Fetch the official static route network and reuse it for one day."""
+    response = requests.get(CTA_ROUTE_GEOJSON_URL, timeout=(5, 15))
+    response.raise_for_status()
+    if len(response.content) > 100 * 1024 * 1024:
+        raise ValueError("Official route GeoJSON exceeds the 100 MB safety limit.")
+    return response.content
+
+
+@st.cache_data(ttl=30, max_entries=8, show_spinner=False)
+def fetch_live_vehicles(api_key: str, route_codes: tuple[str, ...]) -> tuple[pd.DataFrame, str]:
+    """Fetch near-real-time bus positions for up to ten selected routes."""
+    response = requests.get(
+        CTA_BUS_VEHICLES_URL,
+        params={"key": api_key, "rt": ",".join(route_codes), "format": "json", "tmres": "s"},
+        timeout=(5, 15),
+    )
+    response.raise_for_status()
+    body = response.json().get("bustime-response", {})
+    if body.get("error"):
+        details = body["error"]
+        raise ValueError("CTA Bus Tracker API error: " + str(details))
+    vehicles = body.get("vehicle", [])
+    if isinstance(vehicles, dict):
+        vehicles = [vehicles]
+    frame = pd.DataFrame(vehicles)
+    if not frame.empty:
+        for column in ("lat", "lon"):
+            if column not in frame:
+                raise ValueError(f"CTA vehicle response is missing `{column}` coordinates.")
+            frame[column] = pd.to_numeric(frame[column], errors="coerce")
+        frame = frame.dropna(subset=["lat", "lon"])
+        frame["position"] = frame.apply(lambda row: [row["lon"], row["lat"]], axis=1)
+        palette = [[0, 125, 128, 240], [239, 132, 61, 240], [65, 102, 173, 240], [170, 86, 137, 240], [90, 138, 90, 240], [190, 155, 55, 240], [95, 93, 145, 240], [130, 105, 80, 240], [40, 140, 180, 240], [210, 90, 70, 240]]
+        route_colors = {route: palette[index % len(palette)] for index, route in enumerate(route_codes)}
+        frame["color"] = frame.get("rt", pd.Series(index=frame.index, dtype="string")).map(route_colors)
+    return frame, str(body.get("tmst", "time unavailable"))
+
+
+def get_bus_tracker_key() -> str | None:
+    """Read the optional CTA key from deployment secrets or the environment."""
+    key = os.environ.get("CTA_BUS_TRACKER_API_KEY", "").strip()
+    if key:
+        return key
+    try:
+        return str(st.secrets.get("CTA_BUS_TRACKER_API_KEY", "")).strip() or None
+    except (FileNotFoundError, AttributeError):
+        return None
+
+
+def render_route_map(route: str, period: pd.DataFrame) -> None:
+    st.markdown("#### CTA route network map")
     st.caption(
-        "Upload a GTFS snapshot ZIP to display its scheduled route shapes. The map shows planned geometry, "
-        "not live vehicle positions; its snapshot date is whatever you verify from the archive."
+        "The dashboard fetches and caches official route geometry automatically. You can upload a GeoJSON or "
+        "GTFS ZIP to override it. Near-real-time bus markers are optional and require your CTA API key."
     )
+    st.markdown(
+        "[Open the official CTA Bus Routes dataset](https://data.cityofchicago.org/Transportation/CTA-Bus-Routes/6uva-a5ei) "
+        "· [Download its GeoJSON export](https://data.cityofchicago.org/api/v3/views/6uva-a5ei/query.geojson?accessType=DOWNLOAD)"
+    )
+    map_options = ["Highlight selected route"]
+    if not period.empty:
+        map_options.append("Color by mean daily boardings")
+    map_mode = st.radio("Map display", map_options, horizontal=True, key="route_map_mode")
     upload = st.file_uploader(
-        "GTFS snapshot ZIP for route geometry", type=["zip"], key="route_geometry_zip",
-        help="The ZIP must contain routes.txt, trips.txt, and shapes.txt.",
-    )
-    if upload is None:
-        st.info("No route geometry ZIP uploaded. Ridership analysis remains available without a map.")
-        return
-    snapshot_label = st.text_input(
-        "Verified GTFS snapshot label/date",
-        value=upload.name,
-        key="geometry_snapshot_label",
-        help="Enter the archive capture date or snapshot ID after checking its source manifest.",
+        "Optional route geometry override", type=["geojson", "json", "zip"], key="route_geometry_zip",
+        help="GeoJSON replaces the automatic network export. A GTFS ZIP shows the selected route's scheduled shapes.",
     )
     try:
-        variants, route_id = load_gtfs_route_shapes(upload.getvalue(), route)
+        is_geojson = upload is None or upload.name.lower().endswith((".geojson", ".json"))
+        if upload is None:
+            with st.spinner("Loading the official CTA route network…"):
+                geometry_bytes = fetch_official_route_geojson()
+            geometry_source = "official City of Chicago route network (cached for 24 hours)"
+        else:
+            geometry_bytes = upload.getvalue()
+            geometry_source = f"uploaded file `{upload.name}`"
+        if is_geojson:
+            geometry, route_field = load_route_geojson(geometry_bytes)
+            geometry["selected"] = geometry["route"].astype(str).eq(str(route))
+            matched_route = bool(geometry["selected"].any())
+            map_caption = f"{len(geometry['route'].unique())} route labels · source field `{route_field}` · {geometry_source}"
+            if map_mode == "Color by mean daily boardings":
+                means = period.assign(route=period["route"].astype(str)).groupby("route")["rides"].mean()
+                geometry["mean_boardings"] = geometry["route"].map(means)
+                values = geometry["mean_boardings"]
+                low, high = values.min(), values.max()
+                scaled = (values - low) / (high - low) if pd.notna(high) and high > low else values * 0
+                geometry["color"] = scaled.fillna(0).map(
+                    lambda value: [int(40 + 210 * value), int(150 - 90 * value), int(220 - 190 * value), 210]
+                )
+                geometry["line_width"] = 2 + 4 * scaled.fillna(0)
+                tooltip = {"text": "CTA route: {route}\nMean boardings / observed day: {mean_boardings}"}
+                map_caption += f" · boardings averaged over the selected dates and day types"
+                map_legend = "🔵 Lower mean boardings / thinner line  →  🟠 Higher mean boardings / thicker line"
+            else:
+                geometry["color"] = geometry["selected"].map({True: [0, 125, 128, 240], False: [139, 151, 163, 95]})
+                geometry["line_width"] = 4
+                tooltip = {"text": "CTA route: {route}"}
+                map_legend = None
+                if matched_route:
+                    map_caption += f" · selected CTA route {route} highlighted"
+                else:
+                    map_caption += f" · route {route} not found in this geometry export"
+        else:
+            variants, route_id = load_gtfs_route_shapes(geometry_bytes, route)
+            variants["selected"] = True
+            variants["color"] = variants["color"].map(lambda color: [*color, 220])
+            variants["line_width"] = 4
+            geometry = variants
+            map_caption = f"CTA route {route} · GTFS route_id `{route_id}` · {len(variants)} shape variants shown"
+            tooltip = {"text": "Shape: {shape_id}\nTrips in feed: {trips}"}
+            map_legend = None
         import pydeck as pdk
 
-        layer = pdk.Layer(
-            "PathLayer", data=variants, get_path="path", get_color="color", get_width=4,
-            width_min_pixels=2, pickable=True, auto_highlight=True,
-        )
+        layers = [pdk.Layer(
+            "PathLayer", data=geometry, get_path="path", get_color="color", get_width="line_width",
+            width_min_pixels=2, pickable=True, auto_highlight=True, get_width_units="pixels",
+        )]
+        api_key = get_bus_tracker_key()
+        if is_geojson and api_key:
+            live_routes = st.multiselect(
+                "Routes for live bus markers (up to 10)",
+                sorted(geometry["route"].astype(str).unique()),
+                default=[str(route)] if str(route) in set(geometry["route"].astype(str)) else [],
+                max_selections=10,
+                key="live_bus_routes",
+            )
+            if live_routes:
+                if st.button("Refresh live bus positions", key="refresh_live_bus_positions"):
+                    fetch_live_vehicles.clear()
+                try:
+                    with st.spinner("Fetching near-real-time CTA bus positions…"):
+                        vehicles, feed_time = fetch_live_vehicles(api_key, tuple(live_routes))
+                except (requests.RequestException, ValueError) as exc:
+                    st.warning(f"Live bus positions are temporarily unavailable ({type(exc).__name__}); route map still works.")
+                else:
+                    if not vehicles.empty:
+                        vehicles["route"] = vehicles["rt"].astype(str)
+                        layers.append(pdk.Layer(
+                            "ScatterplotLayer", data=vehicles, get_position="position", get_fill_color="color",
+                            get_radius=55, radius_min_pixels=5, radius_max_pixels=10, stroked=True,
+                            get_line_color=[255, 255, 255, 230], line_width_min_pixels=1,
+                            pickable=True, auto_highlight=True,
+                        ))
+                        st.caption(f"{len(vehicles):,} buses · CTA feed timestamp {feed_time} (Chicago local time)")
+                    else:
+                        st.info(f"No active vehicle positions returned for the selected routes. CTA feed time: {feed_time}.")
+        elif is_geojson:
+            st.info(
+                "Live bus positions are not configured for this deployment. Add `CTA_BUS_TRACKER_API_KEY` "
+                "to its environment or Streamlit secrets after applying for a CTA key. "
+                "CTA says its Bus Tracker feed updates about every 30 seconds. "
+                "[Apply through CTA](https://www.transitchicago.com/developers/bustracker/)."
+            )
         deck = pdk.Deck(
-            layers=[layer],
+            layers=layers,
             initial_view_state=pdk.ViewState(latitude=41.8781, longitude=-87.6298, zoom=10, pitch=0),
             map_style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
-            tooltip={"text": "Shape: {shape_id}\nTrips in feed: {trips}"},
+            tooltip=tooltip,
         )
         st.pydeck_chart(deck, height=460)
+        if map_legend:
+            st.caption(map_legend)
         st.caption(
-            f"CTA route {route} · snapshot `{snapshot_label}` · GTFS route_id `{route_id}` · "
-            f"{len(variants)} shape variants shown. Snapshot label is user-entered; verify it against source evidence."
+            f"{map_caption}. Demand colors show route-level averages; they do not describe individual street segments. "
+            "Static route geometry; it does not show active service or vehicle positions."
         )
-    except (OSError, KeyError, ValueError, pd.errors.ParserError, UnicodeDecodeError) as exc:
-        st.error(f"Could not draw this route from the uploaded GTFS ZIP: {exc}")
+    except (OSError, KeyError, TypeError, ValueError, pd.errors.ParserError, UnicodeDecodeError) as exc:
+        st.error(f"Could not load or draw route geometry / live bus data: {exc}")
+    except requests.RequestException as exc:
+        st.warning("The automatic CTA map download could not be reached from this app deployment.")
+        st.caption(f"Connection detail: {type(exc).__name__}. Upload a GeoJSON override above to display route geometry now.")
 
 
 @st.cache_resource(max_entries=2)
@@ -176,7 +354,31 @@ def fmt_rides(value: float) -> str:
     return f"{value:,.1f} rides"
 
 
+def render_network_map(source: pd.DataFrame | None) -> None:
+    st.subheader("Chicago CTA network map")
+    st.caption("Explore route geometry, compare observed route demand, and—when configured—view current bus locations.")
+    if source is None or source.empty:
+        period = pd.DataFrame(columns=["route", "rides", "date", "daytype"])
+        route = "1"
+        st.info("Route geometry can display without ridership data. Add a CTA ridership CSV to enable demand coloring.")
+    else:
+        latest = source["date"].max()
+        earliest = max(source["date"].min(), latest - pd.Timedelta(days=83))
+        period = source.loc[source["date"].between(earliest, latest)].copy()
+        routes = sorted(source["route"].astype(str).unique())
+        default_route = "1" if "1" in routes else str(
+            period.groupby(period["route"].astype(str))["rides"].mean().idxmax()
+        )
+        route = st.selectbox("Highlight route", routes, index=routes.index(default_route), key="network_map_route")
+        first, second = st.columns(2)
+        first.metric("Latest ridership date", latest.strftime("%b %-d, %Y"))
+        second.metric("Routes in ridership file", f"{source['route'].nunique():,}")
+        st.caption(f"Demand colors summarize observed daily boardings from {earliest.date()} through {latest.date()}.")
+    render_route_map(route, period)
+
+
 def render_overview(report: dict, source: pd.DataFrame | None, source_sha256: str | None) -> None:
+    del source_sha256
     selection = report["model_selection"]
     paired = report["paired_matched_experiment"]
     winner = selection["paired_matched_validation_winner"]
@@ -185,11 +387,8 @@ def render_overview(report: dict, source: pd.DataFrame | None, source_sha256: st
     validation = selection["selected_validation_metrics"]
     improvement = 100 * (baseline["mae"] - test["mae"]) / baseline["mae"]
 
-    st.subheader("Chicago route demand, with the evidence beside it")
-    st.write(
-        "Explore daily CTA bus boardings, compare routes, replay the model evaluation, "
-        "and inspect a constrained trip-allocation scenario."
-    )
+    st.subheader("Route demand and forecast performance")
+    st.write("Review how the trained model performed, explore route histories, and try planning scenarios.")
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Selected model", "Random Forest", "Demand-only")
     col2.metric("Test MAE", f"{test['mae']:,.1f}", f"{improvement:.1f}% lower than baseline")
@@ -200,37 +399,8 @@ def render_overview(report: dict, source: pd.DataFrame | None, source_sha256: st
         "Model choice was made on validation MAE; June–July test results were not used to choose it."
     )
 
-    left, right = st.columns([1.1, 1])
-    with left:
-        st.markdown("#### Prototype status")
-        st.markdown(
-            "- **Forecast target:** measured daily boardings by route.\n"
-            "- **Selected model:** demand-only Random Forest, refit through 2026-08-31.\n"
-            "- **Inputs:** route, known CTA day type, calendar fields, and exact-date ridership lags.\n"
-            "- **Decision support:** compare evidence and test scenarios; no automatic service recommendation."
-        )
-    with right:
-        source_info = report["source"]
-        if source_info.get("matches_mentor_reference"):
-            st.success("Source fingerprint matches the mentor’s frozen ridership export.")
-        else:
-            st.warning(
-                "Current run does not match the mentor’s frozen CSV hash. Treat its scores as "
-                "development evidence on the supplied export."
-            )
-        st.caption(
-            f"Source SHA-256: `{source_info['ridership_sha256']}`  \n"
-            f"Mentor SHA-256: `{source_info['mentor_reference_sha256']}`"
-        )
-
     if source is not None:
-        st.markdown("#### Uploaded CTA ridership snapshot")
-        if source_sha256:
-            st.caption(f"Uploaded CSV SHA-256: `{source_sha256}`")
-            if source_sha256 == source_info["ridership_sha256"]:
-                st.success("Uploaded CSV is byte-for-byte the source used in the displayed model evaluation.")
-            else:
-                st.warning("Uploaded CSV differs from the source used for the displayed model evaluation. Route views and forecasts use this upload.")
+        st.markdown("#### Recent observed ridership")
         latest = source["date"].max()
         start = latest - pd.Timedelta(days=83)
         recent = source.loc[source["date"].between(start, latest)]
@@ -248,7 +418,7 @@ def render_overview(report: dict, source: pd.DataFrame | None, source_sha256: st
             column_config={"Boardings in period": st.column_config.NumberColumn(format="%,.0f")},
         )
     else:
-        st.info("Upload the CTA daily ridership CSV in the sidebar to unlock route exploration and live forecasts.")
+        st.info("Add a CTA ridership CSV in the sidebar to enable route histories, demand coloring, and forecasts.")
 
 
 def render_routes(source: pd.DataFrame | None) -> None:
@@ -302,7 +472,7 @@ def render_routes(source: pd.DataFrame | None) -> None:
             "std": st.column_config.NumberColumn("Std. dev.", format="%,.1f"),
         })
 
-    render_route_map(route)
+    render_route_map(route, period)
 
     st.divider()
     st.markdown("#### Compare two routes on the same observed dates")
@@ -900,12 +1070,12 @@ def main() -> None:
         st.header("Chicago planning workspace")
         workspace = st.radio(
             "Workspace",
-            ["Overview", "Routes", "Forecast evidence", "Historical replay", "One-day forecast", "Scenarios", "Methods & data"],
+            ["Network map", "Overview", "Routes", "Forecast evidence", "Historical replay", "One-day forecast", "Scenarios", "Methods & data"],
             label_visibility="collapsed",
-            key="workspace_navigation",
+            key="workspace_navigation_v2",
         )
         st.divider()
-        st.caption("Using the local validated CTA CSV when present; upload another CSV to override it.")
+        st.caption("Ridership data")
         source_upload = st.file_uploader("CTA ridership CSV", type=["csv"], key="shared_ridership")
         source = None
         source_sha256 = None
@@ -920,14 +1090,13 @@ def main() -> None:
             try:
                 stat = RIDERSHIP_PATH.stat()
                 source, source_sha256 = load_local_ridership(str(RIDERSHIP_PATH), stat.st_mtime, stat.st_size)
-                st.caption(f"Active local CSV: `{RIDERSHIP_PATH.relative_to(ROOT)}`")
             except (OSError, ValueError, pd.errors.ParserError, UnicodeDecodeError) as exc:
                 st.error(f"Local ridership file rejected: {exc}")
-        if source_sha256:
-            st.caption(f"Active CSV SHA-256: `{source_sha256}`")
         st.divider()
         st.caption("Route changes are never recommended automatically. Review scenario assumptions before use.")
-    if workspace == "Overview":
+    if workspace == "Network map":
+        render_network_map(source)
+    elif workspace == "Overview":
         render_overview(report, source, source_sha256)
     elif workspace == "Routes":
         render_routes(source)
