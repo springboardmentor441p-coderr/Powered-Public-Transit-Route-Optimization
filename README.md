@@ -1,9 +1,9 @@
 # CTA Public Transit Route Optimization
 
-An initial RouteRanker forecasting pipeline for CTA daily bus boardings by
-route. The intern guide sets the core requirements: preserve real observations,
-align by route and exact date, compare forecasts with seasonal baselines, and
-describe results as retrospective until CTA publication timing is verified.
+RouteRanker is a Chicago CTA bus-demand exploration and planning prototype. It
+combines route-level ridership evidence, retrospective model evaluation,
+one-day forecasts and bounded trip-allocation scenarios. It preserves exact
+route/date observations and labels unsupported operational conclusions clearly.
 
 ## Mentor guide v3: selected development model
 
@@ -166,10 +166,11 @@ models/         Saved model artifacts
 outputs/reports/ Evaluation metrics
 ```
 
-The route review dashboard and evaluation/scenario API are available; route
-clustering and a live prediction API remain later project work. Do not
-interpret route-level boardings as crowding or a causal measure of service
-quality.
+The local route review dashboard and forecast API are available. The current
+model evidence remains development-stage because the source hash differs from
+the mentor's frozen CSV and the D−1 data-publication assumption is unverified.
+Do not interpret route-level boardings as crowding or a causal measure of
+service quality.
 
 ## Route review dashboard
 
@@ -180,16 +181,32 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-The dashboard reads the committed comparison report and lets you inspect the
-fixed-origin August forecast separately from the daily rolling development
-backtest. It also shows the v3-selected model. Under **One-day forecast with
-the v3 model**, upload the Colab results ZIP and an up-to-date CTA ridership
-CSV, choose a target date/day type and routes, then download the ranked
-forecast. The date must follow the last ride observation; target day type is a
-user-supplied calendar value. If a future selected artifact is service-aware,
-the dashboard also requires a route/date schedule CSV with capture provenance.
-The existing trip-allocation scenario sandbox still accepts a separate route
-forecast CSV.
+The dashboard is organized as a Chicago planning workspace:
+
+- **Overview:** selected model, validation/test context, source fingerprint,
+  and recent network totals when a ridership file is uploaded.
+- **Routes:** route histories, matched-date route comparisons, day-type
+  summaries, an optional GTFS-shape map, day-type-standardized review signals,
+  and exploratory route groups with minimum sample controls.
+- **Forecast evidence:** paired candidate/baseline metrics, route error
+  diagnostics and day-type breakdowns.
+- **Historical replay:** the saved June–July predictions are stepped through
+  with actuals revealed after the assumed reporting delay.
+- **One-day forecast:** uses the local
+  `models/cta_route_ranker_v3_results.zip` bundle when present, plus an
+  up-to-date CTA ridership CSV. The date is limited to the next permitted day;
+  CTA day type is supplied by the user. A static GTFS ZIP can be uploaded to
+  draw the selected route's scheduled geometry.
+- **Scenarios:** preserves the systemwide trip total and applies the selected
+  route-level trip-change bound.
+- **Methods & data:** exposes model choice, source hashes, cutoff dates and
+  assumptions.
+
+Upload the CTA CSV in the sidebar to unlock route exploration and forecasting.
+The optional map expects a static GTFS ZIP containing `routes.txt`, `trips.txt`
+and `shapes.txt`. The map shows scheduled geometry, never live vehicles. The
+scenario sandbox is conditional arithmetic, not an executable timetable or
+service recommendation.
 
 The saved evaluation report and scenario calculator are available through a local API:
 

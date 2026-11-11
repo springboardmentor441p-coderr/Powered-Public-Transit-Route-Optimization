@@ -1,40 +1,29 @@
-"""Streamlit route forecast evaluation and review dashboard."""
+"""Chicago CTA RouteRanker planning and forecast review workspace."""
 
 import json
+import math
 from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
+from zipfile import BadZipFile, ZipFile
 
 import pandas as pd
 import streamlit as st
 
 from src.data_loader import load_bus_ridership
 from src.predict_v3 import load_v3_bundle, predict_daily_routes_from_bundle
+from src.scenarios import optimize_trip_allocation
 
-REPORT_PATH = Path(__file__).parent / "outputs" / "reports" / "service_model_comparison.json"
-V3_REPORT_PATH = Path(__file__).parent / "outputs" / "reports" / "model_selection_v3.json"
-
-MODEL_LABELS = {
-    "past_four_same_weekdays": "Past four same weekdays",
-    "last_week_same_day": "Last week same day",
-    "demand_only": "Demand only",
-    "service_aware": "Service aware",
-    "hybrid": "Adaptive hybrid",
-}
-
-
-def _format_metric(value: float | None, metric: str) -> str:
-    if value is None:
-        return "—"
-    if metric == "wape":
-        return f"{value:.2%}"
-    return f"{value:,.1f} rides"
+ROOT = Path(__file__).parent
+REPORT_PATH = ROOT / "outputs" / "reports" / "model_selection_v3.json"
+FORECAST_PATH = ROOT / "outputs" / "predictions" / "cta_june_july_replay_v3.csv"
+ACTUALS_PATH = ROOT / "outputs" / "predictions" / "cta_june_july_replay_v3_actuals_for_scoring.csv"
+MODEL_PATH = ROOT / "models" / "cta_route_ranker_v3_results.zip"
 
 
 @st.cache_data
-
 def load_report(path: str, modified_time: float) -> dict:
-    del modified_time  # Include the file modification time in Streamlit's cache key.
+    del modified_time
     return json.loads(Path(path).read_text())
 
 
@@ -43,9 +32,114 @@ def load_uploaded_ridership(contents: bytes) -> pd.DataFrame:
     return load_bus_ridership(BytesIO(contents))
 
 
-@st.cache_data(max_entries=3)
+@st.cache_data(max_entries=2)
 def load_uploaded_service(contents: bytes) -> pd.DataFrame:
     return pd.read_csv(BytesIO(contents), dtype={"route": "string", "source_snapshot": "string"})
+
+
+@st.cache_data(max_entries=2)
+def load_gtfs_route_shapes(contents: bytes, route_name: str) -> tuple[pd.DataFrame, str]:
+    """Read route geometry for one route from an uploaded static GTFS ZIP."""
+    try:
+        archive = ZipFile(BytesIO(contents))
+    except BadZipFile as exc:
+        raise ValueError("The GTFS upload is not a valid ZIP archive.") from exc
+    with archive:
+        files = {}
+        for required in ("routes.txt", "trips.txt", "shapes.txt"):
+            matches = [name for name in archive.namelist() if name.rsplit("/", 1)[-1].lower() == required]
+            if len(matches) != 1:
+                raise ValueError(f"GTFS ZIP must contain exactly one {required} file.")
+            info = archive.getinfo(matches[0])
+            if info.file_size > 512 * 1024 * 1024:
+                raise ValueError(f"GTFS member {required} exceeds the 512 MB safety limit.")
+            files[required] = pd.read_csv(archive.open(info), dtype="string")
+
+    routes = files["routes.txt"]
+    trips = files["trips.txt"]
+    shapes = files["shapes.txt"]
+    required_fields = {
+        "routes.txt": {"route_id", "route_short_name"},
+        "trips.txt": {"route_id", "shape_id"},
+        "shapes.txt": {"shape_id", "shape_pt_sequence", "shape_pt_lat", "shape_pt_lon"},
+    }
+    for filename, required in required_fields.items():
+        missing = required - set(files[filename].columns)
+        if missing:
+            raise ValueError(f"{filename} is missing required columns: {sorted(missing)}")
+
+    routes["route_short_name"] = routes["route_short_name"].astype("string").str.strip()
+    route_ids = routes.loc[routes["route_short_name"].eq(route_name), "route_id"].dropna().unique()
+    if len(route_ids) != 1:
+        raise ValueError(f"Expected one GTFS route matching CTA route {route_name}; found {len(route_ids)}.")
+    route_trips = trips.loc[trips["route_id"].eq(route_ids[0]), "shape_id"].dropna().value_counts()
+    if route_trips.empty:
+        raise ValueError(f"No GTFS shapes are linked to route {route_name}.")
+    shape_counts = route_trips.head(8).rename("scheduled trip variants").rename_axis("shape_id").reset_index()
+    route_shapes = shapes.loc[shapes["shape_id"].isin(shape_counts["shape_id"])].copy()
+    for column in ("shape_pt_sequence", "shape_pt_lat", "shape_pt_lon"):
+        route_shapes[column] = pd.to_numeric(route_shapes[column], errors="coerce")
+    route_shapes = route_shapes.dropna(subset=["shape_pt_sequence", "shape_pt_lat", "shape_pt_lon"])
+    route_shapes = route_shapes.sort_values(["shape_id", "shape_pt_sequence"])
+    counts = shape_counts.set_index("shape_id")["scheduled trip variants"]
+    rows = []
+    colors = ([0, 125, 128], [239, 132, 61], [65, 102, 173], [170, 86, 137], [90, 138, 90], [190, 155, 55], [95, 93, 145], [130, 105, 80])
+    for index, (shape_id, group) in enumerate(route_shapes.groupby("shape_id", sort=False)):
+        points = group[["shape_pt_lon", "shape_pt_lat"]].to_numpy(dtype=float)
+        if len(points) > 600:
+            stride = int(len(points) / 600) + 1
+            points = points[::stride]
+        rows.append({
+            "shape_id": str(shape_id),
+            "trips": int(counts.loc[shape_id]),
+            "path": points.tolist(),
+            "color": list(colors[index % len(colors)]),
+        })
+    if not rows:
+        raise ValueError(f"No usable shape points were found for route {route_name}.")
+    return pd.DataFrame(rows), route_ids[0]
+
+
+def render_route_map(route: str) -> None:
+    st.markdown("#### Versioned route geometry")
+    st.caption(
+        "Upload a GTFS snapshot ZIP to display its scheduled route shapes. The map shows planned geometry, "
+        "not live vehicle positions; its snapshot date is whatever you verify from the archive."
+    )
+    upload = st.file_uploader(
+        "GTFS snapshot ZIP for route geometry", type=["zip"], key="route_geometry_zip",
+        help="The ZIP must contain routes.txt, trips.txt, and shapes.txt.",
+    )
+    if upload is None:
+        st.info("No route geometry ZIP uploaded. Ridership analysis remains available without a map.")
+        return
+    snapshot_label = st.text_input(
+        "Verified GTFS snapshot label/date",
+        value=upload.name,
+        key="geometry_snapshot_label",
+        help="Enter the archive capture date or snapshot ID after checking its source manifest.",
+    )
+    try:
+        variants, route_id = load_gtfs_route_shapes(upload.getvalue(), route)
+        import pydeck as pdk
+
+        layer = pdk.Layer(
+            "PathLayer", data=variants, get_path="path", get_color="color", get_width=4,
+            width_min_pixels=2, pickable=True, auto_highlight=True,
+        )
+        deck = pdk.Deck(
+            layers=[layer],
+            initial_view_state=pdk.ViewState(latitude=41.8781, longitude=-87.6298, zoom=10, pitch=0),
+            map_style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+            tooltip={"text": "Shape: {shape_id}\nTrips in feed: {trips}"},
+        )
+        st.pydeck_chart(deck, height=460)
+        st.caption(
+            f"CTA route {route} · snapshot `{snapshot_label}` · GTFS route_id `{route_id}` · "
+            f"{len(variants)} shape variants shown. Snapshot label is user-entered; verify it against source evidence."
+        )
+    except (OSError, KeyError, ValueError, pd.errors.ParserError, UnicodeDecodeError) as exc:
+        st.error(f"Could not draw this route from the uploaded GTFS ZIP: {exc}")
 
 
 @st.cache_resource(max_entries=2)
@@ -53,404 +147,684 @@ def load_uploaded_v3_bundle(contents: bytes) -> dict:
     return load_v3_bundle(contents)
 
 
-def _fixed_origin_data(report: dict):
-    fixed = report["fixed_origin_evaluation"]
-    overall = {
-        "past_four_same_weekdays": fixed["seasonal_baselines"]["past_four_same_weekdays"],
-        "last_week_same_day": fixed["seasonal_baselines"]["last_week_same_day"],
-    }
-    routes = {
-        "past_four_same_weekdays": fixed["seasonal_baselines_by_route"]["past_four_same_weekdays"],
-        "last_week_same_day": fixed["seasonal_baselines_by_route"]["last_week_same_day"],
-    }
-    daytypes = {}
-    for name in ("past_four_same_weekdays", "last_week_same_day"):
-        for daytype, metrics in fixed["seasonal_baselines_by_daytype"][name].items():
-            daytypes.setdefault(daytype, {})[name] = metrics
-    for name, result in fixed["models"].items():
-        overall[name] = result["metrics"]
-        routes[name] = result["metrics_by_route"]
-        for daytype, metrics in result["metrics_by_daytype"].items():
-            daytypes.setdefault(daytype, {})[name] = metrics
-    description = (
-        f"Forecast origin {fixed['forecast_origin']} · window {fixed['forecast_window'][0]} to "
-        f"{fixed['forecast_window'][1]} · schedule {fixed['schedule_snapshot']} "
-        f"(available {fixed['schedule_available_from']}) · "
-        f"coverage {fixed['scored_rows']:,}/{fixed['test_observation_rows']:,} "
-        f"({fixed['coverage_pct']:.2f}%)"
+@st.cache_resource(max_entries=1)
+def load_local_v3_bundle(path: str, modified_time: float, size: int) -> dict:
+    del modified_time, size
+    return load_v3_bundle(path)
+
+
+@st.cache_data
+def load_replay_files(forecasts_path: str, forecasts_mtime: float, actuals_path: str, actuals_mtime: float):
+    del forecasts_mtime, actuals_mtime
+    forecasts = pd.read_csv(forecasts_path, dtype={"route": "string"})
+    actuals = pd.read_csv(actuals_path, dtype={"route": "string"})
+    forecasts["target_date"] = pd.to_datetime(forecasts["target_date"], errors="coerce").dt.normalize()
+    actuals["date"] = pd.to_datetime(actuals["date"], errors="coerce").dt.normalize()
+    return forecasts, actuals
+
+
+def fmt_rides(value: float) -> str:
+    return f"{value:,.1f} rides"
+
+
+def render_overview(report: dict, source: pd.DataFrame | None) -> None:
+    selection = report["model_selection"]
+    paired = report["paired_matched_experiment"]
+    winner = selection["paired_matched_validation_winner"]
+    test = paired["test_metrics_common_methods"][winner]
+    baseline = paired["test_metrics_common_methods"]["past_four_same_weekdays"]
+    validation = selection["selected_validation_metrics"]
+    improvement = 100 * (baseline["mae"] - test["mae"]) / baseline["mae"]
+
+    st.subheader("Chicago route demand, with the evidence beside it")
+    st.write(
+        "Explore daily CTA bus boardings, compare routes, replay the model evaluation, "
+        "and inspect a constrained trip-allocation scenario."
     )
-    return fixed, overall, routes, daytypes, description
-
-
-def _walk_forward_data(report: dict):
-    walk = report["hybrid_walk_forward_development"]
-    description = (
-        f"Monthly refits · {len(walk['folds'])} folds from "
-        f"{walk['folds'][0]['forecast_window'][0]} to {walk['folds'][-1]['forecast_window'][1]} · "
-        f"coverage {walk['matched_rows']:,}/{walk['demand_rows']:,} "
-        f"({walk['matched_coverage_pct']:.2f}%) · daily rolling one-step scores"
-    )
-    return walk, walk["overall_metrics"], walk["metrics_by_route"], walk["metrics_by_daytype"], description
-
-
-st.set_page_config(page_title="CTA Route Review", page_icon="🚌", layout="wide")
-st.title("CTA Route Forecast Review")
-st.caption(
-    "Review forecast accuracy by horizon, route, and day type. These are model evaluation results, "
-    "not live predictions or service-quality rankings."
-)
-
-if not REPORT_PATH.exists():
-    st.error(f"Evaluation report not found: {REPORT_PATH}")
-    st.stop()
-
-try:
-    report = load_report(str(REPORT_PATH), REPORT_PATH.stat().st_mtime)
-except (OSError, json.JSONDecodeError) as exc:
-    st.error(f"Could not read the evaluation report: {exc}")
-    st.stop()
-
-mode = st.sidebar.radio(
-    "Evaluation horizon",
-    ["Fixed-origin August", "Daily rolling development"],
-    help="These scores answer different questions. Fixed-origin does not use actual rides from its forecast window as future lags.",
-)
-if mode == "Fixed-origin August":
-    data, overall, route_metrics, daytype_metrics, description = _fixed_origin_data(report)
-    model_choices = list(overall)
-    default_model = "service_aware"
-    evaluation_note = (
-        "Recursive forecast: one forecast issued at the end of July for all of August. "
-        "The seasonal baseline scored better overall in this evaluation."
-    )
-else:
-    data, overall, route_metrics, daytype_metrics, description = _walk_forward_data(report)
-    model_choices = list(overall)
-    default_model = "service_aware"
-    evaluation_note = (
-        "Daily rolling one-step development scores: earlier observed rides are available as lag features. "
-        "The model is refit monthly. August was previously inspected during development."
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Selected model", "Random Forest", "Demand-only")
+    col2.metric("Test MAE", f"{test['mae']:,.1f}", f"{improvement:.1f}% lower than baseline")
+    col3.metric("Test WAPE", f"{test['wape']:.2%}")
+    col4.metric("Matched test route-days", f"{test['rows']:,}")
+    st.caption(
+        f"Validation MAE: {validation['mae']:,.1f} rides across {validation['rows']:,} route-days. "
+        "Model choice was made on validation MAE; June–July test results were not used to choose it."
     )
 
-st.caption(description)
-st.info(evaluation_note)
-
-model_key = st.sidebar.selectbox(
-    "Forecast or baseline to review",
-    model_choices,
-    index=model_choices.index(default_model) if default_model in model_choices else 0,
-    format_func=lambda key: MODEL_LABELS.get(key, key),
-)
-reference_key = "past_four_same_weekdays"
-selected = overall[model_key]
-reference = overall[reference_key]
-mae_change = selected["mae"] - reference["mae"]
-change_word = "higher" if mae_change > 0 else "lower"
-
-kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-kpi1.metric("Selected method MAE", _format_metric(selected.get("mae"), "mae"))
-kpi2.metric("Past-four-weekday MAE", _format_metric(reference.get("mae"), "mae"))
-kpi3.metric("Selected method RMSE", _format_metric(selected.get("rmse"), "rmse"))
-kpi4.metric("Selected method WAPE", _format_metric(selected.get("wape"), "wape"))
-st.caption(
-    f"Selected method MAE is {abs(mae_change):,.1f} rides {change_word} than the past-four-same-weekdays baseline. "
-    "Positive route differences below mean the selected method has higher error."
-)
-
-if V3_REPORT_PATH.exists():
-    try:
-        v3_report = load_report(str(V3_REPORT_PATH), V3_REPORT_PATH.stat().st_mtime)
-        v3_selection = v3_report["model_selection"]
-        v3_validation = v3_selection["selected_validation_metrics"]
-        with st.container(border=True):
-            st.subheader("Selected v3 one-day model")
-            st.caption(
-                f"{v3_selection['serving_configuration']} · {v3_selection['serving_estimator']} · "
-                "selected by MAE on the matched validation split"
+    left, right = st.columns([1.1, 1])
+    with left:
+        st.markdown("#### Prototype status")
+        st.markdown(
+            "- **Forecast target:** measured daily boardings by route.\n"
+            "- **Selected model:** demand-only Random Forest, refit through 2026-08-31.\n"
+            "- **Inputs:** route, known CTA day type, calendar fields, and exact-date ridership lags.\n"
+            "- **Decision support:** compare evidence and test scenarios; no automatic service recommendation."
+        )
+    with right:
+        source_info = report["source"]
+        if source_info.get("matches_mentor_reference"):
+            st.success("Source fingerprint matches the mentor’s frozen ridership export.")
+        else:
+            st.warning(
+                "Current run does not match the mentor’s frozen CSV hash. Treat its scores as "
+                "development evidence on the supplied export."
             )
-            v3_col1, v3_col2, v3_col3 = st.columns(3)
-            v3_col1.metric("Validation MAE", f"{v3_validation['mae']:,.1f} rides")
-            v3_col2.metric("Validation RMSE", f"{v3_validation['rmse']:,.1f} rides")
-            v3_col3.metric("Validation WAPE", f"{v3_validation['wape']:.2%}")
-            st.caption(
-                "Development result: the source hash differs from the mentor's frozen export, "
-                "June–July was seen in earlier iterations, and the replay assumes rides through D−1 are available."
-            )
-    except (OSError, KeyError, json.JSONDecodeError, TypeError) as exc:
-        st.warning(f"The v3 model-selection summary could not be shown: {exc}")
+        st.caption(
+            f"Source SHA-256: `{source_info['ridership_sha256']}`  \n"
+            f"Mentor SHA-256: `{source_info['mentor_reference_sha256']}`"
+        )
 
-st.subheader("Error by day type")
-day_rows = []
-for daytype in sorted(daytype_metrics):
-    values = daytype_metrics[daytype]
-    selected_metrics = values.get(model_key)
-    reference_metrics = values.get(reference_key)
-    if selected_metrics and reference_metrics:
-        day_rows.append({
-            "Day type": {"W": "Weekday", "A": "Saturday", "U": "Sunday/holiday"}.get(daytype, daytype),
-            MODEL_LABELS.get(model_key, model_key): selected_metrics["mae"],
-            MODEL_LABELS[reference_key]: reference_metrics["mae"],
-        })
-if day_rows:
-    day_frame = pd.DataFrame(day_rows).set_index("Day type")
-    st.bar_chart(day_frame)
-    st.dataframe(day_frame.style.format("{:.1f} rides"))
-else:
-    st.info("Day-type metrics are unavailable for this report.")
-
-st.subheader("Route review")
-route_rows = []
-for route, metrics_by_method in route_metrics.items():
-    forecast = metrics_by_method.get(model_key)
-    baseline = metrics_by_method.get(reference_key)
-    if not forecast or not baseline:
-        continue
-    delta = forecast["mae"] - baseline["mae"]
-    route_rows.append({
-        "Route": str(route),
-        "Selected method MAE": forecast["mae"],
-        "Seasonal baseline MAE": baseline["mae"],
-        "MAE difference": delta,
-        "Difference %": (100 * delta / baseline["mae"]) if baseline["mae"] else None,
-        "Scored route-days": forecast.get("scored_rows"),
-    })
-route_frame = pd.DataFrame(route_rows)
-if route_frame.empty:
-    st.warning("Route-level scores are unavailable for this report.")
-else:
-    sort_choice = st.selectbox(
-        "Sort routes",
-        ["Largest model error vs baseline", "Largest model gain vs baseline", "Route number"],
-    )
-    if sort_choice == "Largest model error vs baseline":
-        route_frame = route_frame.sort_values("MAE difference", ascending=False)
-    elif sort_choice == "Largest model gain vs baseline":
-        route_frame = route_frame.sort_values("MAE difference", ascending=True)
+    if source is not None:
+        st.markdown("#### Uploaded CTA ridership snapshot")
+        latest = source["date"].max()
+        start = latest - pd.Timedelta(days=83)
+        recent = source.loc[source["date"].between(start, latest)]
+        totals = recent.groupby("route", as_index=False)["rides"].sum().sort_values("rides", ascending=False)
+        a, b, c = st.columns(3)
+        a.metric("Source rows", f"{len(source):,}")
+        b.metric("Routes", f"{source['route'].nunique():,}")
+        c.metric("Latest observation", latest.strftime("%b %-d, %Y"))
+        daily = recent.groupby("date", as_index=False)["rides"].sum().set_index("date")
+        st.line_chart(daily, y="rides", x_label="Date", y_label="Daily boardings")
+        st.caption("Network totals use the most recent 84 calendar days in the uploaded file.")
+        st.dataframe(
+            totals.head(10).rename(columns={"route": "Route", "rides": "Boardings in period"}),
+            hide_index=True,
+            column_config={"Boardings in period": st.column_config.NumberColumn(format="%,.0f")},
+        )
     else:
-        route_frame = route_frame.sort_values("Route", key=lambda values: values.str.extract(r"(\d+)")[0].astype(float))
-    route_filter = st.selectbox("Route filter", ["All routes", *route_frame["Route"].tolist()])
-    if route_filter != "All routes":
-        route_frame = route_frame.loc[route_frame["Route"].eq(route_filter)]
+        st.info("Upload the CTA daily ridership CSV in the sidebar to unlock route exploration and live forecasts.")
+
+
+def render_routes(source: pd.DataFrame | None) -> None:
+    st.subheader("Route explorer and comparison")
+    st.caption("Use exact observed route-days from the uploaded CTA file; missing dates remain missing.")
+    if source is None:
+        st.info("Upload a validated CTA ridership CSV in the sidebar to use these views.")
+        return
+
+    routes = sorted(source["route"].astype(str).unique())
+    latest = source["date"].max()
+    earliest = source["date"].min()
+    default_start = max(earliest, latest - pd.Timedelta(days=179))
+    controls = st.columns([1, 1, 1.5])
+    route = controls[0].selectbox("Route profile", routes, key="profile_route")
+    daytypes = controls[1].multiselect("Day types", ["W", "A", "U"], default=["W", "A", "U"], key="profile_daytypes")
+    selected_range = controls[2].date_input(
+        "Observation window",
+        value=(default_start.date(), latest.date()),
+        min_value=earliest.date(),
+        max_value=latest.date(),
+        key="profile_dates",
+    )
+    if not isinstance(selected_range, tuple) or len(selected_range) != 2:
+        st.info("Choose both a start and end date.")
+        return
+    start, end = map(pd.Timestamp, selected_range)
+    period = source.loc[
+        source["date"].between(start, end) & source["daytype"].isin(daytypes)
+    ].copy()
+    route_rows = period.loc[period["route"].astype(str).eq(route)].sort_values("date")
+
+    if route_rows.empty:
+        st.warning("No observations for this route, day-type selection, and date range.")
+    else:
+        k1, k2, k3 = st.columns(3)
+        k1.metric("Observed route-days", f"{len(route_rows):,}")
+        k2.metric("Mean boardings / observed day", f"{route_rows['rides'].mean():,.0f}")
+        k3.metric("Total boardings in window", f"{route_rows['rides'].sum():,.0f}")
+        series = route_rows.set_index("date")["rides"]
+        st.line_chart(series, x_label="Date", y_label="Daily boardings")
+        st.caption("Only reported route-days are plotted. Missing dates are not filled or interpolated.")
+        by_daytype = (
+            route_rows.groupby("daytype")["rides"].agg(["count", "mean", "median", "std"])
+            .rename(index={"W": "Weekday", "A": "Saturday", "U": "Sunday / holiday"})
+        )
+        st.dataframe(by_daytype, column_config={
+            "count": "Observed days",
+            "mean": st.column_config.NumberColumn("Mean rides", format="%,.1f"),
+            "median": st.column_config.NumberColumn("Median rides", format="%,.1f"),
+            "std": st.column_config.NumberColumn("Std. dev.", format="%,.1f"),
+        })
+
+    render_route_map(route)
+
+    st.divider()
+    st.markdown("#### Compare two routes on the same observed dates")
+    cmp_controls = st.columns(3)
+    route_a = cmp_controls[0].selectbox("Route A", routes, index=0, key="compare_a")
+    route_b = cmp_controls[1].selectbox("Route B", routes, index=min(1, len(routes) - 1), key="compare_b")
+    comparison_mode = cmp_controls[2].selectbox(
+        "Compare as", ["Daily boardings", "Index to first common date"], key="compare_mode"
+    )
+    common = period.loc[period["route"].astype(str).isin([route_a, route_b])].pivot_table(
+        index="date", columns="route", values="rides", aggfunc="first"
+    ).dropna(subset=[route_a, route_b])
+    if route_a == route_b:
+        st.info("Choose two different routes to compare.")
+    elif common.empty:
+        st.warning("The selected routes have no common observed dates in this window.")
+    else:
+        view = common[[route_a, route_b]].copy()
+        if comparison_mode == "Index to first common date":
+            view = view.div(view.iloc[0]).mul(100)
+            st.caption("Each route is set to 100 on the first common date. This compares trend, not route size.")
+        st.line_chart(view, x_label="Common observed date", y_label="Index (first date = 100)" if comparison_mode.startswith("Index") else "Daily boardings")
+        st.caption(f"Matched coverage: {len(common):,} common route-days from {common.index.min().date()} through {common.index.max().date()}.")
+
+    st.divider()
+    st.markdown("#### Ridership review signals")
+    recent_start = source["date"].max() - pd.Timedelta(days=83)
+    prior_start = source["date"].max() - pd.Timedelta(days=167)
+    prior_end = recent_start - pd.Timedelta(days=1)
+    st.caption(
+        f"Compares day-type-standardized means from {recent_start.date()}–{source['date'].max().date()} "
+        f"with {prior_start.date()}–{prior_end.date()}. Each day type needs at least five observations "
+        "in both windows. This is a review queue, not a service-quality or route-cut ranking."
+    )
+    review = build_review_signals(source)
+    if review.empty:
+        st.info("There are not enough matched observations to form review signals.")
+    else:
+        sort = st.selectbox("Order review queue", ["Largest increase", "Largest decrease"], key="review_order")
+        review = review.sort_values("change_pct", ascending=sort != "Largest increase")
+        st.dataframe(
+            review.rename(columns={
+                "route": "Route", "recent_mean": "Recent standardized rides/day",
+                "prior_mean": "Prior standardized rides/day", "change_pct": "Change (%)",
+                "matched_days": "Matched day-type observations",
+            }).style.format({
+                "Recent standardized rides/day": "{:,.1f}",
+                "Prior standardized rides/day": "{:,.1f}",
+                "Change (%)": "{:+.1f}%",
+            }),
+            hide_index=True,
+        )
+
+    st.divider()
+    st.markdown("#### Exploratory route groups")
+    st.caption(
+        "Groups compare route demand scale and weekend-to-weekday shape over the selected date range. "
+        "They describe similarity only; group IDs do not imply service need or performance."
+    )
+    group_controls = st.columns(2)
+    minimum_days = group_controls[0].slider("Minimum observations per day type", 5, 30, 10, key="group_min_days")
+    group_count = group_controls[1].slider("Number of exploratory groups", 2, 8, 4, key="group_count")
+    grouping_source = source.loc[source["date"].between(start, end)]
+    st.caption(
+        f"Grouping window: {start.date()}–{end.date()} · features: log weekday mean, "
+        "Saturday/weekday mean ratio, Sunday-holiday/weekday mean ratio · routes need the selected "
+        "minimum observations for all three day types."
+    )
+    try:
+        route_groups, group_summary = cluster_route_profiles(grouping_source, group_count, minimum_days)
+    except (ValueError, ImportError) as exc:
+        st.error(f"Route groups could not be formed: {exc}")
+    else:
+        if route_groups.empty:
+            st.info("Too few routes meet the selected weekday, Saturday, and Sunday/holiday sample minimums.")
+        else:
+            st.dataframe(group_summary, hide_index=True, column_config={
+                "median_weekday_rides": st.column_config.NumberColumn("Median weekday rides", format="%,.0f"),
+                "median_saturday_ratio": st.column_config.NumberColumn("Saturday / weekday", format="%.2f"),
+                "median_sunday_ratio": st.column_config.NumberColumn("Sunday-holiday / weekday", format="%.2f"),
+            })
+            st.dataframe(
+                route_groups[["route", "group", "weekday_mean", "saturday_to_weekday", "sunday_to_weekday"]].rename(columns={
+                    "route": "Route", "group": "Group", "weekday_mean": "Mean weekday rides",
+                    "saturday_to_weekday": "Saturday / weekday", "sunday_to_weekday": "Sunday-holiday / weekday",
+                }),
+                hide_index=True,
+                column_config={
+                    "Mean weekday rides": st.column_config.NumberColumn(format="%,.0f"),
+                    "Saturday / weekday": st.column_config.NumberColumn(format="%.2f"),
+                    "Sunday-holiday / weekday": st.column_config.NumberColumn(format="%.2f"),
+                },
+            )
+            st.download_button(
+                "Download route group assignments", route_groups.to_csv(index=False),
+                file_name="cta_exploratory_route_groups.csv", mime="text/csv",
+            )
+
+
+@st.cache_data(max_entries=2)
+def build_review_signals(source: pd.DataFrame) -> pd.DataFrame:
+    latest = source["date"].max()
+    recent_start = latest - pd.Timedelta(days=83)
+    prior_start = latest - pd.Timedelta(days=167)
+    prior_end = recent_start - pd.Timedelta(days=1)
+    recent = source.loc[source["date"].between(recent_start, latest)]
+    prior = source.loc[source["date"].between(prior_start, prior_end)]
+    keys = ["route", "daytype"]
+    recent_summary = recent.groupby(keys)["rides"].agg(recent_mean="mean", recent_days="size").reset_index()
+    prior_summary = prior.groupby(keys)["rides"].agg(prior_mean="mean", prior_days="size").reset_index()
+    paired = recent_summary.merge(prior_summary, on=keys, how="inner")
+    paired = paired.loc[(paired["recent_days"] >= 5) & (paired["prior_days"] >= 5)].copy()
+    if paired.empty:
+        return pd.DataFrame()
+    paired["weight"] = paired["recent_days"]
+    rows = []
+    for route, group in paired.groupby("route"):
+        total_weight = group["weight"].sum()
+        recent_mean = float((group["recent_mean"] * group["weight"]).sum() / total_weight)
+        prior_mean = float((group["prior_mean"] * group["weight"]).sum() / total_weight)
+        rows.append({
+            "route": str(route),
+            "recent_mean": recent_mean,
+            "prior_mean": prior_mean,
+            "change_pct": 100 * (recent_mean - prior_mean) / prior_mean if prior_mean else None,
+            "matched_days": int(group["recent_days"].sum()),
+        })
+    return pd.DataFrame(rows).dropna(subset=["change_pct"])
+
+
+@st.cache_data(max_entries=3)
+def cluster_route_profiles(source: pd.DataFrame, n_clusters: int, minimum_daytype_days: int) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Group routes by observed weekday volume and weekend-to-weekday profile."""
+    from sklearn.cluster import KMeans
+    from sklearn.preprocessing import StandardScaler
+
+    summary = source.groupby(["route", "daytype"])["rides"].agg(["mean", "count"]).reset_index()
+    means = summary.pivot(index="route", columns="daytype", values="mean")
+    counts = summary.pivot(index="route", columns="daytype", values="count")
+    required = ["W", "A", "U"]
+    if not set(required).issubset(means.columns):
+        return pd.DataFrame(), pd.DataFrame()
+    eligible = means[required].notna().all(axis=1) & counts[required].ge(minimum_daytype_days).all(axis=1)
+    means = means.loc[eligible, required]
+    if len(means) < n_clusters:
+        return pd.DataFrame(), pd.DataFrame()
+    weekday = means["W"].where(means["W"].ne(0))
+    features = pd.DataFrame({
+        "weekday_volume_log": means["W"].clip(lower=0).map(math.log1p),
+        "saturday_to_weekday": means["A"] / weekday,
+        "sunday_to_weekday": means["U"] / weekday,
+    }).replace([float("inf"), float("-inf")], pd.NA).dropna()
+    means = means.loc[features.index]
+    if len(features) < n_clusters:
+        return pd.DataFrame(), pd.DataFrame()
+    scaled = StandardScaler().fit_transform(features)
+    labels = KMeans(n_clusters=n_clusters, random_state=42, n_init=20).fit_predict(scaled)
+    profiles = means.copy()
+    profiles["route"] = profiles.index.astype(str)
+    profiles["group"] = labels + 1
+    profiles["weekday_mean"] = profiles.pop("W")
+    profiles["saturday_mean"] = profiles.pop("A")
+    profiles["sunday_holiday_mean"] = profiles.pop("U")
+    profiles["saturday_to_weekday"] = features["saturday_to_weekday"]
+    profiles["sunday_to_weekday"] = features["sunday_to_weekday"]
+    group_summary = profiles.groupby("group").agg(
+        routes=("route", "count"),
+        median_weekday_rides=("weekday_mean", "median"),
+        median_saturday_ratio=("saturday_to_weekday", "median"),
+        median_sunday_ratio=("sunday_to_weekday", "median"),
+    ).reset_index()
+    return profiles.reset_index(drop=True), group_summary
+
+
+def render_evaluation(report: dict) -> None:
+    st.subheader("Forecast evidence")
+    selection = report["model_selection"]
+    paired = report["paired_matched_experiment"]
+    validation = paired["validation_metrics_common_methods"]
+    test = paired["test_metrics_common_methods"]
+    candidate_names = [
+        "demand_only::pooled_linear_regression",
+        "demand_only::random_forest",
+        "demand_only::hist_gradient_boosting_reference",
+        "service_aware::pooled_linear_regression",
+        "service_aware::random_forest",
+        "service_aware::hist_gradient_boosting_reference",
+    ]
+    labels = {
+        "demand_only::pooled_linear_regression": "Demand · Linear regression",
+        "demand_only::random_forest": "Demand · Random Forest (selected)",
+        "demand_only::hist_gradient_boosting_reference": "Demand · HistGradientBoosting",
+        "service_aware::pooled_linear_regression": "Service-aware · Linear regression",
+        "service_aware::random_forest": "Service-aware · Random Forest",
+        "service_aware::hist_gradient_boosting_reference": "Service-aware · HistGradientBoosting",
+    }
+    rows = []
+    for name in candidate_names:
+        rows.append({
+            "Candidate": labels[name],
+            "Validation MAE": validation[name]["mae"],
+            "Validation WAPE": validation[name]["wape"],
+            "Test MAE": test[name]["mae"],
+            "Test WAPE": test[name]["wape"],
+            "Test rows": test[name]["rows"],
+        })
+    rows.extend([
+        {"Candidate": "Baseline · past four same weekdays", "Validation MAE": validation["past_four_same_weekdays"]["mae"], "Validation WAPE": validation["past_four_same_weekdays"]["wape"], "Test MAE": test["past_four_same_weekdays"]["mae"], "Test WAPE": test["past_four_same_weekdays"]["wape"], "Test rows": test["past_four_same_weekdays"]["rows"]},
+        {"Candidate": "Baseline · last week same day", "Validation MAE": validation["last_week_same_day"]["mae"], "Validation WAPE": validation["last_week_same_day"]["wape"], "Test MAE": test["last_week_same_day"]["mae"], "Test WAPE": test["last_week_same_day"]["wape"], "Test rows": test["last_week_same_day"]["rows"]},
+    ])
+    results = pd.DataFrame(rows)
+    st.caption(
+        f"Validation winner: {selection['paired_matched_validation_winner']}. "
+        "Validation selects; the test period assesses that frozen choice."
+    )
     st.dataframe(
-        route_frame.style.format({
-            "Selected method MAE": "{:.1f}",
-            "Seasonal baseline MAE": "{:.1f}",
-            "MAE difference": "{:+.1f}",
-            "Difference %": "{:+.1f}%",
+        results.style.format({
+            "Validation MAE": "{:,.1f}", "Validation WAPE": "{:.2%}",
+            "Test MAE": "{:,.1f}", "Test WAPE": "{:.2%}", "Test rows": "{:,.0f}",
         }),
         hide_index=True,
     )
 
-with st.expander("How to read this review"):
-    st.markdown(
-        "- MAE is the average absolute difference in measured daily boardings per route-day.\n"
-        "- A positive route difference means the selected method made larger errors than the seasonal baseline for that route.\n"
-        "- Route scores measure forecast error, not crowding, unmet demand, route quality, or the effect of changing service.\n"
-        "- The fixed-origin and daily rolling modes use different forecast assumptions and should not be compared as if they were the same task."
-    )
-    st.caption(f"Report source: `{REPORT_PATH.relative_to(Path(__file__).parent)}`")
-
-st.divider()
-st.header("One-day forecast with the v3 model")
-st.write(
-    "Upload the Colab result ZIP and CTA ridership CSV to rank route boardings for one date. "
-    "The forecast date must follow the latest ride observation in the uploaded file."
-)
-st.info(
-    "Choose the CTA day type for the target date (W weekday, A Saturday, U Sunday/holiday). "
-    "Confirm holidays yourself; the app does not infer the official CTA holiday calendar."
-)
-
-forecast_model_upload = st.file_uploader(
-    "Colab results ZIP or v3 joblib model",
-    type=["zip", "joblib"],
-    key="v3_model_upload",
-    help="Use cta_route_ranker_v3_results.zip from the Colab final cell, or its cta_ridership_v3.joblib member.",
-)
-forecast_history_upload = st.file_uploader(
-    "CTA daily bus ridership CSV",
-    type=["csv"],
-    key="v3_ridership_upload",
-    help="Upload the real CTA export containing route, date, daytype, and rides.",
-)
-
-if forecast_model_upload is not None and forecast_history_upload is not None:
-    try:
-        model_bundle = load_uploaded_v3_bundle(forecast_model_upload.getvalue())
-        forecast_history = load_uploaded_ridership(forecast_history_upload.getvalue())
-    except Exception as exc:
-        st.error(f"Could not load the model or ridership CSV: {exc}")
+    st.markdown("#### Where did the selected model help or struggle?")
+    diagnostics = paired["selected_test_diagnostics"]
+    route_metrics = diagnostics.get("route", {})
+    if route_metrics:
+        diagnostic_rows = []
+        for route, metrics in route_metrics.items():
+            diagnostic_rows.append({
+                "Route": route,
+                "Model MAE": metrics["mae"],
+                "Model WAPE": metrics["wape"],
+                "Route-days": metrics["rows"],
+            })
+        route_table = pd.DataFrame(diagnostic_rows).sort_values("Model MAE", ascending=False)
+        st.dataframe(route_table.head(15).style.format({"Model MAE": "{:,.1f}", "Model WAPE": "{:.2%}"}), hide_index=True)
+        st.caption("Routes are ordered by model MAE; route-level sample sizes vary. This is not a baseline-relative service ranking.")
     else:
-        latest_observed_date = forecast_history["date"].max().date()
-        earliest_forecast_date = latest_observed_date + timedelta(
-            days=int(model_bundle["reporting_delay_days"])
-        )
-        available_routes = sorted(forecast_history["route"].astype(str).unique().tolist())
-        service_upload = None
-        if model_bundle.get("model_requires_schedule"):
-            service_upload = st.file_uploader(
-                "Route/date service schedule CSV",
-                type=["csv"],
-                key="v3_service_upload",
-                help="Required for a service-aware model; include archive_available_from and capture dates strictly before the target date.",
-            )
+        st.info("Route-level matched diagnostics are not available in the report.")
 
-        st.caption(
-            f"Latest ride date in this CSV: {latest_observed_date.isoformat()}. "
-            f"Earliest permitted target date with the model's one-day delay: {earliest_forecast_date.isoformat()}."
-        )
-        with st.form("v3_one_day_forecast"):
-            forecast_date = st.date_input(
-                "Forecast date",
-                value=earliest_forecast_date,
-                min_value=earliest_forecast_date,
-                key="v3_forecast_date",
-            )
-            daytype_label = st.selectbox(
-                "CTA day type",
-                ["W", "A", "U"],
-                format_func=lambda value: {
-                    "W": "W — Weekday",
-                    "A": "A — Saturday",
-                    "U": "U — Sunday/holiday",
-                }[value],
-                key="v3_forecast_daytype",
-            )
-            selected_routes = st.multiselect(
-                "Routes to rank",
-                available_routes,
-                default=available_routes,
-                key="v3_forecast_routes",
-            )
-            forecast_submitted = st.form_submit_button("Generate route forecasts")
+    daytype_rows = []
+    for daytype, metrics in diagnostics.get("daytype", {}).items():
+        daytype_rows.append({
+            "CTA day type": {"W": "Weekday", "A": "Saturday", "U": "Sunday / holiday"}.get(daytype, daytype),
+            "Selected model MAE": metrics["mae"],
+            "Route-days": metrics["rows"],
+        })
+    if daytype_rows:
+        daytype_frame = pd.DataFrame(daytype_rows).set_index("CTA day type")
+        st.bar_chart(daytype_frame["Selected model MAE"], y_label="Mean absolute error (rides)")
+        st.dataframe(daytype_frame, column_config={"Selected model MAE": st.column_config.NumberColumn(format="%,.1f")})
 
-        if forecast_submitted:
-            if not selected_routes:
-                st.error("Select at least one route.")
-            elif model_bundle.get("model_requires_schedule") and service_upload is None:
-                st.error("This selected model requires the route/date service schedule CSV.")
-            else:
-                try:
-                    target_frame = pd.DataFrame({
-                        "route": selected_routes,
-                        "date": forecast_date,
-                        "daytype": daytype_label,
-                    })
-                    service_frame = (
-                        load_uploaded_service(service_upload.getvalue())
-                        if service_upload is not None else None
-                    )
-                    forecast_frame = predict_daily_routes_from_bundle(
-                        model_bundle, forecast_history, target_frame, service_frame
-                    )
-                except (OSError, KeyError, ValueError, pd.errors.ParserError, UnicodeDecodeError) as exc:
-                    st.error(f"Could not create the forecast: {exc}")
-                else:
-                    ranked_forecasts = forecast_frame.sort_values(
-                        "predicted_rides", ascending=False
-                    ).reset_index(drop=True)
-                    forecast_total = float(ranked_forecasts["predicted_rides"].sum())
-                    st.metric("Predicted boardings across selected routes", f"{forecast_total:,.0f}")
-                    st.caption(
-                        f"Method: {model_bundle['serving_method']} · model trained through "
-                        f"{model_bundle.get('training_cutoff', 'unknown date')} · issue date: {forecast_date.isoformat()} · "
-                        f"ridership inputs allowed through {(forecast_date - timedelta(days=model_bundle['reporting_delay_days'])).isoformat()}"
-                    )
-                    st.dataframe(
-                        ranked_forecasts,
-                        hide_index=True,
-                        column_config={
-                            "predicted_rides": st.column_config.NumberColumn(
-                                "Predicted daily boardings", format="%,.0f"
-                            ),
-                        },
-                    )
-                    st.download_button(
-                        "Download route forecast CSV",
-                        ranked_forecasts.to_csv(index=False),
-                        file_name=f"cta_route_forecast_{forecast_date.isoformat()}.csv",
-                        mime="text/csv",
-                    )
-                    st.caption(
-                        "Route order reflects predicted daily boardings only. It is not passenger load, crowding, "
-                        "route quality, or a service-change recommendation."
-                    )
+    st.warning(
+        "This is retrospective development evidence: the CSV hash differs from the mentor's frozen export, "
+        "the June–July window was inspected in earlier iterations, and the D−1 reporting assumption is unverified."
+    )
 
-st.divider()
-st.header("Trip allocation scenario sandbox")
-st.write(
-    "Upload one row per route with predicted daily boardings and current scheduled daily trips. "
-    "The scenario keeps the systemwide trip total unchanged and limits each route's trip change."
-)
-st.warning(
-    "This balances an aggregate boardings-per-trip proxy. It does not estimate vehicle load or crowding, "
-    "and it omits fleet, travel-time, peak-period, transfer, equity, and route-overlap constraints. "
-    "Review scenarios with a transit planner before using them."
-)
 
-sample_routes = pd.DataFrame({
-    "route": ["Example A", "Example B", "Example C"],
-    "predicted_rides": [12000, 7000, 5000],
-    "scheduled_trips": [20, 16, 14],
-})
-blank_template = pd.DataFrame(columns=["route", "predicted_rides", "scheduled_trips"])
-scenario_template, scenario_example = st.columns(2)
-scenario_template.download_button(
-    "Download blank CSV template",
-    blank_template.to_csv(index=False),
-    file_name="route_scenario_template.csv",
-    mime="text/csv",
-)
-scenario_example.download_button(
-    "Download synthetic example CSV",
-    sample_routes.to_csv(index=False),
-    file_name="synthetic_route_scenario_example.csv",
-    mime="text/csv",
-    help="Contains invented example values for trying the calculator; it is not CTA data.",
-)
-
-scenario_upload = st.file_uploader(
-    "Upload route forecast and scheduled trips CSV",
-    type=["csv"],
-    help="Required columns: route, predicted_rides, scheduled_trips. Use forecasts and trip counts for the same route and date/window.",
-)
-max_shift_percent = st.slider(
-    "Maximum change allowed per route",
-    min_value=0,
-    max_value=50,
-    value=10,
-    step=5,
-    format="%d%%",
-)
-if scenario_upload is not None:
-    try:
-        from src.scenarios import optimize_trip_allocation
-
-        scenario_input = pd.read_csv(scenario_upload, dtype={"route": "string"})
-        scenario_result = optimize_trip_allocation(
-            scenario_input, max_shift_pct=max_shift_percent / 100
-        )
-        result_routes = pd.DataFrame(scenario_result["routes"])
-        metric_a, metric_b, metric_c = st.columns(3)
-        metric_a.metric("Scheduled trips", f"{scenario_result['scenario_total_trips']:,}",
-                        delta=f"{scenario_result['scenario_total_trips'] - scenario_result['total_scheduled_trips']:+,} vs current")
-        metric_b.metric("Highest boardings per trip", f"{scenario_result['scenario_max_boardings_per_trip']:.1f}",
-                        delta=f"{scenario_result['scenario_max_boardings_per_trip'] - scenario_result['current_max_boardings_per_trip']:+.1f} vs current",
-                        delta_color="inverse")
-        metric_c.metric("Mean across routes", f"{scenario_result['scenario_mean_route_boardings_per_trip']:.1f}",
-                        delta=f"{scenario_result['scenario_mean_route_boardings_per_trip'] - scenario_result['current_mean_route_boardings_per_trip']:+.1f} vs current",
-                        delta_color="inverse")
-        st.caption(scenario_result["objective"])
+def render_replay() -> None:
+    st.subheader("Historical replay")
+    st.caption(
+        "Step through the saved June–July forecast replay. Actuals are revealed only after the assumed "
+        "one-day reporting delay; this replays saved results and does not retrain the model."
+    )
+    if not FORECAST_PATH.exists() or not ACTUALS_PATH.exists():
+        st.info("Saved forecast and separate scoring actuals are required for historical replay.")
+        return
+    forecasts, actuals = load_replay_files(
+        str(FORECAST_PATH), FORECAST_PATH.stat().st_mtime,
+        str(ACTUALS_PATH), ACTUALS_PATH.stat().st_mtime,
+    )
+    routes = sorted(forecasts["route"].dropna().astype(str).unique())
+    target_start, target_end = forecasts["target_date"].min(), forecasts["target_date"].max()
+    virtual = st.slider(
+        "Advance the replay date",
+        min_value=target_start.date(),
+        max_value=(target_end + pd.Timedelta(days=1)).date(),
+        value=target_start.date(),
+        key="replay_clock",
+    )
+    route = st.selectbox("Route to replay", routes, key="replay_route")
+    virtual_date = pd.Timestamp(virtual)
+    route_forecasts = forecasts.loc[
+        forecasts["route"].astype(str).eq(route) & (forecasts["target_date"] <= virtual_date)
+    ].copy()
+    route_actuals = actuals.loc[actuals["route"].astype(str).eq(route)].copy()
+    route_forecasts = route_forecasts.merge(
+        route_actuals[["route", "date", "daytype", "rides"]],
+        left_on=["route", "target_date"], right_on=["route", "date"], how="left", validate="one_to_one",
+    )
+    actual_release_date = route_forecasts["target_date"] + pd.Timedelta(days=1)
+    released = actual_release_date <= virtual_date
+    route_forecasts["released_actual"] = route_forecasts["rides"].where(released)
+    route_forecasts["status"] = released.map({True: "Actual released", False: "Forecast only"})
+    released_rows = route_forecasts.loc[released]
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Virtual date", virtual_date.strftime("%b %-d, %Y"))
+    col2.metric("Forecasts issued", f"{len(route_forecasts):,}")
+    col3.metric("Actuals released", f"{int(released.sum()):,}")
+    if not route_forecasts.empty:
+        chart = route_forecasts.set_index("target_date")[["predicted_rides"]].rename(columns={"predicted_rides": "Forecast"})
+        if not released_rows.empty:
+            observed = released_rows.set_index("target_date")["released_actual"].rename("Released actual")
+            chart = chart.join(observed)
+        st.line_chart(chart, x_label="Target date", y_label="Daily boardings")
         st.dataframe(
-            result_routes.style.format({
-                "predicted_rides": "{:,.0f}",
-                "current_scheduled_trips": "{:,.0f}",
-                "scenario_scheduled_trips": "{:,.0f}",
-                "trip_change": "{:+,.0f}",
-                "boardings_per_current_trip": "{:,.1f}",
-                "boardings_per_scenario_trip": "{:,.1f}",
+            route_forecasts[["target_date", "daytype", "predicted_rides", "released_actual", "status"]].rename(columns={
+                "target_date": "Target date", "daytype": "Day type", "predicted_rides": "Forecast rides",
+                "released_actual": "Released actual rides", "status": "Status",
             }),
             hide_index=True,
+            column_config={
+                "Forecast rides": st.column_config.NumberColumn(format="%,.0f"),
+                "Released actual rides": st.column_config.NumberColumn(format="%,.0f"),
+            },
         )
+    st.caption("Replay uses separated forecast and actuals files and the declared D−1 availability assumption.")
+
+
+def render_forecast(source: pd.DataFrame | None) -> None:
+    st.subheader("One-day route forecast")
+    st.caption("Forecasts one date at a time from eligible observed rides and a user-confirmed CTA day type.")
+    if source is None:
+        st.info("Upload the CTA ridership CSV in the sidebar first.")
+        return
+
+    bundle = None
+    if MODEL_PATH.exists():
+        try:
+            stat = MODEL_PATH.stat()
+            bundle = load_local_v3_bundle(str(MODEL_PATH), stat.st_mtime, stat.st_size)
+            st.caption("Using the refreshed local model bundle stored in `models/`.")
+        except Exception as exc:
+            st.warning(f"The local model bundle could not be loaded: {exc}")
+    if bundle is None:
+        upload = st.file_uploader("Upload Colab results ZIP or v3 joblib", type=["zip", "joblib"], key="forecast_bundle")
+        if upload is None:
+            st.info("The model ZIP is not available locally. Choose it here to continue.")
+            return
+        try:
+            bundle = load_uploaded_v3_bundle(upload.getvalue())
+        except Exception as exc:
+            st.error(f"Could not load this v3 model: {exc}")
+            return
+
+    latest = source["date"].max()
+    earliest = latest + pd.Timedelta(days=int(bundle["reporting_delay_days"]))
+    routes = sorted(source["route"].astype(str).unique())
+    st.info(
+        f"Latest ride in file: {latest.date()}. With the model's {bundle['reporting_delay_days']}-day delay, "
+        f"the earliest target date is {earliest.date()}. Day type is supplied by you; verify holidays."
+    )
+    service_upload = None
+    if bundle.get("model_requires_schedule"):
+        service_upload = st.file_uploader("Required route/date service CSV", type=["csv"], key="forecast_service")
+    with st.form("forecast_form"):
+        cols = st.columns([1, 1, 2])
+        target_date = cols[0].date_input(
+            "Forecast date", value=earliest.date(), min_value=earliest.date(), max_value=earliest.date(),
+            help="The serving model is a one-day forecaster; multi-day forecasts need a separate recursive evaluation.",
+        )
+        daytype = cols[1].selectbox("CTA day type", ["W", "A", "U"], format_func=lambda v: {
+            "W": "Weekday", "A": "Saturday", "U": "Sunday / holiday",
+        }[v])
+        selected_routes = cols[2].multiselect("Routes", routes, default=routes)
+        submitted = st.form_submit_button("Generate forecast")
+    if not submitted:
+        return
+    if not selected_routes:
+        st.error("Choose at least one route.")
+        return
+    if bundle.get("model_requires_schedule") and service_upload is None:
+        st.error("This service-aware model requires schedule rows with capture-date provenance.")
+        return
+    targets = pd.DataFrame({"route": selected_routes, "date": target_date, "daytype": daytype})
+    service = load_uploaded_service(service_upload.getvalue()) if service_upload else None
+    try:
+        forecasts = predict_daily_routes_from_bundle(bundle, source, targets, service)
+    except (OSError, KeyError, ValueError, pd.errors.ParserError, UnicodeDecodeError) as exc:
+        st.error(f"Forecast could not be generated: {exc}")
+        return
+    forecasts = forecasts.sort_values("predicted_rides", ascending=False).reset_index(drop=True)
+    st.metric("Predicted daily boardings across selected routes", f"{forecasts['predicted_rides'].sum():,.0f}")
+    st.caption(
+        f"{bundle['serving_method']} · trained through {bundle.get('training_cutoff', 'unknown')} · "
+        f"allowed ridership through {(target_date - timedelta(days=bundle['reporting_delay_days'])).isoformat()}"
+    )
+    st.dataframe(forecasts, hide_index=True, column_config={
+        "predicted_rides": st.column_config.NumberColumn("Predicted boardings / day", format="%,.0f")
+    })
+    st.download_button(
+        "Download forecast CSV", forecasts.to_csv(index=False),
+        file_name=f"cta_route_forecast_{target_date.isoformat()}.csv", mime="text/csv",
+    )
+    st.caption("A demand forecast is not passenger load, crowding, route quality, or a service-change recommendation.")
+
+
+def render_scenario() -> None:
+    st.subheader("Trip-allocation scenario sandbox")
+    st.write(
+        "Explore a bounded redistribution of a fixed systemwide trip total using predicted daily boardings "
+        "and current scheduled trips."
+    )
+    st.warning(
+        "This minimizes the highest boardings-per-scheduled-trip ratio. Daily boardings divided by trips "
+        "is not vehicle load or crowding. Fleet, crew, running time, accessibility, equity, transfers, and "
+        "route overlap are not modeled; treat every result as a scenario for planner review."
+    )
+    template = pd.DataFrame(columns=["route", "predicted_rides", "scheduled_trips"])
+    example = pd.DataFrame({
+        "route": ["Example A", "Example B", "Example C"],
+        "predicted_rides": [12000, 7000, 5000],
+        "scheduled_trips": [20, 16, 14],
+    })
+    blank, sample = st.columns(2)
+    blank.download_button("Download blank template", template.to_csv(index=False), "route_scenario_template.csv", "text/csv")
+    sample.download_button("Download synthetic example", example.to_csv(index=False), "synthetic_route_scenario_example.csv", "text/csv")
+    upload = st.file_uploader(
+        "Scenario input CSV", type=["csv"], key="scenario_input",
+        help="One row per route; required columns: route, predicted_rides, scheduled_trips.",
+    )
+    max_shift = st.slider("Maximum trip change per route", 0, 50, 10, step=5, format="%d%%")
+    if upload is None:
+        return
+    try:
+        source = pd.read_csv(upload, dtype={"route": "string"})
+        result = optimize_trip_allocation(source, max_shift_pct=max_shift / 100)
     except (OSError, UnicodeDecodeError, pd.errors.ParserError, ValueError) as exc:
-        st.error(f"Could not calculate this scenario: {exc}")
+        st.error(f"Scenario could not be calculated: {exc}")
+        return
+    a, b, c = st.columns(3)
+    a.metric("System trips", f"{result['scenario_total_trips']:,}", delta=f"{result['scenario_total_trips'] - result['total_scheduled_trips']:+,} vs current")
+    b.metric("Highest ratio", f"{result['scenario_max_boardings_per_trip']:.1f}", delta=f"{result['scenario_max_boardings_per_trip'] - result['current_max_boardings_per_trip']:+.1f}", delta_color="inverse")
+    c.metric("Mean route ratio", f"{result['scenario_mean_route_boardings_per_trip']:.1f}", delta=f"{result['scenario_mean_route_boardings_per_trip'] - result['current_mean_route_boardings_per_trip']:+.1f}", delta_color="inverse")
+    route_results = pd.DataFrame(result["routes"])
+    st.dataframe(route_results, hide_index=True, column_config={
+        "predicted_rides": st.column_config.NumberColumn(format="%,.0f"),
+        "current_scheduled_trips": st.column_config.NumberColumn(format="%,.0f"),
+        "scenario_scheduled_trips": st.column_config.NumberColumn(format="%,.0f"),
+        "trip_change": st.column_config.NumberColumn(format="%+,.0f"),
+        "boardings_per_current_trip": st.column_config.NumberColumn(format="%,.1f"),
+        "boardings_per_scenario_trip": st.column_config.NumberColumn(format="%,.1f"),
+    })
+    st.download_button("Download scenario CSV", route_results.to_csv(index=False), "cta_trip_allocation_scenario.csv", "text/csv")
+
+
+def render_methods(report: dict, source: pd.DataFrame | None) -> None:
+    st.subheader("Data, assumptions, and model card")
+    source_info = report["source"]
+    model = report["model_selection"]
+    artifacts = report["artifacts"]["final_refit"]
+    policy = report["information_policy"]
+    st.markdown("#### Dataset and lineage")
+    st.markdown(
+        f"- **Outcome:** CTA measured daily bus rides by route.\n"
+        f"- **Model evaluation window:** {source_info['ridership_date_range_used_for_evaluation'][0]} to {source_info['ridership_date_range_used_for_evaluation'][1]}.\n"
+        f"- **Source coverage in model report:** {source_info['ridership_source_date_range'][0]} to {source_info['ridership_source_date_range'][1]}.\n"
+        f"- **Current run SHA-256:** `{source_info['ridership_sha256']}`.\n"
+        f"- **Mentor frozen SHA-256:** `{source_info['mentor_reference_sha256']}`. Match: **{source_info['matches_mentor_reference']}**."
+    )
+    if source is not None:
+        st.caption(
+            f"Uploaded snapshot SHA-256 should be compared to the report before evaluation claims are made. "
+            f"Rows: {len(source):,}; routes: {source['route'].nunique():,}; latest observation: {source['date'].max().date()}."
+        )
+    st.markdown("#### Model and evaluation policy")
+    st.markdown(
+        f"- **Validation selection:** {model['paired_matched_validation_winner']} by validation MAE.\n"
+        f"- **Final serving refit:** {artifacts['training_rows']:,} rows from {artifacts['training_start']} through {artifacts['training_cutoff']}.\n"
+        f"- **Evaluation predictions:** retained from pre-refit candidates; final refit did not change test metrics.\n"
+        f"- **Reporting assumption:** {policy['assumption']} Publication timing verified: {policy['publication_timing_verified']}.\n"
+        f"- **Schedule policy:** {policy['schedule_snapshot_policy']}"
+    )
+    st.markdown("#### Feature contract")
+    st.markdown(
+        "Demand features include route identity, day of week, month, weekend and Sunday/holiday day-type "
+        "flags, exact-date ridership lags at 1/7/14/21/28 days, and the mean/count of available same-weekday "
+        "lags. The selected model is demand-only; schedule features were evaluated as a paired challenger."
+    )
+    st.markdown("#### Scope limits")
+    st.markdown(
+        "Daily boardings do not reveal simultaneous onboard occupancy, unique riders, directional loads, "
+        "capacity, waiting, delays, or completed service. Route comparisons and trip scenarios are screening "
+        "evidence only. Service changes need route geometry, travel-time and fleet constraints, accessibility "
+        "and equity review, and a transit planner."
+    )
+
+
+def main() -> None:
+    st.set_page_config(page_title="CTA RouteRanker", page_icon="🚌", layout="wide")
+    st.title("CTA RouteRanker")
+    st.caption("Chicago bus demand exploration · forecast evidence · bounded planning scenarios")
+
+    if not REPORT_PATH.exists():
+        st.error(f"Model-selection report not found: {REPORT_PATH}")
+        st.stop()
+    try:
+        report = load_report(str(REPORT_PATH), REPORT_PATH.stat().st_mtime)
+    except (OSError, json.JSONDecodeError) as exc:
+        st.error(f"Could not read the model-selection report: {exc}")
+        st.stop()
+
+    with st.sidebar:
+        st.header("Chicago planning workspace")
+        workspace = st.radio(
+            "Workspace",
+            ["Overview", "Routes", "Forecast evidence", "Historical replay", "One-day forecast", "Scenarios", "Methods & data"],
+            label_visibility="collapsed",
+            key="workspace_navigation",
+        )
+        st.divider()
+        st.caption("Upload a validated CTA daily route-ridership CSV for route exploration and forecasts.")
+        source_upload = st.file_uploader("CTA ridership CSV", type=["csv"], key="shared_ridership")
+        source = None
+        if source_upload is not None:
+            try:
+                source = load_uploaded_ridership(source_upload.getvalue())
+            except (OSError, ValueError, pd.errors.ParserError, UnicodeDecodeError) as exc:
+                st.error(f"Ridership file rejected: {exc}")
+        st.divider()
+        st.caption("Route changes are never recommended automatically. Review scenario assumptions before use.")
+    if workspace == "Overview":
+        render_overview(report, source)
+    elif workspace == "Routes":
+        render_routes(source)
+    elif workspace == "Forecast evidence":
+        render_evaluation(report)
+    elif workspace == "Historical replay":
+        render_replay()
+    elif workspace == "One-day forecast":
+        render_forecast(source)
+    elif workspace == "Scenarios":
+        render_scenario()
+    else:
+        render_methods(report, source)
+
+
+if __name__ == "__main__":
+    main()
