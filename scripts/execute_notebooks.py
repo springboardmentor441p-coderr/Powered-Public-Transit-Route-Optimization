@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("notebooks", nargs="*", help="Paths, or all four notebooks by default")
+    parser.add_argument("notebooks", nargs="*", help="Paths, or all analysis notebooks by default")
     parser.add_argument("--kernel", default="python3", help="Installed Jupyter kernel name")
     args = parser.parse_args()
     paths = [ROOT / p for p in args.notebooks] if args.notebooks else sorted(

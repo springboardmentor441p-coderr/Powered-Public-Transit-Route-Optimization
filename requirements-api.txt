@@ -1,0 +1,13 @@
+fastapi==0.115.0
+pydantic==2.12.5
+uvicorn==0.30.6
+psycopg[binary]==3.3.6
+httpx==0.28.1
+
+# Numerical versions used to serialize and evaluate the fitted pipelines.
+numpy==2.2.6
+pandas==2.2.3
+scikit-learn==1.8.0
+scipy==1.17.1
+joblib==1.5.3
+threadpoolctl==3.6.0

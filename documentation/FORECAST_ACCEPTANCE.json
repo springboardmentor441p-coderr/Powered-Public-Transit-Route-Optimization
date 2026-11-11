@@ -1,0 +1,23 @@
+{
+  "policy_version": "1.0",
+  "defined_on": "2026-11-05",
+  "scope": "Engineering review criteria for future matched prospective comparisons; not a transport-agency SLA",
+  "promotion_scope": "Nonbaseline challenger promotion against the fixed reference; baseline deployment requires a separate suitability assessment",
+  "primary_target": "Published daily boardings per Manhattan route",
+  "reference_model": "seasonal_mean4",
+  "minimum_mature_weekly_origins": 8,
+  "minimum_matched_target_coverage": 0.9,
+  "minimum_mae_improvement_fraction": 0.05,
+  "maximum_wape_relative_to_baseline": 1.0,
+  "minimum_weekly_mae_win_fraction": 0.75,
+  "maximum_absolute_aggregate_bias_fraction": 0.05,
+  "interval_nominal_levels": [0.8, 0.9],
+  "maximum_absolute_interval_coverage_gap": 0.05,
+  "maximum_mean_interval_score_relative_to_baseline": 1.0,
+  "maturity_policy_complete_days": 14,
+  "require_pre_target_registration": true,
+  "require_observed_input_snapshots_before_issue": true,
+  "require_same_model_baseline_scoring_population": true,
+  "require_route_and_week_diagnostics": true,
+  "allow_automatic_promotion": false
+}

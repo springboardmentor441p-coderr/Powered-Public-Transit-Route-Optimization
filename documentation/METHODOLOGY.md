@@ -83,8 +83,27 @@ choose chronological development/validation/test periods and recompute learned p
 training periods. Do not use target-derived ratios or review labels to predict that same target.
 The EDA examines the full available window, so no part of it is claimed as an untouched final test.
 
-No scaling, encoding fit, training, accuracy measurement, causal elasticity, delay estimate,
-crowding label or optimization benefit is produced in this stage.
+The separate [route-grouping assessment](ROUTE_GROUPING.md) uses common eligible route/date
+observations within the hourly pilot. It is retrospective unsupervised exploration. Inputs,
+distance weights and group-count rules are explicit; scaling, feature and week sensitivities
+remain attached to the resulting descriptions. These groups do not provide occupancy labels.
+
+The separate [review workflow](ROUTE_REVIEW.md) evaluates explicit historical service-use,
+weekend and temporal rules. Its reasons retain paired denominators, sample dates and thresholds.
+Source clarification precedes planning review. Resampling and threshold frequencies are
+sensitivity diagnostics, not probabilities that service needs changing. Cluster labels and
+forecast errors are context only; no combined performance score is calculated.
+
+The [scenario component](SERVICE_SCENARIOS.md) scales mean departures and clock-date service
+hours by a declared factor on matched baseline observations. Unchanged aggregate service mix
+is an assumption. Clock-date exposure divided by departures is not a measured vehicle cycle,
+and fractional averages are not rounded into timetables. Independent demand multipliers are
+not estimated responses to service. Resource-limit checks are arithmetic conditions only.
+
+The inspection-through-EDA notebooks do not fit forecasting models. The separate
+[forecasting protocol](FORECASTING.md) defines the subsequent modelling experiment,
+availability assumptions and evaluation boundaries. Causal elasticity, actual delay,
+crowding labels and optimization benefits remain unobserved.
 
 ## Primary references
 

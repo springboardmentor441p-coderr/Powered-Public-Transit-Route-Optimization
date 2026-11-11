@@ -1,0 +1,11 @@
+services:
+  dashboard:
+    build: .
+    ports:
+      - "127.0.0.1:8501:8501"
+    volumes:
+      - ./data/raw:/app/data/raw:ro
+      - ./data/processed:/app/data/processed:ro
+      - ./data/processed/new_york/forecast_previews:/app/data/processed/new_york/forecast_previews
+      - ./data/app:/app/data/app
+      - ./reports:/app/reports

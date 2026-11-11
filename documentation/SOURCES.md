@@ -47,3 +47,18 @@ audits before notebooks if starting without generated reports.
 Installing Python dependencies and downloading public sources require network access; analysis
 of a complete local collection runs offline. Downloaded data, generated artifacts, credentials
 and environment files are excluded from version control.
+
+## Dated ridership monitoring
+
+`scripts/monitor_ridership.py` captures route/date observations for the fixed Manhattan cohort,
+an independent daily denominator query and publisher metadata under
+`data/raw/new_york_monitoring/<UTC timestamp>/`. Each source retains its URL, retrieval time,
+byte count and SHA-256 receipt. Original inputs are not replaced. The 5 November 2026 capture
+extends through 27 October and supplies later outcomes for notebook 06.
+
+Posting cadence and count maturity are different concepts. The publisher overview warns of
+undercounting in recent two-week periods and historical revisions. Portal metadata lists weekly
+posting while the overview describes daily releases. First-seen monitoring dates are not proven
+first-publication timestamps. No complete pre-monitoring revision archive has been established.
+See the [forecasting follow-up](FORECASTING.md#follow-up-maturity-intervals-and-additional-outcomes)
+for the maturity policy, observed overlap and limits of prospective evaluation.
