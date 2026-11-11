@@ -12,7 +12,7 @@ from .train_v3 import predict_feature_rows
 
 
 MODEL_MEMBER = "cta_ridership_v3.joblib"
-MAX_MODEL_MEMBER_BYTES = 512 * 1024 * 1024
+MAX_MODEL_MEMBER_BYTES = 1024 * 1024 * 1024
 
 
 def _load_zip_bundle(archive: ZipFile) -> dict:

@@ -59,14 +59,11 @@ the original ZIP SHA-256 values are unverified.
 
 The reviewed metrics, GTFS import audit, forecast-only replay, and separate
 actuals-for-scoring file are preserved in `outputs/reports/` and
-`outputs/predictions/`. The initially supplied 161 MB joblib artifact is in
-the Colab result bundle saved under My Drive/CTA_RouteRanker_v3; it was fit
-through 2026-05-31 for the test evaluation and is not committed to Git. Its
-SHA-256 is `4b9a48123942a2b942fe95d8b485d35f54c4db0d1ae744fd571b8cef58b970f3`.
-The trainer now leaves those evaluation metrics unchanged, then refits the
-selected model on all available history for the serving artifact. Rerun the
-updated Colab notebook to generate that refreshed model; its actual training
-cutoff and row count will be recorded in the report and model bundle.
+`outputs/predictions/`. The refreshed Colab result bundle is stored locally at
+`models/cta_route_ranker_v3_results.zip` and ignored by Git. Its selected model
+was refit after test scoring on 87,563 rows through 2026-08-31; its SHA-256 is
+`d139d13debfeaa36b34fa70a3eeb64f4d05f07199bf13d91aa2da8c186176b4d`. The
+reported June-July test scores remain from the pre-refit evaluation models.
 
 After training, `src.predict_v3.predict_daily_routes` loads the selected v3
 bundle and forecasts one issue date at a time. It rejects ridership newer than
