@@ -1,9 +1,7 @@
 joblib>=1.2
 numpy>=1.23
 pandas>=1.5
-pydeck>=0.8.0
 requests>=2.31
 scikit-learn==1.6.1
-streamlit>=1.30
 fastapi>=0.100
 uvicorn>=0.23

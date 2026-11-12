@@ -2,23 +2,52 @@
 
 import json
 import os
+import re
+import time
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
 import pandas as pd
+import requests
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field, StrictInt
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
+from .data_loader import load_bus_ridership
 from .predict_v3 import load_v3_bundle, predict_daily_routes_from_bundle
 from .scenarios import optimize_trip_allocation
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+WEB_ROOT = PROJECT_ROOT / "frontend" / "dist"
 REPORT_PATH = PROJECT_ROOT / "outputs" / "reports" / "service_model_comparison.json"
 V3_REPORT_PATH = PROJECT_ROOT / "outputs" / "reports" / "model_selection_v3.json"
 V3_BUNDLE_DEFAULT = PROJECT_ROOT / "models" / "cta_route_ranker_v3_results.zip"
+RIDERSHIP_DEFAULT = PROJECT_ROOT / "data" / "raw" / "cta_bus_ridership.csv"
+ROUTE_GEOJSON_URLS = (
+    (
+        "https://data.cityofchicago.org/api/v3/views/6uva-a5ei/query.geojson?accessType=DOWNLOAD",
+        "City of Chicago Open Data",
+        "https://data.cityofchicago.org/Transportation/CTA-Bus-Routes/6uva-a5ei",
+    ),
+    (
+        "https://data.cityofchicago.org/resource/6uva-a5ei.geojson?$limit=5000",
+        "City of Chicago Open Data",
+        "https://data.cityofchicago.org/Transportation/CTA-Bus-Routes/6uva-a5ei",
+    ),
+    (
+        "https://gis12.cookcountyil.gov/traditional/rest/services/publicTransit/MapServer/1/query?where=1%3D1&outFields=*&outSR=4326&f=geojson",
+        "Cook County CTA route layer",
+        "https://gis12.cookcountyil.gov/traditional/rest/services/publicTransit/MapServer/layers",
+    ),
+)
+ROUTE_GEOJSON_BUNDLED = PROJECT_ROOT / "data" / "reference" / "cta_bus_routes.geojson"
+BUS_VEHICLES_URL = "https://www.ctabustracker.com/bustime/api/v3/getvehicles"
 REFERENCE = "past_four_same_weekdays"
+
+_route_geojson_cache: tuple[float, dict] | None = None
 
 app = FastAPI(
     title="CTA Route Review API",
@@ -28,6 +57,13 @@ app = FastAPI(
     ),
     version="2.0.0",
 )
+app.mount("/assets", StaticFiles(directory=WEB_ROOT / "assets"), name="assets")
+
+
+@app.get("/", include_in_schema=False)
+def home() -> FileResponse:
+    """Serve the browser dashboard; all data operations use this API."""
+    return FileResponse(WEB_ROOT / "index.html")
 
 
 class ScenarioRoute(BaseModel):
@@ -178,6 +214,131 @@ def health() -> dict:
     }
 
 
+def _read_bus_tracker_key() -> str | None:
+    return os.environ.get("CTA_BUS_TRACKER_API_KEY", "").strip() or None
+
+
+@app.get("/api/v1/map/geometry", tags=["map"])
+def map_geometry() -> dict:
+    """Return official CTA route geometry, cached for one day."""
+    configured_path = os.environ.get("CTA_ROUTE_GEOJSON_PATH")
+    local_path = Path(configured_path).expanduser() if configured_path else None
+    if local_path and local_path.is_file():
+        try:
+            payload = json.loads(local_path.read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            raise HTTPException(status_code=503, detail="Local CTA route GeoJSON could not be read") from exc
+        source_metadata = {"label": f"Local route file · {local_path.name}", "url": None}
+    else:
+        global _route_geojson_cache
+        now = time.time()
+        if _route_geojson_cache and now - _route_geojson_cache[0] < 86400:
+            return _route_geojson_cache[1]
+        payload = None
+        source_metadata = None
+        for url, label, source_url in ROUTE_GEOJSON_URLS:
+            try:
+                response = requests.get(url, timeout=(5, 20))
+                response.raise_for_status()
+                if len(response.content) > 100 * 1024 * 1024:
+                    raise HTTPException(status_code=502, detail="CTA route geometry exceeds the 100 MB safety limit")
+                candidate = response.json()
+                if candidate.get("type") != "FeatureCollection" or not isinstance(candidate.get("features"), list):
+                    continue
+                payload = candidate
+                source_metadata = {"label": label, "url": source_url}
+                break
+            except (requests.RequestException, ValueError):
+                continue
+        if payload is None:
+            try:
+                payload = json.loads(ROUTE_GEOJSON_BUNDLED.read_text())
+                source_metadata = {
+                    "label": "Cook County CTA route layer · bundled fallback",
+                    "url": "https://gis12.cookcountyil.gov/traditional/rest/services/publicTransit/MapServer/layers",
+                }
+            except (OSError, json.JSONDecodeError) as exc:
+                raise HTTPException(
+                    status_code=503,
+                    detail="Route geometry is unavailable. Check the network or set CTA_ROUTE_GEOJSON_PATH.",
+                ) from exc
+        payload = {**payload, "source_metadata": source_metadata}
+        _route_geojson_cache = (now, payload)
+    if source_metadata and "source_metadata" not in payload:
+        payload = {**payload, "source_metadata": source_metadata}
+    if payload.get("type") != "FeatureCollection" or not isinstance(payload.get("features"), list):
+        raise HTTPException(status_code=502, detail="CTA route geometry is not a GeoJSON FeatureCollection")
+    return payload
+
+
+@lru_cache(maxsize=2)
+def _route_demand_summary(path: str, modified_ns: int, size: int) -> dict:
+    del modified_ns, size
+    frame = load_bus_ridership(path)
+    latest = frame["date"].max()
+    start = max(frame["date"].min(), latest - pd.Timedelta(days=83))
+    recent = frame.loc[frame["date"].between(start, latest)]
+    means = recent.groupby("route")["rides"].mean()
+    totals = recent.groupby("route")["rides"].sum()
+    return {
+        "available": True,
+        "source_latest_date": latest.date().isoformat(),
+        "period_start": start.date().isoformat(),
+        "period_end": latest.date().isoformat(),
+        "route_count": int(frame["route"].nunique()),
+        "mean_daily_boardings": {str(route): float(value) for route, value in means.items()},
+        "period_boardings": {str(route): int(value) for route, value in totals.items()},
+    }
+
+
+@lru_cache(maxsize=2)
+def _server_ridership_history(path: str, modified_ns: int, size: int) -> pd.DataFrame:
+    del modified_ns, size
+    return load_bus_ridership(path)
+
+
+@app.get("/api/v1/map/demand", tags=["map"])
+def map_demand() -> dict:
+    """Return recent route-level demand for map coloring when the CSV is configured."""
+    path = Path(os.environ.get("CTA_RIDERSHIP_CSV", RIDERSHIP_DEFAULT)).expanduser().resolve()
+    if not path.is_file():
+        return {"available": False, "detail": "Configure CTA_RIDERSHIP_CSV to enable demand coloring."}
+    stat = path.stat()
+    try:
+        return _route_demand_summary(str(path), stat.st_mtime_ns, stat.st_size)
+    except (OSError, ValueError, pd.errors.ParserError) as exc:
+        raise HTTPException(status_code=503, detail=f"Ridership data could not be loaded: {exc}") from exc
+
+
+@app.get("/api/v1/map/vehicles", tags=["map"])
+def map_vehicles(routes: list[str] = Query(default=[])) -> dict:
+    """Return CTA Bus Tracker vehicle locations for up to ten requested routes."""
+    key = _read_bus_tracker_key()
+    if not key:
+        raise HTTPException(status_code=503, detail="Live buses require CTA_BUS_TRACKER_API_KEY in server secrets.")
+    routes = list(dict.fromkeys(route.strip() for route in routes if route.strip()))
+    if not 1 <= len(routes) <= 10 or any(not re.fullmatch(r"[A-Za-z0-9-]{1,10}", route) for route in routes):
+        raise HTTPException(status_code=422, detail="Provide one to ten valid CTA route codes.")
+    try:
+        response = requests.get(
+            BUS_VEHICLES_URL,
+            params={"key": key, "rt": ",".join(routes), "format": "json", "tmres": "s"},
+            timeout=(5, 15),
+        )
+        response.raise_for_status()
+        body = response.json().get("bustime-response", {})
+    except requests.RequestException as exc:
+        raise HTTPException(status_code=502, detail="CTA Bus Tracker could not be reached.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=502, detail="CTA Bus Tracker returned invalid JSON.") from exc
+    if body.get("error"):
+        raise HTTPException(status_code=502, detail="CTA Bus Tracker rejected the key or route request.")
+    vehicles = body.get("vehicle", [])
+    if isinstance(vehicles, dict):
+        vehicles = [vehicles]
+    return {"timestamp": body.get("tmst"), "vehicles": vehicles}
+
+
 @app.get("/api/v1/forecasts/model", tags=["forecasts"])
 def forecast_model() -> dict:
     """Describe the validation-selected v3 model and its evaluation caveats."""
@@ -240,6 +401,38 @@ def forecast_one_day(request: OneDayForecastRequest) -> dict:
         "interpretation_limit": (
             "Predicted daily route boardings are a demand forecast; they are not passenger load, "
             "crowding, capacity, or a service-change recommendation."
+        ),
+    }
+
+
+@app.post("/api/v1/forecasts/predict-one", tags=["forecasts"])
+def forecast_one_from_server(target: ForecastTarget) -> dict:
+    """Make a one-route forecast from the server-configured trained model and CSV."""
+    history_path = Path(os.environ.get("CTA_RIDERSHIP_CSV", RIDERSHIP_DEFAULT)).expanduser().resolve()
+    if not history_path.is_file():
+        raise HTTPException(
+            status_code=503,
+            detail="Ridership history is not configured. Set CTA_RIDERSHIP_CSV on the API server.",
+        )
+    bundle = _load_v3_bundle()
+    try:
+        stat = history_path.stat()
+        history = _server_ridership_history(str(history_path), stat.st_mtime_ns, stat.st_size)
+        targets = pd.DataFrame([target.model_dump() if hasattr(target, "model_dump") else target.dict()])
+        prediction = predict_daily_routes_from_bundle(bundle, history, targets)
+    except (OSError, ValueError, pd.errors.ParserError) as exc:
+        raise HTTPException(status_code=422, detail=f"One-day forecast could not be generated: {exc}") from exc
+    result = prediction.iloc[0].to_dict()
+    for column, value in list(result.items()):
+        if hasattr(value, "isoformat"):
+            result[column] = value.isoformat()
+    return {
+        "model": bundle["serving_method"],
+        "history_latest_date": history["date"].max().date().isoformat(),
+        "prediction": result,
+        "interpretation_limit": (
+            "Predicted daily boardings are not passenger load, crowding, capacity, "
+            "or a service-change recommendation."
         ),
     }
 

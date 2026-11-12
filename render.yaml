@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: route-ranker-chicago
+    runtime: docker
+    plan: 1c-2g
+    region: singapore
+    branch: users/bidhubhusan
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeployTrigger: commit
+    healthCheckPath: /health
+    disk:
+      name: route-ranker-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: CTA_RANKER_V3_BUNDLE
+        value: /var/data/cta_route_ranker_v3_results.zip
+      - key: CTA_RIDERSHIP_CSV
+        value: /var/data/cta_bus_ridership.csv

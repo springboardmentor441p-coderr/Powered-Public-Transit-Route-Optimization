@@ -168,64 +168,77 @@ data/raw/       Local source data (not committed)
 src/            Loading, validation, exact-date features, model training
 models/         Saved model artifacts
 outputs/reports/ Evaluation metrics
+frontend/       React route map, forecast, and model-evidence website
 ```
 
-The local route review dashboard and forecast API are available. The current
-model evidence remains development-stage because the source hash differs from
-the mentor's frozen CSV and the D−1 data-publication assumption is unverified.
-Do not interpret route-level boardings as crowding or a causal measure of
-service quality.
+The browser-based route map and FastAPI backend are available. Model evidence
+remains development-stage because the source hash differs from the mentor's
+frozen CSV and the D−1 data-publication assumption is unverified. Do not
+interpret route-level boardings as crowding or a causal measure of service
+quality.
 
-## Route review dashboard
+## Web application
 
-With the Python 3.11 environment above active, launch the local review app:
+The website uses React, Vite, and Leaflet; FastAPI serves its production build
+and JSON endpoints together. For local development, run these in two terminals.
 
 ```bash
-streamlit run app.py
+uvicorn src.api:app --reload --port 8001
 ```
 
-The dashboard is organized as a Chicago planning workspace:
+```bash
+cd frontend
+npm ci
+npm run dev
+```
 
-- **Overview:** selected model, validation/test context, source fingerprint,
-  active-source SHA-256 and a comparison with the evaluated source, plus recent
-  network totals when local or uploaded ridership data is available.
-- **Routes:** route histories, matched-date route comparisons, day-type
-  summaries, an automatically loaded interactive CTA network map, a review queue that equally weights
-  weekday/Saturday/Sunday-holiday means when all three types have enough data,
-  and exploratory route groups with minimum sample controls.
-- **Forecast evidence:** paired candidate/baseline metrics, route error
-  diagnostics and day-type breakdowns.
-- **Historical replay:** the saved June–July predictions are stepped through
-  with actuals revealed after the assumed reporting delay.
-- **One-day forecast:** uses the local
-  `models/cta_route_ranker_v3_results.zip` bundle when present, plus an
-  up-to-date CTA ridership CSV. It displays the training and inference CSV
-  fingerprints so a changed lag-history source is visible. The large model is
-  loaded only after forecast submission and must match the report's selected
-  method, source hash, reporting delay, and training cutoff. The date is limited
-  to the next permitted day; CTA day type is supplied by the user. The app
-  uses the locally saved trained model when present; an upload is only needed
-  in a checkout where the matching model bundle is absent.
-- **Scenarios:** preserves the systemwide trip total and applies the selected
-  route-level trip-change bound.
-- **Methods & data:** exposes model choice, source hashes, cutoff dates and
-  assumptions, with a downloadable JSON evidence and data-lineage manifest.
+Open <http://127.0.0.1:5173> for the site. For production, run `npm run build`
+in `frontend/`, then start FastAPI with `uvicorn src.api:app`; it serves the
+built website at `/` and interactive API documentation at `/docs`. The
+included Dockerfile builds and serves both layers together.
 
-The dashboard loads `data/raw/cta_bus_ridership.csv` automatically when that
-local file is present; a sidebar upload overrides it. Use the validated source
-hash shown in the app to distinguish a current export from the mentor snapshot.
-The route map fetches the City of Chicago CTA Bus Routes GeoJSON export and
-caches it for 24 hours. A GeoJSON or static GTFS ZIP upload remains available
-as an override. Historical demand coloring uses route-level mean daily
-boardings for the selected dates and day types; it does not represent
-street-segment passenger loads. To show near-real-time bus positions, request a
-CTA Bus Tracker API key and set `CTA_BUS_TRACKER_API_KEY` in the environment or
-Streamlit secrets. The app then fetches positions for up to ten selected routes
-and offers a manual refresh button. CTA requires developers to apply for a key
-and states that its feed updates about every 30 seconds:
-<https://www.transitchicago.com/developers/bustracker/>. The scenario sandbox
-is conditional arithmetic, not an executable timetable or service
-recommendation.
+The map API first fetches route geometry from the City of Chicago portal and
+caches it for 24 hours. If that portal is unreachable, it uses the bundled
+Cook County CTA route layer at `data/reference/cta_bus_routes.geojson`; the
+interface labels the active source. Set `CTA_ROUTE_GEOJSON_PATH` to use a
+different local GeoJSON file. Route-demand coloring reads
+`CTA_RIDERSHIP_CSV` (default `data/raw/cta_bus_ridership.csv`) and summarizes
+mean observed boardings over the latest 84 days. It is route-level context, not
+passenger load on individual street segments. A local GeoJSON upload in the
+browser is also available as a session override.
+
+Live vehicle locations come from the separate CTA Bus Tracker API. Request a
+key, then set `CTA_BUS_TRACKER_API_KEY` in the server environment; never put it
+in the frontend or Git. The website refreshes vehicle positions every 30
+seconds while the live layer is enabled. CTA requires developers to apply for
+a key and reports that feed updates about every 30 seconds:
+<https://www.transitchicago.com/developers/bustracker/>. These are bus
+locations, not general road traffic speeds.
+
+The large trained model and ridership CSV are intentionally not committed to
+Git. Set `CTA_RANKER_V3_BUNDLE` and `CTA_RIDERSHIP_CSV` to server-accessible
+paths when deploying if forecast inference and demand shading are required.
+The model-evidence page can still show the committed evaluation report without
+the model bundle, but one-day inference needs the trained bundle present.
+
+### Render deployment
+
+The root `render.yaml` defines the Docker web service, Singapore region,
+health check, 2 GB compute plan, and 1 GB persistent disk. The model ZIP and
+ridership CSV are not in Git, so the first deployment can serve the map,
+scenario, and model evidence while forecast inference awaits those files.
+After creating the service and configuring SSH in Render, transfer both files
+to its persistent disk (use the SSH host shown in the service's Connect menu):
+
+```bash
+scp -s models/cta_route_ranker_v3_results.zip YOUR_SERVICE@ssh.singapore.render.com:/var/data/
+scp -s data/raw/cta_bus_ridership.csv YOUR_SERVICE@ssh.singapore.render.com:/var/data/
+```
+
+The Blueprint sets `CTA_RANKER_V3_BUNDLE` and `CTA_RIDERSHIP_CSV` to those
+disk paths. Restart the service after transfer. Add `CTA_BUS_TRACKER_API_KEY`
+later through Render's Environment settings; never add it to this file, the
+Docker image, or Git.
 
 The saved evaluation report and scenario calculator are available through a local API:
 
@@ -297,9 +310,9 @@ route,predicted_rides,scheduled_trips
 2,7000,16
 ```
 
-The dashboard provides a blank template and a synthetic example. The scenario
-keeps the total number of trips fixed and minimizes the highest predicted
-boardings-per-trip ratio while respecting the selected route change limit.
+The website lets you enter one row per route. The scenario keeps the total
+number of trips fixed and minimizes the highest predicted boardings-per-trip
+ratio while respecting the selected route change limit.
 This ratio is a screening proxy, not a passenger load or crowding estimate.
 The scenario omits fleet cycles, travel times, peak-period demand, capacity,
 transfers, route overlap, and equity constraints; review it with a transit

@@ -1,6 +1,7 @@
 .DS_Store
 .venv/
-.streamlit/secrets.toml
+frontend/node_modules/
+frontend/dist/
 __pycache__/
 *.py[cod]
 
