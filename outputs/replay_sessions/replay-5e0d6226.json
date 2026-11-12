@@ -1,0 +1,16 @@
+{
+  "session_id": "replay-5e0d6226",
+  "created_at": "2026-11-12T12:32:40.436316+00:00",
+  "status": "PAUSED",
+  "start_date": "2026-06-01",
+  "end_date": "2026-07-31",
+  "current_virtual_date": "2026-06-02",
+  "reporting_delay_days": 1,
+  "playback_speed_sec": 5,
+  "provenance": {
+    "dataset": "Chicago CTA Daily Bus Route Ridership",
+    "test_partition": "2026-06-01 to 2026-07-31 (Held-out Test Period)",
+    "leakage_protection": "Assumed 1-day reporting delay. Virtual date D cannot see actual rides for D."
+  },
+  "history_audit": []
+}

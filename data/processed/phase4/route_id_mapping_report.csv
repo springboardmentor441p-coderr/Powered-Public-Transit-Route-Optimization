@@ -1,0 +1,132 @@
+historical_route_id,gtfs_route_id,gtfs_route_short_name,gtfs_route_long_name,scheduled_trips,match_status,notes
+1,1,1,Bronzeville/Union Station,118,Matched,Direct Route ID match with active GTFS schedule
+10,10,10,Obama Presidential Center/Museum of Science & Industry Express,216,Matched,Direct Route ID match with active GTFS schedule
+100,100,100,Jeffery Manor Express,106,Matched,Direct Route ID match with active GTFS schedule
+103,103,103,West 103rd,686,Matched,Direct Route ID match with active GTFS schedule
+106,106,106,East 103rd,590,Matched,Direct Route ID match with active GTFS schedule
+108,108,108,Halsted/95th,146,Matched,Direct Route ID match with active GTFS schedule
+11,11,11,Lincoln,404,Matched,Direct Route ID match with active GTFS schedule
+111,111,111,111th/King Drive,728,Matched,Direct Route ID match with active GTFS schedule
+111A,111A,111A,Pullman Shuttle,492,Matched,Direct Route ID match with active GTFS schedule
+112,112,112,Vincennes/111th,596,Matched,Direct Route ID match with active GTFS schedule
+115,115,115,Pullman/115th,768,Matched,Direct Route ID match with active GTFS schedule
+119,119,119,Michigan/119th,878,Matched,Direct Route ID match with active GTFS schedule
+12,12,12,Roosevelt,1378,Matched,Direct Route ID match with active GTFS schedule
+120,120,120,Ogilvie/Streeterville Express,146,Matched,Direct Route ID match with active GTFS schedule
+121,121,121,Union/Streeterville Express,152,Matched,Direct Route ID match with active GTFS schedule
+124,124,124,Navy Pier,454,Matched,Direct Route ID match with active GTFS schedule
+125,125,125,Water Tower Express,102,Matched,Direct Route ID match with active GTFS schedule
+126,126,126,Jackson,756,Matched,Direct Route ID match with active GTFS schedule
+134,134,134,Stockton/LaSalle Express,98,Matched,Direct Route ID match with active GTFS schedule
+135,135,135,Clarendon/LaSalle Express,100,Matched,Direct Route ID match with active GTFS schedule
+136,136,136,Sheridan/LaSalle Express,72,Matched,Direct Route ID match with active GTFS schedule
+143,143,143,Stockton/Michigan Express,72,Matched,Direct Route ID match with active GTFS schedule
+146,146,146,Inner Lake Shore/Michigan Express,1166,Matched,Direct Route ID match with active GTFS schedule
+147,147,147,Outer DuSable Lake Shore Express,1190,Matched,Direct Route ID match with active GTFS schedule
+148,148,148,Clarendon/Michigan Express,90,Matched,Direct Route ID match with active GTFS schedule
+15,15,15,Jeffery Local,814,Matched,Direct Route ID match with active GTFS schedule
+151,151,151,Sheridan,1238,Matched,Direct Route ID match with active GTFS schedule
+152,152,152,Addison,890,Matched,Direct Route ID match with active GTFS schedule
+155,155,155,Devon,1064,Matched,Direct Route ID match with active GTFS schedule
+156,156,156,LaSalle,272,Matched,Direct Route ID match with active GTFS schedule
+157,157,157,Streeterville/Taylor,262,Matched,Direct Route ID match with active GTFS schedule
+165,165,165,West 65th,38,Matched,Direct Route ID match with active GTFS schedule
+169,169,169,69th/UPS Express,22,Matched,Direct Route ID match with active GTFS schedule
+171,171,171,U. of Chicago/Hyde Park,250,Matched,Direct Route ID match with active GTFS schedule
+172,172,172,U. of Chicago/Kenwood,420,Matched,Direct Route ID match with active GTFS schedule
+18,18,18,16th/18th,698,Matched,Direct Route ID match with active GTFS schedule
+192,192,192,University of Chicago Hospitals Express,38,Matched,Direct Route ID match with active GTFS schedule
+2,2,2,Hyde Park Express,120,Matched,Direct Route ID match with active GTFS schedule
+20,20,20,Madison,1672,Matched,Direct Route ID match with active GTFS schedule
+201,201,201,Central/Ridge,278,Matched,Direct Route ID match with active GTFS schedule
+206,206,206,Evanston Circulator,56,Matched,Direct Route ID match with active GTFS schedule
+21,21,21,Cermak,906,Matched,Direct Route ID match with active GTFS schedule
+22,22,22,Clark,1314,Matched,Direct Route ID match with active GTFS schedule
+24,24,24,Wentworth,208,Matched,Direct Route ID match with active GTFS schedule
+26,26,26,South Shore Express,172,Matched,Direct Route ID match with active GTFS schedule
+28,28,28,Stony Island,820,Matched,Direct Route ID match with active GTFS schedule
+29,29,29,State,928,Matched,Direct Route ID match with active GTFS schedule
+3,3,3,King Drive,1186,Matched,Direct Route ID match with active GTFS schedule
+30,30,30,South Chicago,604,Matched,Direct Route ID match with active GTFS schedule
+31,31,31,31st,110,Matched,Direct Route ID match with active GTFS schedule
+34,34,34,South Michigan,1300,Matched,Direct Route ID match with active GTFS schedule
+35,35,35,31st/35th,1256,Matched,Direct Route ID match with active GTFS schedule
+36,36,36,Broadway,1008,Matched,Direct Route ID match with active GTFS schedule
+37,37,37,Sedgwick,200,Matched,Direct Route ID match with active GTFS schedule
+39,39,39,Pershing,356,Matched,Direct Route ID match with active GTFS schedule
+4,4,4,Cottage Grove,1470,Matched,Direct Route ID match with active GTFS schedule
+43,43,43,43rd,460,Matched,Direct Route ID match with active GTFS schedule
+44,44,44,Wallace/Racine,586,Matched,Direct Route ID match with active GTFS schedule
+47,47,47,47th,1374,Matched,Direct Route ID match with active GTFS schedule
+48,48,48,South Damen,138,Matched,Direct Route ID match with active GTFS schedule
+49,49,49,Western,1520,Matched,Direct Route ID match with active GTFS schedule
+49B,49B,49B,North Western,1106,Matched,Direct Route ID match with active GTFS schedule
+50,50,50,Damen,908,Matched,Direct Route ID match with active GTFS schedule
+51,51,51,51st,536,Matched,Direct Route ID match with active GTFS schedule
+52,52,52,Kedzie,910,Matched,Direct Route ID match with active GTFS schedule
+52A,52A,52A,South Kedzie,580,Matched,Direct Route ID match with active GTFS schedule
+53,53,53,Pulaski,1724,Matched,Direct Route ID match with active GTFS schedule
+53A,53A,53A,South Pulaski,794,Matched,Direct Route ID match with active GTFS schedule
+54,54,54,Cicero,1462,Matched,Direct Route ID match with active GTFS schedule
+54A,54A,54A,North Cicero/Skokie Blvd.,76,Matched,Direct Route ID match with active GTFS schedule
+54B,54B,54B,South Cicero,588,Matched,Direct Route ID match with active GTFS schedule
+55,55,55,Garfield,1462,Matched,Direct Route ID match with active GTFS schedule
+55A,55A,55A,55th/Austin,76,Matched,Direct Route ID match with active GTFS schedule
+55N,55N,55N,55th/Narragansett,272,Matched,Direct Route ID match with active GTFS schedule
+56,56,56,Milwaukee,790,Matched,Direct Route ID match with active GTFS schedule
+57,57,57,Laramie,530,Matched,Direct Route ID match with active GTFS schedule
+59,59,59,59th/61st,398,Matched,Direct Route ID match with active GTFS schedule
+6,6,6,Jackson Park Express,1126,Matched,Direct Route ID match with active GTFS schedule
+60,60,60,Blue Island/26th,1386,Matched,Direct Route ID match with active GTFS schedule
+62,62,62,Archer,1032,Matched,Direct Route ID match with active GTFS schedule
+62H,62H,62H,Archer/Harlem,268,Matched,Direct Route ID match with active GTFS schedule
+63,63,63,63rd,1666,Matched,Direct Route ID match with active GTFS schedule
+63W,63W,63W,West 63rd,520,Matched,Direct Route ID match with active GTFS schedule
+65,65,65,Grand,970,Matched,Direct Route ID match with active GTFS schedule
+66,66,66,Chicago,2196,Matched,Direct Route ID match with active GTFS schedule
+67,67,67,67th/69th/71st,1218,Matched,Direct Route ID match with active GTFS schedule
+68,68,68,Northwest Highway,450,Matched,Direct Route ID match with active GTFS schedule
+7,7,7,Harrison,266,Matched,Direct Route ID match with active GTFS schedule
+70,70,70,Division,994,Matched,Direct Route ID match with active GTFS schedule
+71,71,71,71st/South Shore,1074,Matched,Direct Route ID match with active GTFS schedule
+72,72,72,North,1552,Matched,Direct Route ID match with active GTFS schedule
+73,73,73,Armitage,812,Matched,Direct Route ID match with active GTFS schedule
+74,74,74,Fullerton,1498,Matched,Direct Route ID match with active GTFS schedule
+75,75,75,74th/75th,840,Matched,Direct Route ID match with active GTFS schedule
+76,76,76,Diversey,896,Matched,Direct Route ID match with active GTFS schedule
+77,77,77,Belmont,1616,Matched,Direct Route ID match with active GTFS schedule
+78,78,78,Montrose,812,Matched,Direct Route ID match with active GTFS schedule
+79,79,79,79th,2234,Matched,Direct Route ID match with active GTFS schedule
+8,8,8,Halsted,1178,Matched,Direct Route ID match with active GTFS schedule
+80,80,80,Irving Park,1072,Matched,Direct Route ID match with active GTFS schedule
+81,81,81,Lawrence,1428,Matched,Direct Route ID match with active GTFS schedule
+81W,81W,81W,West Lawrence,468,Matched,Direct Route ID match with active GTFS schedule
+82,82,82,Kimball/Homan,1590,Matched,Direct Route ID match with active GTFS schedule
+84,84,84,Peterson,612,Matched,Direct Route ID match with active GTFS schedule
+85,85,85,Central,1336,Matched,Direct Route ID match with active GTFS schedule
+85A,85A,85A,North Central,300,Matched,Direct Route ID match with active GTFS schedule
+86,86,86,Narragansett/Ridgeland,212,Matched,Direct Route ID match with active GTFS schedule
+87,87,87,87th,1298,Matched,Direct Route ID match with active GTFS schedule
+88,88,88,Higgins,464,Matched,Direct Route ID match with active GTFS schedule
+8A,8A,8A,South Halsted,720,Matched,Direct Route ID match with active GTFS schedule
+9,9,9,Ashland,1902,Matched,Direct Route ID match with active GTFS schedule
+90,90,90,Harlem,652,Matched,Direct Route ID match with active GTFS schedule
+91,91,91,Austin,702,Matched,Direct Route ID match with active GTFS schedule
+92,92,92,Foster,782,Matched,Direct Route ID match with active GTFS schedule
+93,93,93,California/Dodge,566,Matched,Direct Route ID match with active GTFS schedule
+94,94,94,California,782,Matched,Direct Route ID match with active GTFS schedule
+95,95,95,95th,1428,Matched,Direct Route ID match with active GTFS schedule
+96,96,96,Lunt,132,Matched,Direct Route ID match with active GTFS schedule
+97,97,97,Skokie,528,Matched,Direct Route ID match with active GTFS schedule
+J14,J14,J14,Jeffery Jump,1214,Matched,Direct Route ID match with active GTFS schedule
+N5,N5,N5,South Shore Night Bus,124,Matched,Direct Route ID match with active GTFS schedule
+X4,X4,X4,Cottage Grove Express,138,Matched,Direct Route ID match with active GTFS schedule
+X49,X49,X49,Western Express,174,Matched,Direct Route ID match with active GTFS schedule
+X9,X9,X9,Ashland Express,204,Matched,Direct Route ID match with active GTFS schedule
+1001,N/A,N/A,N/A,0,Unmatched,CTA pilot / operational non-revenue code
+128,N/A,N/A,N/A,0,Unmatched,Soldier Field Express (special event shuttle)
+130,N/A,N/A,N/A,0,Unmatched,Museum Campus seasonal connector
+19,N/A,N/A,N/A,0,Unmatched,United Center Express (special event shuttle)
+5,N/A,N/A,N/A,0,Unmatched,South Shore Night Owl / historical route
+643,N/A,N/A,N/A,0,Unmatched,Special suburban contract feeder
+X98,N/A,N/A,N/A,0,Unmatched,Avon Express (discontinued employer route)

@@ -1,0 +1,35 @@
+# Environment
+.env
+.env.local
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Data / Large binaries (raw zip files, cached large models)
+*.zip
+*.tar.gz
+data/raw/*.zip
+data/raw/google_transit/shapes.txt
+
+# Node / Frontend
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.sf/
+

@@ -1,0 +1,116 @@
+{
+  "graph_type": "Directed Multi-Modal Transit Graph",
+  "total_nodes": 182,
+  "total_edges": 390,
+  "is_strongly_connected": false,
+  "top_connectivity_hubs": [
+    {
+      "node_id": "RAIL_40380",
+      "name": "Clark/Lake",
+      "type": "rail_station",
+      "centrality_score": 0.0663,
+      "lines_served": [
+        "Blue",
+        "Brown",
+        "Green",
+        "Orange",
+        "Purple",
+        "Pink"
+      ]
+    },
+    {
+      "node_id": "RAIL_41400",
+      "name": "Roosevelt",
+      "type": "rail_station",
+      "centrality_score": 0.0663,
+      "lines_served": [
+        "Red",
+        "Green",
+        "Orange"
+      ]
+    },
+    {
+      "node_id": "RAIL_40850",
+      "name": "Harold Washington Library-State/Van Buren",
+      "type": "rail_station",
+      "centrality_score": 0.0552,
+      "lines_served": [
+        "Brown",
+        "Orange",
+        "Purple",
+        "Pink"
+      ]
+    },
+    {
+      "node_id": "RAIL_40070",
+      "name": "Jackson",
+      "type": "rail_station",
+      "centrality_score": 0.0442,
+      "lines_served": [
+        "Blue"
+      ]
+    },
+    {
+      "node_id": "RAIL_40170",
+      "name": "Ashland",
+      "type": "rail_station",
+      "centrality_score": 0.0442,
+      "lines_served": [
+        "Green",
+        "Pink"
+      ]
+    },
+    {
+      "node_id": "RAIL_40560",
+      "name": "Jackson",
+      "type": "rail_station",
+      "centrality_score": 0.0442,
+      "lines_served": [
+        "Red"
+      ]
+    },
+    {
+      "node_id": "RAIL_40730",
+      "name": "Washington/Wells",
+      "type": "rail_station",
+      "centrality_score": 0.0442,
+      "lines_served": [
+        "Brown",
+        "Orange",
+        "Purple",
+        "Pink"
+      ]
+    },
+    {
+      "node_id": "RAIL_41220",
+      "name": "Fullerton",
+      "type": "rail_station",
+      "centrality_score": 0.0442,
+      "lines_served": [
+        "Red",
+        "Brown",
+        "Purple"
+      ]
+    },
+    {
+      "node_id": "RAIL_41320",
+      "name": "Belmont",
+      "type": "rail_station",
+      "centrality_score": 0.0442,
+      "lines_served": [
+        "Red",
+        "Brown",
+        "Purple"
+      ]
+    },
+    {
+      "node_id": "RAIL_40240",
+      "name": "79th",
+      "type": "rail_station",
+      "centrality_score": 0.0331,
+      "lines_served": [
+        "Red"
+      ]
+    }
+  ]
+}

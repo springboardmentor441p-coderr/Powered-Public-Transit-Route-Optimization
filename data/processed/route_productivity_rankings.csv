@@ -1,0 +1,394 @@
+route_id,route_name,day_type,day_type_name,observed_days,total_rides,mean_daily_rides,scheduled_trips_per_day,scheduled_hours_per_day,rides_per_scheduled_trip,rides_per_scheduled_hour,is_eligible,unranked_reason,productivity_rank
+1,Bronzeville/Union Station,W,Weekday,847,906782,1070.6,59,44.2,18.15,24.19,True,,1.0
+1,Bronzeville/Union Station,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+1,Bronzeville/Union Station,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+10,Obama Presidential Center/Museum of Science & Industry Express ,W,Weekday,212,96221,453.9,36,27.0,12.61,16.81,True,,2.0
+10,Obama Presidential Center/Museum of Science & Industry Express ,A,Saturday,43,18600,432.6,36,27.0,12.02,16.02,True,,1.0
+10,Obama Presidential Center/Museum of Science & Industry Express ,U,Sunday/Holiday,51,23053,452.0,36,27.0,12.56,16.74,True,,1.0
+100,Jeffery Manor Express,W,Weekday,847,337307,398.2,53,39.8,7.51,10.02,True,,3.0
+100,Jeffery Manor Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+100,Jeffery Manor Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+1001,Route 1001,W,Weekday,847,177805,209.9,0,0.0,,,False,No scheduled GTFS trips found for day type,
+1001,Route 1001,A,Saturday,174,120469,692.4,0,0.0,,,False,No scheduled GTFS trips found for day type,
+1001,Route 1001,U,Sunday/Holiday,186,200343,1077.1,0,0.0,,,False,No scheduled GTFS trips found for day type,
+103,West 103rd,W,Weekday,847,1225751,1447.2,129,96.8,11.22,14.96,True,,4.0
+103,West 103rd,A,Saturday,174,142517,819.1,107,80.2,7.65,10.21,True,,2.0
+103,West 103rd,U,Sunday/Holiday,193,127866,662.5,105,78.8,6.31,8.41,True,,2.0
+106,East 103rd,W,Weekday,847,710448,838.8,135,101.2,6.21,8.28,True,,5.0
+106,East 103rd,A,Saturday,174,55420,318.5,78,58.5,4.08,5.44,True,,3.0
+106,East 103rd,U,Sunday/Holiday,193,45660,236.6,82,61.5,2.89,3.85,True,,3.0
+108,Halsted/95th,W,Weekday,847,562216,663.8,72,54.0,9.22,12.29,True,,6.0
+108,Halsted/95th,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+108,Halsted/95th,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+11,Lincoln,W,Weekday,847,952976,1125.1,84,63.0,13.39,17.86,True,,7.0
+11,Lincoln,A,Saturday,174,109416,628.8,68,51.0,9.25,12.33,True,,4.0
+11,Lincoln,U,Sunday/Holiday,193,82984,430.0,50,37.5,8.6,11.47,True,,4.0
+111,111th/King Drive,W,Weekday,847,1725371,2037.0,140,105.0,14.55,19.4,True,,8.0
+111,111th/King Drive,A,Saturday,174,205923,1183.5,120,90.0,9.86,13.15,True,,5.0
+111,111th/King Drive,U,Sunday/Holiday,193,184714,957.1,104,78.0,9.2,12.27,True,,5.0
+111A,Pullman Shuttle,W,Weekday,847,230253,271.8,82,61.5,3.32,4.42,True,,9.0
+111A,Pullman Shuttle,A,Saturday,174,38572,221.7,82,61.5,2.7,3.6,True,,6.0
+111A,Pullman Shuttle,U,Sunday/Holiday,193,35353,183.2,82,61.5,2.23,2.98,True,,6.0
+112,Vincennes/111th,W,Weekday,847,964816,1139.1,134,100.5,8.5,11.33,True,,10.0
+112,Vincennes/111th,A,Saturday,174,99839,573.8,90,67.5,6.38,8.5,True,,7.0
+112,Vincennes/111th,U,Sunday/Holiday,193,73665,381.7,72,54.0,5.3,7.07,True,,7.0
+115,Pullman/115th,W,Weekday,847,1596002,1884.3,143,107.2,13.18,17.57,True,,11.0
+115,Pullman/115th,A,Saturday,174,197908,1137.4,123,92.2,9.25,12.33,True,,8.0
+115,Pullman/115th,U,Sunday/Holiday,193,177144,917.8,118,88.5,7.78,10.37,True,,8.0
+119,Michigan/119th,W,Weekday,847,2122490,2505.9,187,140.2,13.4,17.87,True,,12.0
+119,Michigan/119th,A,Saturday,174,337505,1939.7,141,105.8,13.76,18.34,True,,9.0
+119,Michigan/119th,U,Sunday/Holiday,193,277744,1439.1,111,83.2,12.96,17.29,True,,9.0
+12,Roosevelt,W,Weekday,847,7188084,8486.5,254,190.5,33.41,44.55,True,,13.0
+12,Roosevelt,A,Saturday,174,1033742,5941.0,215,161.2,27.63,36.84,True,,10.0
+12,Roosevelt,U,Sunday/Holiday,193,852552,4417.4,219,164.2,20.17,26.89,True,,10.0
+120,Ogilvie/Streeterville Express,W,Weekday,847,406196,479.6,73,54.8,6.57,8.76,True,,14.0
+120,Ogilvie/Streeterville Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+120,Ogilvie/Streeterville Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+121,Union/Streeterville Express,W,Weekday,847,537429,634.5,76,57.0,8.35,11.13,True,,15.0
+121,Union/Streeterville Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+121,Union/Streeterville Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+124,Navy Pier,W,Weekday,847,835308,986.2,75,56.2,13.15,17.53,True,,16.0
+124,Navy Pier,A,Saturday,174,239509,1376.5,86,64.5,16.01,21.34,True,,11.0
+124,Navy Pier,U,Sunday/Holiday,193,160918,833.8,66,49.5,12.63,16.84,True,,11.0
+125,Water Tower Express,W,Weekday,847,456729,539.2,51,38.2,10.57,14.1,True,,17.0
+125,Water Tower Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+125,Water Tower Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+126,Jackson,W,Weekday,847,3083864,3640.9,146,109.5,24.94,33.25,True,,18.0
+126,Jackson,A,Saturday,174,379185,2179.2,119,89.2,18.31,24.42,True,,12.0
+126,Jackson,U,Sunday/Holiday,193,329359,1706.5,113,84.8,15.1,20.14,True,,12.0
+128,Route 128,W,Weekday,3,922,307.3,0,0.0,,,False,Insufficient observed days (3/20),
+128,Route 128,A,Saturday,5,1988,397.6,0,0.0,,,False,Insufficient observed days (5/20),
+128,Route 128,U,Sunday/Holiday,14,10087,720.5,0,0.0,,,False,Insufficient observed days (14/20),
+130,Route 130,W,Weekday,288,140237,486.9,0,0.0,,,False,No scheduled GTFS trips found for day type,
+130,Route 130,A,Saturday,61,32575,534.0,0,0.0,,,False,No scheduled GTFS trips found for day type,
+130,Route 130,U,Sunday/Holiday,69,32048,464.5,0,0.0,,,False,No scheduled GTFS trips found for day type,
+134,Stockton/LaSalle Express,W,Weekday,847,1284711,1516.8,49,36.8,30.95,41.27,True,,19.0
+134,Stockton/LaSalle Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+134,Stockton/LaSalle Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+135,Clarendon/LaSalle Express,W,Weekday,847,1296636,1530.9,50,37.5,30.62,40.82,True,,20.0
+135,Clarendon/LaSalle Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+135,Clarendon/LaSalle Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+136,Sheridan/LaSalle Express,W,Weekday,847,825317,974.4,36,27.0,27.07,36.09,True,,21.0
+136,Sheridan/LaSalle Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+136,Sheridan/LaSalle Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+143,Stockton/Michigan Express,W,Weekday,847,692175,817.2,36,27.0,22.7,30.27,True,,22.0
+143,Stockton/Michigan Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+143,Stockton/Michigan Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+146,Inner Lake Shore/Michigan Express,W,Weekday,847,8258081,9749.8,222,166.5,43.92,58.56,True,,23.0
+146,Inner Lake Shore/Michigan Express,A,Saturday,174,1545907,8884.5,192,144.0,46.27,61.7,True,,13.0
+146,Inner Lake Shore/Michigan Express,U,Sunday/Holiday,193,1346781,6978.1,169,126.8,41.29,55.05,True,,13.0
+147,Outer DuSable Lake Shore Express,W,Weekday,847,7201490,8502.3,208,156.0,40.88,54.5,True,,24.0
+147,Outer DuSable Lake Shore Express,A,Saturday,174,1248732,7176.6,219,164.2,32.77,43.69,True,,14.0
+147,Outer DuSable Lake Shore Express,U,Sunday/Holiday,193,1094885,5673.0,168,126.0,33.77,45.02,True,,14.0
+148,Clarendon/Michigan Express,W,Weekday,847,1167278,1378.1,45,33.8,30.63,40.83,True,,25.0
+148,Clarendon/Michigan Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+148,Clarendon/Michigan Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+15,Jeffery Local,W,Weekday,847,4053510,4785.7,159,119.2,30.1,40.13,True,,26.0
+15,Jeffery Local,A,Saturday,174,648633,3727.8,138,103.5,27.01,36.02,True,,15.0
+15,Jeffery Local,U,Sunday/Holiday,193,509529,2640.0,110,82.5,24.0,32.0,True,,15.0
+151,Sheridan,W,Weekday,847,9261200,10934.1,209,156.8,52.32,69.76,True,,27.0
+151,Sheridan,A,Saturday,174,1999559,11491.7,225,168.8,51.07,68.1,True,,16.0
+151,Sheridan,U,Sunday/Holiday,193,1700388,8810.3,185,138.8,47.62,63.5,True,,16.0
+152,Addison,W,Weekday,847,5943614,7017.3,212,159.0,33.1,44.13,True,,28.0
+152,Addison,A,Saturday,174,657979,3781.5,121,90.8,31.25,41.67,True,,17.0
+152,Addison,U,Sunday/Holiday,193,554260,2871.8,97,72.8,29.61,39.47,True,,17.0
+155,Devon,W,Weekday,847,4122979,4867.7,204,153.0,23.86,31.82,True,,29.0
+155,Devon,A,Saturday,174,690056,3965.8,182,136.5,21.79,29.05,True,,18.0
+155,Devon,U,Sunday/Holiday,193,600094,3109.3,146,109.5,21.3,28.4,True,,18.0
+156,LaSalle,W,Weekday,847,2992642,3533.2,136,102.0,25.98,34.64,True,,30.0
+156,LaSalle,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+156,LaSalle,U,Sunday/Holiday,1,6,6.0,0,0.0,,,False,Insufficient observed days (1/20),
+157,Streeterville/Taylor,W,Weekday,847,4308196,5086.4,131,98.2,38.83,51.77,True,,31.0
+157,Streeterville/Taylor,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+157,Streeterville/Taylor,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+165,West 65th,W,Weekday,847,137177,162.0,19,14.2,8.52,11.37,True,,32.0
+165,West 65th,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+165,West 65th,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+169,69th/UPS Express,W,Weekday,845,91829,108.7,9,6.8,12.07,16.1,True,,33.0
+169,69th/UPS Express,A,Saturday,98,2619,26.7,1,0.8,26.72,35.63,True,,19.0
+169,69th/UPS Express,U,Sunday/Holiday,1,30,30.0,0,0.0,,,False,Insufficient observed days (1/20),
+171,U. of Chicago/Hyde Park,W,Weekday,847,595900,703.5,83,62.2,8.48,11.3,True,,34.0
+171,U. of Chicago/Hyde Park,A,Saturday,143,32122,224.6,42,31.5,5.35,7.13,True,,20.0
+171,U. of Chicago/Hyde Park,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+172,U. of Chicago/Kenwood,W,Weekday,847,1315114,1552.7,126,94.5,12.32,16.43,True,,35.0
+172,U. of Chicago/Kenwood,A,Saturday,144,45429,315.5,42,31.5,7.51,10.02,True,,21.0
+172,U. of Chicago/Kenwood,U,Sunday/Holiday,159,57055,358.8,42,31.5,8.54,11.39,True,,19.0
+18,16th/18th,W,Weekday,847,2545319,3005.1,130,97.5,23.12,30.82,True,,36.0
+18,16th/18th,A,Saturday,174,374126,2150.1,121,90.8,17.77,23.69,True,,22.0
+18,16th/18th,U,Sunday/Holiday,193,298036,1544.2,98,73.5,15.76,21.01,True,,20.0
+19,Route 19,W,Weekday,292,40098,137.3,0,0.0,,,False,No scheduled GTFS trips found for day type,
+19,Route 19,A,Saturday,75,9994,133.3,0,0.0,,,False,No scheduled GTFS trips found for day type,
+19,Route 19,U,Sunday/Holiday,70,7932,113.3,0,0.0,,,False,No scheduled GTFS trips found for day type,
+192,University of Chicago Hospitals Express,W,Weekday,847,353157,417.0,19,14.2,21.94,29.26,True,,37.0
+192,University of Chicago Hospitals Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+192,University of Chicago Hospitals Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+2,Hyde Park Express,W,Weekday,847,1465330,1730.0,60,45.0,28.83,38.44,True,,38.0
+2,Hyde Park Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+2,Hyde Park Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+20,Madison,W,Weekday,847,9964127,11764.0,338,253.5,34.8,46.41,True,,39.0
+20,Madison,A,Saturday,174,1379166,7926.2,255,191.2,31.08,41.44,True,,23.0
+20,Madison,U,Sunday/Holiday,193,1193612,6184.5,243,182.2,25.45,33.93,True,,21.0
+201,Central/Ridge,W,Weekday,847,1160978,1370.7,76,57.0,18.04,24.05,True,,40.0
+201,Central/Ridge,A,Saturday,174,128098,736.2,63,47.2,11.69,15.58,True,,24.0
+201,Central/Ridge,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+206,Evanston Circulator,W,Weekday,847,294251,347.4,25,18.8,13.9,18.53,True,,41.0
+206,Evanston Circulator,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+206,Evanston Circulator,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+21,Cermak,W,Weekday,847,5892904,6957.4,176,132.0,39.53,52.71,True,,42.0
+21,Cermak,A,Saturday,174,952957,5476.8,148,111.0,37.01,49.34,True,,25.0
+21,Cermak,U,Sunday/Holiday,193,737514,3821.3,128,96.0,29.85,39.81,True,,22.0
+22,Clark,W,Weekday,847,10144989,11977.6,240,180.0,49.91,66.54,True,,43.0
+22,Clark,A,Saturday,174,2106531,12106.5,224,168.0,54.05,72.06,True,,26.0
+22,Clark,U,Sunday/Holiday,193,1718611,8904.7,193,144.8,46.14,61.52,True,,23.0
+24,Wentworth,W,Weekday,847,1472158,1738.1,101,75.8,17.21,22.95,True,,44.0
+24,Wentworth,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+24,Wentworth,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+26,South Shore Express,W,Weekday,847,2232309,2635.5,86,64.5,30.65,40.86,True,,45.0
+26,South Shore Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+26,South Shore Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+28,Stony Island,W,Weekday,847,3195813,3773.1,164,123.0,23.01,30.68,True,,46.0
+28,Stony Island,A,Saturday,174,365160,2098.6,130,97.5,16.14,21.52,True,,27.0
+28,Stony Island,U,Sunday/Holiday,193,304848,1579.5,116,87.0,13.62,18.16,True,,24.0
+29,State,W,Weekday,847,6317968,7459.2,162,121.5,46.04,61.39,True,,47.0
+29,State,A,Saturday,174,1227873,7056.7,165,123.8,42.77,57.02,True,,28.0
+29,State,U,Sunday/Holiday,193,985365,5105.5,137,102.8,37.27,49.69,True,,25.0
+3,King Drive,W,Weekday,847,11277241,13314.3,242,181.5,55.02,73.36,True,,48.0
+3,King Drive,A,Saturday,174,1816014,10436.9,195,146.2,53.52,71.36,True,,29.0
+3,King Drive,U,Sunday/Holiday,193,1557869,8071.9,150,112.5,53.81,71.75,True,,26.0
+30,South Chicago,W,Weekday,847,1910424,2255.5,114,85.5,19.79,26.38,True,,49.0
+30,South Chicago,A,Saturday,174,242099,1391.4,106,79.5,13.13,17.5,True,,30.0
+30,South Chicago,U,Sunday/Holiday,193,138719,718.8,82,61.5,8.77,11.69,True,,27.0
+31,31st,W,Weekday,847,510437,602.6,55,41.2,10.96,14.61,True,,50.0
+31,31st,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+31,31st,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+34,South Michigan,W,Weekday,847,2680307,3164.5,234,175.5,13.52,18.03,True,,51.0
+34,South Michigan,A,Saturday,174,373886,2148.8,210,157.5,10.23,13.64,True,,31.0
+34,South Michigan,U,Sunday/Holiday,193,367591,1904.6,205,153.8,9.29,12.39,True,,28.0
+35,31st/35th,W,Weekday,847,2840056,3353.1,221,165.8,15.17,20.23,True,,52.0
+35,31st/35th,A,Saturday,174,375999,2160.9,205,153.8,10.54,14.05,True,,32.0
+35,31st/35th,U,Sunday/Holiday,193,322697,1672.0,202,151.5,8.28,11.04,True,,29.0
+36,Broadway,W,Weekday,847,8503605,10039.7,166,124.5,60.48,80.64,True,,53.0
+36,Broadway,A,Saturday,174,1879928,10804.2,175,131.2,61.74,82.32,True,,33.0
+36,Broadway,U,Sunday/Holiday,193,1622372,8406.1,163,122.2,51.57,68.76,True,,30.0
+37,Sedgwick,W,Weekday,847,1050233,1239.9,100,75.0,12.4,16.53,True,,54.0
+37,Sedgwick,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+37,Sedgwick,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+39,Pershing,W,Weekday,847,1186741,1401.1,94,70.5,14.91,19.87,True,,55.0
+39,Pershing,A,Saturday,174,91183,524.0,42,31.5,12.48,16.64,True,,34.0
+39,Pershing,U,Sunday/Holiday,193,80025,414.6,42,31.5,9.87,13.16,True,,31.0
+4,Cottage Grove,W,Weekday,847,10296044,12155.9,250,187.5,48.62,64.83,True,,56.0
+4,Cottage Grove,A,Saturday,174,1847319,10616.8,254,190.5,41.8,55.73,True,,35.0
+4,Cottage Grove,U,Sunday/Holiday,193,1543336,7996.6,229,171.8,34.92,46.56,True,,32.0
+43,43rd,W,Weekday,847,729666,861.5,112,84.0,7.69,10.26,True,,57.0
+43,43rd,A,Saturday,174,75954,436.5,58,43.5,7.53,10.03,True,,36.0
+43,43rd,U,Sunday/Holiday,193,63135,327.1,60,45.0,5.45,7.27,True,,33.0
+44,Wallace/Racine,W,Weekday,847,2085555,2462.3,141,105.8,17.46,23.28,True,,58.0
+44,Wallace/Racine,A,Saturday,174,214091,1230.4,77,57.8,15.98,21.31,True,,37.0
+44,Wallace/Racine,U,Sunday/Holiday,193,186879,968.3,75,56.2,12.91,17.21,True,,34.0
+47,47th,W,Weekday,847,6767340,7989.8,251,188.2,31.83,42.44,True,,59.0
+47,47th,A,Saturday,174,969897,5574.1,219,164.2,25.45,33.94,True,,38.0
+47,47th,U,Sunday/Holiday,193,817879,4237.7,217,162.8,19.53,26.04,True,,35.0
+48,South Damen,W,Weekday,847,591708,698.6,69,51.8,10.12,13.5,True,,60.0
+48,South Damen,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+48,South Damen,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+49,Western,W,Weekday,847,10603708,12519.1,271,203.2,46.2,61.59,True,,61.0
+49,Western,A,Saturday,174,2014393,11577.0,256,192.0,45.22,60.3,True,,39.0
+49,Western,U,Sunday/Holiday,193,1662087,8611.8,227,170.2,37.94,50.58,True,,36.0
+49B,North Western,W,Weekday,847,3319829,3919.5,220,165.0,17.82,23.75,True,,62.0
+49B,North Western,A,Saturday,174,483868,2780.9,177,132.8,15.71,20.95,True,,40.0
+49B,North Western,U,Sunday/Holiday,193,445049,2306.0,156,117.0,14.78,19.71,True,,37.0
+5,Route 5,W,Weekday,627,106772,170.3,0,0.0,,,False,No scheduled GTFS trips found for day type,
+5,Route 5,A,Saturday,129,19881,154.1,0,0.0,,,False,No scheduled GTFS trips found for day type,
+5,Route 5,U,Sunday/Holiday,142,21827,153.7,0,0.0,,,False,No scheduled GTFS trips found for day type,
+50,Damen,W,Weekday,847,6475128,7644.8,173,129.8,44.19,58.92,True,,63.0
+50,Damen,A,Saturday,174,854988,4913.7,150,112.5,32.76,43.68,True,,41.0
+50,Damen,U,Sunday/Holiday,193,651002,3373.1,128,96.0,26.35,35.14,True,,38.0
+51,51st,W,Weekday,847,884223,1043.9,98,73.5,10.65,14.2,True,,64.0
+51,51st,A,Saturday,174,115020,661.0,90,67.5,7.34,9.79,True,,42.0
+51,51st,U,Sunday/Holiday,193,95131,492.9,80,60.0,6.16,8.22,True,,39.0
+52,Kedzie,W,Weekday,847,5570852,6577.2,190,142.5,34.62,46.16,True,,65.0
+52,Kedzie,A,Saturday,174,752924,4327.1,148,111.0,29.24,38.98,True,,43.0
+52,Kedzie,U,Sunday/Holiday,193,590566,3059.9,117,87.8,26.15,34.87,True,,40.0
+52A,South Kedzie,W,Weekday,847,2492784,2943.1,142,106.5,20.73,27.63,True,,66.0
+52A,South Kedzie,A,Saturday,174,281304,1616.7,84,63.0,19.25,25.66,True,,44.0
+52A,South Kedzie,U,Sunday/Holiday,193,235870,1222.1,64,48.0,19.1,25.46,True,,41.0
+53,Pulaski,W,Weekday,847,12582296,14855.1,340,255.0,43.69,58.26,True,,67.0
+53,Pulaski,A,Saturday,174,1815852,10435.9,272,204.0,38.37,51.16,True,,45.0
+53,Pulaski,U,Sunday/Holiday,193,1523466,7893.6,248,186.0,31.83,42.44,True,,42.0
+53A,South Pulaski,W,Weekday,847,4014037,4739.1,171,128.2,27.71,36.95,True,,68.0
+53A,South Pulaski,A,Saturday,174,418493,2405.1,122,91.5,19.71,26.29,True,,46.0
+53A,South Pulaski,U,Sunday/Holiday,193,314540,1629.7,102,76.5,15.98,21.3,True,,43.0
+54,Cicero,W,Weekday,847,6498439,7672.3,270,202.5,28.42,37.89,True,,69.0
+54,Cicero,A,Saturday,174,1027499,5905.2,238,178.5,24.81,33.08,True,,47.0
+54,Cicero,U,Sunday/Holiday,193,909788,4713.9,223,167.2,21.14,28.18,True,,44.0
+54A,North Cicero/Skokie Blvd.,W,Weekday,847,437474,516.5,38,28.5,13.59,18.12,True,,70.0
+54A,North Cicero/Skokie Blvd.,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+54A,North Cicero/Skokie Blvd.,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+54B,South Cicero,W,Weekday,847,1715283,2025.1,110,82.5,18.41,24.55,True,,71.0
+54B,South Cicero,A,Saturday,174,307718,1768.5,106,79.5,16.68,22.25,True,,48.0
+54B,South Cicero,U,Sunday/Holiday,193,233443,1209.5,78,58.5,15.51,20.68,True,,45.0
+55,Garfield,W,Weekday,847,5739748,6776.6,264,198.0,25.67,34.23,True,,72.0
+55,Garfield,A,Saturday,174,882981,5074.6,240,180.0,21.14,28.19,True,,49.0
+55,Garfield,U,Sunday/Holiday,193,837660,4340.2,227,170.2,19.12,25.49,True,,46.0
+55A,55th/Austin,W,Weekday,847,120775,142.6,38,28.5,3.75,5.0,True,,73.0
+55A,55th/Austin,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+55A,55th/Austin,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+55N,55th/Narragansett,W,Weekday,847,318304,375.8,80,60.0,4.7,6.26,True,,74.0
+55N,55th/Narragansett,A,Saturday,174,32668,187.7,56,42.0,3.35,4.47,True,,50.0
+55N,55th/Narragansett,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+56,Milwaukee,W,Weekday,847,4833323,5706.4,167,125.2,34.17,45.56,True,,75.0
+56,Milwaukee,A,Saturday,174,662362,3806.7,116,87.0,32.82,43.75,True,,51.0
+56,Milwaukee,U,Sunday/Holiday,193,583706,3024.4,110,82.5,27.49,36.66,True,,47.0
+57,Laramie,W,Weekday,847,1406959,1661.1,130,97.5,12.78,17.04,True,,76.0
+57,Laramie,A,Saturday,174,130475,749.9,77,57.8,9.74,12.98,True,,52.0
+57,Laramie,U,Sunday/Holiday,193,97574,505.6,57,42.8,8.87,11.83,True,,48.0
+59,59th/61st,W,Weekday,847,2079323,2454.9,114,85.5,21.53,28.71,True,,77.0
+59,59th/61st,A,Saturday,174,229885,1321.2,85,63.8,15.54,20.72,True,,53.0
+59,59th/61st,U,Sunday/Holiday,2,20,10.0,0,0.0,,,False,Insufficient observed days (2/20),
+6,Jackson Park Express,W,Weekday,847,4704378,5554.2,190,142.5,29.23,38.98,True,,78.0
+6,Jackson Park Express,A,Saturday,174,1029868,5918.8,205,153.8,28.87,38.5,True,,54.0
+6,Jackson Park Express,U,Sunday/Holiday,193,941883,4880.2,168,126.0,29.05,38.73,True,,49.0
+60,Blue Island/26th,W,Weekday,847,7982867,9424.9,252,189.0,37.4,49.87,True,,79.0
+60,Blue Island/26th,A,Saturday,174,985795,5665.5,220,165.0,25.75,34.34,True,,55.0
+60,Blue Island/26th,U,Sunday/Holiday,193,844562,4376.0,220,165.0,19.89,26.52,True,,50.0
+62,Archer,W,Weekday,847,6065658,7161.3,193,144.8,37.11,49.47,True,,80.0
+62,Archer,A,Saturday,174,905015,5201.2,172,129.0,30.24,40.32,True,,56.0
+62,Archer,U,Sunday/Holiday,193,788509,4085.5,148,111.0,27.6,36.81,True,,51.0
+62H,Archer/Harlem,W,Weekday,847,651202,768.8,76,57.0,10.12,13.49,True,,81.0
+62H,Archer/Harlem,A,Saturday,174,71955,413.5,58,43.5,7.13,9.51,True,,57.0
+62H,Archer/Harlem,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+63,63rd,W,Weekday,847,9124487,10772.7,306,229.5,35.2,46.94,True,,82.0
+63,63rd,A,Saturday,174,1288229,7403.6,262,196.5,28.26,37.68,True,,58.0
+63,63rd,U,Sunday/Holiday,193,1213701,6288.6,264,198.0,23.82,31.76,True,,52.0
+63W,West 63rd,W,Weekday,847,985911,1164.0,118,88.5,9.86,13.15,True,,83.0
+63W,West 63rd,A,Saturday,174,99302,570.7,80,60.0,7.13,9.51,True,,59.0
+63W,West 63rd,U,Sunday/Holiday,193,85801,444.6,62,46.5,7.17,9.56,True,,53.0
+643,Route 643,W,Weekday,59,77565,1314.7,0,0.0,,,False,No scheduled GTFS trips found for day type,
+643,Route 643,A,Saturday,7,6396,913.7,0,0.0,,,False,Insufficient observed days (7/20),
+643,Route 643,U,Sunday/Holiday,9,6131,681.2,0,0.0,,,False,Insufficient observed days (9/20),
+65,Grand,W,Weekday,847,5082737,6000.9,202,151.5,29.71,39.61,True,,84.0
+65,Grand,A,Saturday,174,806028,4632.3,161,120.8,28.77,38.36,True,,60.0
+65,Grand,U,Sunday/Holiday,193,604900,3134.2,122,91.5,25.69,34.25,True,,54.0
+66,Chicago,W,Weekday,847,14150279,16706.4,445,333.8,37.54,50.06,True,,85.0
+66,Chicago,A,Saturday,174,2246534,12911.1,373,279.8,34.61,46.15,True,,61.0
+66,Chicago,U,Sunday/Holiday,193,1857453,9624.1,280,210.0,34.37,45.83,True,,55.0
+67,67th/69th/71st,W,Weekday,847,5293130,6249.3,228,171.0,27.41,36.55,True,,86.0
+67,67th/69th/71st,A,Saturday,174,763631,4388.7,208,156.0,21.1,28.13,True,,62.0
+67,67th/69th/71st,U,Sunday/Holiday,193,680095,3523.8,167,125.2,21.1,28.13,True,,56.0
+68,Northwest Highway,W,Weekday,847,740363,874.1,99,74.2,8.83,11.77,True,,87.0
+68,Northwest Highway,A,Saturday,174,73276,421.1,70,52.5,6.02,8.02,True,,63.0
+68,Northwest Highway,U,Sunday/Holiday,193,54688,283.4,56,42.0,5.06,6.75,True,,57.0
+7,Harrison,W,Weekday,847,3469480,4096.2,132,99.0,31.03,41.38,True,,88.0
+7,Harrison,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+7,Harrison,U,Sunday/Holiday,1,17,17.0,0,0.0,,,False,Insufficient observed days (1/20),
+70,Division,W,Weekday,847,5512498,6508.3,212,159.0,30.7,40.93,True,,89.0
+70,Division,A,Saturday,174,755386,4341.3,149,111.8,29.14,38.85,True,,64.0
+70,Division,U,Sunday/Holiday,193,669839,3470.7,134,100.5,25.9,34.53,True,,58.0
+71,71st/South Shore,W,Weekday,847,5335425,6299.2,195,146.2,32.3,43.07,True,,90.0
+71,71st/South Shore,A,Saturday,174,854780,4912.5,187,140.2,26.27,35.03,True,,65.0
+71,71st/South Shore,U,Sunday/Holiday,193,752205,3897.4,155,116.2,25.14,33.53,True,,59.0
+72,North,W,Weekday,847,8820096,10413.3,295,221.2,35.3,47.07,True,,91.0
+72,North,A,Saturday,174,1541395,8858.6,247,185.2,35.86,47.82,True,,66.0
+72,North,U,Sunday/Holiday,193,1290114,6684.5,234,175.5,28.57,38.09,True,,60.0
+73,Armitage,W,Weekday,847,3375896,3985.7,186,139.5,21.43,28.57,True,,92.0
+73,Armitage,A,Saturday,174,429228,2466.8,114,85.5,21.64,28.85,True,,67.0
+73,Armitage,U,Sunday/Holiday,193,340656,1765.1,105,78.8,16.81,22.41,True,,61.0
+74,Fullerton,W,Weekday,847,7491225,8844.4,283,212.2,31.25,41.67,True,,93.0
+74,Fullerton,A,Saturday,174,1201619,6905.9,237,177.8,29.14,38.85,True,,68.0
+74,Fullerton,U,Sunday/Holiday,193,960646,4977.4,229,171.8,21.74,28.98,True,,62.0
+75,74th/75th,W,Weekday,847,4259230,5028.6,168,126.0,29.93,39.91,True,,94.0
+75,74th/75th,A,Saturday,174,603758,3469.9,136,102.0,25.51,34.02,True,,69.0
+75,74th/75th,U,Sunday/Holiday,193,531391,2753.3,116,87.0,23.74,31.65,True,,63.0
+76,Diversey,W,Weekday,847,6924447,8175.3,208,156.0,39.3,52.41,True,,95.0
+76,Diversey,A,Saturday,174,1018377,5852.7,142,106.5,41.22,54.96,True,,70.0
+76,Diversey,U,Sunday/Holiday,193,730668,3785.8,98,73.5,38.63,51.51,True,,64.0
+77,Belmont,W,Weekday,847,11415462,13477.5,328,246.0,41.09,54.79,True,,96.0
+77,Belmont,A,Saturday,174,1717015,9867.9,249,186.8,39.63,52.84,True,,71.0
+77,Belmont,U,Sunday/Holiday,193,1411459,7313.3,229,171.8,31.94,42.58,True,,65.0
+78,Montrose,W,Weekday,847,4654033,5494.7,167,125.2,32.9,43.87,True,,97.0
+78,Montrose,A,Saturday,174,664171,3817.1,132,99.0,28.92,38.56,True,,72.0
+78,Montrose,U,Sunday/Holiday,193,573309,2970.5,107,80.2,27.76,37.02,True,,66.0
+79,79th,W,Weekday,847,13195387,15579.0,446,334.5,34.93,46.57,True,,98.0
+79,79th,A,Saturday,174,2073406,11916.1,381,285.8,31.28,41.7,True,,73.0
+79,79th,U,Sunday/Holiday,193,1857094,9622.2,283,212.2,34.0,45.33,True,,67.0
+8,Halsted,W,Weekday,847,13026397,15379.5,257,192.8,59.84,79.79,True,,99.0
+8,Halsted,A,Saturday,174,1952510,11221.3,187,140.2,60.01,80.01,True,,74.0
+8,Halsted,U,Sunday/Holiday,193,1525177,7902.5,145,108.8,54.5,72.67,True,,68.0
+80,Irving Park,W,Weekday,847,6439061,7602.2,207,155.2,36.73,48.97,True,,100.0
+80,Irving Park,A,Saturday,174,943062,5419.9,177,132.8,30.62,40.83,True,,75.0
+80,Irving Park,U,Sunday/Holiday,193,815138,4223.5,144,108.0,29.33,39.11,True,,69.0
+81,Lawrence,W,Weekday,847,7296579,8614.6,260,195.0,33.13,44.18,True,,101.0
+81,Lawrence,A,Saturday,174,1193555,6859.5,234,175.5,29.31,39.09,True,,76.0
+81,Lawrence,U,Sunday/Holiday,193,1055108,5466.9,220,165.0,24.85,33.13,True,,70.0
+81W,West Lawrence,W,Weekday,847,1178013,1390.8,88,66.0,15.8,21.07,True,,102.0
+81W,West Lawrence,A,Saturday,174,128146,736.5,90,67.5,8.18,10.91,True,,77.0
+81W,West Lawrence,U,Sunday/Holiday,193,104039,539.1,56,42.0,9.63,12.83,True,,71.0
+82,Kimball/Homan,W,Weekday,847,10270871,12126.2,281,210.8,43.15,57.54,True,,103.0
+82,Kimball/Homan,A,Saturday,174,1384228,7955.3,246,184.5,32.34,43.12,True,,78.0
+82,Kimball/Homan,U,Sunday/Holiday,193,1158045,6000.2,266,199.5,22.56,30.08,True,,72.0
+84,Peterson,W,Weekday,847,2212074,2611.7,142,106.5,18.39,24.52,True,,104.0
+84,Peterson,A,Saturday,174,222770,1280.3,88,66.0,14.55,19.4,True,,79.0
+84,Peterson,U,Sunday/Holiday,193,177186,918.1,72,54.0,12.75,17.0,True,,73.0
+85,Central,W,Weekday,847,6535122,7715.6,244,183.0,31.62,42.16,True,,105.0
+85,Central,A,Saturday,174,906230,5208.2,213,159.8,24.45,32.6,True,,80.0
+85,Central,U,Sunday/Holiday,193,785970,4072.4,209,156.8,19.49,25.98,True,,74.0
+85A,North Central,W,Weekday,847,466178,550.4,94,70.5,5.86,7.81,True,,106.0
+85A,North Central,A,Saturday,174,47419,272.5,56,42.0,4.87,6.49,True,,81.0
+85A,North Central,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+86,Narragansett/Ridgeland,W,Weekday,847,1518465,1792.8,106,79.5,16.91,22.55,True,,107.0
+86,Narragansett/Ridgeland,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+86,Narragansett/Ridgeland,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+87,87th,W,Weekday,847,5676433,6701.8,260,195.0,25.78,34.37,True,,108.0
+87,87th,A,Saturday,174,850976,4890.7,213,159.8,22.96,30.61,True,,82.0
+87,87th,U,Sunday/Holiday,193,706942,3662.9,176,132.0,20.81,27.75,True,,75.0
+88,Higgins,W,Weekday,847,754829,891.2,100,75.0,8.91,11.88,True,,109.0
+88,Higgins,A,Saturday,174,71456,410.7,68,51.0,6.04,8.05,True,,83.0
+88,Higgins,U,Sunday/Holiday,193,58998,305.7,64,48.0,4.78,6.37,True,,76.0
+8A,South Halsted,W,Weekday,847,1771457,2091.4,134,100.5,15.61,20.81,True,,110.0
+8A,South Halsted,A,Saturday,174,289040,1661.1,122,91.5,13.62,18.15,True,,84.0
+8A,South Halsted,U,Sunday/Holiday,193,236525,1225.5,102,76.5,12.01,16.02,True,,77.0
+9,Ashland,W,Weekday,847,12943295,15281.3,363,272.2,42.1,56.13,True,,111.0
+9,Ashland,A,Saturday,174,2610100,15000.6,305,228.8,49.18,65.58,True,,85.0
+9,Ashland,U,Sunday/Holiday,193,2226159,11534.5,276,207.0,41.79,55.72,True,,78.0
+90,Harlem,W,Weekday,847,2807216,3314.3,132,99.0,25.11,33.48,True,,112.0
+90,Harlem,A,Saturday,174,442249,2541.7,108,81.0,23.53,31.38,True,,86.0
+90,Harlem,U,Sunday/Holiday,193,325653,1687.3,86,64.5,19.62,26.16,True,,79.0
+91,Austin,W,Weekday,847,3516504,4151.7,155,116.2,26.79,35.71,True,,113.0
+91,Austin,A,Saturday,174,434695,2498.2,104,78.0,24.02,32.03,True,,87.0
+91,Austin,U,Sunday/Holiday,193,355088,1839.8,92,69.0,20.0,26.66,True,,80.0
+92,Foster,W,Weekday,847,4036554,4765.7,162,121.5,29.42,39.22,True,,114.0
+92,Foster,A,Saturday,174,519571,2986.0,120,90.0,24.88,33.18,True,,88.0
+92,Foster,U,Sunday/Holiday,193,469932,2434.9,108,81.0,22.55,30.06,True,,81.0
+93,California/Dodge,W,Weekday,847,2674802,3158.0,125,93.8,25.26,33.69,True,,115.0
+93,California/Dodge,A,Saturday,174,284444,1634.7,78,58.5,20.96,27.94,True,,89.0
+93,California/Dodge,U,Sunday/Holiday,49,59735,1219.1,77,57.8,15.83,21.11,True,,82.0
+94,California,W,Weekday,846,7371530,8713.4,170,127.5,51.26,68.34,True,,116.0
+94,California,A,Saturday,174,865813,4975.9,116,87.0,42.9,57.19,True,,90.0
+94,California,U,Sunday/Holiday,193,734947,3808.0,103,77.2,36.97,49.29,True,,83.0
+95,95th,W,Weekday,846,3699362,4372.8,256,192.0,17.08,22.77,True,,117.0
+95,95th,A,Saturday,174,570938,3281.3,233,174.8,14.08,18.78,True,,91.0
+95,95th,U,Sunday/Holiday,193,527550,2733.4,224,168.0,12.2,16.27,True,,84.0
+96,Lunt,W,Weekday,846,528291,624.5,66,49.5,9.46,12.62,True,,118.0
+96,Lunt,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+96,Lunt,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+97,Skokie,W,Weekday,846,1797956,2125.2,108,81.0,19.68,26.24,True,,119.0
+97,Skokie,A,Saturday,174,286920,1649.0,91,68.2,18.12,24.16,True,,92.0
+97,Skokie,U,Sunday/Holiday,193,215300,1115.5,65,48.8,17.16,22.88,True,,85.0
+J14,Jeffery Jump,W,Weekday,846,5622345,6645.8,242,181.5,27.46,36.62,True,,120.0
+J14,Jeffery Jump,A,Saturday,174,721511,4146.6,187,140.2,22.17,29.57,True,,93.0
+J14,Jeffery Jump,U,Sunday/Holiday,193,625438,3240.6,178,133.5,18.21,24.27,True,,86.0
+N5,South Shore Night Bus,W,Weekday,358,55788,155.8,20,15.0,7.79,10.39,True,,121.0
+N5,South Shore Night Bus,A,Saturday,73,12343,169.1,20,15.0,8.45,11.27,True,,94.0
+N5,South Shore Night Bus,U,Sunday/Holiday,82,13742,167.6,22,16.5,7.62,10.16,True,,87.0
+X4,Cottage Grove Express,W,Weekday,846,2256333,2667.1,69,51.8,38.65,51.54,True,,122.0
+X4,Cottage Grove Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+X4,Cottage Grove Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+X49,Western Express,W,Weekday,846,3847192,4547.5,87,65.2,52.27,69.69,True,,123.0
+X49,Western Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+X49,Western Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+X9,Ashland Express,W,Weekday,846,4606656,5445.2,102,76.5,53.38,71.18,True,,124.0
+X9,Ashland Express,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+X9,Ashland Express,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+X98,Route X98,W,Weekday,22,54,2.5,0,0.0,,,False,No scheduled GTFS trips found for day type,
+X98,Route X98,A,Saturday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),
+X98,Route X98,U,Sunday/Holiday,0,0,0.0,0,0.0,,,False,Insufficient observed days (0/20),

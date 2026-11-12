@@ -1,0 +1,49 @@
+{
+  "preprocessing_timestamp": "2026-11-04T20:28:52.608601",
+  "system_totals": {
+    "dataset": "cta_ridership_daily_system_totals",
+    "initial_rows": 9374,
+    "cleaned_rows": 9374,
+    "duplicates_removed": 0,
+    "date_min": "2001-01-01",
+    "date_max": "2026-08-31",
+    "discrepancies_total_vs_sum": 0,
+    "missing_values_post_clean": 0
+  },
+  "bus_routes": {
+    "dataset": "cta_ridership_bus_routes_daily",
+    "initial_rows": 150000,
+    "cleaned_rows": 150000,
+    "unique_routes": 131,
+    "active_gtfs_routes": 124,
+    "discontinued_routes": 7,
+    "duplicates_handled": 0,
+    "date_min": "2023-02-03",
+    "date_max": "2026-08-31",
+    "missing_values_post_clean": 0
+  },
+  "rail_stations": {
+    "dataset": "cta_ridership_l_station_daily_entries",
+    "initial_rows": 150000,
+    "cleaned_rows": 150000,
+    "unique_stations": 144,
+    "duplicates_handled": 0,
+    "date_min": "2023-10-23",
+    "date_max": "2026-08-31",
+    "missing_values_post_clean": 0
+  },
+  "station_master": {
+    "dataset": "cta_l_stations_directory",
+    "raw_platforms_count": 302,
+    "unique_stations_count": 144,
+    "ada_accessible_stations": 106,
+    "missing_values_post_clean": 0
+  },
+  "gtfs_specs": {
+    "dataset": "cleaned_gtfs_routes_and_stops",
+    "total_routes": 132,
+    "rail_lines": 8,
+    "bus_routes": 124,
+    "valid_stops_count": 11138
+  }
+}

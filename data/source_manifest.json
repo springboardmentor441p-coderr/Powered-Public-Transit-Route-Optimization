@@ -1,0 +1,74 @@
+{
+  "manifest_version": "3.8.0",
+  "generated_at": "2026-11-12T12:30:49.302694+00:00",
+  "geographic_scope": "Chicago Transit Authority (CTA), Cook County, Illinois, USA ONLY",
+  "datasets": [
+    {
+      "dataset_id": "cta_bus_ridership_daily",
+      "snapshot_id": "chicago_data_portal_bus_daily_20261022",
+      "file_name": "cta_ridership_bus_routes_daily.csv",
+      "relative_path": "data/raw/cta_ridership_bus_routes_daily.csv",
+      "source_url": "https://data.cityofchicago.org/Transportation/CTA-Ridership-Bus-Routes-Daily-Totals-by-Route/t2rn-p8d7",
+      "coverage_start": "2023-02-03",
+      "coverage_end": "2026-08-31",
+      "agency_timezone": "America/Chicago",
+      "grain": "route x date",
+      "rows": 150000,
+      "status": "verified_immutable_raw",
+      "file_size_bytes": 6323854,
+      "sha256": "f675085f7c3bbd33a6eab8d232e34b508811b128c43575715abaf04cb30aea2f",
+      "validated_at": "2026-11-12T12:30:49.222911+00:00"
+    },
+    {
+      "dataset_id": "cta_gtfs_schedule_archive",
+      "snapshot_id": "cta_gtfs_snapshot_20260911_v38",
+      "file_name": "google_transit.zip",
+      "relative_path": "data/raw/google_transit.zip",
+      "source_url": "https://www.transitchicago.com/downloads/sch_data/",
+      "coverage_start": "2026-09-11",
+      "coverage_end": "2026-11-30",
+      "agency_timezone": "America/Chicago",
+      "grain": "trips x stops x calendar",
+      "status": "verified_immutable_raw",
+      "file_size_bytes": 68738293,
+      "sha256": "a9372be5b70fcee4ed98c9476433f86065637a9a500b8af6afbb84d000ef2746",
+      "validated_at": "2026-11-12T12:30:49.273306+00:00"
+    },
+    {
+      "dataset_id": "cta_daily_system_totals",
+      "snapshot_id": "chicago_data_portal_system_totals_20260831",
+      "file_name": "cta_ridership_daily_system_totals.csv",
+      "relative_path": "data/raw/cta_ridership_daily_system_totals.csv",
+      "source_url": "https://data.cityofchicago.org/Transportation/CTA-Ridership-Daily-Boarding-Totals/6iiy-9s97",
+      "coverage_start": "2001-01-01",
+      "coverage_end": "2026-08-31",
+      "agency_timezone": "America/Chicago",
+      "grain": "date (system total)",
+      "rows": 9374,
+      "status": "verified_immutable_raw",
+      "file_size_bytes": 325821,
+      "sha256": "49c9de6682dc04310a1687cf49a674404d8c28dd1bd552ce022f22a9734d70aa",
+      "validated_at": "2026-11-12T12:30:49.273306+00:00"
+    },
+    {
+      "dataset_id": "cta_rail_station_entries",
+      "snapshot_id": "chicago_data_portal_l_station_daily_20261022",
+      "file_name": "cta_ridership_l_station_daily_entries.csv",
+      "relative_path": "data/raw/cta_ridership_l_station_daily_entries.csv",
+      "source_url": "https://data.cityofchicago.org/Transportation/CTA-Ridership-L-Station-Entries-Daily-Totals/5neh-572f",
+      "coverage_start": "2023-02-03",
+      "coverage_end": "2026-08-31",
+      "agency_timezone": "America/Chicago",
+      "grain": "station_id x date",
+      "status": "verified_immutable_raw",
+      "file_size_bytes": 8955095,
+      "sha256": "7a7c003848a5aa5cd2aa0e349990ee28cf1b2f2725a07ecf6cc6cbf36fab2d03",
+      "validated_at": "2026-11-12T12:30:49.302694+00:00"
+    }
+  ],
+  "reference_exceptions": {
+    "route_1001": "Recorded rides present in historical archive but no matching schedule in GTFS. Maintained as demand-only history without synthetic geometry.",
+    "route_169": "Designated special/contract service with scheduled GTFS presence but sparse ridership reporting.",
+    "routes_10_and_130": "Downtown seasonal museum/lakefront corridor routes operating under specific calendar patterns."
+  }
+}

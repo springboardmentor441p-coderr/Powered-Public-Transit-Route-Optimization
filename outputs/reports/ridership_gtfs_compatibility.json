@@ -1,0 +1,35 @@
+{
+  "bus_routes_matching": {
+    "historical_unique_routes": 131,
+    "gtfs_routes": 132,
+    "matched_routes_count": 124,
+    "match_percentage": 94.66,
+    "unmatched_routes_count": 7,
+    "unmatched_examples": [
+      "128",
+      "X98",
+      "5",
+      "643",
+      "19",
+      "1001",
+      "130"
+    ]
+  },
+  "rail_stations_matching": {
+    "historical_unique_station_ids": 144,
+    "matched_with_gtfs_station_ids": 143,
+    "match_percentage_gtfs": 99.31,
+    "matched_with_station_master_map_id": 144,
+    "match_percentage_master": 100.0,
+    "unmatched_station_ids": [
+      "40260"
+    ]
+  },
+  "date_alignment": {
+    "historical_system_range": "2001-01-01 to 2026-08-31",
+    "historical_bus_range": "2023-02-03 to 2026-08-31",
+    "historical_rail_range": "2023-10-23 to 2026-08-31",
+    "gtfs_schedule_range": "2026-09-11 to 2026-11-30",
+    "notes": "GTFS schedules represent active service timetables for current transit operations, whereas historical ridership spans 2001 through recent months. System modeling links static route geometries and stops with longitudinal demand trends."
+  }
+}

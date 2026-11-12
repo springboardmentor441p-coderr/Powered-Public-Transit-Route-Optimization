@@ -1,0 +1,15 @@
+{
+  "total_historical_bus_routes": 131,
+  "active_gtfs_routes": 124,
+  "discontinued_or_seasonal_routes": 7,
+  "discontinued_routes_breakdown": {
+    "128": "Soldier Field Express (special event shuttle)",
+    "X98": "Avon Express (discontinued employer route)",
+    "19": "United Center Express (special event shuttle)",
+    "130": "Museum Campus seasonal connector",
+    "5": "South Shore Night Owl / historical route",
+    "643": "Special suburban contract feeder",
+    "1001": "CTA pilot / operational non-revenue code"
+  },
+  "handling_policy": "Active GTFS routes are ingested into the transit graph and frequency simulator. Discontinued or seasonal express lines are preserved for historical demand queries and labeled explicitly."
+}

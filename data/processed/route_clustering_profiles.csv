@@ -1,0 +1,92 @@
+route_id,route_name,n_weekday,n_sat,n_sun,mean_weekday_rides,cv_weekday_rides,sat_to_wkday_ratio,sun_to_wkday_ratio,cluster_id,cluster_name
+10,Obama Presidential Center/Museum of Science & Industry Express ,212,43,51,453.9,0.4347,0.953,0.9959,2,Steady Community & Neighborhood Cross-Town
+1001,Route 1001,847,174,186,209.9,5.4063,3.2981,5.131,3,Weekend-Resilient & Leisure Corridor
+103,West 103rd,847,174,193,1447.2,0.2069,0.566,0.4578,0,Steady Community & Neighborhood Cross-Town
+106,East 103rd,847,174,193,838.8,0.3046,0.3797,0.2821,0,Steady Community & Neighborhood Cross-Town
+11,Lincoln,847,174,193,1125.1,0.1752,0.5589,0.3822,0,Steady Community & Neighborhood Cross-Town
+111,111th/King Drive,847,174,193,2037.0,0.1985,0.581,0.4698,0,Steady Community & Neighborhood Cross-Town
+111A,Pullman Shuttle,847,174,193,271.8,0.3137,0.8155,0.6738,0,Steady Community & Neighborhood Cross-Town
+112,Vincennes/111th,847,174,193,1139.1,0.2275,0.5037,0.3351,0,Steady Community & Neighborhood Cross-Town
+115,Pullman/115th,847,174,193,1884.3,0.2159,0.6036,0.4871,0,Steady Community & Neighborhood Cross-Town
+119,Michigan/119th,847,174,193,2505.9,0.1489,0.774,0.5743,0,Steady Community & Neighborhood Cross-Town
+12,Roosevelt,847,174,193,8486.5,0.1716,0.7001,0.5205,2,Steady Community & Neighborhood Cross-Town
+124,Navy Pier,847,174,193,986.2,0.3356,1.3958,0.8454,2,Steady Community & Neighborhood Cross-Town
+126,Jackson,847,174,193,3640.9,0.1989,0.5985,0.4687,0,Steady Community & Neighborhood Cross-Town
+130,Route 130,288,61,69,486.9,0.6884,1.0967,0.9539,2,Steady Community & Neighborhood Cross-Town
+146,Inner Lake Shore/Michigan Express,847,174,193,9749.8,0.129,0.9113,0.7157,1,Major High-Volume Trunk Arterial
+147,Outer DuSable Lake Shore Express,847,174,193,8502.3,0.1121,0.8441,0.6672,2,Steady Community & Neighborhood Cross-Town
+15,Jeffery Local,847,174,193,4785.7,0.1931,0.7789,0.5517,2,Steady Community & Neighborhood Cross-Town
+151,Sheridan,847,174,193,10934.1,0.1176,1.051,0.8058,1,Major High-Volume Trunk Arterial
+152,Addison,847,174,193,7017.3,0.1778,0.5389,0.4093,2,Steady Community & Neighborhood Cross-Town
+155,Devon,847,174,193,4867.7,0.1053,0.8147,0.6388,2,Steady Community & Neighborhood Cross-Town
+172,U. of Chicago/Kenwood,847,144,159,1552.7,0.5086,0.2032,0.2311,0,Steady Community & Neighborhood Cross-Town
+18,16th/18th,847,174,193,3005.1,0.1565,0.7155,0.5139,0,Steady Community & Neighborhood Cross-Town
+19,Route 19,292,75,70,137.3,0.7827,0.9704,0.8252,2,Steady Community & Neighborhood Cross-Town
+20,Madison,847,174,193,11764.0,0.1839,0.6738,0.5257,1,Major High-Volume Trunk Arterial
+21,Cermak,847,174,193,6957.4,0.1481,0.7872,0.5492,2,Steady Community & Neighborhood Cross-Town
+22,Clark,847,174,193,11977.6,0.1434,1.0108,0.7435,1,Major High-Volume Trunk Arterial
+28,Stony Island,847,174,193,3773.1,0.204,0.5562,0.4186,0,Steady Community & Neighborhood Cross-Town
+29,State,847,174,193,7459.2,0.203,0.946,0.6845,2,Steady Community & Neighborhood Cross-Town
+3,King Drive,847,174,193,13314.3,0.1658,0.7839,0.6063,1,Major High-Volume Trunk Arterial
+30,South Chicago,847,174,193,2255.5,0.2701,0.6169,0.3187,0,Steady Community & Neighborhood Cross-Town
+34,South Michigan,847,174,193,3164.5,0.2193,0.679,0.6019,0,Steady Community & Neighborhood Cross-Town
+35,31st/35th,847,174,193,3353.1,0.1396,0.6445,0.4986,0,Steady Community & Neighborhood Cross-Town
+36,Broadway,847,174,193,10039.7,0.1165,1.0761,0.8373,1,Major High-Volume Trunk Arterial
+39,Pershing,847,174,193,1401.1,0.1459,0.374,0.2959,0,Steady Community & Neighborhood Cross-Town
+4,Cottage Grove,847,174,193,12155.9,0.1805,0.8734,0.6578,1,Major High-Volume Trunk Arterial
+43,43rd,847,174,193,861.5,0.1569,0.5067,0.3797,0,Steady Community & Neighborhood Cross-Town
+44,Wallace/Racine,847,174,193,2462.3,0.1651,0.4997,0.3932,0,Steady Community & Neighborhood Cross-Town
+47,47th,847,174,193,7989.8,0.1842,0.6977,0.5304,2,Steady Community & Neighborhood Cross-Town
+49,Western,847,174,193,12519.1,0.1365,0.9247,0.6879,1,Major High-Volume Trunk Arterial
+49B,North Western,847,174,193,3919.5,0.123,0.7095,0.5883,2,Steady Community & Neighborhood Cross-Town
+5,Route 5,627,129,142,170.3,0.5079,0.905,0.9026,2,Steady Community & Neighborhood Cross-Town
+50,Damen,847,174,193,7644.8,0.1646,0.6428,0.4412,2,Steady Community & Neighborhood Cross-Town
+51,51st,847,174,193,1043.9,0.1618,0.6332,0.4722,0,Steady Community & Neighborhood Cross-Town
+52,Kedzie,847,174,193,6577.2,0.1467,0.6579,0.4652,2,Steady Community & Neighborhood Cross-Town
+52A,South Kedzie,847,174,193,2943.1,0.1529,0.5493,0.4153,0,Steady Community & Neighborhood Cross-Town
+53,Pulaski,847,174,193,14855.1,0.1799,0.7025,0.5314,1,Major High-Volume Trunk Arterial
+53A,South Pulaski,847,174,193,4739.1,0.2649,0.5075,0.3439,0,Steady Community & Neighborhood Cross-Town
+54,Cicero,847,174,193,7672.3,0.1474,0.7697,0.6144,2,Steady Community & Neighborhood Cross-Town
+54B,South Cicero,847,174,193,2025.1,0.1237,0.8733,0.5973,2,Steady Community & Neighborhood Cross-Town
+55,Garfield,847,174,193,6776.6,0.1702,0.7488,0.6405,2,Steady Community & Neighborhood Cross-Town
+56,Milwaukee,847,174,193,5706.4,0.1552,0.6671,0.53,2,Steady Community & Neighborhood Cross-Town
+57,Laramie,847,174,193,1661.1,0.1864,0.4514,0.3044,0,Steady Community & Neighborhood Cross-Town
+6,Jackson Park Express,847,174,193,5554.2,0.1709,1.0656,0.8787,2,Steady Community & Neighborhood Cross-Town
+60,Blue Island/26th,847,174,193,9424.9,0.221,0.6011,0.4643,2,Steady Community & Neighborhood Cross-Town
+62,Archer,847,174,193,7161.3,0.1416,0.7263,0.5705,2,Steady Community & Neighborhood Cross-Town
+63,63rd,847,174,193,10772.7,0.1984,0.6873,0.5838,1,Major High-Volume Trunk Arterial
+63W,West 63rd,847,174,193,1164.0,0.1598,0.4903,0.3819,0,Steady Community & Neighborhood Cross-Town
+65,Grand,847,174,193,6000.9,0.1334,0.7719,0.5223,2,Steady Community & Neighborhood Cross-Town
+66,Chicago,847,174,193,16706.4,0.1217,0.7728,0.5761,1,Major High-Volume Trunk Arterial
+67,67th/69th/71st,847,174,193,6249.3,0.1687,0.7023,0.5639,2,Steady Community & Neighborhood Cross-Town
+68,Northwest Highway,847,174,193,874.1,0.1873,0.4818,0.3242,0,Steady Community & Neighborhood Cross-Town
+70,Division,847,174,193,6508.3,0.1419,0.667,0.5333,2,Steady Community & Neighborhood Cross-Town
+71,71st/South Shore,847,174,193,6299.2,0.2111,0.7799,0.6187,2,Steady Community & Neighborhood Cross-Town
+72,North,847,174,193,10413.3,0.1377,0.8507,0.6419,1,Major High-Volume Trunk Arterial
+73,Armitage,847,174,193,3985.7,0.1496,0.6189,0.4428,0,Steady Community & Neighborhood Cross-Town
+74,Fullerton,847,174,193,8844.4,0.1256,0.7808,0.5628,2,Steady Community & Neighborhood Cross-Town
+75,74th/75th,847,174,193,5028.6,0.1791,0.69,0.5475,2,Steady Community & Neighborhood Cross-Town
+76,Diversey,847,174,193,8175.3,0.1226,0.7159,0.4631,2,Steady Community & Neighborhood Cross-Town
+77,Belmont,847,174,193,13477.5,0.1212,0.7322,0.5426,1,Major High-Volume Trunk Arterial
+78,Montrose,847,174,193,5494.7,0.1526,0.6947,0.5406,2,Steady Community & Neighborhood Cross-Town
+79,79th,847,174,193,15579.0,0.1612,0.7649,0.6176,1,Major High-Volume Trunk Arterial
+8,Halsted,847,174,193,15379.5,0.1663,0.7296,0.5138,1,Major High-Volume Trunk Arterial
+80,Irving Park,847,174,193,7602.2,0.1286,0.7129,0.5556,2,Steady Community & Neighborhood Cross-Town
+81,Lawrence,847,174,193,8614.6,0.1016,0.7963,0.6346,2,Steady Community & Neighborhood Cross-Town
+81W,West Lawrence,847,174,193,1390.8,0.1232,0.5295,0.3876,0,Steady Community & Neighborhood Cross-Town
+82,Kimball/Homan,847,174,193,12126.2,0.1643,0.656,0.4948,1,Major High-Volume Trunk Arterial
+84,Peterson,847,174,193,2611.7,0.1763,0.4902,0.3515,0,Steady Community & Neighborhood Cross-Town
+85,Central,847,174,193,7715.6,0.1233,0.675,0.5278,2,Steady Community & Neighborhood Cross-Town
+87,87th,847,174,193,6701.8,0.1644,0.7298,0.5466,2,Steady Community & Neighborhood Cross-Town
+88,Higgins,847,174,193,891.2,0.1435,0.4608,0.343,0,Steady Community & Neighborhood Cross-Town
+8A,South Halsted,847,174,193,2091.4,0.1887,0.7943,0.586,0,Steady Community & Neighborhood Cross-Town
+9,Ashland,847,174,193,15281.3,0.1726,0.9816,0.7548,1,Major High-Volume Trunk Arterial
+90,Harlem,847,174,193,3314.3,0.1173,0.7669,0.5091,2,Steady Community & Neighborhood Cross-Town
+91,Austin,847,174,193,4151.7,0.128,0.6017,0.4432,0,Steady Community & Neighborhood Cross-Town
+92,Foster,847,174,193,4765.7,0.1366,0.6266,0.5109,2,Steady Community & Neighborhood Cross-Town
+93,California/Dodge,847,174,49,3158.0,0.1604,0.5177,0.386,0,Steady Community & Neighborhood Cross-Town
+94,California,846,174,193,8713.4,0.1642,0.5711,0.437,2,Steady Community & Neighborhood Cross-Town
+95,95th,846,174,193,4372.8,0.2244,0.7504,0.6251,2,Steady Community & Neighborhood Cross-Town
+97,Skokie,846,174,193,2125.2,0.116,0.7759,0.5249,0,Steady Community & Neighborhood Cross-Town
+J14,Jeffery Jump,846,174,193,6645.8,0.2246,0.6239,0.4876,2,Steady Community & Neighborhood Cross-Town
+N5,South Shore Night Bus,358,73,82,155.8,0.7295,1.085,1.0754,2,Steady Community & Neighborhood Cross-Town

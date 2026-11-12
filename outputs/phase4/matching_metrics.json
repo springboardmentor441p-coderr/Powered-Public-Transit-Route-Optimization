@@ -1,0 +1,47 @@
+{
+  "execution_timestamp": "2026-11-04T20:40:32.911172",
+  "bus_matching": {
+    "total_records": 150000,
+    "matched_records": 146706,
+    "unmatched_records": 3294,
+    "matching_percentage": 97.8,
+    "unique_historical_routes": 131,
+    "unique_matched_routes": 124,
+    "unique_unmatched_routes": 7,
+    "unmatched_routes_list": [
+      "1001",
+      "128",
+      "130",
+      "19",
+      "5",
+      "643",
+      "X98"
+    ]
+  },
+  "rail_matching": {
+    "total_records": 150000,
+    "matched_records": 150000,
+    "unmatched_records": 0,
+    "matching_percentage": 100.0,
+    "unique_historical_stations": 144,
+    "unique_matched_stations": 144,
+    "unique_unmatched_stations": 0,
+    "unmatched_stations_list": []
+  },
+  "forecasting_readiness": {
+    "system_forecasting_rows": 9374,
+    "bus_forecasting_rows": 146706,
+    "rail_forecasting_rows": 150000
+  },
+  "datasets_created": {
+    "bus_matched": "C:\\Users\\Hp\\Desktop\\RouteRanker\\data\\processed\\phase4\\cta_bus_ridership_gtfs_matched.csv",
+    "rail_matched": "C:\\Users\\Hp\\Desktop\\RouteRanker\\data\\processed\\phase4\\cta_rail_ridership_gtfs_matched.csv",
+    "unmatched_records": "C:\\Users\\Hp\\Desktop\\RouteRanker\\data\\processed\\phase4\\unmatched_ridership_records.csv",
+    "route_mapping": "C:\\Users\\Hp\\Desktop\\RouteRanker\\data\\processed\\phase4\\route_id_mapping_report.csv",
+    "station_mapping": "C:\\Users\\Hp\\Desktop\\RouteRanker\\data\\processed\\phase4\\stop_station_mapping_report.csv",
+    "matching_summary": "C:\\Users\\Hp\\Desktop\\RouteRanker\\data\\processed\\phase4\\matching_summary.csv",
+    "daily_system_forecasting_ready": "C:\\Users\\Hp\\Desktop\\RouteRanker\\data\\processed\\phase4\\cta_daily_system_forecasting_ready.csv",
+    "daily_bus_forecasting_ready": "C:\\Users\\Hp\\Desktop\\RouteRanker\\data\\processed\\phase4\\cta_daily_bus_route_forecasting_ready.csv",
+    "daily_rail_forecasting_ready": "C:\\Users\\Hp\\Desktop\\RouteRanker\\data\\processed\\phase4\\cta_daily_rail_station_forecasting_ready.csv"
+  }
+}

@@ -1,0 +1,145 @@
+station_id,station_name,descriptive_name,latitude,longitude,ada_accessible,lines_served,platform_count,platform_stop_ids
+40010,Austin,Austin (Blue Line),41.870851,-87.776812,False,Blue,2,30002;30001
+40020,Harlem/Lake,Harlem/Lake (Green Line),41.886848,-87.803176,True,Green,2,30004;30003
+40030,Pulaski,Pulaski (Green Line),41.885412,-87.725404,True,Green,2,30006;30005
+40040,Quincy/Wells,"Quincy/Wells (Brown, Orange, Purple & Pink lines)",41.878723,-87.63374,True,"Brown, Orange, Purple, Pink",2,30007;30008
+40050,Davis,Davis (Purple Line),42.04771,-87.683543,True,Purple,2,30010;30011
+40060,Belmont,Belmont (Blue Line),41.938132,-87.712359,False,Blue,2,30012;30013
+40070,Jackson,Jackson (Blue Line),41.878183,-87.629296,True,Blue,2,30014;30015
+40080,Sheridan,Sheridan (Red Line),41.953775,-87.654929,False,Red,4,30017;30294;30016;30293
+40090,Damen,Damen (Brown Line),41.966286,-87.678639,True,Brown,2,30019;30018
+40100,Morse,Morse (Red Line),42.008362,-87.665909,False,Red,2,30020;30021
+40120,35th/Archer,35th/Archer (Orange Line),41.829353,-87.680622,True,Orange,2,30022;30023
+40130,51st,51st (Green Line),41.80209,-87.618487,True,Green,2,30025;30024
+40140,Dempster-Skokie,Dempster-Skokie  (Yellow Line),42.038951,-87.751919,True,Yellow,2,30027;30026
+40150,Pulaski,Pulaski (Pink Line),41.853732,-87.724311,True,Pink,2,30028;30029
+40160,LaSalle/Van Buren,"LaSalle/Van Buren (Brown, Orange, Purple & Pink lines)",41.8768,-87.631739,False,"Brown, Orange, Purple, Pink",2,30030;30031
+40170,Ashland,Ashland (Green & Pink lines),41.885269,-87.666969,True,"Green, Pink",2,30033;30032
+40180,Oak Park,Oak Park (Blue Line),41.872108,-87.791602,False,Blue,2,30034;30035
+40190,Sox-35th,Sox-35th (Red Line),41.831191,-87.630636,True,Red,2,30036;30037
+40210,Damen,Damen (Pink Line),41.854517,-87.675975,True,Pink,2,30041;30040
+40220,Western,Western (Blue Line - Forest Park Branch),41.875478,-87.688436,False,Blue,2,30042;30043
+40230,Cumberland,Cumberland (Blue Line),41.984246,-87.838028,True,Blue,2,30044;30045
+40240,79th,79th (Red Line),41.750419,-87.625112,True,Red,2,30047;30046
+40250,Kedzie-Homan,Kedzie-Homan (Blue Line),41.874341,-87.70604,True,Blue,2,30048;30049
+40260,State/Lake,"State/Lake (Brown, Green, Orange, Pink & Purple lines)",41.88574,-87.627835,False,"Brown, Green, Orange, Purple, Pink",2,30050;30051
+40270,Main,Main (Purple Line),42.033456,-87.679538,False,Purple,2,30052;30053
+40280,Central,Central (Green Line),41.887389,-87.76565,True,Green,2,30054;30055
+40290,Ashland/63rd,Ashland/63rd (Green Line),41.77886,-87.663766,True,Green,2,30057;30056
+40300,Indiana,Indiana (Green Line),41.821732,-87.621371,True,Green,2,30058;30059
+40310,Western,Western (Orange Line),41.804546,-87.684019,True,Orange,2,30061;30060
+40320,Division,Division (Blue Line),41.903355,-87.666496,False,Blue,2,30062;30063
+40330,Grand,Grand (Red Line),41.891665,-87.628021,True,Red,2,30065;30064
+40340,Berwyn,Berwyn (Red Line),41.977984,-87.658668,True,Red,2,30067;30066
+40350,UIC-Halsted,UIC-Halsted (Blue Line),41.875474,-87.649707,True,Blue,2,30068;30069
+40360,Southport,Southport (Brown Line),41.943744,-87.663619,True,Brown,2,30071;30070
+40370,Washington,Washington (Blue Line),41.883164,-87.62944,False,Blue,2,30073;30072
+40380,Clark/Lake,"Clark/Lake (Blue, Brown, Green, Orange, Purple & Pink lines)",41.885737,-87.630886,True,"Blue, Brown, Green, Orange, Purple, Pink",4,30075;30374;30375;30074
+40390,Forest Park,Forest Park (Blue Line),41.874257,-87.817318,True,Blue,2,30077;30076
+40400,Noyes,Noyes (Purple Line),42.058282,-87.683337,False,Purple,2,30079;30078
+40420,Cicero,Cicero (Pink Line),41.85182,-87.745336,True,Pink,2,30082;30083
+40430,Clinton,Clinton (Blue Line),41.875539,-87.640984,False,Blue,2,30085;30084
+40440,California,California (Pink Line),41.854109,-87.694774,True,Pink,2,30087;30086
+40450,95th/Dan Ryan,95th/Dan Ryan (Red Line),41.722377,-87.624342,True,Red,2,30088;30089
+40460,Merchandise Mart,Merchandise Mart (Brown & Purple lines),41.888969,-87.633924,True,"Brown, Purple",2,30090;30091
+40470,Racine,Racine (Blue Line),41.87592,-87.659458,False,Blue,2,30092;30093
+40480,Cicero,Cicero (Green Line),41.886519,-87.744698,True,Green,2,30094;30009
+40490,Grand,Grand (Blue Line),41.891189,-87.647578,False,Blue,2,30096;30095
+40510,Garfield,Garfield (Green Line),41.795172,-87.618327,True,Green,2,30100;30099
+40520,Foster,Foster (Purple Line),42.05416,-87.68356,False,Purple,2,30101;30102
+40530,Diversey,Diversey (Brown & Purple lines),41.932732,-87.653131,True,"Brown, Purple",2,30104;30103
+40540,Wilson,Wilson (Red & Purple lines),41.964273,-87.657588,True,"Red, Purple",4,30385;30386;30106;30105
+40550,Irving Park,Irving Park (Blue Line),41.952925,-87.729229,False,Blue,2,30107;30108
+40560,Jackson,Jackson (Red Line),41.878153,-87.627596,True,Red,2,30109;30110
+40570,California,California (Blue Line),41.921939,-87.69689,False,Blue,2,30111;30112
+40580,54th/Cermak,54th/Cermak (Pink Line),41.851773,-87.756692,True,Pink,2,30114;30113
+40590,Damen,Damen (Blue Line),41.909744,-87.677437,False,Blue,2,30115;30116
+40600,Kostner,Kostner (Pink Line),41.853751,-87.733258,True,Pink,2,30117;30118
+40610,Ridgeland,Ridgeland (Green Line),41.887159,-87.783661,False,Green,2,30120;30119
+40630,Clark/Division,Clark/Division (Red Line),41.90392,-87.631412,True,Red,2,30121;30122
+40650,North/Clybourn,North/Clybourn (Red Line),41.910655,-87.649177,False,Red,2,30126;30125
+40660,Armitage,Armitage (Brown & Purple lines),41.918217,-87.652644,True,"Brown, Purple",2,30127;30128
+40670,Western,Western (Blue Line - O'Hare Branch),41.916157,-87.687364,True,Blue,2,30129;30130
+40680,Adams/Wabash,"Adams/Wabash (Brown, Green, Orange, Pink & Purple lines)",41.879507,-87.626037,False,"Brown, Green, Orange, Purple, Pink",2,30131;30132
+40690,Dempster,Dempster (Purple Line),42.041655,-87.681602,False,Purple,2,30133;30134
+40700,Laramie,Laramie (Green Line),41.887163,-87.754986,True,Green,2,30136;30135
+40710,Chicago,Chicago (Brown & Purple lines),41.89681,-87.635924,True,"Brown, Purple",2,30138;30137
+40720,Cottage Grove,Cottage Grove (Green Line),41.780309,-87.605857,True,Green,2,30140;30139
+40730,Washington/Wells,"Washington/Wells (Brown, Orange, Purple & Pink lines)",41.882695,-87.63378,True,"Brown, Orange, Purple, Pink",2,30142;30141
+40740,Western,Western (Pink Line),41.854225,-87.685129,True,Pink,2,30144;30143
+40750,Harlem,Harlem (Blue Line - O'Hare Branch),41.98227,-87.8089,True,Blue,2,30145;30146
+40760,Granville,Granville (Red Line),41.993664,-87.659202,True,Red,2,30148;30147
+40770,Lawrence,Lawrence (Red Line),41.969139,-87.658493,True,Red,2,30150;30149
+40780,Central Park,Central Park (Pink Line),41.853839,-87.714842,True,Pink,2,30152;30151
+40790,Monroe,Monroe (Blue Line),41.880703,-87.629378,False,Blue,2,30154;30153
+40800,Sedgwick,Sedgwick (Brown & Purple lines),41.910409,-87.639302,True,"Brown, Purple",2,30156;30155
+40810,Illinois Medical District,Illinois Medical District (Blue Line),41.875706,-87.673932,True,Blue,2,30158;30157
+40820,Rosemont,Rosemont (Blue Line),41.983507,-87.859388,True,Blue,2,30160;30159
+40830,18th,18th (Pink Line),41.857908,-87.669147,True,Pink,2,30162;30161
+40840,South Boulevard,South Boulevard (Purple Line),42.027612,-87.678329,False,Purple,2,30164;30163
+40850,Harold Washington Library-State/Van Buren,"Harold Washington Library-State/Van Buren (Brown, Orange, Purple & Pink lines)",41.876862,-87.628196,True,"Brown, Orange, Purple, Pink",2,30165;30166
+40870,Francisco,Francisco (Brown Line),41.966046,-87.701644,True,Brown,2,30168;30167
+40880,Thorndale,Thorndale (Red Line),41.990259,-87.659076,False,Red,2,30169;30170
+40890,O'Hare,O'Hare (Blue Line),41.977665,-87.904223,True,Blue,2,30172;30171
+40900,Howard,"Howard (Red, Purple & Yellow lines)",42.019063,-87.672892,True,"Red, Purple, Yellow",4,30174;30175;30173;30176
+40910,63rd,63rd (Red Line),41.780536,-87.630952,True,Red,2,30177;30178
+40920,Pulaski,Pulaski (Blue Line),41.873797,-87.725663,False,Blue,2,30180;30179
+40930,Midway,Midway (Orange Line),41.78661,-87.737875,True,Orange,2,30182;30181
+40940,Halsted,Halsted (Green Line),41.778943,-87.644244,True,Green,2,30184;30183
+40960,Pulaski,Pulaski (Orange Line),41.799756,-87.724493,True,Orange,2,30186;30185
+40970,Cicero,Cicero (Blue Line),41.871574,-87.745154,False,Blue,2,30187;30188
+40980,Harlem,Harlem (Blue Line - Forest Park Branch),41.87349,-87.806961,False,Blue,2,30190;30189
+40990,69th,69th (Red Line),41.768367,-87.625724,True,Red,2,30191;30192
+41000,Cermak-Chinatown,Cermak-Chinatown (Red Line),41.853206,-87.630968,True,Red,2,30193;30194
+41010,Rockwell,Rockwell (Brown Line),41.966115,-87.6941,True,Brown,2,30196;30195
+41020,Logan Square,Logan Square (Blue Line),41.929728,-87.708541,True,Blue,2,30198;30197
+41030,Polk,Polk (Pink Line),41.871551,-87.66953,True,Pink,2,30199;30200
+41040,Kedzie,Kedzie (Pink Line),41.853964,-87.705408,True,Pink,2,30202;30201
+41050,Linden,Linden (Purple Line),42.073153,-87.69073,True,Purple,2,30203;30204
+41060,Ashland,Ashland (Orange Line),41.839234,-87.665317,True,Orange,2,30206;30205
+41070,Kedzie,Kedzie (Green Line),41.884321,-87.706155,True,Green,2,30207;30208
+41080,47th,47th (Green Line),41.809209,-87.618826,True,Green,2,30210;30209
+41090,Monroe,Monroe (Red Line),41.880745,-87.627696,False,Red,2,30212;30211
+41120,35th-Bronzeville-IIT,35th-Bronzeville-IIT (Green Line),41.831677,-87.625826,True,Green,2,30213;30214
+41130,Halsted,Halsted (Orange Line),41.84678,-87.648088,True,Orange,2,30216;30215
+41140,King Drive,King Drive (Green Line),41.78013,-87.615546,True,Green,2,30217;30218
+41150,Kedzie,Kedzie (Orange Line),41.804236,-87.704406,True,Orange,2,30219;30220
+41160,Clinton,Clinton (Green & Pink lines),41.885678,-87.641782,True,"Green, Pink",2,30221;30222
+41170,Garfield,Garfield (Red Line),41.79542,-87.631157,True,Red,2,30224;30223
+41180,Kedzie,Kedzie (Brown Line),41.965996,-87.708821,True,Brown,2,30225;30226
+41190,Jarvis,Jarvis (Red Line),42.015876,-87.669092,False,Red,2,30228;30227
+41200,Argyle,Argyle (Red Line),41.973453,-87.65853,True,Red,2,30230;30229
+41210,Wellington,Wellington (Brown & Purple lines),41.936033,-87.653266,True,"Brown, Purple",2,30232;30231
+41220,Fullerton,"Fullerton (Red, Brown & Purple lines)",41.925051,-87.652866,True,"Red, Brown, Purple",4,30235;30233;30236;30234
+41230,47th,47th (Red Line),41.810318,-87.63094,True,Red,2,30237;30238
+41240,Addison,Addison (Blue Line),41.94738,-87.71906,True,Blue,2,30239;30240
+41250,Central,Central (Purple Line),42.063987,-87.685617,False,Purple,2,30241;30242
+41260,Austin,Austin (Green Line),41.887293,-87.774135,False,Green,2,30243;30244
+41270,43rd,43rd (Green Line),41.816462,-87.619021,True,Green,2,30245;30246
+41280,Jefferson Park,Jefferson Park (Blue Line),41.970634,-87.760892,True,Blue,2,30247;30248
+41290,Kimball,Kimball (Brown Line),41.967901,-87.713065,True,Brown,2,30250;30249
+41300,Loyola,Loyola (Red Line),42.001073,-87.661061,True,Red,2,30251;30252
+41310,Paulina,Paulina (Brown Line),41.943623,-87.670907,True,Brown,2,30254;30253
+41320,Belmont,"Belmont (Red, Brown & Purple lines)",41.939751,-87.65338,True,"Red, Brown, Purple",4,30258;30256;30255;30257
+41330,Montrose,Montrose (Blue Line),41.961539,-87.743574,False,Blue,2,30259;30260
+41340,LaSalle,LaSalle (Blue Line),41.875568,-87.631722,False,Blue,2,30261;30262
+41350,Oak Park,Oak Park (Green Line),41.886988,-87.793783,False,Green,2,30263;30264
+41360,California,California (Green Line),41.88422,-87.696234,True,Green,2,30266;30265
+41380,Bryn Mawr,Bryn Mawr (Red Line),41.983504,-87.65884,True,Red,2,30268;30267
+41400,Roosevelt,"Roosevelt (Red, Orange & Green lines)",41.867386,-87.626996,True,"Red, Green, Orange",4,30269;30081;30080;30270
+41410,Chicago,Chicago (Blue Line),41.896075,-87.655214,False,Blue,2,30272;30271
+41420,Addison,Addison (Red Line),41.947428,-87.653626,True,Red,2,30274;30273
+41430,87th,87th (Red Line),41.735372,-87.624717,True,Red,2,30275;30276
+41440,Addison,Addison (Brown Line),41.947028,-87.674642,True,Brown,2,30278;30277
+41450,Chicago,Chicago (Red Line),41.896671,-87.628176,True,Red,2,30280;30279
+41460,Irving Park,Irving Park (Brown Line),41.954521,-87.674868,True,Brown,2,30281;30282
+41480,Western,Western (Brown Line),41.966163,-87.688502,True,Brown,2,30284;30283
+41490,Harrison,Harrison (Red Line),41.874039,-87.627479,False,Red,2,30286;30285
+41500,Montrose,Montrose (Brown Line),41.961756,-87.675047,True,Brown,2,30287;30288
+41510,Morgan,Morgan (Green & Pink lines),41.885586,-87.652193,True,"Green, Pink",2,30296;30295
+41660,Lake,Lake (Red Line),41.884809,-87.627813,True,Red,2,30290;30289
+41670,Conservatory,Conservatory (Green Line),41.884904,-87.716523,True,Green,2,30291;30292
+41680,Oakton-Skokie,Oakton-Skokie (Yellow Line),42.026243,-87.747221,True,Yellow,2,30297;30298
+41690,Cermak-McCormick Place,Cermak-McCormick Place (Green Line),41.853115,-87.626402,True,Green,2,30382;30381
+41700,Washington/Wabash,"Washington/Wabash (Brown, Green, Orange, Purple & Pink lines)",41.88322,-87.626189,True,"Brown, Green, Orange, Purple, Pink",2,30384;30383
+41710,Damen,Damen (Green Line),41.884974,-87.676891,True,Green,2,30387;30388

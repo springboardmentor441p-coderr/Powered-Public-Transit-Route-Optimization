@@ -1,0 +1,81 @@
+{
+  "target": "CTA System-Wide Daily Ridership",
+  "best_model": "Random_Forest",
+  "splits": {
+    "train_days": 8738,
+    "val_days": 365,
+    "test_days": 243
+  },
+  "models_benchmarked": {
+    "Naive_7Day_Lag": {
+      "val_metrics": {
+        "MAE": 82385.99,
+        "RMSE": 140782.08,
+        "MAPE": 10.75,
+        "R2": 0.5854
+      },
+      "test_metrics": {
+        "MAE": 81429.9,
+        "RMSE": 122022.29,
+        "MAPE": 9.77,
+        "R2": 0.6506
+      }
+    },
+    "Moving_Average_7Day": {
+      "val_metrics": {
+        "MAE": 172645.75,
+        "RMSE": 203638.02,
+        "MAPE": 22.76,
+        "R2": 0.1326
+      },
+      "test_metrics": {
+        "MAE": 167665.65,
+        "RMSE": 197165.64,
+        "MAPE": 21.18,
+        "R2": 0.0878
+      }
+    },
+    "Ridge_Regression": {
+      "val_metrics": {
+        "MAE": 76046.81,
+        "RMSE": 104362.59,
+        "MAPE": 10.09,
+        "R2": 0.7722
+      },
+      "test_metrics": {
+        "MAE": 78826.38,
+        "RMSE": 109945.63,
+        "MAPE": 10.12,
+        "R2": 0.7163
+      }
+    },
+    "Random_Forest": {
+      "val_metrics": {
+        "MAE": 69557.77,
+        "RMSE": 96527.37,
+        "MAPE": 8.31,
+        "R2": 0.8051
+      },
+      "test_metrics": {
+        "MAE": 70053.13,
+        "RMSE": 94630.46,
+        "MAPE": 7.92,
+        "R2": 0.7899
+      }
+    },
+    "Gradient_Boosting": {
+      "val_metrics": {
+        "MAE": 65882.88,
+        "RMSE": 91384.59,
+        "MAPE": 7.36,
+        "R2": 0.8253
+      },
+      "test_metrics": {
+        "MAE": 71436.06,
+        "RMSE": 96884.16,
+        "MAPE": 7.96,
+        "R2": 0.7797
+      }
+    }
+  }
+}
