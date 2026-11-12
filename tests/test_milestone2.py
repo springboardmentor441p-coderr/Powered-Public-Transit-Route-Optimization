@@ -203,3 +203,44 @@ def test_class_balance_per_split():
     total_row = cb[cb["split"] == "Total Window"].iloc[0]
     assert total_row["total_hours"] == 233227
     assert total_row["positive_hours"] + total_row["negative_hours"] == 233227
+
+
+def test_single_routeranker_notebook_structure_and_outputs():
+    import nbformat
+
+    nb_dir = ROOT / "notebooks"
+    nb_path = nb_dir / "routeranker.ipynb"
+    assert nb_path.exists(), "Consolidated notebook notebooks/routeranker.ipynb must exist"
+
+    # Old split notebooks and builder script must be removed
+    assert not (ROOT / "src" / "build_notebooks.py").exists()
+    other_nbs = [p.name for p in nb_dir.glob("*.ipynb") if p.name != "routeranker.ipynb"]
+    assert other_nbs == [], f"Unexpected extra notebooks in notebooks/: {other_nbs}"
+
+    nb = nbformat.read(nb_path, as_version=4)
+    full_md = "\n".join(c.source for c in nb.cells if c.cell_type == "markdown")
+    for sec in [
+        "## 0. Setup",
+        "## 1. Data and coverage",
+        "## 2. Network patterns",
+        "## 3. Route patterns",
+        "## 4. Route overlap and coverage",
+        "## 5. Low riders per trip",
+        "## 6. Modelling data",
+        "## 7. Route clustering features",
+        "## 8. Baselines",
+        "## 9. Models (Milestone 3)",
+    ]:
+        assert sec in full_md, f"Missing section header in routeranker.ipynb: {sec}"
+
+    code_cells = [c for c in nb.cells if c.cell_type == "code"]
+    assert len(code_cells) > 0
+    for idx, c in enumerate(code_cells):
+        assert c.get("execution_count") is not None, f"Code cell {idx} was not executed"
+        assert ".to_csv(" not in c.source and ".to_parquet(" not in c.source, (
+            f"Code cell {idx} writes a table; routeranker.ipynb must be read-only on tables"
+        )
+        assert "IFrame(" not in c.source, f"Code cell {idx} embeds an IFrame; link to Folium HTML instead"
+        for out in c.get("outputs", []):
+            assert out.get("output_type") != "error", f"Code cell {idx} has an execution error output"
+

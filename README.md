@@ -111,23 +111,38 @@ python src/build_route_profiles.py   # Computes route lengths, stop counts, sche
 python src/build_features.py         # Computes exact calendar lags (7, 14, 21, 28d), splits Train/Val/Test, fits preprocessor
 python src/build_clustering_table.py # Builds 41-route clustering table with 9 non-collinear features (|r| < 0.85)
 python src/evaluate_baselines.py     # Scores lag-7d and 4-week average baseline forecasts on validation period
+
+# Milestone 3: Shared Evaluation & Models
+python src/evaluate.py               # Runs shared forecasting & classification evaluation framework on validation baselines
 ```
 
 ---
 
-## 📓 Notebook Directory (`notebooks/`)
+## 📓 Project Notebook (`notebooks/routeranker.ipynb`)
 
-The repository uses modular notebooks for exploration, interactive analysis, and visual reporting. All notebooks import reusable logic from `src/` and read saved datasets from `data/processed/`:
+All interactive exploration, visualizations, and empirical summaries are consolidated into a single notebook: [`notebooks/routeranker.ipynb`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/notebooks/routeranker.ipynb).
 
-| Notebook | Focus & Milestone Steps | Key Outputs & Visualizations |
+| Section | Content | Source |
 | :--- | :--- | :--- |
-| [`01_network_patterns.ipynb`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/notebooks/01_network_patterns.ipynb) | **Steps 1–3:** Network Patterns | Typical days filter, daily ridership time series with switchover lines and disruption shading, hourly profile with IQR bands, monthly summer contraction. |
-| [`02_route_patterns.ipynb`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/notebooks/02_route_patterns.ipynb) | **Steps 4–5:** Route Patterns & Stability | Heatmaps of route volume and riders per trip (blanked where $< 2$ trips/hr), route table across 4 time bands, Demand Coefficient of Variation ($CV$). |
-| [`03_route_overlap.ipynb`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/notebooks/03_route_overlap.ipynb) | **Step 6:** Route Overlap & Coverage | 127 overlapping route pairs from GTFS, Top 15 pairs detailed profiling (planned SBS vs redundant), route stop exclusivity, interactive Folium map. |
-| [`04_low_riders_per_trip.ipynb`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/notebooks/04_low_riders_per_trip.ipynb) | **Step 7:** Low Demand Screening | Operational review list of bottom 10% riders per trip combinations ($\ge 2$ trips avg, $\ge 20$ days) enriched with coverage and service-hour context. |
-| [`05_features_and_splits.ipynb`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/notebooks/05_features_and_splits.ipynb) | **Steps 9–12:** Feature Table & Splits | Exact calendar lags, 75th percentile classification target derivation, chronological splits (Train/Val/Test), Scikit-learn Pipeline with ColumnTransformer. |
-| [`06_clustering_table.ipynb`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/notebooks/06_clustering_table.ipynb) | **Step 13:** Route Clustering Table | Multicollinearity pruning ($|r| < 0.85$), 9 selected standardized features for 41 routes across typical weekdays in training period. |
-| [`07_baselines.ipynb`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/notebooks/07_baselines.ipynb) | **Step 14:** Baseline Forecasts | Same hour last week (lag-7d) vs 4-week average lag baseline models evaluated with MAE, RMSE, WAPE overall and per route on validation dates. |
+| **0. Setup** | Imports, paths, loading saved tables, study window, route count, matched row count, and Git commit hash | All |
+| **1. Data and coverage** | Study window, GTFS timetable versions, excluded days and outage hours, crosswalk, and matched table counts | Milestone 1 |
+| **2. Network patterns** | Typical days filter, daily ridership with switchover lines and disruption shading, hourly curves with IQR bands, monthly change, 10 busiest hours | Milestone 2 (Steps 1–3) |
+| **3. Route patterns** | Ridership and riders-per-trip heatmaps (blanked where $< 2$ trips/hr), route efficiency table, demand variability ($CV$) | Milestone 2 (Steps 4–5) |
+| **4. Route overlap and coverage** | Top 15 overlapping pairs by category (`planned` vs `review`), exclusive stop share, and link to `reports/figures/route_overlaps.html` | Milestone 2 (Step 6) |
+| **5. Low riders per trip** | Operational review list (bottom 10% by day type, $\ge 2$ trips/day, $\ge 20$ days) with coverage and overlap context | Milestone 2 (Step 7) |
+| **6. Modelling data** | Features, exact calendar lags, 75th percentile thresholds, chronological splits, class balance, and fitted `ColumnTransformer` | Milestone 2 (Steps 9–12) |
+| **7. Route clustering features** | Pairwise correlation check ($|r| < 0.85$) and the 9 chosen features (scaled and unscaled) | Milestone 2 (Step 13) |
+| **8. Baselines** | Same hour last week (`lag_7d`) vs 4-week average (`lag_mean_available`) validation benchmarks | Milestone 2 (Step 14) |
+| **9. Models (Milestone 3)** | Shared evaluation breakdowns (`src/evaluate.py`), forecasting, classification, clustering, and operational suggestions | Milestone 3 |
+
+### Notebook Maintenance Rules
+- **Edit directly:** `notebooks/routeranker.ipynb` is maintained directly (`src/build_notebooks.py` has been removed so manual edits are never overwritten).
+- **Read-only on tables:** All data transformations and calculations live in `src/`. The notebook only reads from `data/processed/` and `reports/` and saves figures to `reports/figures/` (never overwriting CSV or Parquet tables).
+- **No embedded Folium HTML:** The interactive corridor map is saved at `reports/figures/route_overlaps.html` and linked from Markdown.
+- **Execute top-to-bottom before committing:** Restart the kernel and run all cells so outputs stay populated for GitHub viewing. To verify top-to-bottom execution from the command line:
+  ```bash
+  jupyter nbconvert --to notebook --execute notebooks/routeranker.ipynb --output /tmp/check.ipynb
+  ```
 
 ---
 
@@ -139,5 +154,6 @@ The codebase includes comprehensive unit and referential integrity tests:
 python -m pytest tests/ -v
 ```
 - [`tests/test_milestone1_steps6_9.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_milestone1_steps6_9.py) (27 tests): GTFS integrity, DST night handling, Memorial Day Sunday equivalence, outage exclusions, service hours calculations.
-- [`tests/test_milestone2.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_milestone2.py) (9 tests): Generated figures/tables existence, route overlap ordering, stop coverage metrics, data split sizes, pipeline transformation, clustering correlations, baseline forecast hurdles.
+- [`tests/test_milestone2.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_milestone2.py) (10 tests): Generated figures/tables existence, route overlap ordering, stop coverage metrics, data split sizes, pipeline transformation, clustering correlations, baseline forecast hurdles, and `notebooks/routeranker.ipynb` integrity.
+- [`tests/test_evaluate.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_evaluate.py) (11 tests): Shared evaluation metrics, zero-demand WAPE handling, test-set isolation enforcement, canonical time-band labels, and validation baseline hurdles.
 
