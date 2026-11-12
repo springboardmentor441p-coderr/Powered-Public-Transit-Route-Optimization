@@ -33,3 +33,15 @@ yarn-error.log*
 Thumbs.db
 .sf/
 
+
+# Large GTFS files excluded from GitHub
+data/raw/gtfs/stop_times.txt
+data/raw/gtfs/shapes.txt
+data/raw/google_transit.zip
+
+# Dependencies and generated files
+node_modules/
+dist/
+__pycache__/
+.env
+.env.local
