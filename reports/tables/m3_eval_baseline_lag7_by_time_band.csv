@@ -1,0 +1,6 @@
+model_name,time_band,time_band_label,n_eval,total_actual,mae,rmse,wape_pct,bias_pred_minus_actual,subset
+Same Hour Last Week (lag_7d),early_morning,Early Morning (04:00–06:59),5811,506758.0,15.62,38.58,17.91,-0.67,All Hours
+Same Hour Last Week (lag_7d),morning_peak,Morning Peak (07:00–09:59),7417,2732685.0,59.88,119.73,16.25,-2.77,All Hours
+Same Hour Last Week (lag_7d),midday,Midday (10:00–15:59),14727,5224596.0,56.59,85.41,15.95,0.89,All Hours
+Same Hour Last Week (lag_7d),evening_peak,Evening Peak (16:00–18:59),7446,3174237.0,75.98,115.87,17.82,-1.2,All Hours
+Same Hour Last Week (lag_7d),night,Night (19:00–03:59),18184,1929663.0,24.09,42.69,22.7,0.35,All Hours

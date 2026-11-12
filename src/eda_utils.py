@@ -12,7 +12,37 @@ DATA_DIR = ROOT / "data" / "processed"
 FIG_DIR = ROOT / "reports" / "figures"
 TAB_DIR = ROOT / "reports" / "tables"
 
-TIME_BANDS = ["early_morning", "morning_peak", "midday", "evening_peak", "night"]
+# Single centralized definition of transit time bands matching Milestone 1 (src/build_matched_table.py)
+TIME_BANDS = {
+    "early_morning": {
+        "hours": [4, 5, 6],
+        "label": "Early Morning (04:00–06:59)",
+    },
+    "morning_peak": {
+        "hours": [7, 8, 9],
+        "label": "Morning Peak (07:00–09:59)",
+    },
+    "midday": {
+        "hours": [10, 11, 12, 13, 14, 15],
+        "label": "Midday (10:00–15:59)",
+    },
+    "evening_peak": {
+        "hours": [16, 17, 18],
+        "label": "Evening Peak (16:00–18:59)",
+    },
+    "night": {
+        "hours": [19, 20, 21, 22, 23, 0, 1, 2, 3],
+        "label": "Night (19:00–03:59)",
+    },
+}
+TIME_BAND_ORDER = list(TIME_BANDS.keys())
+
+
+def get_time_band_label(time_band: str) -> str:
+    """Return descriptive time band label with exact hours from Milestone 1."""
+    if time_band in TIME_BANDS:
+        return TIME_BANDS[time_band]["label"]
+    return time_band
 
 DAY_TYPE_COLORS = {
     "weekday": "#1d4ed8",   # Blue

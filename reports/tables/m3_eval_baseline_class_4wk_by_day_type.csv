@@ -1,0 +1,5 @@
+model_name,day_type,n_eval,actual_positive,pred_positive,positive_prevalence_pct,precision,recall,f1,pr_auc,tp,fp,fn,tn,subset
+Rule B: 4-Week Average Heuristic (lag_mean / trips),Typical Weekday,38067,8607,8418,22.61,0.6769,0.662,0.6694,0.7122,5698,2720,2909,26740,All Hours
+Rule B: 4-Week Average Heuristic (lag_mean / trips),Typical Saturday,5981,1325,1275,22.15,0.5725,0.5509,0.5615,0.5846,730,545,595,4111,All Hours
+Rule B: 4-Week Average Heuristic (lag_mean / trips),Typical Sunday,6768,1849,1723,27.32,0.6471,0.603,0.6243,0.6437,1115,608,734,4311,All Hours
+Rule B: 4-Week Average Heuristic (lag_mean / trips),Special/Excluded,2590,1206,1665,46.56,0.6871,0.9486,0.7969,0.7836,1144,521,62,863,All Hours

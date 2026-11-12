@@ -1,0 +1,2 @@
+model_name,subset,n_eval,total_actual,mae,rmse,wape_pct,bias_pred_minus_actual
+4-Week Average Baseline,All Hours,53585,13567939.0,35.66,63.24,14.08,3.11

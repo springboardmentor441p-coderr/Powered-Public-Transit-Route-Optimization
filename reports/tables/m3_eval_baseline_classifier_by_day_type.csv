@@ -1,0 +1,5 @@
+model_name,day_type,n_eval,actual_positive,pred_positive,positive_prevalence_pct,precision,recall,f1,pr_auc,tp,fp,fn,tn,subset
+Prior-Week Heuristic Classifier,Typical Weekday,38229,8607,8607,22.51,0.6316,0.6316,0.6316,0.6407,5436,3171,3171,26451,All Hours
+Prior-Week Heuristic Classifier,Typical Saturday,5993,1325,1297,22.11,0.5204,0.5094,0.5149,0.5147,675,622,650,4046,All Hours
+Prior-Week Heuristic Classifier,Typical Sunday,6808,1849,1791,27.16,0.5818,0.5635,0.5725,0.572,1042,749,807,4210,All Hours
+Prior-Week Heuristic Classifier,Special/Excluded,2597,1206,1569,46.44,0.6909,0.8988,0.7813,0.7624,1084,485,122,906,All Hours

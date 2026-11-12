@@ -1,0 +1,4 @@
+Actual Class,Pred Normal (0),Pred High (1),Total Actual,Model
+Actual Normal Demand (0),35393,5026,40419,Rule A: Prior-Week Heuristic (lag_7d / trips) (All Hours)
+Actual High Demand (1),4750,8237,12987,Rule A: Prior-Week Heuristic (lag_7d / trips) (All Hours)
+Total Predicted,40143,13263,53406,Rule A: Prior-Week Heuristic (lag_7d / trips) (All Hours)

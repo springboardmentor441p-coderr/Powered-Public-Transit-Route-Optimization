@@ -1,0 +1,3 @@
+model_name,subset,n_eval,actual_pos,pred_pos,precision,recall,f1,pr_auc,roc_auc,tp,fp,fn,tn
+Prior-Week Heuristic Classifier,All Hours,53627,12987,13264,0.621,0.6342,0.6276,0.6293,0.8564,8237,5027,4750,35613
+Prior-Week Heuristic Classifier,Without Storm Days,53627,12987,13264,0.621,0.6342,0.6276,0.6293,0.8564,8237,5027,4750,35613

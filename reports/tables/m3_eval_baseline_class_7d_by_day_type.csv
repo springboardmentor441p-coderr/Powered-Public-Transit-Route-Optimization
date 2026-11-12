@@ -1,0 +1,5 @@
+model_name,day_type,n_eval,actual_positive,pred_positive,positive_prevalence_pct,precision,recall,f1,pr_auc,tp,fp,fn,tn,subset
+Rule A: Prior-Week Heuristic (lag_7d / trips),Typical Weekday,38067,8607,8607,22.61,0.6316,0.6316,0.6316,0.6407,5436,3171,3171,26289,All Hours
+Rule A: Prior-Week Heuristic (lag_7d / trips),Typical Saturday,5981,1325,1297,22.15,0.5204,0.5094,0.5149,0.5147,675,622,650,4034,All Hours
+Rule A: Prior-Week Heuristic (lag_7d / trips),Typical Sunday,6768,1849,1790,27.32,0.5821,0.5635,0.5727,0.5731,1042,748,807,4171,All Hours
+Rule A: Prior-Week Heuristic (lag_7d / trips),Special/Excluded,2590,1206,1569,46.56,0.6909,0.8988,0.7813,0.7624,1084,485,122,899,All Hours

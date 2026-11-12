@@ -1,0 +1,5 @@
+model_name,day_type,n_eval,total_actual,mae,rmse,wape_pct,bias_pred_minus_actual,subset
+Same Hour Last Week (lag_7d),Typical Weekday,38200,10724257.0,42.15,78.26,15.01,-3.4,All Hours
+Same Hour Last Week (lag_7d),Typical Saturday,5988,1180379.0,45.94,78.21,23.3,-3.39,All Hours
+Same Hour Last Week (lag_7d),Typical Sunday,6801,1148094.0,42.97,71.84,25.45,-1.31,All Hours
+Same Hour Last Week (lag_7d),Special/Excluded,2596,515209.0,74.98,138.54,37.78,55.99,All Hours

@@ -1,0 +1,2 @@
+model_name,subset,n_eval,actual_pos,pred_pos,precision,recall,f1,pr_auc,roc_auc,tp,fp,fn,tn
+Rule B: 4-Week Average Heuristic (lag_mean / trips),All Hours,53406,12987,13081,0.6641,0.6689,0.6665,0.6904,0.8955,8687,4394,4300,36025

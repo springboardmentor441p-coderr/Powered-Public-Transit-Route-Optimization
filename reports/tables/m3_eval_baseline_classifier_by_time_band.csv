@@ -1,0 +1,6 @@
+model_name,time_band,n_eval,actual_positive,pred_positive,positive_prevalence_pct,precision,recall,f1,pr_auc,tp,fp,fn,tn,subset
+Prior-Week Heuristic Classifier,early_morning,5823,152,208,2.61,0.3846,0.5263,0.4444,0.2829,80,128,72,5543,All Hours
+Prior-Week Heuristic Classifier,morning_peak,7418,2649,2768,35.71,0.6911,0.7222,0.7063,0.7119,1913,855,736,3914,All Hours
+Prior-Week Heuristic Classifier,midday,14738,5848,5932,39.68,0.6106,0.6194,0.6149,0.6364,3622,2310,2226,6580,All Hours
+Prior-Week Heuristic Classifier,evening_peak,7446,3732,3697,50.12,0.6527,0.6466,0.6496,0.6627,2413,1284,1319,2430,All Hours
+Prior-Week Heuristic Classifier,night,18202,606,659,3.33,0.3171,0.3449,0.3304,0.2563,209,450,397,17146,All Hours

@@ -1,0 +1,4 @@
+Actual Class,Pred Normal (0),Pred High (1),Total Actual,Model
+Actual Normal Demand (0),36025,4394,40419,Rule B: 4-Week Average Heuristic (lag_mean / trips) (All Hours)
+Actual High Demand (1),4300,8687,12987,Rule B: 4-Week Average Heuristic (lag_mean / trips) (All Hours)
+Total Predicted,40325,13081,53406,Rule B: 4-Week Average Heuristic (lag_mean / trips) (All Hours)

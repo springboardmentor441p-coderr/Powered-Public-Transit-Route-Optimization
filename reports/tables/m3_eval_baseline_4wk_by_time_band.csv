@@ -1,0 +1,6 @@
+model_name,time_band,time_band_label,n_eval,total_actual,mae,rmse,wape_pct,bias_pred_minus_actual,subset
+4-Week Average Baseline,early_morning,Early Morning (04:00–06:59),5811,506758.0,12.83,28.36,14.71,0.82,All Hours
+4-Week Average Baseline,morning_peak,Morning Peak (07:00–09:59),7417,2732685.0,49.19,88.18,13.35,3.86,All Hours
+4-Week Average Baseline,midday,Midday (10:00–15:59),14727,5224596.0,45.75,68.9,12.9,5.6,All Hours
+4-Week Average Baseline,evening_peak,Evening Peak (16:00–18:59),7446,3174237.0,59.43,89.91,13.94,5.45,All Hours
+4-Week Average Baseline,night,Night (19:00–03:59),18184,1929663.0,19.52,34.66,18.4,0.56,All Hours

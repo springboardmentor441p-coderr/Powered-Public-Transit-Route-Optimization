@@ -1,0 +1,6 @@
+model_name,time_band,time_band_label,n_eval,actual_positive,pred_positive,positive_prevalence_pct,precision,recall,f1,pr_auc,tp,fp,fn,tn,subset
+Rule B: 4-Week Average Heuristic (lag_mean / trips),early_morning,Early Morning (04:00–06:59),5703,152,163,2.67,0.4049,0.4342,0.419,0.3115,66,97,86,5454,All Hours
+Rule B: 4-Week Average Heuristic (lag_mean / trips),morning_peak,Morning Peak (07:00–09:59),7417,2649,2726,35.72,0.7146,0.7354,0.7248,0.7441,1948,778,701,3990,All Hours
+Rule B: 4-Week Average Heuristic (lag_mean / trips),midday,Midday (10:00–15:59),14724,5848,6020,39.72,0.6503,0.6695,0.6598,0.6993,3915,2105,1933,6771,All Hours
+Rule B: 4-Week Average Heuristic (lag_mean / trips),evening_peak,Evening Peak (16:00–18:59),7446,3732,3778,50.12,0.6842,0.6927,0.6884,0.707,2585,1193,1147,2521,All Hours
+Rule B: 4-Week Average Heuristic (lag_mean / trips),night,Night (19:00–03:59),18116,606,394,3.35,0.4391,0.2855,0.346,0.3283,173,221,433,17289,All Hours

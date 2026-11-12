@@ -1,0 +1,5 @@
+model_name,day_type,n_eval,total_actual,mae,rmse,wape_pct,bias_pred_minus_actual,subset
+4-Week Average Baseline,Typical Weekday,38200,10724257.0,33.68,57.47,12.0,0.56,All Hours
+4-Week Average Baseline,Typical Saturday,5988,1180379.0,35.83,59.45,18.18,-0.45,All Hours
+4-Week Average Baseline,Typical Sunday,6801,1148094.0,32.94,55.97,19.51,-0.99,All Hours
+4-Week Average Baseline,Special/Excluded,2596,515209.0,71.45,132.62,36.0,59.5,All Hours
