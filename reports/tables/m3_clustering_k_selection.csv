@@ -1,0 +1,6 @@
+k,silhouette_score,inertia,cluster_sizes,ari_20starts_mean,ari_20starts_std,ari_20starts_min,ari_20starts_vs_ref_mean,ari_20starts_ninit10_mean,ari_loo_mean,ari_loo_std,ari_loo_min,is_selected_k,selection_note
+2,0.6179,281.02,"40, 1",0.2804,0.3847,-0.0535,0.2555,0.7352,0.9515,0.2142,0.0,False,Isolates M35 only (40 vs 1); highest silhouette (0.618) but lowest 20-start ARI (0.280)
+3,0.2489,202.06,"23, 17, 1",0.6688,0.2787,-0.0133,0.7691,0.9744,0.9743,0.0656,0.6305,False,Splits 40 routes into 2 broad groups + M35; lowest silhouette (0.249)
+4,0.2617,154.94,"18, 15, 7, 1",0.7513,0.1689,0.3358,0.7942,0.9543,0.937,0.0775,0.7095,True,"Selected k=4: highest 20-start ARI (0.751), high LOO ARI (0.937), higher silhouette (0.262), 4 clear groups"
+5,0.2774,130.41,"15, 13, 7, 5, 1",0.5449,0.136,0.2696,0.6183,0.9373,0.9395,0.0856,0.6217,False,20-start stability drops sharply (ARI = 0.545) as crosstown/trunk boundary fragments
+6,0.2748,112.16,"15, 13, 6, 5, 1, 1",0.5808,0.1234,0.2905,0.6705,0.8127,0.9141,0.073,0.7396,False,Over-segmented (two singletons M35 & M98); LOO ARI drops to 0.891

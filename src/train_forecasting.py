@@ -24,8 +24,9 @@ Evaluation & Reporting Rules:
 
 Final Test Evaluation Protocol (Step 5 Decision, Fixed Prior to Test Run):
 - Because training (Jan–May 2026) reflects higher spring ridership whereas validation
-  (Jun–Jul 2026) enters the ~11% summer recess drop, models trained only on Jan–May
-  overpredict June–July by ~8.7 to 9.3 riders/hr (+3.5%).
+  (Jun–Jul 2026) has lower summer ridership (average riders fall from 268 per hour in
+  week 1 to about 245 by mid-July), models trained only on Jan–May overpredict
+  June–July by ~8.7 to 9.3 riders/hr (+3.5%).
 - For the final one-time test evaluation in Step 5 (Aug–Sep 2026), after selecting
   hyperparameter settings on validation, every compared model will be retrained on
   `train + val` combined (January to July 2026) with its validation-chosen settings
@@ -745,6 +746,13 @@ def run_step2_diagnostics() -> None:
     for wk_idx, (wk_start, grp) in enumerate(vc.groupby("week_start"), start=1):
         m_4wk = compute_forecast_metrics(grp["ridership"], grp["lag_mean_available"])
         m_hgb = compute_forecast_metrics(grp["ridership"], grp["pred_hgb"])
+        wape_diff = round(m_hgb["wape_pct"] - m_4wk["wape_pct"], 2)
+        if wape_diff < -0.02:
+            outcome = "Win"
+        elif abs(wape_diff) <= 0.02:
+            outcome = "Tie"
+        else:
+            outcome = "Loss"
         weekly_rows.append({
             "week_num": wk_idx,
             "week_start": wk_start,
@@ -753,8 +761,9 @@ def run_step2_diagnostics() -> None:
             "mean_actual_riders": round(float(grp["ridership"].mean()), 1),
             "wape_4wk_pct": m_4wk["wape_pct"],
             "wape_hgb_pct": m_hgb["wape_pct"],
-            "wape_diff_hgb_minus_4wk": round(m_hgb["wape_pct"] - m_4wk["wape_pct"], 2),
-            "hgb_wins_wape": bool(m_hgb["wape_pct"] < m_4wk["wape_pct"]),
+            "wape_diff_hgb_minus_4wk": wape_diff,
+            "weekly_outcome": outcome,
+            "hgb_wins_wape": bool(outcome == "Win"),
             "mae_4wk": m_4wk["mae"],
             "mae_hgb": m_hgb["mae"],
             "bias_4wk_pred_minus_actual": m_4wk["bias_pred_minus_actual"],
@@ -773,7 +782,7 @@ def run_step2_diagnostics() -> None:
 
     ax1.axhline(0.0, color="#64748b", linestyle=":", linewidth=1.1)
     ax1.plot(x_wk, weekly_df["bias_4wk_pred_minus_actual"], marker="s", linestyle="--", color="#64748b", linewidth=1.8, label="4-Week Average Baseline")
-    ax1.plot(x_wk, weekly_df["bias_hgb_pred_minus_actual"], marker="o", color="#dc2626", linewidth=2.2, label="HistGradientBoosting (Spring-Trained)")
+    ax1.plot(x_wk, weekly_df["bias_hgb_pred_minus_actual"], marker="o", color="#dc2626", linewidth=2.2, label="HistGradientBoosting (Jan–May Trained)")
     for i, r in weekly_df.iterrows():
         ax1.text(i, r["bias_hgb_pred_minus_actual"] + 1.1, f"{r['bias_hgb_pred_minus_actual']:+.1f}", ha="center", fontsize=7.5, color="#991b1b", fontweight="bold")
     ax1.set_title("A. Weekly Forecast Bias (Predicted − Actual Riders/Hr)", fontsize=10.5, fontweight="bold", pad=8)
@@ -786,7 +795,7 @@ def run_step2_diagnostics() -> None:
 
     w = 0.36
     ax2.bar(x_wk - w / 2, weekly_df["wape_4wk_pct"], w, color="#93c5fd", edgecolor="#1d4ed8", label="4-Week Average Baseline")
-    ax2.bar(x_wk + w / 2, weekly_df["wape_hgb_pct"], w, color="#1d4ed8", edgecolor="#1e3a8a", label="HistGradientBoosting (Wins 9/9 Weeks)")
+    ax2.bar(x_wk + w / 2, weekly_df["wape_hgb_pct"], w, color="#1d4ed8", edgecolor="#1e3a8a", label="HistGradientBoosting (Wins 8/9 Weeks, Ties 1)")
     ax2.set_title("B. Weekly WAPE (%) Across All 9 Validation Weeks", fontsize=10.5, fontweight="bold", pad=8)
     ax2.set_ylabel("Weekly WAPE (%)", fontsize=9.5)
     ax2.set_xticks(x_wk)

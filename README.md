@@ -116,6 +116,7 @@ python src/evaluate_baselines.py     # Scores lag-7d and 4-week average baseline
 python src/evaluate.py               # Runs shared forecasting & classification evaluation framework on validation baselines
 python src/train_forecasting.py      # Tunes Ridge, Ridge-Log, Random Forest & HistGradientBoosting forecasters on validation
 python src/train_classification.py   # Tunes Logistic Regression, Random Forest, HistGradientBoosting & Forecast/Trips classifiers
+python src/train_clustering.py       # Runs KMeans (k=2..6), 20-start & LOO stability checks, DBSCAN, group profiles & maps
 ```
 
 ---

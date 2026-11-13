@@ -82,6 +82,20 @@ def find_best_f1_cutoff(
     return best_t, best_m
 
 
+def metrics_at_fixed_workload(
+    y_true: np.ndarray,
+    y_score: np.ndarray,
+    k_flagged: int = 13081,
+) -> Dict:
+    """Evaluate precision, recall, and F1 when a model flags the exact top k_flagged hours (matching Rule B's 13,081 hours)."""
+    order = np.argsort(-y_score, kind="mergesort")
+    pred = np.zeros_like(y_true, dtype=int)
+    pred[order[:k_flagged]] = 1
+    m = compute_classification_metrics(y_true, pred, y_score)
+    m["Implicit_Cutoff"] = float(round(y_score[order[k_flagged - 1]], 4))
+    return m
+
+
 def run_step3_classification() -> None:
     print("=" * 88, flush=True)
     print("MILESTONE 3 — STEP 3: HIGH-DEMAND-PER-TRIP CLASSIFICATION MODELS", flush=True)
@@ -366,30 +380,70 @@ def run_step3_classification() -> None:
     # ==========================================================================
     # BUILD HEAD-TO-HEAD COMPARISON TABLE (53,406 COMMON ROWS & ALL 53,495 ROWS)
     # ==========================================================================
+    build_step3_comparison_and_figures(
+        va_clf=va_clf,
+        common_in_va_clf=common_in_va_clf,
+        y_val_common=y_val_common,
+        y_val_all=y_val_all,
+        ratio_common=ratio_common,
+        ratio_all=ratio_all,
+        score_div_common=score_div_common,
+        score_div_all=score_div_all,
+        m_at_100=m_at_100,
+        best_family_info=best_family_info,
+        tuning_df=tuning_df,
+        preprocessor=preprocessor,
+    )
+
+
+def build_step3_comparison_and_figures(
+    va_clf: pd.DataFrame,
+    common_in_va_clf: np.ndarray,
+    y_val_common: np.ndarray,
+    y_val_all: np.ndarray,
+    ratio_common: np.ndarray,
+    ratio_all: np.ndarray,
+    score_div_common: np.ndarray,
+    score_div_all: np.ndarray,
+    m_at_100: Dict,
+    best_family_info: Dict[str, Dict],
+    tuning_df: pd.DataFrame,
+    preprocessor: object,
+) -> None:
     comp_rows = []
+    k_rule_b = 13081
 
     # Baselines: Rule A (7-day lag) and Rule B (4-week average — Target to Beat)
+    # Note: In va_clf (53,495 active rows), lag_7d is non-null on 53,406 rows (89 missing after holidays/outages)
+    # and lag_mean_available is non-null on 53,492 rows (3 missing). To score all 53,495 active rows consistently
+    # in the "all active rows" columns without dropping rows, missing lags are median-imputed (or fallback to lag_mean_available)
+    # while recording exact non-null lag counts in cutoff_rule.
     for rule_name, col, role in [
         ("Baseline Rule A: 7-Day Lag ÷ Trips > Threshold", "lag_7d", "Baseline (Weak)"),
         ("Baseline Rule B: 4-Week Avg ÷ Trips > Threshold (Target to Beat)", "lag_mean_available", "Baseline Hurdle"),
     ]:
         sub_c = va_clf[common_in_va_clf]
-        rpt_c = sub_c[col] / sub_c["trips_running"]
-        pred_c = (rpt_c > sub_c["threshold_p75"]).astype(int)
-        score_c = np.clip(rpt_c / (2.0 * sub_c["threshold_p75"]), 0.0, 1.0)
+        rpt_c = (sub_c[col] / sub_c["trips_running"]).values
+        ratio_c = rpt_c / sub_c["threshold_p75"].values
+        pred_c = (ratio_c > 1.00).astype(int)
+        score_c = np.clip(ratio_c / 2.0, 0.0, 1.0)
         mc = compute_classification_metrics(y_val_common, pred_c, score_c)
+        mw = metrics_at_fixed_workload(y_val_common, ratio_c, k_flagged=k_rule_b)
 
-        valid_col = va_clf[col].notnull().values
-        sub_a = va_clf[valid_col]
-        rpt_a = sub_a[col] / sub_a["trips_running"]
-        pred_a = (rpt_a > sub_a["threshold_p75"]).astype(int)
-        score_a = np.clip(rpt_a / (2.0 * sub_a["threshold_p75"]), 0.0, 1.0)
-        ma = compute_classification_metrics(y_val_all[valid_col], pred_a, score_a)
+        # Evaluate across all 53,495 active-service rows (filling missing lag with lag_mean_available / median 150.0)
+        lag_filled = va_clf[col].fillna(va_clf["lag_mean_available"]).fillna(150.0)
+        rpt_a = (lag_filled / va_clf["trips_running"]).values
+        ratio_a = rpt_a / va_clf["threshold_p75"].values
+        pred_a = (ratio_a > 1.00).astype(int)
+        score_a = np.clip(ratio_a / 2.0, 0.0, 1.0)
+        ma = compute_classification_metrics(y_val_all, pred_a, score_a)
+        n_nonnull = int(va_clf[col].notnull().sum())
 
         comp_rows.append({
             "model_name": rule_name,
             "model_category": role,
-            "cutoff_rule": "ratio > 1.00 * threshold_p75 (Fixed)",
+            "test_set_role": "Baseline Benchmark" if "Rule B" in rule_name else "Baseline Reference",
+            "cutoff_rule": f"ratio > 1.00 * threshold_p75 (Fixed; {n_nonnull:,}/53,495 non-null lags)",
             "settings_tested": 1,
             "n_eval_53406": mc["n_eval"],
             "actual_pos_53406": mc["actual_positive"],
@@ -399,6 +453,8 @@ def run_step3_classification() -> None:
             "f1_53406": mc["f1"],
             "pr_auc_53406": mc["pr_auc"],
             "roc_auc_53406": mc["roc_auc"],
+            "precision_at_13081_53406": mw["precision"] if "Rule A" in rule_name else mc["precision"],
+            "f1_at_13081_53406": mw["f1"] if "Rule A" in rule_name else mc["f1"],
             "n_eval_all_active": ma["n_eval"],
             "precision_all_active": ma["precision"],
             "recall_all_active": ma["recall"],
@@ -411,9 +467,16 @@ def run_step3_classification() -> None:
     for fam in ["Logistic Regression", "Random Forest Classifier", "HistGradientBoosting Classifier"]:
         b = best_family_info[fam]
         n_tested = int((tuning_df["model_family"] == fam).sum())
+        mw = metrics_at_fixed_workload(y_val_common, b["probs_common"], k_flagged=k_rule_b)
+        test_role = (
+            "Dedicated Classifier Comparison (Official Test Candidate)"
+            if fam == "HistGradientBoosting Classifier"
+            else "Validation Candidate"
+        )
         comp_rows.append({
             "model_name": f"{fam} ({b['setting_description']})",
             "model_category": "Direct Classifier (Class Weights)",
+            "test_set_role": test_role,
             "cutoff_rule": f"prob >= {b['opt_cutoff_max_f1']:.2f} (Max F1 on Val; @0.50 F1={b['f1_at_default_53406']:.4f})",
             "settings_tested": n_tested,
             "n_eval_53406": b["n_eval_common"],
@@ -424,6 +487,8 @@ def run_step3_classification() -> None:
             "f1_53406": b["f1_53406"],
             "pr_auc_53406": b["pr_auc_53406"],
             "roc_auc_53406": b["roc_auc_53406"],
+            "precision_at_13081_53406": mw["precision"],
+            "f1_at_13081_53406": mw["f1"],
             "n_eval_all_active": b["n_eval_all_active"],
             "precision_all_active": b["precision_53495"],
             "recall_all_active": b["recall_53495"],
@@ -432,11 +497,29 @@ def run_step3_classification() -> None:
             "f1_gain_vs_rule_b": round(b["f1_53406"] - 0.6665, 4),
         })
 
-    # Forecast ÷ Trips: report all 3 key operational cutoffs (1.00x unadjusted, 1.03x bias-corrected, 0.96x max-F1)
-    for mult, label, rule_desc in [
-        (1.00, "Forecast ÷ Trips: Unadjusted (1.00x Threshold)", "ratio > 1.00 * threshold_p75 (Unadjusted; +8.83 bias flags 14,748 hrs)"),
-        (1.03, "Forecast ÷ Trips: Bias-Corrected (1.03x Threshold)", "ratio > 1.03 * threshold_p75 (Offsets +3.5% seasonal bias; beats Rule B on P & R)"),
-        (0.96, "Forecast ÷ Trips: Max-F1 Tuned (0.96x Threshold)", "ratio > 0.96 * threshold_p75 (Maximises Validation F1)"),
+    # Forecast ÷ Trips:
+    # - Official Rule (0.96x Threshold): chosen because our stated validation rule is to maximise F1.
+    # - Side Checks (1.00x Unadjusted and 1.03x Bias-Corrected): reported as validation diagnostic checks only.
+    mw_div = metrics_at_fixed_workload(y_val_common, ratio_common, k_flagged=k_rule_b)
+    for mult, label, test_role, rule_desc in [
+        (
+            0.96,
+            "Forecast ÷ Trips: Official Max-F1 Rule (0.96x Threshold)",
+            "Recommended Main Approach (Official Test Candidate)",
+            "ratio > 0.96 * threshold_p75 (Official Max-F1 Rule Selected on Validation)",
+        ),
+        (
+            1.00,
+            "Forecast ÷ Trips: Unadjusted Side Check (1.00x Threshold)",
+            "Validation Side Check Only (Not Taken to Test)",
+            "ratio > 1.00 * threshold_p75 (Unadjusted check; +8.83 bias flags 14,748 hrs)",
+        ),
+        (
+            1.03,
+            "Forecast ÷ Trips: Bias-Corrected Side Check (1.03x Threshold)",
+            "Validation Side Check Only (Not Taken to Test)",
+            "ratio > 1.03 * threshold_p75 (Side check offsetting +3.5% seasonal bias)",
+        ),
     ]:
         mc = compute_classification_metrics(
             y_val_common, (ratio_common > mult).astype(int), score_div_common
@@ -447,6 +530,7 @@ def run_step3_classification() -> None:
         comp_rows.append({
             "model_name": label,
             "model_category": "Forecast ÷ Trips (HGB)",
+            "test_set_role": test_role,
             "cutoff_rule": rule_desc,
             "settings_tested": 10,
             "n_eval_53406": mc["n_eval"],
@@ -457,6 +541,8 @@ def run_step3_classification() -> None:
             "f1_53406": mc["f1"],
             "pr_auc_53406": mc["pr_auc"],
             "roc_auc_53406": mc["roc_auc"],
+            "precision_at_13081_53406": mw_div["precision"],
+            "f1_at_13081_53406": mw_div["f1"],
             "n_eval_all_active": ma["n_eval"],
             "precision_all_active": ma["precision"],
             "recall_all_active": ma["recall"],
@@ -472,6 +558,42 @@ def run_step3_classification() -> None:
     print("STEP 3 CLASSIFICATION COMPARISON: COMMON 53,406 ROWS vs ALL 53,495 ACTIVE ROWS", flush=True)
     print("=" * 88, flush=True)
     print(comp_df.to_string(index=False), flush=True)
+
+    # Build dedicated fair ranking table sorted by PR-AUC (cutoff-free) and Equal-Workload Precision (13,081 hours)
+    fair_rows = []
+    for idx_r, r in comp_df.iterrows():
+        if "Side Check" in str(r["test_set_role"]):
+            continue
+        fair_rows.append({
+            "model_name": r["model_name"],
+            "test_set_role": r["test_set_role"],
+            "pr_auc_53406": r["pr_auc_53406"],
+            "roc_auc_53406": r["roc_auc_53406"],
+            "precision_at_13081_hours": r["precision_at_13081_53406"],
+            "f1_at_13081_hours": r["f1_at_13081_53406"],
+            "pred_pos_at_max_f1": r["pred_pos_53406"],
+            "precision_at_max_f1": r["precision_53406"],
+            "recall_at_max_f1": r["recall_53406"],
+            "f1_at_max_f1": r["f1_53406"],
+        })
+    fair_df = pd.DataFrame(fair_rows).sort_values("pr_auc_53406", ascending=False).reset_index(drop=True)
+    fair_df["pr_auc_rank"] = np.arange(1, len(fair_df) + 1)
+    fair_df = fair_df[[
+        "pr_auc_rank",
+        "model_name",
+        "test_set_role",
+        "pr_auc_53406",
+        "precision_at_13081_hours",
+        "f1_at_13081_hours",
+        "pred_pos_at_max_f1",
+        "precision_at_max_f1",
+        "recall_at_max_f1",
+        "f1_at_max_f1",
+    ]]
+    fair_path = TAB_DIR / "m3_classification_fair_ranking.csv"
+    fair_df.to_csv(fair_path, index=False)
+    print("\nFair Cutoff-Free (PR-AUC) & Equal-Workload (13,081 Flagged Hours) Ranking:", flush=True)
+    print(fair_df.to_string(index=False), flush=True)
 
     # ==========================================================================
     # EVALUATE BEST DIRECT CLASSIFIER (HistGradientBoostingClassifier) & FORECAST ÷ TRIPS
@@ -540,65 +662,76 @@ def run_step3_classification() -> None:
     print(f"Saved best classifier bundle to {MODELS_DIR / 'best_classifier.joblib'}", flush=True)
 
     # ==========================================================================
-    # GENERATE STEP 3 FIGURE: MODEL COMPARISON & PRECISION-RECALL CURVES
+    # GENERATE STEP 3 FIGURE: FAIR RANKING (PR-AUC & EQUAL WORKLOAD) + PR CURVES
     # ==========================================================================
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5.2), dpi=150)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13.5, 5.4), dpi=150)
 
-    # Panel A: Grouped bar chart of Precision, Recall, F1, PR-AUC on 53,406 common rows
+    # Panel A: Grouped bar chart of PR-AUC, Equal-Workload Precision (13,081 hrs), and Max-F1 on 53,406 common rows
+    # Order matches fair_df ranking (plus Forecast÷Trips 1.03x side check for reference)
+    row_rule_a = comp_df[comp_df["model_name"].str.contains("Rule A")].iloc[0]
+    row_rule_b = comp_df[comp_df["model_name"].str.contains("Rule B")].iloc[0]
+    row_lr = comp_df[comp_df["model_name"].str.contains("Logistic Regression")].iloc[0]
+    row_rf = comp_df[comp_df["model_name"].str.contains("Random Forest Classifier")].iloc[0]
+    row_hgb = comp_df[comp_df["model_name"].str.contains("HistGradientBoosting Classifier")].iloc[0]
+    row_div_096 = comp_df[comp_df["model_name"].str.contains("0.96x")].iloc[0]
+    row_div_103 = comp_df[comp_df["model_name"].str.contains("1.03x")].iloc[0]
+
     plot_models = [
-        ("Rule A\n(7-Day Lag)", 0.6211, 0.6342, 0.6276, 0.6295),
-        ("Rule B Hurdle\n(4-Wk Avg)", 0.6641, 0.6689, 0.6665, 0.6904),
-        ("Logistic Reg\n(Max F1)", best_family_info["Logistic Regression"]["precision_53406"], best_family_info["Logistic Regression"]["recall_53406"], best_family_info["Logistic Regression"]["f1_53406"], best_family_info["Logistic Regression"]["pr_auc_53406"]),
-        ("Random Forest\n(Max F1)", best_family_info["Random Forest Classifier"]["precision_53406"], best_family_info["Random Forest Classifier"]["recall_53406"], best_family_info["Random Forest Classifier"]["f1_53406"], best_family_info["Random Forest Classifier"]["pr_auc_53406"]),
-        ("HGB Classifier\n(Max F1)", best_hgb_info["precision_53406"], best_hgb_info["recall_53406"], best_hgb_info["f1_53406"], best_hgb_info["pr_auc_53406"]),
-        ("Forecast÷Trips\n(1.00x Raw)", m_at_100["precision"], m_at_100["recall"], m_at_100["f1"], m_at_100["pr_auc"]),
-        ("Forecast÷Trips\n(1.03x Bias-Adj)", comp_df.iloc[-2]["precision_53406"], comp_df.iloc[-2]["recall_53406"], comp_df.iloc[-2]["f1_53406"], comp_df.iloc[-2]["pr_auc_53406"]),
-        ("Forecast÷Trips\n(0.96x Max F1)", comp_df.iloc[-1]["precision_53406"], comp_df.iloc[-1]["recall_53406"], comp_df.iloc[-1]["f1_53406"], comp_df.iloc[-1]["pr_auc_53406"]),
+        ("Rule A\n(7-Day Lag)", row_rule_a["pr_auc_53406"], row_rule_a["precision_at_13081_53406"], row_rule_a["f1_53406"]),
+        ("Logistic Reg\n(Cut=0.48)", row_lr["pr_auc_53406"], row_lr["precision_at_13081_53406"], row_lr["f1_53406"]),
+        ("Rule B Hurdle\n(4-Wk Avg)", row_rule_b["pr_auc_53406"], row_rule_b["precision_at_13081_53406"], row_rule_b["f1_53406"]),
+        ("Random Forest\n(Cut=0.55)", row_rf["pr_auc_53406"], row_rf["precision_at_13081_53406"], row_rf["f1_53406"]),
+        ("Forecast÷Trips\n(0.96x Official)", row_div_096["pr_auc_53406"], row_div_096["precision_at_13081_53406"], row_div_096["f1_53406"]),
+        ("HGB Classifier\n(Cut=0.63)", row_hgb["pr_auc_53406"], row_hgb["precision_at_13081_53406"], row_hgb["f1_53406"]),
     ]
     x = np.arange(len(plot_models))
     w = 0.25
-    p_vals = [m[1] for m in plot_models]
-    r_vals = [m[2] for m in plot_models]
+    pr_auc_vals = [m[1] for m in plot_models]
+    p_eq_vals = [m[2] for m in plot_models]
     f1_vals = [m[3] for m in plot_models]
 
-    ax1.bar(x - w, p_vals, w, label="Precision", color="#93c5fd", edgecolor="#1d4ed8")
-    ax1.bar(x, r_vals, w, label="Recall", color="#60a5fa", edgecolor="#1e40af")
-    bars_f1 = ax1.bar(x + w, f1_vals, w, label="F1 Score", color="#1e3a8a", edgecolor="#0f172a")
-    ax1.axhline(0.6665, color="#dc2626", linestyle="--", linewidth=1.2, label="Rule B F1 Hurdle (0.6665)")
-    for b in bars_f1:
+    bars_pr = ax1.bar(x - w, pr_auc_vals, w, label="PR-AUC (Cutoff-Free)", color="#1e3a8a", edgecolor="#0f172a")
+    bars_peq = ax1.bar(x, p_eq_vals, w, label="Precision @ 13,081 Hrs (Rule B Workload)", color="#059669", edgecolor="#064e3b")
+    bars_f1 = ax1.bar(x + w, f1_vals, w, label="Max F1 (Chosen Cutoff)", color="#93c5fd", edgecolor="#1d4ed8")
+    ax1.axhline(row_rule_b["pr_auc_53406"], color="#1e3a8a", linestyle="--", linewidth=1.0, alpha=0.7, label="Rule B PR-AUC (0.690)")
+    ax1.axhline(row_rule_b["precision_at_13081_53406"], color="#dc2626", linestyle=":", linewidth=1.2, label="Rule B Precision @ 13,081 Hrs (0.664)")
+    for b in bars_pr:
         h = b.get_height()
-        ax1.text(b.get_x() + b.get_width() / 2.0, h + 0.01, f"{h:.3f}", ha="center", va="bottom", fontsize=7, fontweight="bold")
-    ax1.set_title("A. Classification Precision, Recall & F1 (53,406 Common Rows)", fontsize=10.5, fontweight="bold", pad=8)
-    ax1.set_ylabel("Score", fontsize=9.5)
+        ax1.text(b.get_x() + b.get_width() / 2.0, h + 0.008, f"{h:.3f}", ha="center", va="bottom", fontsize=6.8, fontweight="bold", color="#1e3a8a")
+    for b in bars_peq:
+        h = b.get_height()
+        ax1.text(b.get_x() + b.get_width() / 2.0, h + 0.008, f"{h:.3f}", ha="center", va="bottom", fontsize=6.8, fontweight="bold", color="#065f46")
+    ax1.set_title("A. Fair Model Comparison: PR-AUC, Equal-Workload Precision & Max F1", fontsize=10, fontweight="bold", pad=8)
+    ax1.set_ylabel("Score (53,406 Common Active Rows)", fontsize=9.5)
     ax1.set_xticks(x)
-    ax1.set_xticklabels([m[0] for m in plot_models], fontsize=7.5)
-    ax1.set_ylim(0.40, 0.94)
+    ax1.set_xticklabels([m[0] for m in plot_models], fontsize=7.8)
+    ax1.set_ylim(0.50, 0.84)
     ax1.grid(axis="y", alpha=0.3)
-    ax1.legend(loc="upper left", fontsize=8, ncol=2)
+    ax1.legend(loc="upper left", fontsize=7.5, ncol=2)
 
     # Panel B: Precision-Recall Curves & Operating Points
     for name, scores, color, ls in [
-        ("HGB Direct Classifier (PR-AUC = 0.727)", best_hgb_info["probs_common"], "#1d4ed8", "-"),
-        ("Forecast ÷ Trips (HGB, PR-AUC = 0.721)", score_div_common, "#059669", "-."),
-        ("Random Forest Classifier (PR-AUC = 0.716)", best_family_info["Random Forest Classifier"]["probs_common"], "#7c3aed", "--"),
-        ("Logistic Regression (PR-AUC = 0.617)", best_family_info["Logistic Regression"]["probs_common"], "#94a3b8", ":"),
+        (f"HGB Direct Classifier (PR-AUC = {row_hgb['pr_auc_53406']:.3f})", best_hgb_info["probs_common"], "#1d4ed8", "-"),
+        (f"Forecast ÷ Trips (HGB, PR-AUC = {row_div_096['pr_auc_53406']:.3f})", score_div_common, "#059669", "-."),
+        (f"Random Forest Classifier (PR-AUC = {row_rf['pr_auc_53406']:.3f})", best_family_info["Random Forest Classifier"]["probs_common"], "#7c3aed", "--"),
+        (f"Logistic Regression (PR-AUC = {row_lr['pr_auc_53406']:.3f})", best_family_info["Logistic Regression"]["probs_common"], "#94a3b8", ":"),
     ]:
         prec_c, rec_c, _ = precision_recall_curve(y_val_common, scores)
         ax2.plot(rec_c, prec_c, color=color, linestyle=ls, linewidth=1.8, label=name)
 
-    # Plot operating points for Rule B, Forecast÷Trips 1.00x, Forecast÷Trips 1.03x, Forecast÷Trips 0.96x, and HGB Clf
-    ax2.scatter([0.6689], [0.6641], color="#dc2626", s=65, zorder=5, marker="D", label="Rule B Baseline (P=0.664, R=0.669)")
-    ax2.scatter([m_at_100["recall"]], [m_at_100["precision"]], color="#f59e0b", s=65, zorder=5, marker="o", label="Forecast÷Trips 1.00x (P=0.651, R=0.739)")
-    ax2.scatter([comp_df.iloc[-2]["recall_53406"]], [comp_df.iloc[-2]["precision_53406"]], color="#059669", s=70, zorder=5, marker="^", label="Forecast÷Trips 1.03x Bias-Adj (P=0.688, R=0.671)")
-    ax2.scatter([comp_df.iloc[-1]["recall_53406"]], [comp_df.iloc[-1]["precision_53406"]], color="#047857", s=70, zorder=5, marker="s", label="Forecast÷Trips 0.96x Max-F1 (P=0.605, R=0.826)")
+    # Plot operating points for Rule B, Equal-Workload (13,081 hrs), Forecast÷Trips 0.96x (Official), 1.03x (Side Check), and HGB Clf
+    ax2.scatter([row_rule_b["recall_53406"]], [row_rule_b["precision_53406"]], color="#dc2626", s=65, zorder=5, marker="D", label="Rule B (13,081 hrs: P=0.664, R=0.669)")
+    ax2.scatter([row_div_096["recall_53406"]], [row_div_096["precision_53406"]], color="#047857", s=70, zorder=5, marker="s", label="Forecast÷Trips 0.96x Official (17,789 hrs: P=0.605, R=0.829)")
+    ax2.scatter([row_div_103["recall_53406"]], [row_div_103["precision_53406"]], color="#10b981", s=65, zorder=5, marker="^", label="Forecast÷Trips 1.03x Side Check (12,660 hrs: P=0.688, R=0.671)")
+    ax2.scatter([row_hgb["recall_53406"]], [row_hgb["precision_53406"]], color="#1d4ed8", s=65, zorder=5, marker="o", label="HGB Clf Cut=0.63 (18,390 hrs: P=0.585, R=0.829)")
 
-    ax2.set_title("B. Validation Precision–Recall Curves & Cutoff Operating Points", fontsize=10.5, fontweight="bold", pad=8)
+    ax2.set_title("B. Validation Precision–Recall Curves & Cutoff Operating Points", fontsize=10, fontweight="bold", pad=8)
     ax2.set_xlabel("Recall (Share of True High-Demand Hours Flagged)", fontsize=9.5)
     ax2.set_ylabel("Precision (Share of Flagged Hours Truly High-Demand)", fontsize=9.5)
     ax2.set_xlim(0.20, 1.00)
     ax2.set_ylim(0.35, 0.95)
     ax2.grid(True, alpha=0.3)
-    ax2.legend(loc="lower left", fontsize=7.5)
+    ax2.legend(loc="lower left", fontsize=7.2)
 
     fig.tight_layout()
     fig.savefig(FIG_DIR / "m3_classification_model_comparison.png", dpi=150, bbox_inches="tight")
@@ -606,6 +739,100 @@ def run_step3_classification() -> None:
     print("Saved Step 3 classification figure to reports/figures/m3_classification_model_comparison.png", flush=True)
 
 
+def refresh_step3_comparison() -> None:
+    """Fast refresh of Step 3 comparison tables and figures using saved tuning results and models."""
+    train_df = load_dataset("train")
+    val_df = load_dataset("val")
+    preprocessor = joblib.load(MODELS_DIR / "preprocessor.joblib")
+
+    tr_active_mask = (train_df["trips_running"] > 0) & train_df["threshold_p75"].notnull()
+    va_active_mask = (val_df["trips_running"] > 0) & val_df["threshold_p75"].notnull()
+    tr_clf = train_df[tr_active_mask].copy()
+    va_clf = val_df[va_active_mask].copy()
+
+    common_in_va_clf = (
+        va_clf["lag_7d"].notnull() & va_clf["lag_mean_available"].notnull()
+    ).values
+
+    y_train = tr_clf["high_demand_per_trip"].values.astype(int)
+    y_val_all = va_clf["high_demand_per_trip"].values.astype(int)
+    y_val_common = y_val_all[common_in_va_clf]
+
+    X_train = preprocessor.transform(tr_clf[ALL_FEATURES])
+    X_val_all = preprocessor.transform(va_clf[ALL_FEATURES])
+    X_val_common = X_val_all[common_in_va_clf]
+
+    tuning_df = pd.read_csv(TAB_DIR / "m3_classification_tuning_results.csv")
+    clf_bundle = joblib.load(MODELS_DIR / "best_classifier.joblib")
+    best_hgb_pipe = clf_bundle["pipeline"]
+
+    # Fit only the single best LogisticRegression and RandomForestClassifier from tuning_df
+    print("Fitting best Logistic Regression (C=1.0, class_weight=weight_1:1.5)...", flush=True)
+    lr_est = LogisticRegression(C=1.0, class_weight={0: 1.0, 1: 1.5}, max_iter=1000, random_state=42)
+    lr_est.fit(X_train, y_train)
+    probs_lr_c = lr_est.predict_proba(X_val_common)[:, 1]
+    probs_lr_a = lr_est.predict_proba(X_val_all)[:, 1]
+
+    print("Fitting best Random Forest Classifier (depth=18, leaf=5, feat=0.8, cw=balanced)...", flush=True)
+    rf_est = RandomForestClassifier(
+        n_estimators=200, max_depth=18, min_samples_leaf=5, max_features=0.8,
+        class_weight="balanced", n_jobs=-1, random_state=42,
+    )
+    rf_est.fit(X_train, y_train)
+    probs_rf_c = rf_est.predict_proba(X_val_common)[:, 1]
+    probs_rf_a = rf_est.predict_proba(X_val_all)[:, 1]
+
+    probs_hgb_c = best_hgb_pipe.predict_proba(va_clf[ALL_FEATURES].iloc[np.where(common_in_va_clf)[0]])[:, 1]
+    probs_hgb_a = best_hgb_pipe.predict_proba(va_clf[ALL_FEATURES])[:, 1]
+
+    best_family_info = {}
+    for fam, probs_c, probs_a, est in [
+        ("Logistic Regression", probs_lr_c, probs_lr_a, lr_est),
+        ("Random Forest Classifier", probs_rf_c, probs_rf_a, rf_est),
+        ("HistGradientBoosting Classifier", probs_hgb_c, probs_hgb_a, best_hgb_pipe.named_steps["classifier"]),
+    ]:
+        sub_t = tuning_df[tuning_df["model_family"] == fam].sort_values("f1_53406", ascending=False).iloc[0]
+        row_d = sub_t.to_dict()
+        row_d["probs_common"] = probs_c
+        row_d["probs_all"] = probs_a
+        row_d["estimator"] = est
+        best_family_info[fam] = row_d
+
+    # Forecast ÷ Trips from best forecaster
+    forecaster_bundle = joblib.load(MODELS_DIR / "best_forecaster.joblib")
+    best_forecaster = forecaster_bundle["pipeline"]
+    pred_riders_all = np.clip(best_forecaster.predict(va_clf[ALL_FEATURES]), 0.0, None)
+    pred_rpt_all = pred_riders_all / va_clf["trips_running"].values
+    thresh_all = va_clf["threshold_p75"].values
+    ratio_all = pred_rpt_all / thresh_all
+    ratio_common = ratio_all[common_in_va_clf]
+    score_div_all = np.clip(ratio_all / 2.0, 0.0, 1.0)
+    score_div_common = score_div_all[common_in_va_clf]
+    m_at_100 = compute_classification_metrics(
+        y_val_common, (ratio_common > 1.00).astype(int), score_div_common
+    )
+
+    build_step3_comparison_and_figures(
+        va_clf=va_clf,
+        common_in_va_clf=common_in_va_clf,
+        y_val_common=y_val_common,
+        y_val_all=y_val_all,
+        ratio_common=ratio_common,
+        ratio_all=ratio_all,
+        score_div_common=score_div_common,
+        score_div_all=score_div_all,
+        m_at_100=m_at_100,
+        best_family_info=best_family_info,
+        tuning_df=tuning_df,
+        preprocessor=preprocessor,
+    )
+
+
 if __name__ == "__main__":
-    run_step3_classification()
+    import sys
+    if "--refresh-only" in sys.argv:
+        refresh_step3_comparison()
+    else:
+        run_step3_classification()
+
 

@@ -306,10 +306,12 @@ def test_step2_forecasting_outputs_and_hurdle():
     assert "Juneteenth" in miss_cats
     assert "weather" not in miss_cats.lower()
 
-    # Weekly bias & WAPE check (9 validation weeks) and 41-route gain check
+    # Weekly bias & WAPE check (9 validation weeks: wins 8 of 9 weeks, ties 1) and 41-route gain check
     weekly_df = pd.read_csv(tab_dir / "m3_forecast_weekly_check.csv")
     assert len(weekly_df) == 9
-    assert int(weekly_df["hgb_wins_wape"].sum()) == 9
+    assert int((weekly_df["weekly_outcome"] == "Win").sum()) == 8
+    assert int((weekly_df["weekly_outcome"] == "Tie").sum()) == 1
+    assert int((weekly_df["weekly_outcome"] == "Loss").sum()) == 0
 
     route_gain_df = pd.read_csv(tab_dir / "m3_forecast_route_gain_check.csv")
     assert len(route_gain_df) == 41
@@ -331,13 +333,15 @@ def test_step2_forecasting_outputs_and_hurdle():
 
 def test_step3_classification_outputs_and_hurdle():
     """Verify Step 3 classification tuning grid, 53,406 vs 53,495 active-row comparison,
-    Rule B hurdle (F1 > 0.6665, PR-AUC > 0.6904), and Forecast ÷ Trips precision check.
+    Rule B hurdle (F1 > 0.6665, PR-AUC > 0.6904), PR-AUC & equal-workload (13,081 hours)
+    ranking, and Forecast ÷ Trips official 0.96x rule vs 1.03x side check.
     """
     tab_dir = ROOT / "reports" / "tables"
     fig_dir = ROOT / "reports" / "figures"
 
     tuning_df = pd.read_csv(tab_dir / "m3_classification_tuning_results.csv")
     comp_df = pd.read_csv(tab_dir / "m3_classification_model_comparison.csv")
+    fair_df = pd.read_csv(tab_dir / "m3_classification_fair_ranking.csv")
 
     expected_families = {
         "Logistic Regression",
@@ -350,23 +354,91 @@ def test_step3_classification_outputs_and_hurdle():
         n_settings = int((tuning_df["model_family"] == fam).sum())
         assert 10 <= n_settings <= 20, f"{fam} has {n_settings} settings; expected 10..20"
 
-    # Verify common active-service row count (53,406) and all active-service rows (53,495)
+    # Verify common active-service row count (53,406) and all active-service rows (53,495) for ALL rows
     assert (comp_df["n_eval_53406"] == 53406).all()
-    ml_comp = comp_df[~comp_df["model_category"].str.startswith("Baseline")]
-    assert (ml_comp["n_eval_all_active"] == 53495).all()
+    assert (comp_df["n_eval_all_active"] == 53495).all()
+    assert "precision_at_13081_53406" in comp_df.columns
 
+    ml_comp = comp_df[~comp_df["model_category"].str.startswith("Baseline")]
     # Best direct classifier and Forecast ÷ Trips must beat Rule B (F1 = 0.6665, PR-AUC = 0.6904)
     assert ml_comp["f1_53406"].max() > 0.6665
     assert ml_comp["pr_auc_53406"].max() > 0.6904
 
-    # Verify Forecast ÷ Trips precision check: unadjusted 1.00x has lower precision than Rule B (0.6641)
-    # due to +8.83 seasonal overprediction, while bias-corrected 1.03x restores precision > 0.6641
+    # Fair ranking table must be sorted by PR-AUC descending with 6 models (excluding side checks)
+    assert len(fair_df) == 6
+    assert fair_df["pr_auc_53406"].is_monotonic_decreasing
+    # Forecast ÷ Trips at equal workload (13,081 hours) must beat Rule B's 0.6641 precision
+    div_fair = fair_df[fair_df["model_name"].str.contains("0.96x")].iloc[0]
+    assert div_fair["precision_at_13081_hours"] > 0.6641
+    assert "Recommended Main Approach" in div_fair["test_set_role"]
+
+    # Verify Forecast ÷ Trips side checks (1.00x and 1.03x)
     raw_div = comp_df[comp_df["model_name"].str.contains("1.00x")].iloc[0]
     adj_div = comp_df[comp_df["model_name"].str.contains("1.03x")].iloc[0]
     assert raw_div["precision_53406"] < 0.6641
     assert adj_div["precision_53406"] > 0.6641
     assert adj_div["recall_53406"] > 0.6689
     assert adj_div["f1_53406"] > 0.6665
+    assert "Side Check" in raw_div["test_set_role"]
+    assert "Side Check" in adj_div["test_set_role"]
 
     p = fig_dir / "m3_classification_model_comparison.png"
     assert p.exists() and p.stat().st_size > 10_000
+
+
+# ==============================================================================
+# 7. MILESTONE 3 STEP 4: ROUTE CLUSTERING (KMEANS, STABILITY, DBSCAN, PROFILES)
+# ==============================================================================
+
+def test_step4_clustering_outputs_and_stability():
+    """Verify Step 4 KMeans evaluation across k=2..6, 20-start and LOO ARI stability checks,
+    DBSCAN k-distance and sensitivity tables, 41-route assignments, unscaled median profiles,
+    and figures/maps.
+    """
+    tab_dir = ROOT / "reports" / "tables"
+    fig_dir = ROOT / "reports" / "figures"
+
+    ksel_df = pd.read_csv(tab_dir / "m3_clustering_k_selection.csv")
+    dbscan_df = pd.read_csv(tab_dir / "m3_clustering_dbscan_summary.csv")
+    kdist_df = pd.read_csv(tab_dir / "m3_clustering_k_distance.csv")
+    assigned_df = pd.read_csv(tab_dir / "m3_route_clusters_assigned.csv")
+    profile_df = pd.read_csv(tab_dir / "m3_cluster_group_profiles_unscaled.csv")
+
+    # KMeans tested for k = 2..6 with silhouette, 20-start ARI, and LOO ARI
+    assert list(ksel_df["k"]) == [2, 3, 4, 5, 6]
+    assert ksel_df["silhouette_score"].notnull().all()
+    assert ksel_df["ari_20starts_mean"].notnull().all()
+    assert ksel_df["ari_loo_mean"].notnull().all()
+    # k = 4 must be selected and have the highest 20-start ARI
+    sel_row = ksel_df[ksel_df["is_selected_k"]].iloc[0]
+    assert int(sel_row["k"]) == 4
+    assert sel_row["ari_20starts_mean"] == ksel_df["ari_20starts_mean"].max()
+    assert sel_row["ari_loo_mean"] > 0.90
+
+    # DBSCAN k-distance and sensitivity tables
+    assert len(kdist_df) == 41
+    assert kdist_df["knn_3_distance"].is_monotonic_increasing
+    assert (dbscan_df["min_samples"] == 3).all()
+    elbow_row = dbscan_df[dbscan_df["is_elbow_setting"]].iloc[0]
+    assert float(elbow_row["eps"]) == 1.80
+    assert int(elbow_row["n_clusters"]) == 3
+    assert int(elbow_row["n_noise_routes"]) == 12
+
+    # 41 routes assigned across 4 KMeans groups (18, 15, 7, 1)
+    assert len(assigned_df) == 41
+    assert set(assigned_df["group_id"].unique()) == {1, 2, 3, 4}
+    group_counts = assigned_df["group_id"].value_counts().to_dict()
+    assert group_counts == {1: 18, 2: 15, 3: 7, 4: 1}
+
+    # Unscaled median profiles table (4 groups + 1 network median row = 5 rows)
+    assert len(profile_df) == 5
+    assert set(profile_df["group_id"]) == {0, 1, 2, 3, 4}
+
+    for fname in [
+        "m3_clustering_evaluation.png",
+        "m3_clustering_pca_and_map.png",
+        "m3_route_clusters.html",
+    ]:
+        p = fig_dir / fname
+        assert p.exists() and p.stat().st_size > 10_000
+
