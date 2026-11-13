@@ -86,3 +86,92 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - Nothing was pushed to `main`.
 - **Results:** see `git log` and `git status`, which shows the branch up to date with origin.
 - **Interview Q:** *"How do you make sure secrets or private files never reach GitHub?"* Ignore them *before* the first commit. Review `git status` and the staged list before committing. Check `git ls-files` afterwards. If something leaks, remove it from history and rotate any secret, because deleting it in a later commit isn't enough.
+
+---
+
+# Stage 2: Daily reconstruction (spec 9.5, 9.6.2-9.6.5, 9.19.1)
+
+## Step 9: Test setup (`pytest`, `pytest.ini`, `analytics/reconstruction/`)
+- **Built:** `pytest==9.2.0` (+ its 5 transitive packages, all pinned) in `requirements.txt`; `pytest.ini`; the `analytics/reconstruction/` package.
+- **Why:** spec 9.19.1 lists correctness cases that must be *automatically* checked, not eyeballed.
+- **Key concept:** *a unit test is a tiny experiment with a known answer*. Like checking a scale with a 1 kg weight before weighing real parcels.
+- **Decisions:** pytest was approved by you (it was outside the fixed stack). Tests use tiny hand-made GTFS feeds so the right answer is obvious.
+- **Interview Q:** *"Why pin pytest's transitive dependencies too?"* `pip install pytest` today and in a year can pull different `pluggy`/`packaging` versions. Pinning everything makes the environment reproducible.
+
+## Step 10: Bus filter + route crosswalk (`gtfs_tables.py`)
+- **Built:** `open_snapshot()` (DuckDB views over one archive, every value a trimmed string) and `bus_crosswalk()` (route_type 3 routes: `route_id` -> public `route`).
+- **Why:** ridership uses the public name (e.g. `X9`, `N5`), GTFS joins use the internal `route_id`. The crosswalk is the translation dictionary.
+- **Key concept:** *validate a join key before joining*. If one name maps to two IDs, a join silently duplicates rows, like two people sharing a phone number and both getting your calls.
+- **Decisions:** one normalization for both sides: trim whitespace, keep case and prefixes (`N5` is not `5`). A non-unique or empty short name stops the build (`CrosswalkError`). Columns are read by name, because the archives' column order differs (May adds `agency_id`).
+- **Results:** crosswalk unique in all 8 archives; bus routes 123 (first six) and 125 (May, July), all trip-referenced, matching spec 9.6.4.3. Recent-window ridership IDs absent from every archive: **1001, 128, 19, 5**, matching spec 9.6.4.2.
+- **Interview Q:** *"Why not join on route_id directly?"* `route_id` is the agency's internal key and is not in the ridership file. The public short name is the shared language, so it is validated as one-to-one per snapshot first.
+
+## Step 11: Daily snapshot selection (`snapshot_select.py`)
+- **Built:** `select_snapshot(date, archives)`: the latest archive captured on or before the date; `selection_table()` for every date in the period.
+- **Why:** spec 9.6.3: each day must be described by exactly one timetable edition.
+- **Key concept:** *one whole snapshot per date, no per-route fallback*. Like reading today's newspaper: if a column was dropped, you don't fill the gap with last month's paper, because that would bring back routes that were withdrawn.
+- **Decisions:** capture dates come from the manifest (`captured`), not the UTC timestamp in the archive ID (`...0128` is 01:28 UTC, which is still the previous evening in Chicago). A date with no archive yet is a reported gap (`None`), never filled.
+- **Results:** for 2025-11-23 to 2026-07-31 the applied ranges equal spec 9.4.2 for **all 8 archives**.
+- **Interview Q:** *"Why not just sum all ZIPs that cover a date?"* Archives overlap. Summing would count the same trip up to three times. One selected history, not eight copies.
+
+## Step 12: Active services per date (`service_calendar.py`)
+- **Built:** `active_services(calendar, calendar_dates, date)`: weekly flag within the inclusive range, minus exception type 2, plus exception type 1.
+- **Why:** trips belong to a `service_id`; a trip only runs on dates its service is active.
+- **Key concept:** *sets*. Adding something already in a set doesn't create a second copy, so a type-1 exception that repeats a weekly service can't double-count trips.
+- **Decisions:** calendar flags, dates and exception types are validated (bad values stop the build). An empty `calendar.txt` is allowed (exception-only feeds).
+- **Results:** Nov 23 archive: 49 active services on Wed 2025-11-26 vs 26 on Thanksgiving (11-27) and Christmas: weekday services removed (type 2) and holiday/Sunday services added (type 1).
+- **Interview Q:** *"Order of operations: remove then add, or add then remove?"* For one service on one date GTFS allows one exception, so the order never conflicts. Applying remove-then-add mirrors the spec wording, and duplicate (service, date) exceptions are rejected as invalid.
+
+## Step 13: Trip durations + daily scheduled service (`daily_service.py`, DuckDB)
+- **Built:** `build_trip_durations()` (one row per trip: first departure, last arrival, validity and reason) and `daily_service()` (active trips -> `scheduled_trips`, `scheduled_service_hours`, `duration_complete`, `trips_missing_duration` per route/date).
+- **Why:** this is the "denominator" of utilization: how much bus service was *scheduled* that day.
+- **Key concept:** *elapsed time, not clock time*. `25:10:00` means 25 h 10 min after the service day starts (= 90,600 s), i.e. 1:10 am the next calendar morning but still belonging to the original service date. A clock parser would wrap it to 01:10 and make a late-night trip look like it ended before it started.
+- **Decisions:**
+  - First/last stop chosen by `stop_sequence`, not by the earliest/latest time.
+  - Strict validity: both endpoint times present, >= 2 stop events, parseable sequences, no duplicate endpoint sequence, last arrival >= first departure. Each failure has a named reason.
+  - A trip with a bad duration still counts as a trip, but then the route/day's hours are **missing** (not partially summed), because a partial sum would understate service.
+  - (date, trip_id) must be unique among active trips, otherwise the build stops.
+  - DuckDB reads the 3-6 million row stop_times files directly; about 3 s per archive.
+- **Results (dry run):** **28,398** route/date rows, **251** dates, **125** routes: all three equal the spec. Every duration valid in these feeds. Routes 10 and 130 first active **2026-06-07** (spec 9.6.4.3).
+- **Interview Q:** *"Why can total scheduled hours exceed 24 in a day?"* It's the sum over all trips; many buses run at once. 300 trips of 1 hour each = 300 scheduled hours on one route-day. It is passenger-trip time, not vehicle count or cost.
+
+## Step 14: Exact matching + two-direction reconciliation (`matching.py`)
+- **Built:** `load_ridership()` (explicit `%m/%d/%Y`, separators removed, nullable integer rides, exact copies removed, conflicts abort), `match()` (full outer join on route + date with `validate="one_to_one"`), `per_route()` and `reconciliation()`.
+- **Why:** spec 9.6.4: compare rides with service only where *both* exist on the *same* date, and keep both kinds of mismatch visible.
+- **Key concept:** *two different unmatched sets*. Picture two guest lists (rides, schedule). People on both lists = matched. "Rides without service" are on the ride list only. "Service without rides" are on the schedule list only. They are different people, so they are reported separately and each list adds up exactly:
+  `28,798 = 28,374 + 424` and `28,398 = 28,374 + 24`.
+- **Decisions:**
+  - `rides` in `schedule_without_ridership` is written **empty**, never 0. A missing observation as a 0 target would teach a model that the bus carried nobody.
+  - Each ride without service gets a reason (`route_absent_from_selected_snapshot` 405, `route_in_snapshot_no_active_trips` 19) plus a flag for identifiers absent from all archives (1001, 128, 19).
+  - Daily ratios need a positive denominator and complete hours, otherwise they are missing.
+- **Results:** 28,374 / 424 / 24 / 28,798, 251 dates, 125 routes, and every per-route row of 9.6.4.1 (1001 248/103,332 ... 7 1/17; route 169 ×24): **all MATCH**. Route 169's unmatched dates include Thanksgiving and Christmas with 1 scheduled trip each.
+- **Interview Q:** *"Why validate one-to-one in the merge?"* If a key appears twice on one side, a join silently multiplies rows and inflates rides. `validate="one_to_one"` turns that silent error into a loud failure.
+
+## Step 15: Archive integrity + timetable regimes + summaries (`regime_checks.py`)
+- **Built:** order-independent content fingerprints of bus trips and stop events per archive; calendar regime listing; same-date overlap comparisons (each older archive vs the next one on the newer archive's first 7 days); ridership window summaries.
+- **Why:** spec 9.6.5: prove the archives agree where they should and explain where they don't, before trusting the daily history.
+- **Key concept:** *outgoing and incoming timetables*. Some ZIPs hold two timetables with back-to-back date ranges (e.g. 11-19..11-22 and 11-23..01-31), like a school publishing this term's and next term's timetables in one booklet. Each is counted only on its own dates, so smaller feeds are never "doubled".
+- **Results:**
+  - Jan 8 vs Feb 10: ZIP bytes differ, but the bus trips and 2,859,229 stop events are identical (MATCH). April/May stop events ratio 0.499 ("about half").
+  - Overlaps: 4 of 7 pairs have no differences. The other 3 differ **only from the first day of a timetable that exists only in the newer archive** (2025-12-21, 2026-03-29, 2026-07-12), and the earlier common dates agree. These are real schedule changes that the older copy could not know about, which is exactly why each date uses the latest archive. **0 unexplained.** The spec says "five comparisons, no differences" without listing them, so ours are reported side by side, not forced.
+  - Route-name presence: 98.31% vs the 8 archives. The spec's 97.95% is against the September schedule (not an input), so it is reported as not directly reproducible.
+- **Interview Q:** *"Two archives give different trip counts for the same day. Which is right?"* Check *why*. Here the newer one contains a timetable starting that day which the older one predates. The selection rule (latest capture on or before the date) already picks the more informed version.
+
+## Step 16: Orchestrator + quality report (`build_stage2.py`, `report.py`)
+- **Built:** one command that re-hashes every input, rebuilds everything, writes the 4 spec 9.8 CSVs + `manifest.json` to `data/processed/cta_ref__r20261113__gtfs8__to20260731/`, and writes `reports/stage2_quality_report.md` + `.json`.
+- **Why:** spec 9.6.6: later stages must read versioned products, not variables from a notebook.
+- **Key concept:** *a data version is a sealed box with its label*. The folder name and manifest record exactly which inputs (sha256), period and code (git commit) produced it. If an input changes, the build refuses to reuse the folder and a new version is needed.
+- **Decisions:** reference numbers live in `sources.json` (`stage2_reference`), not in code. Any MISMATCH is listed with the provenance note that our ridership export is newer than the spec's.
+- **Results:** **51 MATCH, 0 MISMATCH**. The ridership export differs in bytes from the spec's, but its content up to 2026-07-31 reproduces every reference count. 3,566 August rows were excluded and reported. 0 selection gaps.
+- **Interview Q:** *"Your numbers match the spec exactly. How do you know you didn't just tune them?"* The reference values are only *read* by the report. No rule depends on them, the rules come straight from the spec text, and the unit tests verify each rule on tiny hand-built feeds with known answers.
+
+## Step 17: Automated correctness tests (`analytics/tests/`)
+- **Built:** 22 pytest tests.
+  - `test_schedule.py` covers the 9.19.1 schedule cases: type-2 removal; type-1 added once; 25:10 stays on its date; outgoing/incoming regimes; one snapshot per date with no per-route fallback. It also covers invalid durations giving missing hours, stop_sequence ordering, exception-only calendars, the bus filter and a non-unique crosswalk.
+  - `test_matching.py` covers missing vs zero rides, both unmatched directions with identities and per-route grouping, ratio denominators, one-to-one failure, exact identifiers, the explicit date format and conflicts not being summed.
+  - `test_outputs_integration.py` checks invariants on the real outputs.
+- **Why:** the spec says "verify", and matching numbers alone could hide two bugs that cancel out. Each rule needs its own proof.
+- **Key concept:** *tiny feeds with known answers*. A 2-stop trip from 24:30 to 25:10 must give 40 minutes. If the code says 23 h 20 min, it wrapped the clock. The tests call the **real** pipeline functions on these feeds.
+- **Decisions:** the integration tests check invariants (identities, unique keys, missing-not-zero, one snapshot per date) but do **not** assert the spec's counts. Comparing to references is the report's job, so the tests can never "force" a number. Pipeline 9.19.1 cases (lags, replay, ranking, etc.) belong to later stages.
+- **Results:** 22 passed. *Mutation check:* three bugs planted in a scratch copy (partial hours sum, missing rides written as 0, type-2 exceptions adding instead of removing) were each caught by exactly the intended test.
+- **Interview Q:** *"How do you know your tests actually test anything?"* Break the code on purpose (mutation testing). A test that still passes when the rule is broken isn't protecting that rule.

@@ -37,5 +37,40 @@
       "bus_routes_with_trips": {"mdb-389-202511230128": 123, "mdb-389-202512190112": 123, "mdb-389-202601080131": 123, "mdb-389-202602100132": 123, "mdb-389-202603260020": 123, "mdb-389-202604240144": 123, "mdb-389-202605300003": 125, "mdb-389-202607110020": 125},
       "bus_stop_times": {"mdb-389-202601080131": 2859229, "mdb-389-202602100132": 2859229}
     }
+  },
+  "stage2_reference": {
+    "_comment": "Reference findings for the frozen inputs (spec 9.3.3, 9.6.4.1-9.6.4.3, 9.6.5). Compared, never forced.",
+    "analysis_period": ["2025-11-23", "2026-07-31"],
+    "recent_window": ["2024-08-01", "2026-07-31"],
+    "schedule_records": 28398,
+    "matched": 28374,
+    "ridership_without_schedule": 424,
+    "schedule_without_ridership": 24,
+    "ridership_observations": 28798,
+    "matched_dates": 251,
+    "matched_routes": 125,
+    "schedule_conditioned_coverage_pct": 99.915,
+    "routes_with_records_on_every_scheduled_date": 124,
+    "ridership_without_schedule_by_route": {
+      "1001": {"records": 248, "rides": 103332, "first_date": "2025-11-23", "last_date": "2026-07-31"},
+      "19":   {"records": 126, "rides": 24062,  "first_date": "2025-11-23", "last_date": "2026-07-26"},
+      "130":  {"records": 25,  "rides": 8034,   "first_date": "2026-02-07", "last_date": "2026-06-06"},
+      "10":   {"records": 16,  "rides": 1973,   "first_date": "2026-05-20", "last_date": "2026-06-06"},
+      "128":  {"records": 6,   "rides": 6128,   "first_date": "2025-11-23", "last_date": "2026-01-18"},
+      "59":   {"records": 2,   "rides": 20,     "first_date": "2026-05-03", "last_date": "2026-05-17"},
+      "7":    {"records": 1,   "rides": 17,     "first_date": "2026-02-15", "last_date": "2026-02-15"}
+    },
+    "schedule_without_ridership_by_route": {
+      "169": {"records": 24, "first_date": "2025-11-27", "last_date": "2026-07-25"}
+    },
+    "recent_window_summary": {"records": 83997, "route_identifiers": 129, "calendar_dates": 730},
+    "route_1001_recent_window": {"records": 726, "rides": 407306},
+    "identifiers_absent_from_all_archives_recent_window": ["1001", "128", "19", "5"],
+    "first_active_schedule_date": {"10": "2026-06-07", "130": "2026-06-07"},
+    "record_days_2026": {
+      "10":  {"2026-01": 0, "2026-02": 0,  "2026-03": 0, "2026-04": 0, "2026-05": 10, "2026-06": 30, "2026-07": 31},
+      "130": {"2026-01": 0, "2026-02": 10, "2026-03": 0, "2026-04": 0, "2026-05": 9,  "2026-06": 30, "2026-07": 31}
+    },
+    "route_name_presence_pct_vs_september_schedule": 97.95
   }
 }

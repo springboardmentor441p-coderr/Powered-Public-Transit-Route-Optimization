@@ -1,0 +1,954 @@
+{
+  "data_version": "cta_ref__r20261113__gtfs8__to20260731",
+  "comparisons": [
+    {
+      "section": "9.3.3",
+      "metric": "schedule_records",
+      "spec": 28398,
+      "ours": 28398,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4",
+      "metric": "matched",
+      "spec": 28374,
+      "ours": 28374,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "ridership_without_schedule",
+      "spec": 424,
+      "ours": 424,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "schedule_without_ridership",
+      "spec": 24,
+      "ours": 24,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "ridership_observations",
+      "spec": 28798,
+      "ours": 28798,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.3.3",
+      "metric": "matched_dates",
+      "spec": 251,
+      "ours": 251,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.3.3",
+      "metric": "matched_routes",
+      "spec": 125,
+      "ours": 125,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "schedule_conditioned_coverage_pct",
+      "spec": 99.915,
+      "ours": 99.915,
+      "result": "MATCH",
+      "difference": "+0.000"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "routes_with_records_on_every_scheduled_date",
+      "spec": 124,
+      "ours": 124,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "identity: observations = matched + without schedule",
+      "spec": true,
+      "ours": true,
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "identity: schedule = matched + without rides",
+      "spec": true,
+      "ours": true,
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 1001: records",
+      "spec": 248,
+      "ours": 248,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 1001: rides",
+      "spec": 103332,
+      "ours": 103332,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 1001: dates",
+      "spec": "2025-11-23 to 2026-07-31",
+      "ours": "2025-11-23 to 2026-07-31",
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 19: records",
+      "spec": 126,
+      "ours": 126,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 19: rides",
+      "spec": 24062,
+      "ours": 24062,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 19: dates",
+      "spec": "2025-11-23 to 2026-07-26",
+      "ours": "2025-11-23 to 2026-07-26",
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 130: records",
+      "spec": 25,
+      "ours": 25,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 130: rides",
+      "spec": 8034,
+      "ours": 8034,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 130: dates",
+      "spec": "2026-02-07 to 2026-06-06",
+      "ours": "2026-02-07 to 2026-06-06",
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 10: records",
+      "spec": 16,
+      "ours": 16,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 10: rides",
+      "spec": 1973,
+      "ours": 1973,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 10: dates",
+      "spec": "2026-05-20 to 2026-06-06",
+      "ours": "2026-05-20 to 2026-06-06",
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 128: records",
+      "spec": 6,
+      "ours": 6,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 128: rides",
+      "spec": 6128,
+      "ours": 6128,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 128: dates",
+      "spec": "2025-11-23 to 2026-01-18",
+      "ours": "2025-11-23 to 2026-01-18",
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 59: records",
+      "spec": 2,
+      "ours": 2,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 59: rides",
+      "spec": 20,
+      "ours": 20,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 59: dates",
+      "spec": "2026-05-03 to 2026-05-17",
+      "ours": "2026-05-03 to 2026-05-17",
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 7: records",
+      "spec": 1,
+      "ours": 1,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 7: rides",
+      "spec": 17,
+      "ours": 17,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service, route 7: dates",
+      "spec": "2026-02-15 to 2026-02-15",
+      "ours": "2026-02-15 to 2026-02-15",
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "rides w/o service: routes not in spec list",
+      "spec": [],
+      "ours": [],
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "schedule w/o rides, route 169: records",
+      "spec": 24,
+      "ours": 24,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "schedule w/o rides, route 169: dates",
+      "spec": "2025-11-27 to 2026-07-25",
+      "ours": "2025-11-27 to 2026-07-25",
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.1",
+      "metric": "schedule w/o rides: routes not in spec list",
+      "spec": [],
+      "ours": [],
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "recent window records",
+      "spec": 83997,
+      "ours": 83997,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "recent window route_identifiers",
+      "spec": 129,
+      "ours": 129,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "recent window calendar_dates",
+      "spec": 730,
+      "ours": 730,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.2",
+      "metric": "route 1001 recent-window records",
+      "spec": 726,
+      "ours": 726,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.2",
+      "metric": "route 1001 recent-window rides",
+      "spec": 407306,
+      "ours": 407306,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.2",
+      "metric": "identifiers absent from all 8 archives",
+      "spec": [
+        "1001",
+        "128",
+        "19",
+        "5"
+      ],
+      "ours": [
+        "1001",
+        "128",
+        "19",
+        "5"
+      ],
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "route 10 first active schedule date",
+      "spec": "2026-06-07",
+      "ours": "2026-06-07",
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "route 130 first active schedule date",
+      "spec": "2026-06-07",
+      "ours": "2026-06-07",
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "route 10 record days Jan-Jul 2026",
+      "spec": [
+        0,
+        0,
+        0,
+        0,
+        10,
+        30,
+        31
+      ],
+      "ours": [
+        0,
+        0,
+        0,
+        0,
+        10,
+        30,
+        31
+      ],
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "route 130 record days Jan-Jul 2026",
+      "spec": [
+        0,
+        10,
+        0,
+        0,
+        9,
+        30,
+        31
+      ],
+      "ours": [
+        0,
+        10,
+        0,
+        0,
+        9,
+        30,
+        31
+      ],
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.4.2",
+      "metric": "applied date ranges equal spec 9.4.2 for all 8 archives",
+      "spec": true,
+      "ours": true,
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.5",
+      "metric": "Jan 8 / Feb 10 bus stop events",
+      "spec": [
+        2859229,
+        2859229
+      ],
+      "ours": [
+        2859229,
+        2859229
+      ],
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.5",
+      "metric": "Jan 8 / Feb 10 bus trips and stop events identical",
+      "spec": true,
+      "ours": true,
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.6.3",
+      "metric": "selection gaps",
+      "spec": 0,
+      "ours": 0,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.5",
+      "metric": "overlap comparisons with unexplained differences",
+      "spec": 0,
+      "ours": 0,
+      "result": "MATCH",
+      "difference": "+0"
+    }
+  ],
+  "reconciliation": {
+    "ridership_observations": 28798,
+    "schedule_records": 28398,
+    "matched": 28374,
+    "ridership_without_schedule": 424,
+    "schedule_without_ridership": 24,
+    "identity_ridership_holds": true,
+    "identity_schedule_holds": true,
+    "matched_dates": 251,
+    "matched_routes": 125,
+    "schedule_dates": 251,
+    "schedule_routes": 125,
+    "ridership_dates": 251,
+    "ridership_routes": 128,
+    "schedule_conditioned_coverage_pct": 99.915,
+    "routes_with_records_on_every_scheduled_date": 124,
+    "matched_zero_ride_rows": 0
+  },
+  "gaps": [],
+  "overlaps": [
+    {
+      "dates_with_differences": [
+        "2025-12-21",
+        "2025-12-22",
+        "2025-12-23",
+        "2025-12-24",
+        "2025-12-25"
+      ],
+      "older": "mdb-389-202511230128",
+      "newer": "mdb-389-202512190112",
+      "dates_probed": [
+        "2025-12-19",
+        "2025-12-20",
+        "2025-12-21",
+        "2025-12-22",
+        "2025-12-23",
+        "2025-12-24",
+        "2025-12-25"
+      ],
+      "dates_both_define_service": [
+        "2025-12-19",
+        "2025-12-20",
+        "2025-12-21",
+        "2025-12-22",
+        "2025-12-23",
+        "2025-12-24",
+        "2025-12-25"
+      ],
+      "route_dates_compared": 758,
+      "route_dates_only_older": 0,
+      "route_dates_only_newer": 0,
+      "trip_count_differences": 190,
+      "hours_differences": 268,
+      "newer_only_regime_starts": [
+        "2025-12-16",
+        "2025-12-21"
+      ],
+      "explanation": "differences only from 2025-12-21 (start of a timetable present only in the newer archive); 2 earlier common date(s) agree"
+    },
+    {
+      "dates_with_differences": [],
+      "older": "mdb-389-202512190112",
+      "newer": "mdb-389-202601080131",
+      "dates_probed": [
+        "2026-01-08",
+        "2026-01-09",
+        "2026-01-10",
+        "2026-01-11",
+        "2026-01-12",
+        "2026-01-13",
+        "2026-01-14"
+      ],
+      "dates_both_define_service": [
+        "2026-01-08",
+        "2026-01-09",
+        "2026-01-10",
+        "2026-01-11",
+        "2026-01-12",
+        "2026-01-13",
+        "2026-01-14"
+      ],
+      "route_dates_compared": 794,
+      "route_dates_only_older": 0,
+      "route_dates_only_newer": 0,
+      "trip_count_differences": 0,
+      "hours_differences": 0,
+      "newer_only_regime_starts": [
+        "2026-01-06"
+      ],
+      "explanation": "no differences"
+    },
+    {
+      "dates_with_differences": [],
+      "older": "mdb-389-202601080131",
+      "newer": "mdb-389-202602100132",
+      "dates_probed": [
+        "2026-02-10",
+        "2026-02-11",
+        "2026-02-12",
+        "2026-02-13",
+        "2026-02-14",
+        "2026-02-15",
+        "2026-02-16"
+      ],
+      "dates_both_define_service": [
+        "2026-02-10",
+        "2026-02-11",
+        "2026-02-12",
+        "2026-02-13",
+        "2026-02-14",
+        "2026-02-15",
+        "2026-02-16"
+      ],
+      "route_dates_compared": 794,
+      "route_dates_only_older": 0,
+      "route_dates_only_newer": 0,
+      "trip_count_differences": 0,
+      "hours_differences": 0,
+      "newer_only_regime_starts": [],
+      "explanation": "no differences"
+    },
+    {
+      "dates_with_differences": [
+        "2026-03-29",
+        "2026-03-30",
+        "2026-03-31"
+      ],
+      "older": "mdb-389-202602100132",
+      "newer": "mdb-389-202603260020",
+      "dates_probed": [
+        "2026-03-26",
+        "2026-03-27",
+        "2026-03-28",
+        "2026-03-29",
+        "2026-03-30",
+        "2026-03-31",
+        "2026-04-01"
+      ],
+      "dates_both_define_service": [
+        "2026-03-26",
+        "2026-03-27",
+        "2026-03-28",
+        "2026-03-29",
+        "2026-03-30",
+        "2026-03-31"
+      ],
+      "route_dates_compared": 671,
+      "route_dates_only_older": 0,
+      "route_dates_only_newer": 0,
+      "trip_count_differences": 113,
+      "hours_differences": 133,
+      "newer_only_regime_starts": [
+        "2026-03-20",
+        "2026-03-29"
+      ],
+      "explanation": "differences only from 2026-03-29 (start of a timetable present only in the newer archive); 3 earlier common date(s) agree"
+    },
+    {
+      "dates_with_differences": [],
+      "older": "mdb-389-202603260020",
+      "newer": "mdb-389-202604240144",
+      "dates_probed": [
+        "2026-04-24",
+        "2026-04-25",
+        "2026-04-26",
+        "2026-04-27",
+        "2026-04-28",
+        "2026-04-29",
+        "2026-04-30"
+      ],
+      "dates_both_define_service": [
+        "2026-04-24",
+        "2026-04-25",
+        "2026-04-26",
+        "2026-04-27",
+        "2026-04-28",
+        "2026-04-29",
+        "2026-04-30"
+      ],
+      "route_dates_compared": 794,
+      "route_dates_only_older": 0,
+      "route_dates_only_newer": 0,
+      "trip_count_differences": 0,
+      "hours_differences": 0,
+      "newer_only_regime_starts": [
+        "2026-04-15"
+      ],
+      "explanation": "no differences"
+    },
+    {
+      "dates_with_differences": [],
+      "older": "mdb-389-202604240144",
+      "newer": "mdb-389-202605300003",
+      "dates_probed": [
+        "2026-05-30",
+        "2026-05-31",
+        "2026-06-01",
+        "2026-06-02",
+        "2026-06-03",
+        "2026-06-04",
+        "2026-06-05"
+      ],
+      "dates_both_define_service": [
+        "2026-05-30",
+        "2026-05-31",
+        "2026-06-01",
+        "2026-06-02",
+        "2026-06-03",
+        "2026-06-04",
+        "2026-06-05"
+      ],
+      "route_dates_compared": 794,
+      "route_dates_only_older": 0,
+      "route_dates_only_newer": 0,
+      "trip_count_differences": 0,
+      "hours_differences": 0,
+      "newer_only_regime_starts": [
+        "2026-05-28",
+        "2026-06-07"
+      ],
+      "explanation": "no differences"
+    },
+    {
+      "dates_with_differences": [
+        "2026-07-12",
+        "2026-07-13",
+        "2026-07-14",
+        "2026-07-15",
+        "2026-07-16",
+        "2026-07-17"
+      ],
+      "older": "mdb-389-202605300003",
+      "newer": "mdb-389-202607110020",
+      "dates_probed": [
+        "2026-07-11",
+        "2026-07-12",
+        "2026-07-13",
+        "2026-07-14",
+        "2026-07-15",
+        "2026-07-16",
+        "2026-07-17"
+      ],
+      "dates_both_define_service": [
+        "2026-07-11",
+        "2026-07-12",
+        "2026-07-13",
+        "2026-07-14",
+        "2026-07-15",
+        "2026-07-16",
+        "2026-07-17"
+      ],
+      "route_dates_compared": 805,
+      "route_dates_only_older": 0,
+      "route_dates_only_newer": 0,
+      "trip_count_differences": 0,
+      "hours_differences": 35,
+      "newer_only_regime_starts": [
+        "2026-07-07",
+        "2026-07-12"
+      ],
+      "explanation": "differences only from 2026-07-12 (start of a timetable present only in the newer archive); 1 earlier common date(s) agree"
+    }
+  ],
+  "fingerprints": {
+    "mdb-389-202511230128": {
+      "bus_trips": 89536,
+      "bus_trips_hash": "826662612300785787985146",
+      "bus_stop_events": 5661993,
+      "bus_stop_events_hash": "52216887064157287767861589"
+    },
+    "mdb-389-202512190112": {
+      "bus_trips": 89646,
+      "bus_trips_hash": "825985736744132743339417",
+      "bus_stop_events": 5689188,
+      "bus_stop_events_hash": "52448214603465990850519995"
+    },
+    "mdb-389-202601080131": {
+      "bus_trips": 44878,
+      "bus_trips_hash": "413598449645917675715636",
+      "bus_stop_events": 2859229,
+      "bus_stop_events_hash": "26352554496241088349870476"
+    },
+    "mdb-389-202602100132": {
+      "bus_trips": 44878,
+      "bus_trips_hash": "413598449645917675715636",
+      "bus_stop_events": 2859229,
+      "bus_stop_events_hash": "26352554496241088349870476"
+    },
+    "mdb-389-202603260020": {
+      "bus_trips": 89438,
+      "bus_trips_hash": "823965589330211214522040",
+      "bus_stop_events": 5701512,
+      "bus_stop_events_hash": "52577075446082682843881473"
+    },
+    "mdb-389-202604240144": {
+      "bus_trips": 44560,
+      "bus_trips_hash": "410367139684293538806404",
+      "bus_stop_events": 2842263,
+      "bus_stop_events_hash": "26224306704060850886306615"
+    },
+    "mdb-389-202605300003": {
+      "bus_trips": 89367,
+      "bus_trips_hash": "823155782105835290929522",
+      "bus_stop_events": 5692185,
+      "bus_stop_events_hash": "52513596577954066619791634"
+    },
+    "mdb-389-202607110020": {
+      "bus_trips": 89614,
+      "bus_trips_hash": "825836057879359929242158",
+      "bus_stop_events": 5697928,
+      "bus_stop_events_hash": "52555671789292215758203044"
+    }
+  },
+  "regimes": {
+    "mdb-389-202511230128": [
+      {
+        "start_date": "20251119",
+        "end_date": "20251122",
+        "services": 16,
+        "bus_trips": 44768
+      },
+      {
+        "start_date": "20251123",
+        "end_date": "20260131",
+        "services": 16,
+        "bus_trips": 44768
+      }
+    ],
+    "mdb-389-202512190112": [
+      {
+        "start_date": "20251216",
+        "end_date": "20251220",
+        "services": 16,
+        "bus_trips": 44768
+      },
+      {
+        "start_date": "20251221",
+        "end_date": "20260228",
+        "services": 16,
+        "bus_trips": 44878
+      }
+    ],
+    "mdb-389-202601080131": [
+      {
+        "start_date": "20260106",
+        "end_date": "20260331",
+        "services": 16,
+        "bus_trips": 44878
+      }
+    ],
+    "mdb-389-202602100132": [
+      {
+        "start_date": "20260106",
+        "end_date": "20260331",
+        "services": 16,
+        "bus_trips": 44878
+      }
+    ],
+    "mdb-389-202603260020": [
+      {
+        "start_date": "20260320",
+        "end_date": "20260328",
+        "services": 16,
+        "bus_trips": 44878
+      },
+      {
+        "start_date": "20260329",
+        "end_date": "20260531",
+        "services": 16,
+        "bus_trips": 44560
+      }
+    ],
+    "mdb-389-202604240144": [
+      {
+        "start_date": "20260415",
+        "end_date": "20260630",
+        "services": 16,
+        "bus_trips": 44560
+      }
+    ],
+    "mdb-389-202605300003": [
+      {
+        "start_date": "20260528",
+        "end_date": "20260606",
+        "services": 16,
+        "bus_trips": 44560
+      },
+      {
+        "start_date": "20260607",
+        "end_date": "20260731",
+        "services": 8,
+        "bus_trips": 44807
+      }
+    ],
+    "mdb-389-202607110020": [
+      {
+        "start_date": "20260707",
+        "end_date": "20260711",
+        "services": 8,
+        "bus_trips": 44807
+      },
+      {
+        "start_date": "20260712",
+        "end_date": "20260930",
+        "services": 8,
+        "bus_trips": 44807
+      }
+    ]
+  },
+  "invalid_durations": {
+    "mdb-389-202511230128": {},
+    "mdb-389-202512190112": {},
+    "mdb-389-202601080131": {},
+    "mdb-389-202602100132": {},
+    "mdb-389-202603260020": {},
+    "mdb-389-202604240144": {},
+    "mdb-389-202605300003": {},
+    "mdb-389-202607110020": {}
+  },
+  "presence": {
+    "records": 83997,
+    "records_with_route_in_archives": 82577,
+    "pct": 98.31,
+    "absent_identifiers": [
+      "1001",
+      "128",
+      "19",
+      "5"
+    ]
+  },
+  "ridership_without_schedule_by_route": [
+    {
+      "route": "1001",
+      "records": 248,
+      "rides": 103332,
+      "first_date": "2025-11-23",
+      "last_date": "2026-07-31"
+    },
+    {
+      "route": "19",
+      "records": 126,
+      "rides": 24062,
+      "first_date": "2025-11-23",
+      "last_date": "2026-07-26"
+    },
+    {
+      "route": "130",
+      "records": 25,
+      "rides": 8034,
+      "first_date": "2026-02-07",
+      "last_date": "2026-06-06"
+    },
+    {
+      "route": "10",
+      "records": 16,
+      "rides": 1973,
+      "first_date": "2026-05-20",
+      "last_date": "2026-06-06"
+    },
+    {
+      "route": "128",
+      "records": 6,
+      "rides": 6128,
+      "first_date": "2025-11-23",
+      "last_date": "2026-01-18"
+    },
+    {
+      "route": "59",
+      "records": 2,
+      "rides": 20,
+      "first_date": "2026-05-03",
+      "last_date": "2026-05-17"
+    },
+    {
+      "route": "7",
+      "records": 1,
+      "rides": 17,
+      "first_date": "2026-02-15",
+      "last_date": "2026-02-15"
+    }
+  ],
+  "schedule_without_ridership_by_route": [
+    {
+      "route": "169",
+      "records": 24,
+      "first_date": "2025-11-27",
+      "last_date": "2026-07-25"
+    }
+  ],
+  "ridership_without_schedule_reasons": {
+    "route_absent_from_selected_snapshot": 405,
+    "route_in_snapshot_no_active_trips": 19
+  }
+}
