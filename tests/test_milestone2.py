@@ -76,19 +76,19 @@ def test_top_15_route_overlap_analysis():
     assert len(top15) == 15
     assert list(top15["rank"]) == list(range(1, 16))
     
-    # Check planned pairs: same route family (e.g. M34+/M34A+, M15/M15+, M14A+/M14D+) labeled 'planned'
+    # Check same_family pairs: same route family (e.g. M34+/M34A+, M15/M15+, M14A+/M14D+) labeled 'same_family'
     m34_m34a = top15[((top15["route_1"] == "M34+") & (top15["route_2"] == "M34A+")) | ((top15["route_1"] == "M34A+") & (top15["route_2"] == "M34+"))]
     assert len(m34_m34a) == 1
-    assert m34_m34a.iloc[0]["design_classification"] == "planned"
+    assert m34_m34a.iloc[0]["design_classification"] == "same_family"
 
     m15_m15p = top15[((top15["route_1"] == "M15") & (top15["route_2"] == "M15+")) | ((top15["route_1"] == "M15+") & (top15["route_2"] == "M15"))]
     assert len(m15_m15p) == 1
-    assert m15_m15p.iloc[0]["design_classification"] == "planned"
+    assert m15_m15p.iloc[0]["design_classification"] == "same_family"
 
-    # Check shared corridor pairs: different routes sharing stops (e.g. M101/M103) labeled 'review'
+    # Check shared corridor pairs: different routes sharing stops (e.g. M101/M103) labeled 'shared_corridor'
     m101_m103 = top15[((top15["route_1"] == "M101") & (top15["route_2"] == "M103")) | ((top15["route_1"] == "M103") & (top15["route_2"] == "M101"))]
     assert len(m101_m103) == 1
-    assert m101_m103.iloc[0]["design_classification"] == "review"
+    assert m101_m103.iloc[0]["design_classification"] == "shared_corridor"
 
 
 def test_route_stop_coverage_metrics():
@@ -230,11 +230,23 @@ def test_single_routeranker_notebook_structure_and_outputs():
         "## 7. Route clustering features",
         "## 8. Baselines",
         "## 9. Models (Milestone 3)",
+        "### 3.3 Route table: riders per trip and per service-hour",
+        "same_family",
+        "shared_corridor",
     ]:
-        assert sec in full_md, f"Missing section header in routeranker.ipynb: {sec}"
+        assert sec in full_md, f"Missing section header or category in routeranker.ipynb: {sec}"
+
+    # Verify headings avoid 'efficient', 'inefficient', 'efficiency'
+    for line in full_md.splitlines():
+        if line.strip().startswith("#"):
+            low_line = line.lower()
+            assert "efficien" not in low_line, f"Heading contains 'efficient/efficiency': {line}"
 
     code_cells = [c for c in nb.cells if c.cell_type == "code"]
     assert len(code_cells) > 0
+    assert '"describe", "--always", "--dirty"' in code_cells[0].source, (
+        "Setup cell must use git describe --always --dirty"
+    )
     for idx, c in enumerate(code_cells):
         assert c.get("execution_count") is not None, f"Code cell {idx} was not executed"
         assert ".to_csv(" not in c.source and ".to_parquet(" not in c.source, (

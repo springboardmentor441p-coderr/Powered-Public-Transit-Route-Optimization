@@ -160,15 +160,46 @@ def test_load_dataset_test_isolation_enforcement():
     assert "Access to test_features.parquet is restricted" in str(exc_info_flag.value)
 
     # Calling with final=True must succeed and append to test_runs.log
-    test_df = load_dataset("test", final=True, caller="test_load_dataset_test_isolation_enforcement")
-    assert isinstance(test_df, pd.DataFrame)
-    assert len(test_df) == 53736
-    assert TEST_LOG_PATH.exists()
-    
-    with open(TEST_LOG_PATH, "r", encoding="utf-8") as f:
-        log_content = f.read()
-    assert "AUDIT TEST ACCESS" in log_content
-    assert "test_load_dataset_test_isolation_enforcement" in log_content
+    existed_before = TEST_LOG_PATH.exists()
+    prior_content = TEST_LOG_PATH.read_text(encoding="utf-8") if existed_before else ""
+    try:
+        test_df = load_dataset("test", final=True, caller="test_load_dataset_test_isolation_enforcement")
+        assert isinstance(test_df, pd.DataFrame)
+        assert len(test_df) == 53736
+        assert TEST_LOG_PATH.exists()
+
+        with open(TEST_LOG_PATH, "r", encoding="utf-8") as f:
+            log_content = f.read()
+        assert "AUDIT TEST ACCESS" in log_content
+        assert "test_load_dataset_test_isolation_enforcement" in log_content
+    finally:
+        if existed_before:
+            TEST_LOG_PATH.write_text(prior_content, encoding="utf-8")
+        elif TEST_LOG_PATH.exists():
+            TEST_LOG_PATH.unlink()
+
+
+def test_validation_no_storm_days_note():
+    """Verify that when a split has 0 storm days (like validation), the duplicate
+    'Without Storm Days' row is omitted and replaced with a storm_note annotation.
+    """
+    val_df = load_dataset("val")
+    common_mask = (
+        val_df["ridership"].notnull()
+        & val_df["lag_7d"].notnull()
+        & val_df["lag_mean_available"].notnull()
+    )
+    val_eval = val_df[common_mask].copy()
+    res = evaluate_forecasting(
+        val_eval,
+        y_true_col="ridership",
+        y_pred_col="lag_mean_available",
+        model_name="4WkCheck",
+    )
+    overall = res["overall"]
+    assert "Without Storm Days" not in set(overall["subset"])
+    assert "storm_note" in overall.columns
+    assert "0 storm days in window" in str(overall["storm_note"].iloc[0])
 
 
 # ==============================================================================
@@ -222,3 +253,56 @@ def test_stronger_classification_baseline_hurdle():
     assert m_4wk["f1"] > m_7d["f1"], f"4wk F1 {m_4wk['f1']} should exceed 7d F1 {m_7d['f1']}"
     assert m_4wk["precision"] > m_7d["precision"]
     assert m_4wk["pr_auc"] > m_7d["pr_auc"]
+
+
+# ==============================================================================
+# 5. MILESTONE 3 STEP 2: FORECASTING MODELS, TUNING & DIAGNOSTICS
+# ==============================================================================
+
+def test_step2_forecasting_outputs_and_hurdle():
+    """Verify Step 2 forecasting tuning grid (10-20 settings per family),
+    53,585 vs 54,046 row reporting, permutation importance, and worst misses table.
+    """
+    tab_dir = ROOT / "reports" / "tables"
+    fig_dir = ROOT / "reports" / "figures"
+
+    tuning_df = pd.read_csv(tab_dir / "m3_forecast_tuning_results.csv")
+    comp_df = pd.read_csv(tab_dir / "m3_forecast_model_comparison.csv")
+    perm_df = pd.read_csv(tab_dir / "m3_forecast_permutation_importance.csv")
+    misses_df = pd.read_csv(tab_dir / "m3_forecast_worst_misses.csv")
+
+    expected_families = {
+        "Ridge (riders)",
+        "Ridge (log(1 + riders))",
+        "Random Forest",
+        "HistGradientBoosting",
+    }
+    assert set(tuning_df["model_family"].unique()) == expected_families
+
+    # Each model family must have 10 to 20 validation settings tested
+    for fam in expected_families:
+        n_settings = int((tuning_df["model_family"] == fam).sum())
+        assert 10 <= n_settings <= 20, f"{fam} has {n_settings} settings; expected 10..20"
+
+    # Comparison table must report both 53,585 common rows and 54,046 all validation rows
+    ml_rows = comp_df[comp_df["model_type"] == "ML Model"]
+    assert len(ml_rows) == 4
+    assert (ml_rows["n_eval_53585"] == 53585).all()
+    assert (ml_rows["n_eval_all_val"] == 54046).all()
+
+    # Best model must beat the 14.08% WAPE 4-week average baseline on the 53,585 rows
+    best_wape = ml_rows["wape_53585_pct"].min()
+    assert best_wape < 14.08, f"Best model WAPE {best_wape}% did not beat 14.08% baseline"
+
+    # Permutation importance must rank all 22 input features
+    assert len(perm_df) == 22
+    assert perm_df.iloc[0]["mae_increase_riders"] > 0
+
+    # Worst misses table must list top 25 route-hours sorted by abs_error descending
+    assert len(misses_df) == 25
+    assert misses_df["abs_error"].is_monotonic_decreasing
+
+    # Figures must exist and be non-empty
+    for fig_name in ["m3_forecast_model_comparison.png", "m3_forecast_permutation_importance.png"]:
+        p = fig_dir / fig_name
+        assert p.exists() and p.stat().st_size > 10_000

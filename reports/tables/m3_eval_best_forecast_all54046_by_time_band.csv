@@ -1,0 +1,6 @@
+model_name,time_band,time_band_label,n_eval,total_actual,mae,rmse,wape_pct,bias_pred_minus_actual,subset
+"HistGradientBoosting (Best Validation Forecaster, All 54,046 Rows)",early_morning,Early Morning (04:00–06:59),5979,508249.0,10.56,19.2,12.42,2.78,All Hours
+"HistGradientBoosting (Best Validation Forecaster, All 54,046 Rows)",morning_peak,Morning Peak (07:00–09:59),7431,2733800.0,41.43,65.52,11.26,10.95,All Hours
+"HistGradientBoosting (Best Validation Forecaster, All 54,046 Rows)",midday,Midday (10:00–15:59),14788,5224774.0,43.39,65.74,12.28,12.05,All Hours
+"HistGradientBoosting (Best Validation Forecaster, All 54,046 Rows)",evening_peak,Evening Peak (16:00–18:59),7464,3174898.0,54.79,81.82,12.88,17.6,All Hours
+"HistGradientBoosting (Best Validation Forecaster, All 54,046 Rows)",night,Night (19:00–03:59),18384,1930497.0,18.92,33.29,18.02,3.57,All Hours

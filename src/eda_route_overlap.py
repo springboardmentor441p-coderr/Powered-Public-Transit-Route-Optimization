@@ -149,13 +149,13 @@ def analyze_route_pairs(route_stops: dict, route_dir_stops: dict, dir_sequences:
     # What counts as an overlapping pair: Any pair sharing at least one stop (|shared| >= 1).
     # Classification rule (strictly by naming convention):
     # 1. Same route family: pairs with the same route number, such as a local route and its Select Bus version,
-    #    or lettered variants (M15/M15+, M34+/M34A+, M14A+/M14D+). Label: 'planned'.
-    # 2. Shared corridor: different route numbers that share stops (M101/M103, M101/M102, etc.). Label: 'review'.
+    #    or lettered variants (M15/M15+, M34+/M34A+, M14A+/M14D+). Label: 'same_family'.
+    # 2. Shared corridor: different route numbers that share stops (M101/M103, M101/M102, etc.). Label: 'shared_corridor'.
     def classify_pair(r1: str, r2: str) -> tuple[str, str]:
         b1, b2 = r1.rstrip("+"), r2.rstrip("+")
         if b1 == b2 or (b1.startswith("M34") and b2.startswith("M34")) or (b1.startswith("M14") and b2.startswith("M14")):
-            return "planned", "Same route family (same route number or lettered variants)"
-        return "review", "Shared corridor (different route numbers sharing stops)"
+            return "same_family", "Same route family (same route number or lettered variants)"
+        return "shared_corridor", "Shared corridor (different route numbers sharing stops)"
 
     # Load matched table to compute combined buses per hour at morning & evening peak
     matched = pd.read_parquet(MATCHED_PATH)

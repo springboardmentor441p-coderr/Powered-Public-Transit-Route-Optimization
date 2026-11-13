@@ -114,6 +114,7 @@ python src/evaluate_baselines.py     # Scores lag-7d and 4-week average baseline
 
 # Milestone 3: Shared Evaluation & Models
 python src/evaluate.py               # Runs shared forecasting & classification evaluation framework on validation baselines
+python src/train_forecasting.py      # Tunes Ridge, Ridge-Log, Random Forest & HistGradientBoosting forecasters on validation
 ```
 
 ---
@@ -127,8 +128,8 @@ All interactive exploration, visualizations, and empirical summaries are consoli
 | **0. Setup** | Imports, paths, loading saved tables, study window, route count, matched row count, and Git commit hash | All |
 | **1. Data and coverage** | Study window, GTFS timetable versions, excluded days and outage hours, crosswalk, and matched table counts | Milestone 1 |
 | **2. Network patterns** | Typical days filter, daily ridership with switchover lines and disruption shading, hourly curves with IQR bands, monthly change, 10 busiest hours | Milestone 2 (Steps 1–3) |
-| **3. Route patterns** | Ridership and riders-per-trip heatmaps (blanked where $< 2$ trips/hr), route efficiency table, demand variability ($CV$) | Milestone 2 (Steps 4–5) |
-| **4. Route overlap and coverage** | Top 15 overlapping pairs by category (`planned` vs `review`), exclusive stop share, and link to `reports/figures/route_overlaps.html` | Milestone 2 (Step 6) |
+| **3. Route patterns** | Ridership and riders-per-trip heatmaps (blanked where $< 2$ trips/hr), route table: riders per trip and per service-hour, demand variability ($CV$) | Milestone 2 (Steps 4–5) |
+| **4. Route overlap and coverage** | Top 15 overlapping pairs by category (`same_family` vs `shared_corridor`), exclusive stop share, and link to `reports/figures/route_overlaps.html` | Milestone 2 (Step 6) |
 | **5. Low riders per trip** | Operational review list (bottom 10% by day type, $\ge 2$ trips/day, $\ge 20$ days) with coverage and overlap context | Milestone 2 (Step 7) |
 | **6. Modelling data** | Features, exact calendar lags, 75th percentile thresholds, chronological splits, class balance, and fitted `ColumnTransformer` | Milestone 2 (Steps 9–12) |
 | **7. Route clustering features** | Pairwise correlation check ($|r| < 0.85$) and the 9 chosen features (scaled and unscaled) | Milestone 2 (Step 13) |
@@ -155,5 +156,5 @@ python -m pytest tests/ -v
 ```
 - [`tests/test_milestone1_steps6_9.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_milestone1_steps6_9.py) (27 tests): GTFS integrity, DST night handling, Memorial Day Sunday equivalence, outage exclusions, service hours calculations.
 - [`tests/test_milestone2.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_milestone2.py) (10 tests): Generated figures/tables existence, route overlap ordering, stop coverage metrics, data split sizes, pipeline transformation, clustering correlations, baseline forecast hurdles, and `notebooks/routeranker.ipynb` integrity.
-- [`tests/test_evaluate.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_evaluate.py) (11 tests): Shared evaluation metrics, zero-demand WAPE handling, test-set isolation enforcement, canonical time-band labels, and validation baseline hurdles.
+- [`tests/test_evaluate.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_evaluate.py) (13 tests): Shared evaluation metrics, zero-demand WAPE handling, test-set isolation enforcement, canonical time-band labels, validation baseline hurdles, and Step 2 forecasting model tuning/comparison checks.
 

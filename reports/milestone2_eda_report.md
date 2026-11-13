@@ -150,29 +150,29 @@ Using the Spring 2026 GTFS timetable (`2026-04-09`), stop sets $S_r$ were comput
 $$|S_A \cap S_B| \ge 1$$
 This yields exactly **127 overlapping route pairs** across the Manhattan network.
 
-### Planned Pairs vs Shared Corridors Classification Rule
+### Same Route Family vs Shared Corridors Classification Rule
 Route pairs are categorized strictly by naming convention:
-- **Same route family (`planned`):** Pairs with the same route number, such as a local route and its Select Bus version, or lettered variants (`M15/M15+`, `M34+/M34A+`, `M14A+/M14D+`).
-- **Shared corridor (`review`):** Different route numbers that share stops (`M101/M103`, `M102/M103`, `M101/M102`, `M1/M2`, `M2/M3`, `M31/M57`, `M106/M96`, `M1/M3`, `M101/M125`, `M7/M116`, `M3/M4`, `M1/M4`).
+- **Same route family (`same_family`):** Pairs with the same route number, such as a local route and its Select Bus version, or lettered variants (`M15/M15+`, `M34+/M34A+`, `M14A+/M14D+`).
+- **Shared corridor (`shared_corridor`):** Different route numbers that share stops (`M101/M103`, `M102/M103`, `M101/M102`, `M1/M2`, `M2/M3`, `M31/M57`, `M106/M96`, `M1/M3`, `M101/M125`, `M7/M116`, `M3/M4`, `M1/M4`).
 
 ### Table 2: Top 15 Overlapping Route Pairs in Manhattan
 | Rank | Route Pair | Smaller Route Stops | Shared Stops | Overlap Share | Jaccard | Corridor Type | Combined Peak Buses/Hr | Design Classification |
 | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :---: | :--- |
-| **1** | **M101 & M103** | 106 (M103) | 82 | **77.4%** | 45.8% | Continuous (3rd/Lexington Ave) | 66.7 | **review** (Shared corridor) |
-| **2** | **M34+ & M34A+** | 29 (M34A+) | 22 | **75.9%** | 53.7% | Continuous (34th St Crosstown) | 31.7 | **planned** (Same route family) |
-| **3** | **M102 & M103** | 106 (M103) | 77 | **72.6%** | 53.9% | Continuous (3rd/Lexington Ave) | 49.5 | **review** (Shared corridor) |
-| **4** | **M101 & M102** | 114 (M102) | 76 | **66.7%** | 39.4% | Segmented (3rd/Lexington Ave) | 70.8 | **review** (Shared corridor) |
-| **5** | **M1 & M2** | 134 (M1) | 77 | **57.5%** | 38.3% | Continuous (5th/Madison Ave) | 64.0 | **review** (Shared corridor) |
-| **6** | **M2 & M3** | 144 (M2) | 79 | **54.9%** | 34.8% | Segmented (5th/Madison Ave) | 60.0 | **review** (Shared corridor) |
-| **7** | **M31 & M57** | 42 (M57) | 23 | **54.8%** | 30.3% | Continuous (57th St Crosstown) | 41.5 | **review** (Shared corridor) |
-| **8** | **M106 & M96** | 24 (M96) | 12 | **50.0%** | 26.7% | Continuous (96th St Crosstown) | 49.7 | **review** (Shared corridor) |
-| **9** | **M1 & M3** | 134 (M1) | 64 | **47.8%** | 27.6% | Segmented (5th/Madison Ave) | 65.7 | **review** (Shared corridor) |
-| **10** | **M14A+ & M14D+** | 42 (M14A+) | 19 | **45.2%** | 28.4% | Continuous (14th St Crosstown) | 61.5 | **planned** (Same route family) |
-| **11** | **M101 & M125** | 41 (M125) | 18 | **43.9%** | 10.1% | Continuous (125th St Crosstown) | 71.2 | **review** (Shared corridor) |
-| **12** | **M116 & M7** | 42 (M116) | 18 | **42.9%** | 12.7% | Segmented (Harlem Corridor) | 48.4 | **review** (Shared corridor) |
-| **13** | **M3 & M4** | 152 (M4) | 62 | **40.8%** | 24.6% | Continuous (5th/Madison Ave) | 73.5 | **review** (Shared corridor) |
-| **14** | **M15 & M15+** | 42 (M15+) | 15 | **35.7%** | 10.1% | Segmented (1st/2nd Ave) | 84.2 | **planned** (Same route family) |
-| **15** | **M1 & M4** | 134 (M1) | 47 | **35.1%** | 19.7% | Continuous (5th/Madison Ave) | 77.5 | **review** (Shared corridor) |
+| **1** | **M101 & M103** | 106 (M103) | 82 | **77.4%** | 45.8% | Continuous (3rd/Lexington Ave) | 66.7 | **shared_corridor** (Shared corridor) |
+| **2** | **M34+ & M34A+** | 29 (M34A+) | 22 | **75.9%** | 53.7% | Continuous (34th St Crosstown) | 31.7 | **same_family** (Same route family) |
+| **3** | **M102 & M103** | 106 (M103) | 77 | **72.6%** | 53.9% | Continuous (3rd/Lexington Ave) | 49.5 | **shared_corridor** (Shared corridor) |
+| **4** | **M101 & M102** | 114 (M102) | 76 | **66.7%** | 39.4% | Segmented (3rd/Lexington Ave) | 70.8 | **shared_corridor** (Shared corridor) |
+| **5** | **M1 & M2** | 134 (M1) | 77 | **57.5%** | 38.3% | Continuous (5th/Madison Ave) | 64.0 | **shared_corridor** (Shared corridor) |
+| **6** | **M2 & M3** | 144 (M2) | 79 | **54.9%** | 34.8% | Segmented (5th/Madison Ave) | 60.0 | **shared_corridor** (Shared corridor) |
+| **7** | **M31 & M57** | 42 (M57) | 23 | **54.8%** | 30.3% | Continuous (57th St Crosstown) | 41.5 | **shared_corridor** (Shared corridor) |
+| **8** | **M106 & M96** | 24 (M96) | 12 | **50.0%** | 26.7% | Continuous (96th St Crosstown) | 49.7 | **shared_corridor** (Shared corridor) |
+| **9** | **M1 & M3** | 134 (M1) | 64 | **47.8%** | 27.6% | Segmented (5th/Madison Ave) | 65.7 | **shared_corridor** (Shared corridor) |
+| **10** | **M14A+ & M14D+** | 42 (M14A+) | 19 | **45.2%** | 28.4% | Continuous (14th St Crosstown) | 61.5 | **same_family** (Same route family) |
+| **11** | **M101 & M125** | 41 (M125) | 18 | **43.9%** | 10.1% | Continuous (125th St Crosstown) | 71.2 | **shared_corridor** (Shared corridor) |
+| **12** | **M116 & M7** | 42 (M116) | 18 | **42.9%** | 12.7% | Segmented (Harlem Corridor) | 48.4 | **shared_corridor** (Shared corridor) |
+| **13** | **M3 & M4** | 152 (M4) | 62 | **40.8%** | 24.6% | Continuous (5th/Madison Ave) | 73.5 | **shared_corridor** (Shared corridor) |
+| **14** | **M15 & M15+** | 42 (M15+) | 15 | **35.7%** | 10.1% | Segmented (1st/2nd Ave) | 84.2 | **same_family** (Same route family) |
+| **15** | **M1 & M4** | 134 (M1) | 47 | **35.1%** | 19.7% | Continuous (5th/Madison Ave) | 77.5 | **shared_corridor** (Shared corridor) |
 
 *Interactive Folium Map of top corridors:* [`reports/figures/route_overlaps.html`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/reports/figures/route_overlaps.html).
 

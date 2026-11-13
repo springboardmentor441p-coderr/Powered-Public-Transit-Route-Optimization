@@ -1,0 +1,5 @@
+model_name,day_type,n_eval,total_actual,mae,rmse,wape_pct,bias_pred_minus_actual,subset
+"HistGradientBoosting (Best Validation Forecaster, All 54,046 Rows)",Typical Weekday,38525,10727969.0,31.99,53.81,11.49,8.59,All Hours
+"HistGradientBoosting (Best Validation Forecaster, All 54,046 Rows)",Typical Saturday,6059,1180574.0,34.5,57.95,17.71,8.58,All Hours
+"HistGradientBoosting (Best Validation Forecaster, All 54,046 Rows)",Typical Sunday,6859,1148461.0,31.42,54.54,18.76,5.3,All Hours
+"HistGradientBoosting (Best Validation Forecaster, All 54,046 Rows)",Special/Excluded,2603,515214.0,43.16,78.53,21.81,20.71,All Hours

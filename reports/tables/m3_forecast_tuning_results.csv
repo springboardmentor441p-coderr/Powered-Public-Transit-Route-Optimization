@@ -1,0 +1,51 @@
+model_family,setting_id,setting_description,n_eval_common,wape_53585_pct,mae_53585,rmse_53585,bias_53585_pred_minus_actual,n_eval_all,wape_54046_pct,mae_54046,rmse_54046,bias_54046_pred_minus_actual,fit_seconds
+Ridge (riders),1,"alpha=0.01, train=all_train_rows",53585,17.28,43.75,68.21,11.36,54046,17.49,43.92,68.41,11.81,0.17
+Ridge (riders),2,"alpha=0.1, train=all_train_rows",53585,17.28,43.75,68.21,11.36,54046,17.49,43.92,68.41,11.81,0.17
+Ridge (riders),3,"alpha=1.0, train=all_train_rows",53585,17.28,43.75,68.21,11.36,54046,17.49,43.92,68.41,11.81,0.17
+Ridge (riders),4,"alpha=10.0, train=all_train_rows",53585,17.27,43.73,68.19,11.35,54046,17.48,43.91,68.39,11.8,0.17
+Ridge (riders),5,"alpha=100.0, train=all_train_rows",53585,17.21,43.59,68.03,11.28,54046,17.43,43.76,68.21,11.72,0.16
+Ridge (riders),6,"alpha=1000.0, train=all_train_rows",53585,16.93,42.85,67.28,10.78,54046,17.13,43.02,67.4,11.21,0.17
+Ridge (riders),7,"alpha=0.01, train=complete_lag_rows",53585,14.75,37.35,61.51,9.85,54046,14.95,37.55,61.6,10.28,0.16
+Ridge (riders),8,"alpha=0.1, train=complete_lag_rows",53585,14.75,37.35,61.51,9.85,54046,14.95,37.55,61.6,10.28,0.16
+Ridge (riders),9,"alpha=1.0, train=complete_lag_rows",53585,14.75,37.35,61.51,9.85,54046,14.95,37.55,61.6,10.28,0.15
+Ridge (riders),10,"alpha=10.0, train=complete_lag_rows",53585,14.75,37.34,61.51,9.84,54046,14.95,37.54,61.6,10.27,0.16
+Ridge (riders),11,"alpha=100.0, train=complete_lag_rows",53585,14.72,37.28,61.53,9.76,54046,14.93,37.48,61.61,10.2,0.17
+Ridge (riders),12,"alpha=1000.0, train=complete_lag_rows",53585,14.6,36.97,61.74,9.3,54046,14.8,37.17,61.8,9.74,0.17
+Ridge (log(1 + riders)),1,"alpha=0.01, features=raw_linear_inputs",53585,43.97,111.34,309.71,34.68,54046,44.0,110.5,308.39,34.43,0.17
+Ridge (log(1 + riders)),2,"alpha=0.1, features=raw_linear_inputs",53585,43.97,111.34,309.71,34.68,54046,44.0,110.5,308.4,34.43,0.18
+Ridge (log(1 + riders)),3,"alpha=1.0, features=raw_linear_inputs",53585,43.97,111.35,309.77,34.68,54046,44.0,110.5,308.45,34.43,0.22
+Ridge (log(1 + riders)),4,"alpha=10.0, features=raw_linear_inputs",53585,43.98,111.37,310.28,34.69,54046,44.01,110.52,308.96,34.44,0.18
+Ridge (log(1 + riders)),5,"alpha=100.0, features=raw_linear_inputs",53585,44.11,111.68,316.0,34.82,54046,44.13,110.83,314.66,34.57,0.16
+Ridge (log(1 + riders)),6,"alpha=500.0, features=raw_linear_inputs",53585,45.09,114.18,350.98,36.28,54046,45.12,113.31,349.48,36.02,0.15
+Ridge (log(1 + riders)),7,"alpha=0.01, features=log1p_count_and_lag_inputs",53585,14.31,36.24,62.84,8.74,54046,14.42,36.21,62.68,8.93,0.14
+Ridge (log(1 + riders)),8,"alpha=0.1, features=log1p_count_and_lag_inputs",53585,14.31,36.24,62.84,8.74,54046,14.42,36.21,62.68,8.93,0.15
+Ridge (log(1 + riders)),9,"alpha=1.0, features=log1p_count_and_lag_inputs",53585,14.31,36.24,62.84,8.74,54046,14.42,36.21,62.68,8.93,0.16
+Ridge (log(1 + riders)),10,"alpha=10.0, features=log1p_count_and_lag_inputs",53585,14.32,36.25,62.88,8.77,54046,14.42,36.22,62.72,8.96,0.16
+Ridge (log(1 + riders)),11,"alpha=100.0, features=log1p_count_and_lag_inputs",53585,14.37,36.38,63.28,9.0,54046,14.47,36.35,63.11,9.18,0.14
+Ridge (log(1 + riders)),12,"alpha=500.0, features=log1p_count_and_lag_inputs",53585,14.56,36.86,64.67,9.68,54046,14.65,36.8,64.48,9.83,0.15
+Random Forest,1,"depth=10, leaf=20, feat=0.6, train=all_train_rows",53585,13.71,34.72,59.72,8.81,54046,13.72,34.45,59.47,8.74,15.31
+Random Forest,2,"depth=12, leaf=15, feat=0.6, train=all_train_rows",53585,13.59,34.42,59.31,8.96,54046,13.6,34.15,59.06,8.89,16.85
+Random Forest,3,"depth=12, leaf=10, feat=0.8, train=all_train_rows",53585,13.59,34.4,59.11,9.12,54046,13.59,34.13,58.86,9.05,22.7
+Random Forest,4,"depth=14, leaf=10, feat=0.6, train=all_train_rows",53585,13.52,34.23,58.92,9.07,54046,13.52,33.96,58.68,9.0,19.55
+Random Forest,5,"depth=14, leaf=10, feat=0.8, train=all_train_rows",53585,13.53,34.25,59.06,9.14,54046,13.53,33.99,58.81,9.06,24.02
+Random Forest,6,"depth=16, leaf=10, feat=0.6, train=all_train_rows",53585,13.48,34.14,58.78,9.11,54046,13.49,33.88,58.54,9.03,21.2
+Random Forest,7,"depth=16, leaf=10, feat=0.8, train=all_train_rows",53585,13.51,34.21,59.06,9.21,54046,13.52,33.94,58.82,9.14,26.41
+Random Forest,8,"depth=16, leaf=5, feat=0.8, train=all_train_rows",53585,13.46,34.08,58.48,9.12,54046,13.47,33.82,58.23,9.05,26.3
+Random Forest,9,"depth=18, leaf=10, feat=0.7, train=all_train_rows",53585,13.48,34.13,58.81,9.16,54046,13.49,33.87,58.56,9.08,24.27
+Random Forest,10,"depth=18, leaf=5, feat=0.8, train=all_train_rows",53585,13.45,34.06,58.48,9.27,54046,13.46,33.8,58.23,9.2,27.31
+Random Forest,11,"depth=20, leaf=5, feat=0.8, train=all_train_rows",53585,13.45,34.07,58.55,9.26,54046,13.46,33.8,58.3,9.18,26.05
+Random Forest,12,"depth=20, leaf=5, feat=0.8, train=complete_lag_rows",53585,13.5,34.17,58.32,9.43,54046,13.78,34.6,58.83,10.07,23.79
+HistGradientBoosting,1,"loss=squared_error, lr=0.03, leaf=31, min=20, l2=1.0, train=all_train_rows",53585,13.3,33.69,56.36,7.89,54046,13.33,33.47,56.13,7.88,12.11
+HistGradientBoosting,2,"loss=squared_error, lr=0.05, leaf=31, min=20, l2=1.0, train=all_train_rows",53585,13.26,33.59,56.36,8.34,54046,13.29,33.37,56.13,8.31,10.67
+HistGradientBoosting,3,"loss=squared_error, lr=0.05, leaf=63, min=20, l2=1.0, train=all_train_rows",53585,13.21,33.44,56.58,8.94,54046,13.22,33.21,56.34,8.89,13.56
+HistGradientBoosting,4,"loss=squared_error, lr=0.05, leaf=63, min=30, l2=5.0, train=all_train_rows",53585,13.22,33.48,56.67,9.03,54046,13.24,33.25,56.44,8.98,13.82
+HistGradientBoosting,5,"loss=squared_error, lr=0.08, leaf=63, min=25, l2=1.0, train=all_train_rows",53585,13.21,33.44,56.67,9.19,54046,13.22,33.2,56.44,9.14,12.08
+HistGradientBoosting,6,"loss=squared_error, lr=0.05, leaf=127, min=30, l2=5.0, train=all_train_rows",53585,13.22,33.48,57.05,9.3,54046,13.23,33.23,56.81,9.25,19.86
+HistGradientBoosting,7,"loss=squared_error, lr=0.05, leaf=63, min=20, l2=1.0, train=complete_lag_rows",53585,13.34,33.79,57.14,9.35,54046,13.58,34.1,57.42,9.86,12.01
+HistGradientBoosting,8,"loss=absolute_error, lr=0.05, leaf=31, min=20, l2=1.0, train=all_train_rows",53585,13.43,34.01,58.46,8.59,54046,13.44,33.74,58.21,8.52,14.82
+HistGradientBoosting,9,"loss=absolute_error, lr=0.05, leaf=63, min=25, l2=1.0, train=all_train_rows",53585,13.27,33.6,57.55,8.69,54046,13.28,33.34,57.31,8.62,17.4
+HistGradientBoosting,10,"loss=absolute_error, lr=0.05, leaf=127, min=30, l2=1.0, train=all_train_rows",53585,13.18,33.36,57.04,8.91,54046,13.18,33.1,56.8,8.83,22.84
+HistGradientBoosting,11,"loss=absolute_error, lr=0.08, leaf=63, min=25, l2=1.0, train=all_train_rows",53585,13.24,33.53,57.3,8.77,54046,13.25,33.27,57.06,8.69,14.54
+HistGradientBoosting,12,"loss=poisson, lr=0.05, leaf=63, min=25, l2=1.0, train=all_train_rows",53585,13.06,33.07,55.98,8.62,54046,13.07,32.81,55.75,8.55,15.39
+HistGradientBoosting,13,"loss=poisson, lr=0.05, leaf=127, min=25, l2=1.0, train=all_train_rows",53585,13.03,33.0,56.05,8.83,54046,13.04,32.74,55.81,8.75,21.97
+HistGradientBoosting,14,"loss=poisson, lr=0.05, leaf=127, min=25, l2=1.0, train=complete_lag_rows",53585,13.14,33.27,56.57,9.01,54046,13.19,33.11,56.35,9.04,20.2

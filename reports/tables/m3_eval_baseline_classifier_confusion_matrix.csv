@@ -1,4 +1,0 @@
-Actual Class,Pred Normal (0),Pred High (1),Total Actual,Model
-Actual Normal Demand (0),35613,5027,40640,Prior-Week Heuristic Classifier (All Hours)
-Actual High Demand (1),4750,8237,12987,Prior-Week Heuristic Classifier (All Hours)
-Total Predicted,40363,13264,53627,Prior-Week Heuristic Classifier (All Hours)

@@ -1,0 +1,26 @@
+rank,route,date,day_of_week,hour,time_band,day_type,is_public_holiday,holiday_schedule,trips_running,actual_ridership,predicted_ridership,bias_pred_minus_actual,abs_error,lag_mean_available,miss_category
+1,M15+,2026-07-07,Tuesday,17,evening_peak,Typical Weekday,False,False,45,1230.0,2050.0,820.0,820.0,2038.5,High-Volume Trunk Commuter Peak Fluctuation
+2,M15+,2026-07-19,Sunday,14,midday,Typical Sunday,False,False,29,1874.0,1063.0,-811.0,811.0,1095.5,High-Volume Trunk Midday Surge / Dip
+3,M15+,2026-06-19,Friday,7,morning_peak,Special/Excluded,True,False,61,1151.0,1924.1,773.1,773.1,2322.0,Public Holiday / Holiday Schedule Over-prediction
+4,M15+,2026-07-07,Tuesday,16,evening_peak,Typical Weekday,False,False,45,1086.0,1797.5,711.5,711.5,1770.5,High-Volume Trunk Commuter Peak Fluctuation
+5,M15+,2026-07-03,Friday,16,evening_peak,Special/Excluded,True,True,41,761.0,1462.8,701.8,701.8,1614.2,Public Holiday / Holiday Schedule Over-prediction
+6,M15+,2026-07-03,Friday,18,evening_peak,Special/Excluded,True,True,36,692.0,1371.9,679.9,679.9,1531.0,Public Holiday / Holiday Schedule Over-prediction
+7,M15+,2026-07-03,Friday,17,evening_peak,Special/Excluded,True,True,39,760.0,1422.2,662.2,662.2,1796.5,Public Holiday / Holiday Schedule Over-prediction
+8,M15+,2026-07-04,Saturday,15,midday,Special/Excluded,True,False,40,596.0,1247.5,651.5,651.5,1310.2,Public Holiday / Holiday Schedule Over-prediction
+9,M15+,2026-06-19,Friday,8,morning_peak,Special/Excluded,True,False,68,1313.0,1949.0,636.0,636.0,2468.5,Public Holiday / Holiday Schedule Over-prediction
+10,M15+,2026-07-03,Friday,14,midday,Special/Excluded,True,True,39,849.0,1449.2,600.2,600.2,1510.5,Public Holiday / Holiday Schedule Over-prediction
+11,M15+,2026-07-04,Saturday,16,evening_peak,Special/Excluded,True,False,41,544.0,1142.2,598.2,598.2,1273.0,Public Holiday / Holiday Schedule Over-prediction
+12,M15+,2026-07-02,Thursday,7,morning_peak,Typical Weekday,False,False,61,1943.0,2532.0,589.0,589.0,2377.8,High-Volume Trunk Commuter Peak Fluctuation
+13,M15+,2026-07-18,Saturday,12,midday,Typical Saturday,False,False,32,725.0,1303.1,578.1,578.1,1174.2,High-Volume Trunk Midday Surge / Dip
+14,M15+,2026-07-07,Tuesday,18,evening_peak,Typical Weekday,False,False,41,1145.0,1699.7,554.7,554.7,1648.2,High-Volume Trunk Commuter Peak Fluctuation
+15,M15+,2026-07-03,Friday,15,midday,Special/Excluded,True,True,40,928.0,1469.3,541.3,541.3,1638.2,Public Holiday / Holiday Schedule Over-prediction
+16,M15+,2026-07-06,Monday,7,morning_peak,Typical Weekday,False,False,61,1970.0,2508.9,538.9,538.9,2428.8,High-Volume Trunk Commuter Peak Fluctuation
+17,M103,2026-07-07,Tuesday,17,evening_peak,Typical Weekday,False,False,27,193.0,728.2,535.2,535.2,715.8,Localised Schedule / Weather / Construction Variance
+18,M15+,2026-07-04,Saturday,17,evening_peak,Special/Excluded,True,False,39,624.0,1154.6,530.6,530.6,1255.2,Public Holiday / Holiday Schedule Over-prediction
+19,M15+,2026-07-04,Saturday,14,midday,Special/Excluded,True,False,39,728.0,1257.2,529.2,529.2,1309.5,Public Holiday / Holiday Schedule Over-prediction
+20,M15+,2026-07-07,Tuesday,9,morning_peak,Typical Weekday,False,False,54,1179.0,1700.3,521.3,521.3,1814.8,High-Volume Trunk Commuter Peak Fluctuation
+21,M15+,2026-07-03,Friday,13,midday,Special/Excluded,True,True,36,771.0,1291.3,520.3,520.3,1262.2,Public Holiday / Holiday Schedule Over-prediction
+22,M15+,2026-07-07,Tuesday,15,midday,Typical Weekday,False,False,41,1140.0,1657.9,517.9,517.9,1623.0,High-Volume Trunk Midday Surge / Dip
+23,M15+,2026-06-30,Tuesday,7,morning_peak,Typical Weekday,False,False,61,2083.0,2588.8,505.8,505.8,2660.5,High-Volume Trunk Commuter Peak Fluctuation
+24,M103,2026-06-18,Thursday,14,midday,Typical Weekday,False,False,25,61.0,554.3,493.3,493.3,566.2,Localised Schedule / Weather / Construction Variance
+25,M15+,2026-06-10,Wednesday,8,morning_peak,Typical Weekday,False,False,68,3331.0,2842.7,-488.3,488.3,3066.2,High-Volume Trunk Commuter Peak Fluctuation

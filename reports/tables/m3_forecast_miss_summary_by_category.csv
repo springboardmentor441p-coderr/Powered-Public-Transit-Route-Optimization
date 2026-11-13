@@ -1,0 +1,5 @@
+miss_category,hours_in_top_100,mean_abs_error,mean_bias_pred_minus_actual,example_routes
+Localised Schedule / Weather / Construction Variance,36,400.1,380.1,"M103, M15, M86+, M101"
+High-Volume Trunk Commuter Peak Fluctuation,27,459.7,162.5,"M15+, M103, M101, M86+"
+Public Holiday / Holiday Schedule Over-prediction,21,522.2,522.2,"M15+, M86+, M96, M4"
+High-Volume Trunk Midday Surge / Dip,16,428.9,227.7,"M15+, M101, M86+"

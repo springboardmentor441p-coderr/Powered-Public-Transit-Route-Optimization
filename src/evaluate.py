@@ -339,6 +339,11 @@ def evaluate_forecasting(
         "rmse": m_all["rmse"],
         "wape_pct": m_all["wape_pct"],
         "bias_pred_minus_actual": m_all["bias_pred_minus_actual"],
+        "storm_note": (
+            "Includes storm days (see Without Storm Days row)"
+            if has_storms
+            else "0 storm days in window; duplicate 'Without Storm Days' row omitted"
+        ),
     })
 
     # Scenario B: Storm days comparison (only if storm days exist in the dataset)
@@ -354,6 +359,7 @@ def evaluate_forecasting(
             "rmse": m_nostorm["rmse"],
             "wape_pct": m_nostorm["wape_pct"],
             "bias_pred_minus_actual": m_nostorm["bias_pred_minus_actual"],
+            "storm_note": "Storm days excluded",
         })
 
         sub_storm = df[df["is_storm"]]
@@ -367,6 +373,7 @@ def evaluate_forecasting(
             "rmse": m_storm["rmse"],
             "wape_pct": m_storm["wape_pct"],
             "bias_pred_minus_actual": m_storm["bias_pred_minus_actual"],
+            "storm_note": "Storm days only",
         })
 
     # Scenario C: Without outlier hours (if outliers exist)
@@ -382,6 +389,7 @@ def evaluate_forecasting(
             "rmse": m_noout["rmse"],
             "wape_pct": m_noout["wape_pct"],
             "bias_pred_minus_actual": m_noout["bias_pred_minus_actual"],
+            "storm_note": "Outlier hours excluded",
         })
 
     results["overall"] = pd.DataFrame(overall_rows)
@@ -636,6 +644,11 @@ def evaluate_classification(
         "fp": m_all["fp"],
         "fn": m_all["fn"],
         "tn": m_all["tn"],
+        "storm_note": (
+            "Includes storm days (see Without Storm Days row)"
+            if has_storms
+            else "0 storm days in window; duplicate 'Without Storm Days' row omitted"
+        ),
     })
 
     results["confusion_matrix"] = format_confusion_matrix(m_all, model_name=f"{model_name} (All Hours)")
@@ -662,6 +675,7 @@ def evaluate_classification(
             "fp": m_nostorm["fp"],
             "fn": m_nostorm["fn"],
             "tn": m_nostorm["tn"],
+            "storm_note": "Storm days excluded",
         })
 
     # Scenario C: Without outlier hours (if outliers exist)
@@ -686,6 +700,7 @@ def evaluate_classification(
             "fp": m_noout["fp"],
             "fn": m_noout["fn"],
             "tn": m_noout["tn"],
+            "storm_note": "Outlier hours excluded",
         })
 
     results["overall"] = pd.DataFrame(overall_rows)
@@ -731,29 +746,29 @@ def print_forecasting_summary(res: Dict[str, pd.DataFrame], model_name: str = "M
     print(f" FORECASTING EVALUATION REPORT: {model_name.upper()}")
     print("=" * 80)
     print("\n--- 1. OVERALL METRICS ---")
-    print(res["overall"].to_string(index=False))
-    print("[Note: bias_pred_minus_actual = mean(pred - actual). Positive (+3.11) indicates forecast overpredicts actual ridership on average.]")
+    print(res["overall"].to_string(index=False, na_rep=""))
+    print("[Note: bias_pred_minus_actual = mean(predicted - actual). Positive (+3.11) indicates forecast overpredicts actual ridership on average.]")
     if "Without Storm Days" not in set(res["overall"]["subset"]):
-        print("[Note: No storm days occurred in this evaluation window (June-July 2026); storm split active for winter dates.]")
+        print("[Note: Validation (June–July 2026) has 0 storm days; duplicate 'Without Storm Days' row omitted.]")
 
     if "by_day_type" in res:
         print("\n--- 2. BREAKDOWN BY DAY TYPE ---")
         cols = ["day_type", "subset", "n_eval", "total_actual", "mae", "rmse", "wape_pct", "bias_pred_minus_actual"]
-        print(res["by_day_type"][cols].to_string(index=False))
+        print(res["by_day_type"][cols].to_string(index=False, na_rep=""))
 
     if "by_time_band" in res:
         print("\n--- 3. BREAKDOWN BY TIME BAND ---")
         cols = ["time_band", "time_band_label", "subset", "n_eval", "total_actual", "mae", "rmse", "wape_pct", "bias_pred_minus_actual"]
-        print(res["by_time_band"][cols].to_string(index=False))
+        print(res["by_time_band"][cols].to_string(index=False, na_rep=""))
 
     if "by_route" in res:
         print("\n--- 4. BREAKDOWN BY ROUTE (TOP 5 & BOTTOM 5 BY WAPE) ---")
         r_df = res["by_route"][res["by_route"]["subset"] == "All Hours"].sort_values("wape_pct")
-        cols = ["route", "n_eval", "total_actual", "mae", "rmse", "wape_pct"]
+        cols = ["route", "n_eval", "total_actual", "mae", "rmse", "wape_pct", "bias_pred_minus_actual"]
         print("Best performing routes (Lowest WAPE):")
-        print(r_df.head(5)[cols].to_string(index=False))
+        print(r_df.head(5)[cols].to_string(index=False, na_rep=""))
         print("\nWorst performing routes (Highest WAPE):")
-        print(r_df.tail(5)[cols].to_string(index=False))
+        print(r_df.tail(5)[cols].to_string(index=False, na_rep=""))
     print("=" * 80 + "\n")
 
 
