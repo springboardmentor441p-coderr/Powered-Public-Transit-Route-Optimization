@@ -574,11 +574,20 @@ def test_week6_config_and_outputs():
     assert cfg_path.exists()
     cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
 
+    rw = cfg["step7_9_review_window"]
+    assert rw["start_date"] == "2026-08-01"
+    assert rw["end_date"] == "2026-10-31"
+    assert rw["high_demand_multiplier"] == pytest.approx(1.0)
+
     s7 = cfg["step7_review_thresholds"]
     assert "fewer_trips_screening" in s7
     assert "more_trips_screening" in s7
     assert s7["fewer_trips_screening"]["category_name"] == "fewer_trips_candidate"
+    assert s7["fewer_trips_screening"]["min_days_count"] == 20
+    assert s7["fewer_trips_screening"]["min_avg_trips_per_day"] == pytest.approx(2.0)
     assert s7["more_trips_screening"]["category_name"] == "more_trips_candidate"
+    assert s7["more_trips_screening"]["min_days_count"] == 20
+    assert s7["more_trips_screening"]["min_avg_trips_per_day"] == pytest.approx(2.0)
     assert s7["coverage_guardrails"]["high_exclusive_stop_share"] == pytest.approx(0.60)
     assert s7["shared_corridor_overlap"]["allowed_overlap_category"] == "shared_corridor"
     assert s7["shared_corridor_overlap"]["min_overlap_share_for_merge_check"] == pytest.approx(0.40)
@@ -615,12 +624,18 @@ def test_week6_config_and_outputs():
     month_row = oct_diag[oct_diag["check_name"] == "month_feature_in_model"]
     assert len(month_row) == 1 and "False" in month_row["result"].iloc[0]
 
-    # Step 7 review list (weekday & weekend day_group split)
+    # Step 7 review list (weekday & weekend day_group split over Aug-Oct typical days)
     review_df = pd.read_csv(tab_dir / "m3_step7_review_list.csv")
     assert len(review_df) == 400
     assert review_df.duplicated(subset=["route", "day_group", "time_band"]).sum() == 0
     assert (review_df["day_group"] == "weekday").sum() == 205
     assert (review_df["day_group"] == "weekend").sum() == 195
+    assert (review_df["days_count"] < 20).sum() == 2
+    adj_candidates = review_df[
+        review_df["review_category"].isin(["fewer_trips_candidate", "more_trips_candidate"])
+    ]
+    assert (adj_candidates["days_count"] >= 20).all()
+    assert (adj_candidates["avg_trips_per_day"] >= 2.0).all()
     assert review_df["reason"].notna().all()
     assert review_df["reason"].str.len().min() > 20
     assert set(review_df["review_category"].unique()) == {
@@ -634,7 +649,7 @@ def test_week6_config_and_outputs():
 
     # Step 8 scenarios + strictly shared_corridor merge checks
     scen_df = pd.read_csv(tab_dir / "m3_step8_candidate_scenarios.csv")
-    assert len(scen_df) == 632
+    assert len(scen_df) == 432
     assert set(scen_df["scenario_trip_change_pct"].unique()) == {-20, -10, 10, 20}
     assert set(scen_df["review_category"].unique()) == {
         "fewer_trips_candidate",
@@ -653,7 +668,7 @@ def test_week6_config_and_outputs():
 
     # Step 9 budget-neutral reallocation plan (within weekday and within weekend)
     realloc_df = pd.read_csv(tab_dir / "m3_step9_budget_neutral_reallocation.csv")
-    assert len(realloc_df) == 72
+    assert len(realloc_df) == 39
     assert float(realloc_df["delta_service_hours"].sum()) <= 0.0
     for dg in ["weekday", "weekend"]:
         sub = realloc_df[realloc_df["day_group"] == dg]
@@ -661,10 +676,10 @@ def test_week6_config_and_outputs():
         assert float(sub["delta_service_hours"].sum()) <= 0.0
     donors = realloc_df[realloc_df["delta_service_hours"] < 0]
     recips = realloc_df[realloc_df["delta_service_hours"] > 0]
-    assert len(donors) == 49 and len(recips) == 23
+    assert len(donors) == 32 and len(recips) == 7
     assert "M35" not in set(donors["route"])
     assert (donors["high_demand_hours_delta"] <= 0).all()
-    assert int(realloc_df["high_demand_hours_delta"].sum()) == -192
+    assert int(realloc_df["high_demand_hours_delta"].sum()) == -219
     for old_word in ["underused", "congested", "crowding", "crowded", "reliev"]:
         assert not realloc_df["rationale"].str.lower().str.contains(old_word).any()
 
@@ -682,6 +697,10 @@ def test_week6_config_and_outputs():
     assert "fewer_trips_candidate" in report_txt
     assert "more_trips_candidate" in report_txt
     assert "fall below the high-demand threshold" in report_txt
+    assert "consistent with" in report_txt.lower()
+    oct_diag_section = report_txt.split("### 7.1")[1].split("### 7.2")[0]
+    assert "confirmed" not in oct_diag_section.split("Checked Diagnostic Possibilities")[1].lower()
+    assert "relative to the 4-week average" in report_txt.lower()
     for old_word in ["underused", "congested", "crowding", "crowded", "relieving"]:
         assert old_word not in report_txt.lower()
 

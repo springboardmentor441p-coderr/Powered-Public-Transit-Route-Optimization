@@ -1,9 +1,22 @@
 {
-  "description": "Milestone 3 Steps 7-9 screening thresholds and service reallocation rules for Manhattan bus routes (split by weekday and weekend day groups).",
-  "prediction_window": {
+  "description": "Milestone 3 Steps 7-9 screening thresholds and service reallocation rules across Aug-Oct 2026 observed typical days (split by weekday and weekend day groups).",
+  "step7_9_review_window": {
+    "start_date": "2026-08-01",
+    "end_date": "2026-10-31",
+    "data_source": "observed_typical_days (matched_hourly Aug-Sep + cleaned Oct 2026 with active GTFS 2026-09-03 and 2026-10-17)",
+    "excluded_events": [
+      "Labor Day (2026-09-07)",
+      "Columbus Day (2026-10-12)",
+      "Aug 16 21:00-22:00 outage (2 hours)",
+      "M35 Sep 19 14:00-19:00 outlier (6 hours)"
+    ],
+    "dates_summary": "92 calendar days -> 90 typical days: 63 typical weekdays and 27 typical weekend days",
+    "high_demand_multiplier": 1.0,
+    "threshold_reference": "reports/tables/m2_high_demand_thresholds.csv (1.00x fixed Jan-May p75)"
+  },
+  "step6_operational_forecast_window": {
     "start_date": "2026-10-18",
     "end_date": "2026-10-31",
-    "dates_summary": "14 days total: 10 weekdays (2026-10-19..23, 2026-10-26..30) and 4 weekend days (2026-10-18, 2026-10-24, 2026-10-25, 2026-10-31)",
     "timetable_version": "2026-10-17",
     "high_demand_multiplier": 0.96,
     "forecaster_artifact": "models/final_forecaster.joblib"
@@ -11,21 +24,19 @@
   "step7_review_thresholds": {
     "fewer_trips_screening": {
       "category_name": "fewer_trips_candidate",
-      "max_pred_riders_per_service_hour": 22.0,
+      "max_obs_riders_per_service_hour": 22.0,
       "max_high_demand_freq_pct": 15.0,
-      "min_active_hours_weekday": 10,
-      "min_trips_weekday": 20,
-      "min_active_hours_weekend": 4,
-      "min_trips_weekend": 8,
-      "note": "Targets (route, time_band, day_group) cells with low predicted riders per service-hour (<= 22.0) and rare threshold exceedances (<= 15.0%)."
+      "min_days_count": 20,
+      "min_avg_trips_per_day": 2.0,
+      "note": "Targets observed typical (route, day_group, time_band) cells with <= 22.0 riders/svc-hr, <= 15.0% hours above p75, >= 20 active days, and >= 2.0 avg trips/day."
     },
     "more_trips_screening": {
       "category_name": "more_trips_candidate",
       "min_high_demand_freq_pct": 65.0,
-      "min_pred_riders_per_service_hour": 40.0,
-      "min_active_hours_weekday": 15,
-      "min_active_hours_weekend": 6,
-      "note": "Targets (route, time_band, day_group) cells with high riders per service-hour (>= 40.0) and frequent hours above 0.96x threshold_p75 (>= 65.0%), excluding tiny-denominator outliers such as M35."
+      "min_obs_riders_per_service_hour": 40.0,
+      "min_days_count": 20,
+      "min_avg_trips_per_day": 2.0,
+      "note": "Targets observed typical (route, day_group, time_band) cells with >= 40.0 riders/svc-hr, >= 65.0% hours above p75, >= 20 active days, and >= 2.0 avg trips/day (excluding M35 outlier)."
     },
     "coverage_guardrails": {
       "high_exclusive_stop_share": 0.60,
@@ -37,7 +48,7 @@
       "min_overlap_share_for_merge_check": 0.40,
       "note": "Merge feasibility checks apply strictly to shared_corridor pairs (>=40% overlap share) and exclude same_family variants (M15/M15+, M34+/M34A+, M14A+/M14D+)."
     },
-    "forecast_trend_bands": {
+    "demand_trend_bands": {
       "rising_pct": 3.0,
       "falling_pct": -3.0
     }
