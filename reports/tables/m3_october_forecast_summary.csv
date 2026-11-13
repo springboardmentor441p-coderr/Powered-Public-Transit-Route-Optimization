@@ -1,0 +1,5 @@
+lag_mode,model,n_eval_common,mae_common,rmse_common,wape_common_pct,bias_common_pred_minus_actual,n_eval_all,wape_all_pct,hgb_route_wins_of_41
+Rolling Lags (7d–28d Exact Prior),4-Week Average Baseline (lag_mean_available),12335,32.74,56.66,11.2,-10.96,12335,11.2,
+Rolling Lags (7d–28d Exact Prior),Frozen Step 5 HistGradientBoosting Forecaster,12335,33.04,59.27,11.31,-16.33,12335,11.31,26.0
+Publish-Date Cutoff (Lags <= 2026-10-17),4-Week Average Baseline (lag_mean_available),12335,34.17,59.47,11.7,-11.8,12335,11.7,
+Publish-Date Cutoff (Lags <= 2026-10-17),Frozen Step 5 HistGradientBoosting Forecaster,12335,35.88,63.11,12.28,-10.31,12335,12.28,20.0

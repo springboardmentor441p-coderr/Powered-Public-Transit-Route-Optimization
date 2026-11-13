@@ -100,9 +100,18 @@
         "precision_at_096x": 0.6535,
         "recall_at_096x": 0.7556,
         "f1_at_096x": 0.7009
-      }
+      },
+      "selection_rationale": "Retained as main alerting approach because a single forecasting model performs both jobs (ridership forecasting and high-demand-per-trip alerting), while achieving PR-AUC 0.717 vs 0.750 for the dedicated classifier and tying at Rule B's workload (0.717 vs 0.713 precision)."
     },
-    "created_at_utc": "2026-11-13T06:01:52.061165+00:00"
+    "created_at_utc": "2026-11-13T06:01:52.061165+00:00",
+    "official_test_run_date": "2026-11-13",
+    "official_test_run_log": "[2026-11-13T11:30:59.750143] AUDIT TEST ACCESS: test_features.parquet loaded with final=True. Caller: src/run_final_test.py::run_step5_final_test (Single Official Test Run)",
+    "known_limitations": [
+      "Cut-offs (0.96x for Forecast \u00f7 Trips and 0.63 for HistGradientBoostingClassifier) were chosen on models trained on January to May 2026, before retraining on January to July 2026.",
+      "January to May training contains no public holiday operating a normal timetable (Juneteenth on 19 June 2026 had is_public_holiday=True with holiday_schedule=False, appearing only once in validation / Jan\u2013Jul retraining).",
+      "Only the 6-hour M35 surge on Saturday 19 September 2026 (14:00\u201319:00) was flagged as an outlier (is_outlier == True); other single-day surges or drops remain unflagged.",
+      "Boardings do not measure how full a bus is (riders_per_trip divides hourly boardings by trips_running without alightings, through-passengers, or vehicle capacity)."
+    ]
   },
   "final_classifier": {
     "model_name": "HistGradientBoostingClassifier (Final Retrained High-Demand-per-Trip Classifier)",
@@ -185,6 +194,15 @@
         "f1_at_063": 0.702
       }
     },
-    "created_at_utc": "2026-11-13T06:01:52.061225+00:00"
+    "created_at_utc": "2026-11-13T06:01:52.061225+00:00",
+    "official_test_run_date": "2026-11-13",
+    "official_test_run_log": "[2026-11-13T11:30:59.750143] AUDIT TEST ACCESS: test_features.parquet loaded with final=True. Caller: src/run_final_test.py::run_step5_final_test (Single Official Test Run)",
+    "known_limitations": [
+      "Cut-offs (0.96x for Forecast \u00f7 Trips and 0.63 for HistGradientBoostingClassifier) were chosen on models trained on January to May 2026, before retraining on January to July 2026.",
+      "January to May training contains no public holiday operating a normal timetable (Juneteenth on 19 June 2026 had is_public_holiday=True with holiday_schedule=False, appearing only once in validation / Jan\u2013Jul retraining).",
+      "Only the 6-hour M35 surge on Saturday 19 September 2026 (14:00\u201319:00) was flagged as an outlier (is_outlier == True); other single-day surges or drops remain unflagged.",
+      "Boardings do not measure how full a bus is (riders_per_trip divides hourly boardings by trips_running without alightings, through-passengers, or vehicle capacity)."
+    ],
+    "comparison_note": "Leads in cutoff-free PR-AUC (0.750 vs 0.717 on test, wider than validation's 0.729 vs 0.721) and is effectively tied with Forecast \u00f7 Trips at Rule B's workload (0.713 vs 0.717)."
   }
 }

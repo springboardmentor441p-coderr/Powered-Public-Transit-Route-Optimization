@@ -535,3 +535,119 @@ def test_step5_final_test_outputs_and_model_cards():
         assert fp.exists() and fp.stat().st_size > 10_000
 
 
+# ==============================================================================
+# 5. WEEK 5 FINAL METADATA & WEEK 6 OPERATIONAL / REALLOCATION TESTS (STEPS 6-9)
+# ==============================================================================
+
+def test_week5_final_metadata_and_single_test_log():
+    import json
+
+    assert TEST_LOG_PATH.exists()
+    log_lines = [ln.strip() for ln in TEST_LOG_PATH.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    assert len(log_lines) == 1
+    assert "2026-11-13" in log_lines[0]
+
+    cards_text = (ROOT / "models" / "model_cards.json").read_text(encoding="utf-8")
+    assert "2026-11-13" in cards_text
+    assert "2026-11-13" in (ROOT / "reports" / "model_cards.md").read_text(encoding="utf-8")
+
+    k_cmp_path = ROOT / "reports" / "tables" / "m3_clustering_k2_vs_k3_comparison.csv"
+    assert k_cmp_path.exists()
+    k_cmp = pd.read_csv(k_cmp_path)
+    assert len(k_cmp) >= 5  # 2 groups for k=2 + 3 groups for k=3
+
+
+def test_classify_overlap_pair_family_vs_corridor():
+    from src.build_review_list import classify_overlap_pair
+
+    assert classify_overlap_pair("M15", "M15+") == "same_family"
+    assert classify_overlap_pair("M34+", "M34A+") == "same_family"
+    assert classify_overlap_pair("M14A+", "M14D+") == "same_family"
+    assert classify_overlap_pair("M101", "M103") == "shared_corridor"
+    assert classify_overlap_pair("M1", "M2") == "shared_corridor"
+
+
+def test_week6_config_and_outputs():
+    import json
+
+    cfg_path = ROOT / "configs" / "optimization_thresholds.json"
+    assert cfg_path.exists()
+    cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+
+    s7 = cfg["step7_review_thresholds"]
+    assert s7["coverage_guardrails"]["high_exclusive_stop_share"] == pytest.approx(0.60)
+    assert s7["shared_corridor_overlap"]["allowed_overlap_category"] == "shared_corridor"
+    assert s7["shared_corridor_overlap"]["min_overlap_share_for_merge_check"] == pytest.approx(0.40)
+
+    s8 = cfg["step8_9_adjustment_rules"]
+    assert s8["assumed_ridership_elasticity"] == pytest.approx(0.0)
+    assert s8["budget_neutral_net_service_hours_max"] == pytest.approx(0.0)
+
+    tab_dir = ROOT / "reports" / "tables"
+    fig_dir = ROOT / "reports" / "figures"
+
+    # Step 6 outputs
+    oct_pred = pd.read_csv(tab_dir / "m3_october_predictions.csv")
+    assert len(oct_pred) == 12_270
+    assert oct_pred["route"].nunique() == 41
+    assert oct_pred["date"].min() == "2026-10-18"
+    assert oct_pred["date"].max() == "2026-10-31"
+    assert (oct_pred["trips_running"] >= 1).all()
+    assert set(oct_pred["pred_high_demand_per_trip"].unique()).issubset({0, 1})
+
+    oct_cls = pd.read_csv(tab_dir / "m3_october_classification_summary.csv")
+    assert len(oct_cls) == 2
+
+    # Step 7 review list
+    review_df = pd.read_csv(tab_dir / "m3_step7_review_list.csv")
+    assert len(review_df) == 205
+    assert review_df.duplicated(subset=["route", "time_band"]).sum() == 0
+    assert review_df["reason"].notna().all()
+    assert review_df["reason"].str.len().min() > 20
+    assert set(review_df["review_category"].unique()) == {
+        "underused_candidate",
+        "high_demand_candidate",
+        "shared_corridor_overlap_watch",
+        "no_change_watch",
+    }
+
+    # Step 8 scenarios + strictly shared_corridor merge checks
+    scen_df = pd.read_csv(tab_dir / "m3_step8_candidate_scenarios.csv")
+    assert len(scen_df) == 276
+    assert set(scen_df["scenario_trip_change_pct"].unique()) == {-20, -10, 10, 20}
+    deep_excl = scen_df[
+        (scen_df["scenario_trip_change_pct"] == -20)
+        & (scen_df["exclusive_stop_share"] >= 0.60)
+    ]
+    assert (deep_excl["guardrail_status"] == "exceeds_10pct_exclusivity_guardrail").all()
+
+    merge_df = pd.read_csv(tab_dir / "m3_step8_shared_corridor_merge_checks.csv")
+    assert len(merge_df) == 18
+    assert set(merge_df["overlap_category"].unique()) == {"shared_corridor"}
+    assert int(merge_df["meets_40pct_config_rule"].sum()) == 11
+
+    # Step 9 budget-neutral reallocation plan
+    realloc_df = pd.read_csv(tab_dir / "m3_step9_budget_neutral_reallocation.csv")
+    assert len(realloc_df) == 24
+    assert float(realloc_df["delta_service_hours"].sum()) <= 0.0
+    donors = realloc_df[realloc_df["delta_service_hours"] < 0]
+    recips = realloc_df[realloc_df["delta_service_hours"] > 0]
+    assert len(donors) == 16 and len(recips) == 8
+    assert "M35" not in set(donors["route"])
+    assert (donors["high_demand_hours_delta"] <= 0).all()
+    assert int(realloc_df["high_demand_hours_delta"].sum()) < 0
+
+    for fig_name in ["m3_october_unseen_evaluation.png", "m3_step9_reallocation_summary.png"]:
+        fp = fig_dir / fig_name
+        assert fp.exists() and fp.stat().st_size > 10_000
+
+    report_path = ROOT / "reports" / "milestone3_report.md"
+    assert report_path.exists() and report_path.stat().st_size > 5_000
+    report_txt = report_path.read_text(encoding="utf-8")
+    assert "2026-11-13" in report_txt
+    assert "2026-10-18" in report_txt
+    assert "shared_corridor" in report_txt
+    assert "constant" in report_txt.lower()
+
+
+

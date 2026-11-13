@@ -1,0 +1,47 @@
+{
+  "description": "Milestone 3 Steps 7-9 screening thresholds and service reallocation rules for Manhattan bus routes.",
+  "prediction_window": {
+    "start_date": "2026-10-18",
+    "end_date": "2026-10-31",
+    "timetable_version": "2026-10-17",
+    "high_demand_multiplier": 0.96,
+    "forecaster_artifact": "models/final_forecaster.joblib"
+  },
+  "step7_review_thresholds": {
+    "underused_screening": {
+      "max_pred_riders_per_service_hour": 22.0,
+      "max_high_demand_freq_pct": 15.0,
+      "min_active_hours_in_window": 10,
+      "min_trips_in_window": 20,
+      "note": "Targets route x time-band cells in roughly the bottom 20% of riders per service-hour without frequent high-demand alerts."
+    },
+    "high_demand_screening": {
+      "min_high_demand_freq_pct": 65.0,
+      "min_pred_riders_per_service_hour": 40.0,
+      "min_active_hours_in_window": 15,
+      "note": "Targets route x time-band cells flagged high-demand >=65% of active hours AND carrying >=40 riders/service-hour (above network median ~34), excluding sparse low-volume outliers like M35."
+    },
+    "coverage_guardrails": {
+      "high_exclusive_stop_share": 0.60,
+      "moderate_exclusive_stop_share": 0.40,
+      "note": "Routes serving >=60% exclusive stops cannot be discontinued or deeply cut without losing unique street coverage; cap trims at -10%."
+    },
+    "shared_corridor_overlap": {
+      "allowed_overlap_category": "shared_corridor",
+      "min_overlap_share_for_merge_check": 0.40,
+      "note": "Merge feasibility checks apply strictly to shared_corridor pairs (>=40% overlap share) and exclude same_family variants (M15/M15+, M34+/M34A+, M14A+/M14D+)."
+    },
+    "forecast_trend_bands": {
+      "rising_pct": 3.0,
+      "falling_pct": -3.0
+    }
+  },
+  "step8_9_adjustment_rules": {
+    "scenario_trip_changes_pct": [-20, -10, 10, 20],
+    "min_trips_per_active_hour_floor": 1,
+    "budget_neutral_net_service_hours_max": 0.0,
+    "assumed_ridership_elasticity": 0.0,
+    "demand_assumption_statement": "Assumes total route-band ridership stays constant when scheduled trips change (+/-10% or +/-20%), isolating direct mechanical effects on riders per trip and riders per service-hour."
+  }
+}
+
