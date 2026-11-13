@@ -84,12 +84,17 @@ def build_overlap_lookup(pairs_df: pd.DataFrame) -> dict[str, dict]:
 def build_review_table(cfg: dict) -> pd.DataFrame:
     preds_path = TAB_DIR / "m3_october_predictions.csv"
     preds = pd.read_csv(preds_path)
+    if "day_group" not in preds.columns:
+        preds["day_group"] = np.where(
+            preds["day_of_week"].isin(["Saturday", "Sunday"]), "weekend", "weekday"
+        )
 
     matched = pd.read_parquet(
         DATA_PROCESSED / "matched_hourly.parquet",
         columns=[
             "route",
             "time_band",
+            "is_weekend",
             "ridership",
             "service_hours",
             "trips_running",
@@ -99,6 +104,7 @@ def build_review_table(cfg: dict) -> pd.DataFrame:
             "is_outlier",
         ],
     )
+    matched["day_group"] = np.where(matched["is_weekend"], "weekend", "weekday")
     typical_hist = matched[
         (~matched["is_public_holiday"])
         & (~matched["holiday_schedule"])
@@ -107,7 +113,7 @@ def build_review_table(cfg: dict) -> pd.DataFrame:
         & (matched["trips_running"] > 0)
     ]
     hist_agg = (
-        typical_hist.groupby(["route", "time_band"], as_index=False)
+        typical_hist.groupby(["route", "time_band", "day_group"], as_index=False)
         .agg(
             hist_riders=("ridership", "sum"),
             hist_svc_hours=("service_hours", "sum"),
@@ -126,9 +132,17 @@ def build_review_table(cfg: dict) -> pd.DataFrame:
     clusters = pd.read_csv(TAB_DIR / "m3_route_clusters_assigned.csv").set_index("route_id")
     profiles = pd.read_parquet(DATA_PROCESSED / "route_profiles.parquet").set_index("route_id")
 
-    # Aggregate Step 6 predictions strictly using period totals divided by totals
+    day_group_days = preds.groupby("day_group")["date"].nunique().to_dict()
+    day_group_dates = (
+        preds.groupby("day_group")["date"]
+        .apply(lambda s: f"{s.min()}..{s.max()} ({s.nunique()}d)")
+        .to_dict()
+    )
+    day_group_svc_totals = preds.groupby("day_group")["service_hours"].sum().to_dict()
+
+    # Aggregate Step 6 predictions per (route, time_band, day_group)
     grouped = (
-        preds.groupby(["route", "time_band"], as_index=False)
+        preds.groupby(["route", "time_band", "day_group"], as_index=False)
         .agg(
             active_hours=("pred_ridership", "size"),
             total_trips_running=("trips_running", "sum"),
@@ -139,20 +153,31 @@ def build_review_table(cfg: dict) -> pd.DataFrame:
         )
     )
 
-    # Forecast trend against recent 4-week historical lookback on rows where lag_mean_available is valid
-    lag_sub = preds[preds["lag_mean_available"].notna()].groupby(["route", "time_band"], as_index=False).agg(
-        trend_pred_sum=("pred_ridership", "sum"),
-        prior_4wk_sum=("lag_mean_available", "sum"),
+    lag_sub = (
+        preds[preds["lag_mean_available"].notna()]
+        .groupby(["route", "time_band", "day_group"], as_index=False)
+        .agg(
+            trend_pred_sum=("pred_ridership", "sum"),
+            prior_4wk_sum=("lag_mean_available", "sum"),
+        )
     )
-    grouped = grouped.merge(lag_sub, on=["route", "time_band"], how="left")
+    grouped = grouped.merge(lag_sub, on=["route", "time_band", "day_group"], how="left")
     grouped = grouped.merge(
-        hist_agg[["route", "time_band", "hist_riders_per_service_hour"]],
-        on=["route", "time_band"],
+        hist_agg[["route", "time_band", "day_group", "hist_riders_per_service_hour"]],
+        on=["route", "time_band", "day_group"],
         how="left",
     )
 
-    # Compute exact ratio metrics
+    grouped["days_in_group"] = grouped["day_group"].map(day_group_days).astype(int)
+    grouped["dates_covered"] = grouped["day_group"].map(day_group_dates)
     grouped["total_service_hours"] = grouped["total_service_hours"].round(2)
+    grouped["avg_service_hours_per_day"] = (
+        grouped["total_service_hours"] / grouped["days_in_group"]
+    ).round(2)
+    grouped["pct_of_day_group_service_hours"] = np.round(
+        grouped["total_service_hours"] / grouped["day_group"].map(day_group_svc_totals) * 100.0,
+        3,
+    )
     grouped["total_pred_ridership"] = grouped["total_pred_ridership"].round(1)
     grouped["pred_riders_per_trip"] = np.where(
         grouped["total_trips_running"] > 0,
@@ -174,20 +199,21 @@ def build_review_table(cfg: dict) -> pd.DataFrame:
         np.nan,
     )
 
-    # Load explicit screening rules from config
     r7 = cfg["step7_review_thresholds"]
-    u_cfg = r7["underused_screening"]
-    h_cfg = r7["high_demand_screening"]
+    f_cfg = r7["fewer_trips_screening"]
+    m_cfg = r7["more_trips_screening"]
     c_cfg = r7["coverage_guardrails"]
     o_cfg = r7["shared_corridor_overlap"]
     t_cfg = r7["forecast_trend_bands"]
 
     rows = []
     tb_rank = {tb: i for i, tb in enumerate(TIME_BAND_ORDER)}
+    dg_rank = {"weekday": 0, "weekend": 1}
 
     for _, row in grouped.iterrows():
         r = row["route"]
         tb = row["time_band"]
+        dg = row["day_group"]
         tb_label = get_time_band_label(tb)
 
         r_svch = float(row["pred_riders_per_service_hour"])
@@ -220,17 +246,20 @@ def build_review_table(cfg: dict) -> pd.DataFrame:
 
         is_merge_pair = ov["top_shared_corridor_share"] >= o_cfg["min_overlap_share_for_merge_check"]
 
-        # Classification & written operational rationale per (route, time_band)
-        is_underused = (
-            r_svch <= u_cfg["max_pred_riders_per_service_hour"]
-            and hd_pct <= u_cfg["max_high_demand_freq_pct"]
-            and act_hrs >= u_cfg["min_active_hours_in_window"]
-            and trips >= u_cfg["min_trips_in_window"]
+        min_act_fewer = f_cfg[f"min_active_hours_{dg}"]
+        min_trp_fewer = f_cfg[f"min_trips_{dg}"]
+        min_act_more = m_cfg[f"min_active_hours_{dg}"]
+
+        is_fewer_cand = (
+            r_svch <= f_cfg["max_pred_riders_per_service_hour"]
+            and hd_pct <= f_cfg["max_high_demand_freq_pct"]
+            and act_hrs >= min_act_fewer
+            and trips >= min_trp_fewer
         )
-        is_high_demand = (
-            hd_pct >= h_cfg["min_high_demand_freq_pct"]
-            and r_svch >= h_cfg["min_pred_riders_per_service_hour"]
-            and act_hrs >= h_cfg["min_active_hours_in_window"]
+        is_more_cand = (
+            hd_pct >= m_cfg["min_high_demand_freq_pct"]
+            and r_svch >= m_cfg["min_pred_riders_per_service_hour"]
+            and act_hrs >= min_act_more
         )
 
         trend_str = f"{trend:+.1f}% vs 4-wk baseline" if pd.notna(trend) else "trend unavailable"
@@ -245,28 +274,28 @@ def build_review_table(cfg: dict) -> pd.DataFrame:
             else "no shared_corridor overlap"
         )
 
-        if is_underused:
-            review_cat = "underused_candidate"
+        if is_fewer_cand:
+            review_cat = f_cfg["category_name"]
             if excl_share >= c_cfg["high_exclusive_stop_share"]:
                 action = "trim_conservatively_minus_10pct_protect_coverage"
                 reason = (
-                    f"Low predicted load ({r_svch:.1f} riders/svc-hr, {r_trip:.1f} riders/trip; "
-                    f"{hd_pct:.0f}% high-demand hrs; {trend_str}), but high exclusive stop share "
+                    f"Low {dg} riders per svc-hr ({r_svch:.1f} riders/svc-hr, {r_trip:.1f} riders/trip; "
+                    f"{hd_pct:.0f}% hrs >0.96x p75; {trend_str}), while high exclusive stop share "
                     f"({excl_share*100:.1f}% >= {c_cfg['high_exclusive_stop_share']*100:.0f}%) means "
-                    f"most stops depend on {r}; test conservative -10% trim to preserve lifeline span."
+                    f"most stops depend on {r}; test conservative -10% trim to preserve stop coverage."
                 )
             else:
                 action = "trim_candidate_up_to_20pct"
                 reason = (
-                    f"Underused window ({r_svch:.1f} riders/svc-hr, {r_trip:.1f} riders/trip; "
-                    f"{hd_pct:.0f}% high-demand hrs; {trend_str}) with moderate/low stop exclusivity "
-                    f"({excl_share*100:.1f}%) and {sc_str}; candidate for -10% or -20% trip trim and reallocation."
+                    f"Low {dg} riders per svc-hr and per trip ({r_svch:.1f} riders/svc-hr, {r_trip:.1f} riders/trip; "
+                    f"{hd_pct:.0f}% hrs >0.96x p75; {trend_str}) with moderate/low stop exclusivity "
+                    f"({excl_share*100:.1f}%) and {sc_str}; candidate for -10% or -20% trip reduction."
                 )
-        elif is_high_demand:
-            review_cat = "high_demand_candidate"
-            action = "add_service_candidate"
+        elif is_more_cand:
+            review_cat = m_cfg["category_name"]
+            action = "add_trips_candidate"
             reason = (
-                f"Persistent high-demand pressure ({hd_pct:.0f}% of hours flagged >0.96x p75, "
+                f"High {dg} riders per trip and per svc-hr ({hd_pct:.0f}% of hours >0.96x p75, "
                 f"{r_svch:.1f} riders/svc-hr, {r_trip:.1f} riders/trip; {trend_str}); "
                 f"{excl_share*100:.1f}% exclusive stops, {ov_str}. Test +10% to +20% added trips."
             )
@@ -274,7 +303,7 @@ def build_review_table(cfg: dict) -> pd.DataFrame:
             review_cat = "shared_corridor_overlap_watch"
             action = "corridor_merge_check_only"
             reason = (
-                f"Moderate load ({r_svch:.1f} riders/svc-hr, {hd_pct:.0f}% high-demand hrs; {trend_str}), "
+                f"Moderate {dg} riders per svc-hr ({r_svch:.1f} riders/svc-hr, {hd_pct:.0f}% hrs >0.96x p75; {trend_str}), "
                 f"flagged for corridor coordination because {sc_str} meets the >= "
                 f"{o_cfg['min_overlap_share_for_merge_check']*100:.0f}% shared_corridor check "
                 f"({excl_share*100:.1f}% exclusive stops)."
@@ -284,21 +313,21 @@ def build_review_table(cfg: dict) -> pd.DataFrame:
             action = "hold_or_monitor"
             if r == "M35":
                 reason = (
-                    f"Separate outlier M35 ({r_svch:.1f} riders/svc-hr, {r_trip:.1f} riders/trip, "
-                    f"100.0% exclusive RFK Bridge stops): low baseline volumes (<2 riders/trip) mean small absolute "
-                    f"swings trigger p75 alerts ({hd_pct:.0f}% high-demand hrs); monitor without cutting sole link."
+                    f"Separate outlier M35 ({dg}: {r_svch:.1f} riders/svc-hr, {r_trip:.1f} riders/trip, "
+                    f"100.0% exclusive RFK Bridge stops): tiny denominator means small absolute swings "
+                    f"exceed p75 ({hd_pct:.0f}% hrs); monitor without cutting sole link."
                 )
-            elif hd_pct >= h_cfg["min_high_demand_freq_pct"]:
+            elif hd_pct >= m_cfg["min_high_demand_freq_pct"]:
                 reason = (
-                    f"Frequent p75 flags ({hd_pct:.0f}%), yet corridor productivity remains modest "
-                    f"({r_svch:.1f} < {h_cfg['min_pred_riders_per_service_hour']:.0f} riders/svc-hr; "
+                    f"Frequent p75 flags ({hd_pct:.0f}% in {dg}), yet riders per service-hour remain below "
+                    f"{m_cfg['min_pred_riders_per_service_hour']:.0f} ({r_svch:.1f} riders/svc-hr; "
                     f"{trend_str}); monitor alongside {ov_str}."
                 )
             else:
                 reason = (
-                    f"Balanced supply vs predicted demand ({r_svch:.1f} riders/svc-hr, {r_trip:.1f} riders/trip, "
-                    f"{hd_pct:.0f}% high-demand hrs; {trend_str}); {excl_share*100:.1f}% exclusive stops, "
-                    f"{ov_str}. Hold current schedule."
+                    f"Mid-range {dg} riders per trip and per svc-hr ({r_svch:.1f} riders/svc-hr, {r_trip:.1f} riders/trip, "
+                    f"{hd_pct:.0f}% hrs >0.96x p75; {trend_str}); {excl_share*100:.1f}% exclusive stops, "
+                    f"{ov_str}. Hold current trips."
                 )
 
         rows.append(
@@ -306,14 +335,20 @@ def build_review_table(cfg: dict) -> pd.DataFrame:
                 "route": r,
                 "route_long_name": long_name,
                 "service_type": svc_type,
+                "day_group": dg,
+                "days_in_group": int(row["days_in_group"]),
+                "dates_covered": row["dates_covered"],
                 "time_band": tb,
                 "time_band_label": tb_label,
+                "_dg_sort": dg_rank.get(dg, 9),
                 "_tb_sort": tb_rank.get(tb, 99),
                 "group_id": grp_id,
                 "route_group": grp_label,
                 "active_hours": act_hrs,
                 "total_trips_running": trips,
                 "total_service_hours": round(float(row["total_service_hours"]), 2),
+                "avg_service_hours_per_day": float(row["avg_service_hours_per_day"]),
+                "pct_of_day_group_service_hours": float(row["pct_of_day_group_service_hours"]),
                 "total_pred_ridership": round(float(row["total_pred_ridership"]), 1),
                 "pred_riders_per_trip": r_trip,
                 "pred_riders_per_service_hour": r_svch,
@@ -341,15 +376,15 @@ def build_review_table(cfg: dict) -> pd.DataFrame:
 
     out_df = (
         pd.DataFrame(rows)
-        .sort_values(["route", "_tb_sort"])
-        .drop(columns=["_tb_sort"])
+        .sort_values(["route", "_dg_sort", "_tb_sort"])
+        .drop(columns=["_dg_sort", "_tb_sort"])
         .reset_index(drop=True)
     )
     return out_df
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Build Step 7 route x time_band review list from config thresholds.")
+    parser = argparse.ArgumentParser(description="Build Step 7 (route, day_group, time_band) review list from config thresholds.")
     parser.add_argument("--config", default=str(CONFIG_DEFAULT), help="Path to optimization thresholds JSON config")
     parser.add_argument("--out", default=str(TAB_DIR / "m3_step7_review_list.csv"), help="Output review list CSV")
     args = parser.parse_args()
@@ -360,9 +395,9 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
     review_df.to_csv(out_path, index=False)
 
-    print(f"Saved Step 7 review list ({len(review_df)} route x time_band rows) -> {out_path}")
-    print("\nBreakdown by review_category:")
-    print(review_df["review_category"].value_counts().to_string())
+    print(f"Saved Step 7 review list ({len(review_df)} route x day_group x time_band rows) -> {out_path}")
+    print("\nBreakdown by (day_group, review_category):")
+    print(review_df.groupby(["day_group", "review_category"]).size().to_string())
 
 
 if __name__ == "__main__":

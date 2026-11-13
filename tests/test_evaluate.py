@@ -575,6 +575,10 @@ def test_week6_config_and_outputs():
     cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
 
     s7 = cfg["step7_review_thresholds"]
+    assert "fewer_trips_screening" in s7
+    assert "more_trips_screening" in s7
+    assert s7["fewer_trips_screening"]["category_name"] == "fewer_trips_candidate"
+    assert s7["more_trips_screening"]["category_name"] == "more_trips_candidate"
     assert s7["coverage_guardrails"]["high_exclusive_stop_share"] == pytest.approx(0.60)
     assert s7["shared_corridor_overlap"]["allowed_overlap_category"] == "shared_corridor"
     assert s7["shared_corridor_overlap"]["min_overlap_share_for_merge_check"] == pytest.approx(0.40)
@@ -586,35 +590,56 @@ def test_week6_config_and_outputs():
     tab_dir = ROOT / "reports" / "tables"
     fig_dir = ROOT / "reports" / "figures"
 
-    # Step 6 outputs
+    # Step 6 outputs + post-test production artifact + diagnostic checks
+    assert (ROOT / "models" / "production_forecaster_jan_sep.joblib").exists()
     oct_pred = pd.read_csv(tab_dir / "m3_october_predictions.csv")
     assert len(oct_pred) == 12_270
     assert oct_pred["route"].nunique() == 41
     assert oct_pred["date"].min() == "2026-10-18"
     assert oct_pred["date"].max() == "2026-10-31"
+    assert set(oct_pred["day_group"].unique()) == {"weekday", "weekend"}
     assert (oct_pred["trips_running"] >= 1).all()
     assert set(oct_pred["pred_high_demand_per_trip"].unique()).issubset({0, 1})
 
-    oct_cls = pd.read_csv(tab_dir / "m3_october_classification_summary.csv")
-    assert len(oct_cls) == 2
+    oct_fc = pd.read_csv(tab_dir / "m3_october_forecast_summary.csv")
+    assert len(oct_fc) == 6
+    assert (oct_fc["n_active_eval"] == 12_270).all()
+    assert int(oct_fc["is_production_retrain"].sum()) == 2
 
-    # Step 7 review list
+    oct_cls = pd.read_csv(tab_dir / "m3_october_classification_summary.csv")
+    assert len(oct_cls) == 3
+    assert oct_cls["actual_positive_pct"].iloc[0] == pytest.approx(37.23)
+
+    oct_diag = pd.read_csv(tab_dir / "m3_october_diagnostic_checks.csv")
+    assert len(oct_diag) >= 5
+    month_row = oct_diag[oct_diag["check_name"] == "month_feature_in_model"]
+    assert len(month_row) == 1 and "False" in month_row["result"].iloc[0]
+
+    # Step 7 review list (weekday & weekend day_group split)
     review_df = pd.read_csv(tab_dir / "m3_step7_review_list.csv")
-    assert len(review_df) == 205
-    assert review_df.duplicated(subset=["route", "time_band"]).sum() == 0
+    assert len(review_df) == 400
+    assert review_df.duplicated(subset=["route", "day_group", "time_band"]).sum() == 0
+    assert (review_df["day_group"] == "weekday").sum() == 205
+    assert (review_df["day_group"] == "weekend").sum() == 195
     assert review_df["reason"].notna().all()
     assert review_df["reason"].str.len().min() > 20
     assert set(review_df["review_category"].unique()) == {
-        "underused_candidate",
-        "high_demand_candidate",
+        "fewer_trips_candidate",
+        "more_trips_candidate",
         "shared_corridor_overlap_watch",
         "no_change_watch",
     }
+    for old_word in ["underused", "congested", "crowding", "crowded", "reliev"]:
+        assert not review_df["reason"].str.lower().str.contains(old_word).any()
 
     # Step 8 scenarios + strictly shared_corridor merge checks
     scen_df = pd.read_csv(tab_dir / "m3_step8_candidate_scenarios.csv")
-    assert len(scen_df) == 276
+    assert len(scen_df) == 632
     assert set(scen_df["scenario_trip_change_pct"].unique()) == {-20, -10, 10, 20}
+    assert set(scen_df["review_category"].unique()) == {
+        "fewer_trips_candidate",
+        "more_trips_candidate",
+    }
     deep_excl = scen_df[
         (scen_df["scenario_trip_change_pct"] == -20)
         & (scen_df["exclusive_stop_share"] >= 0.60)
@@ -626,16 +651,22 @@ def test_week6_config_and_outputs():
     assert set(merge_df["overlap_category"].unique()) == {"shared_corridor"}
     assert int(merge_df["meets_40pct_config_rule"].sum()) == 11
 
-    # Step 9 budget-neutral reallocation plan
+    # Step 9 budget-neutral reallocation plan (within weekday and within weekend)
     realloc_df = pd.read_csv(tab_dir / "m3_step9_budget_neutral_reallocation.csv")
-    assert len(realloc_df) == 24
+    assert len(realloc_df) == 72
     assert float(realloc_df["delta_service_hours"].sum()) <= 0.0
+    for dg in ["weekday", "weekend"]:
+        sub = realloc_df[realloc_df["day_group"] == dg]
+        assert not sub.empty
+        assert float(sub["delta_service_hours"].sum()) <= 0.0
     donors = realloc_df[realloc_df["delta_service_hours"] < 0]
     recips = realloc_df[realloc_df["delta_service_hours"] > 0]
-    assert len(donors) == 16 and len(recips) == 8
+    assert len(donors) == 49 and len(recips) == 23
     assert "M35" not in set(donors["route"])
     assert (donors["high_demand_hours_delta"] <= 0).all()
-    assert int(realloc_df["high_demand_hours_delta"].sum()) < 0
+    assert int(realloc_df["high_demand_hours_delta"].sum()) == -192
+    for old_word in ["underused", "congested", "crowding", "crowded", "reliev"]:
+        assert not realloc_df["rationale"].str.lower().str.contains(old_word).any()
 
     for fig_name in ["m3_october_unseen_evaluation.png", "m3_step9_reallocation_summary.png"]:
         fp = fig_dir / fig_name
@@ -648,6 +679,11 @@ def test_week6_config_and_outputs():
     assert "2026-10-18" in report_txt
     assert "shared_corridor" in report_txt
     assert "constant" in report_txt.lower()
+    assert "fewer_trips_candidate" in report_txt
+    assert "more_trips_candidate" in report_txt
+    assert "fall below the high-demand threshold" in report_txt
+    for old_word in ["underused", "congested", "crowding", "crowded", "relieving"]:
+        assert old_word not in report_txt.lower()
 
 
 

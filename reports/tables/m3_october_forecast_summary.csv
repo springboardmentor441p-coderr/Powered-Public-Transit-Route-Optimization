@@ -1,5 +1,7 @@
-lag_mode,model,n_eval_common,mae_common,rmse_common,wape_common_pct,bias_common_pred_minus_actual,n_eval_all,wape_all_pct,hgb_route_wins_of_41
-Rolling Lags (7d–28d Exact Prior),4-Week Average Baseline (lag_mean_available),12335,32.74,56.66,11.2,-10.96,12335,11.2,
-Rolling Lags (7d–28d Exact Prior),Frozen Step 5 HistGradientBoosting Forecaster,12335,33.04,59.27,11.31,-16.33,12335,11.31,26.0
-Publish-Date Cutoff (Lags <= 2026-10-17),4-Week Average Baseline (lag_mean_available),12335,34.17,59.47,11.7,-11.8,12335,11.7,
-Publish-Date Cutoff (Lags <= 2026-10-17),Frozen Step 5 HistGradientBoosting Forecaster,12335,35.88,63.11,12.28,-10.31,12335,12.28,20.0
+lag_mode,model,training_window,is_production_retrain,n_active_eval,mae_active,rmse_active,wape_active_pct,bias_active_pred_minus_actual,n_matched_step11_eval,wape_matched_step11_pct,routes_beating_4wk_of_41
+"Publish-Date Cutoff (Lags <= 2026-10-17, realistic)",4-Week Average Baseline (lag_mean_available),None (4-week rolling),False,12270,34.35,59.63,11.69,-11.85,12335,11.7,
+"Publish-Date Cutoff (Lags <= 2026-10-17, realistic)",Frozen Step 5 HGB Forecaster,Jan-Jul 2026 (frozen test model),False,12270,36.06,63.28,12.28,-10.36,12335,12.28,20.0
+"Publish-Date Cutoff (Lags <= 2026-10-17, realistic)",Production HGB Forecaster (post-test retrain),Jan-Sep 2026 (post-test production),True,12270,36.85,64.22,12.54,-6.87,12335,12.55,18.0
+Rolling Lags (7d-28d Exact Prior),4-Week Average Baseline (lag_mean_available),None (4-week rolling),False,12270,32.91,56.81,11.2,-11.01,12335,11.2,
+Rolling Lags (7d-28d Exact Prior),Frozen Step 5 HGB Forecaster,Jan-Jul 2026 (frozen test model),False,12270,33.21,59.43,11.3,-16.41,12335,11.31,26.0
+Rolling Lags (7d-28d Exact Prior),Production HGB Forecaster (post-test retrain),Jan-Sep 2026 (post-test production),True,12270,33.24,59.59,11.32,-16.41,12335,11.32,28.0

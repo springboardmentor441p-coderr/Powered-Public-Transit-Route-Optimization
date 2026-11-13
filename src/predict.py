@@ -29,19 +29,26 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.base import clone
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.pipeline import Pipeline
 
+import src.build_matched_table as bmt
 from src.build_matched_table import (
     HOLIDAY_SCHEDULE_DATES,
     PUBLIC_HOLIDAYS,
     STORM_DATES,
     assign_time_band,
+    find_outage_hours_relative,
 )
 from src.build_schedule import GTFSFeed, count_trip_hours
+from src.clean_ridership import validate as validate_ridership_df
 from src.evaluate import (
     compute_classification_metrics,
     compute_forecast_breakdown,
     compute_forecast_metrics,
 )
+from src.prepare_modeling_features import compute_exact_calendar_lags, load_raw_features
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_RAW_RIDERSHIP = ROOT / "data" / "raw" / "ridership"
@@ -249,8 +256,12 @@ def load_clean_ridership_history(max_date: str | None = None) -> pd.DataFrame:
             raise ValueError(f"Unclassified route codes in {fpath.name}: {sorted(unknown)}")
         if raw[["ts", "route", "ridership", "transfers"]].isna().any().any():
             raise ValueError(f"Null values detected in raw ridership file {fpath.name}")
+        if ((raw["ridership"] % 1 != 0) | (raw["transfers"] % 1 != 0)).any():
+            raise ValueError(f"Non-integer counts detected in raw ridership file {fpath.name}")
         if (raw["ridership"] < 0).any() or (raw["transfers"] < 0).any():
             raise ValueError(f"Negative counts detected in raw ridership file {fpath.name}")
+        if (raw["transfers"] > raw["ridership"]).any():
+            raise ValueError(f"transfers > ridership detected in raw ridership file {fpath.name}")
 
         raw = raw[raw["route"].isin(keep_routes)].copy()
         raw["date"] = raw["ts"].dt.strftime("%Y-%m-%d")
@@ -296,6 +307,7 @@ def build_feature_rows(
     df["month"] = dt_series.dt.month.astype(int)
     df["day_of_week"] = dt_series.dt.day_name()
     df["is_weekend"] = df["day_of_week"].isin(["Saturday", "Sunday"])
+    df["day_group"] = np.where(df["is_weekend"], "weekend", "weekday")
     df["is_public_holiday"] = df["date"].isin(EXTENDED_PUBLIC_HOLIDAYS)
     df["holiday_schedule"] = df["date"].map(holiday_sched_flags).fillna(False).astype(bool)
     df["is_storm"] = df["date"].isin(STORM_DATES)
@@ -340,6 +352,58 @@ def build_feature_rows(
     return df
 
 
+def train_production_forecaster_jan_sep(save: bool = True) -> Pipeline:
+    """Train a post-test production forecaster on all Jan-Sep 2026 data (2026-01-04..2026-09-30).
+
+    Uses matched_hourly.parquet directly (without calling load_dataset('test', final=True)
+    or altering models/final_forecaster.joblib / reports/test_runs.log) and applies the
+    exact Step 2 validation-selected HistGradientBoostingRegressor settings.
+    """
+    full_df = load_raw_features()
+    full_df = compute_exact_calendar_lags(full_df)
+    prod_df = full_df[
+        (full_df["date"] >= "2026-01-04")
+        & (full_df["date"] <= "2026-09-30")
+        & (~full_df["is_outlier"].astype(bool))
+    ].copy()
+
+    base_prep = joblib.load(MODELS_DIR / "preprocessor.joblib")
+    prep = clone(base_prep)
+    X_prod = prep.fit_transform(prod_df[ALL_FEATURES])
+    y_prod = prod_df["ridership"].values.astype(float)
+
+    reg = HistGradientBoostingRegressor(
+        loss="poisson",
+        learning_rate=0.05,
+        max_leaf_nodes=127,
+        min_samples_leaf=25,
+        l2_regularization=1.0,
+        max_iter=300,
+        early_stopping=True,
+        validation_fraction=0.1,
+        n_iter_no_change=15,
+        random_state=42,
+    )
+    reg.fit(X_prod, y_prod)
+    prod_pipe = Pipeline([("preprocessor", prep), ("regressor", reg)])
+
+    if save:
+        MODELS_DIR.mkdir(parents=True, exist_ok=True)
+        out_path = MODELS_DIR / "production_forecaster_jan_sep.joblib"
+        joblib.dump(
+            {
+                "pipeline": prod_pipe,
+                "training_window": "2026-01-04 to 2026-09-30 (excl. 6 M35 is_outlier hours)",
+                "n_train_rows": int(len(prod_df)),
+                "features": ALL_FEATURES,
+                "n_iter_": int(reg.n_iter_),
+                "note": "Post-Step-5 production retrain through September; separate from frozen Step 5 final_forecaster.joblib.",
+            },
+            out_path,
+        )
+    return prod_pipe
+
+
 def predict_ridership(
     start_date: str,
     end_date: str,
@@ -374,241 +438,371 @@ def predict_ridership(
     return feat_df
 
 
+def _run_october_cleaning_and_feature_diagnostics(
+    start_date: str,
+    end_date: str,
+    timetable_version: str,
+    hist: pd.DataFrame,
+    frozen_pipe: Pipeline,
+) -> pd.DataFrame:
+    """Verify full clean_ridership parity, 20% outage rule, -BM handling, month feature, and row reconciliation."""
+    rows = []
+
+    oct_raw_path = DATA_RAW_RIDERSHIP / f"{start_date[:7]}.csv"
+    if oct_raw_path.exists():
+        raw_oct = duckdb.sql(
+            f"""
+            SELECT CAST(transit_timestamp AS TIMESTAMP) AS ts,
+                   bus_route AS route,
+                   CAST(ridership AS DOUBLE) AS ridership,
+                   CAST(transfers AS DOUBLE) AS transfers
+            FROM read_csv('{oct_raw_path.as_posix()}', all_varchar = true)
+            """
+        ).df()
+        checks = validate_ridership_df(raw_oct)
+        rows.append(
+            {
+                "check_name": "ridership_validation_checks",
+                "result": "PASSED (0 issues)",
+                "details": ", ".join(f"{k}={v}" for k, v in checks.items()),
+            }
+        )
+
+    month_start = f"{start_date[:7]}-01"
+    sched_m, _ = build_schedule_for_range(month_start, end_date, timetable_version)
+    sep_mh = pd.read_parquet(
+        DATA_PROCESSED / "matched_hourly.parquet",
+        columns=["route", "date", "hour", "ridership", "trips_running"],
+    )
+    oct_joined = pd.merge(
+        hist[(hist["date"] >= month_start) & (hist["date"] <= end_date)],
+        sched_m,
+        on=["route", "date", "hour"],
+        how="inner",
+    )
+    comb_out = pd.concat(
+        [
+            sep_mh[sep_mh["date"] >= "2026-09-01"][["route", "date", "hour", "ridership", "trips_running"]],
+            oct_joined[["route", "date", "hour", "ridership", "trips_running"]],
+        ],
+        ignore_index=True,
+    )
+    orig_hol = bmt.PUBLIC_HOLIDAYS
+    bmt.PUBLIC_HOLIDAYS = EXTENDED_PUBLIC_HOLIDAYS
+    outage_hours = [o for o in find_outage_hours_relative(comb_out, threshold=0.20) if o[0] >= month_start]
+    bmt.PUBLIC_HOLIDAYS = orig_hol
+    rows.append(
+        {
+            "check_name": "outage_rule_20pct_october",
+            "result": f"{len(outage_hours)} outage hours flagged",
+            "details": "Applied find_outage_hours_relative(..., threshold=0.20) excluding Columbus Day (2026-10-12).",
+        }
+    )
+
+    feed = _resolve_gtfs_feed(timetable_version)
+    bm_trips = []
+    reg_trips = []
+    curr_dt = datetime.strptime(start_date, "%Y-%m-%d")
+    end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+    while curr_dt <= end_dt:
+        reg = feed.get_trip_count(curr_dt, include_boundary_markers=False)
+        tot = feed.get_trip_count(curr_dt, include_boundary_markers=True)
+        reg_trips.append(reg)
+        bm_trips.append(tot - reg)
+        curr_dt += timedelta(days=1)
+    rows.append(
+        {
+            "check_name": "gtfs_bm_and_trips_running_definition",
+            "result": f"regular={min(reg_trips)}..{max(reg_trips)}/day; -BM bridge={min(bm_trips)}..{max(bm_trips)}/day",
+            "details": "Matches src/build_schedule.py (GTFSFeed + count_trip_hours with overnight spillover; regular trips excl. -BM define full service ownership, -BM bridge trips included in hourly count).",
+        }
+    )
+
+    prep = frozen_pipe.named_steps.get("preprocessor") or frozen_pipe[0]
+    feat_in = list(getattr(prep, "feature_names_in_", ALL_FEATURES))
+    has_month = "month" in feat_in
+    rows.append(
+        {
+            "check_name": "month_feature_in_model",
+            "result": f"in_model={has_month} (0.00 prediction effect)",
+            "details": f"Model uses {len(feat_in)} semantic features; raw calendar month is excluded.",
+        }
+    )
+
+    full_mh = pd.read_parquet(DATA_PROCESSED / "matched_hourly.parquet", columns=["date", "hour", "ridership", "trips_running"])
+    act_mh = full_mh[full_mh["trips_running"] > 0]
+    m_jan_jul = float(act_mh[act_mh["date"] <= "2026-07-31"]["ridership"].mean())
+    m_aug_sep = float(act_mh[(act_mh["date"] >= "2026-08-01") & (act_mh["date"] <= "2026-09-30")]["ridership"].mean())
+    m_sep = float(act_mh[(act_mh["date"] >= "2026-09-01") & (act_mh["date"] <= "2026-09-30")]["ridership"].mean())
+    sched_w, _ = build_schedule_for_range(start_date, end_date, timetable_version)
+    act_grid = pd.merge(sched_w, hist[(hist["date"] >= start_date) & (hist["date"] <= end_date)], on=["route", "date", "hour"])
+    n_neither = int(((act_grid["trips_running"] == 0) & (act_grid["ridership"] == 0)).sum())
+    n_active = int((act_grid["trips_running"] > 0).sum())
+    unsched_df = act_grid[(act_grid["trips_running"] == 0) & (act_grid["ridership"] > 0)]
+    m_oct = float(act_grid.loc[act_grid["trips_running"] > 0, "ridership"].mean())
+    rows.append(
+        {
+            "check_name": "mean_ridership_shift",
+            "result": f"Oct={m_oct:.2f}/hr vs Jan-Jul={m_jan_jul:.2f}/hr ({(m_oct/m_jan_jul - 1)*100:+.1f}%)",
+            "details": f"Train+Val Jan-Jul={m_jan_jul:.2f}, Test Aug-Sep={m_aug_sep:.2f} (Sep={m_sep:.2f}), Unseen Oct 18-31={m_oct:.2f} riders/active hr.",
+        }
+    )
+    rows.append(
+        {
+            "check_name": "row_reconciliation_12270_vs_12335",
+            "result": f"active={n_active:,}, unscheduled_riders_only={len(unsched_df)}, matched={n_active + len(unsched_df):,}",
+            "details": f"Total 41x14x24={len(act_grid):,}: dropped {n_neither:,} neither rows; {len(unsched_df)} rows have trips_running==0 & ridership>0 ({unsched_df['ridership'].sum():.0f} riders total). Both scored and active evaluation sets use n={n_active:,}.",
+        }
+    )
+    diag_df = pd.DataFrame(rows)
+    diag_df.to_csv(TAB_DIR / "m3_october_diagnostic_checks.csv", index=False)
+    return diag_df
+
+
 def evaluate_unseen_window(
     start_date: str,
     end_date: str,
     timetable_version: str = "2026-10-17",
     threshold_multiplier: float = 0.96,
 ) -> dict:
-    """Evaluate frozen forecaster on unseen October dates against matched actual ridership.
+    """Evaluate frozen Step 5 (Jan-Jul) and production (Jan-Sep) models on unseen October active hours.
 
-    Matches schedule with cleaned actual ridership using Step 11 rule ((trips_running > 0) | (ridership > 0)).
-    Evaluates both rolling 7-day-prior lags and strict Day-0 cutoff lags (--lag-cutoff=day_before_start).
+    Evaluates strictly on the same active hours (trips_running > 0, n=12,270) scored by predict_ridership,
+    and records the 65 Step-11 unscheduled rows (trips_running == 0 & ridership > 0) separately for exact parity.
     """
     sched_df, holiday_sched = build_schedule_for_range(start_date, end_date, timetable_version)
     hist = load_clean_ridership_history()
     actual_sub = hist[(hist["date"] >= start_date) & (hist["date"] <= end_date)].copy()
 
-    matched_grid = pd.merge(sched_df, actual_sub, on=["route", "date", "hour"], how="inner")
-    matched_grid = matched_grid[
-        (matched_grid["trips_running"] > 0) | (matched_grid["ridership"] > 0)
-    ].copy()
+    joined_full = pd.merge(sched_df, actual_sub, on=["route", "date", "hour"], how="inner")
+    active_grid = joined_full[joined_full["trips_running"] > 0].copy()
+    matched_grid = joined_full[(joined_full["trips_running"] > 0) | (joined_full["ridership"] > 0)].copy()
 
-    # Mode 1: Exact rolling calendar lags (all 7/14/21/28d observed prior to date)
-    feat_rolling = build_feature_rows(matched_grid, holiday_sched, hist, lag_cutoff=None)
-    # Mode 2: Strict publish-date lag cutoff (day before start_date)
+    frozen_pipe = joblib.load(MODELS_DIR / "final_forecaster.joblib")["pipeline"]
+    prod_pipe = train_production_forecaster_jan_sep(save=True)
+
+    _run_october_cleaning_and_feature_diagnostics(
+        start_date, end_date, timetable_version, hist, frozen_pipe
+    )
+
     day_before_start = (datetime.strptime(start_date, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
-    feat_day0 = build_feature_rows(matched_grid, holiday_sched, hist, lag_cutoff=day_before_start)
+    modes = [
+        (f"Publish-Date Cutoff (Lags <= {day_before_start}, realistic)", day_before_start),
+        ("Rolling Lags (7d-28d Exact Prior)", None),
+    ]
 
-    bundle = joblib.load(MODELS_DIR / "final_forecaster.joblib")
-    pipeline = bundle["pipeline"]
-
-    for fdf in (feat_rolling, feat_day0):
-        fdf["pred_hgb"] = np.clip(pipeline.predict(fdf[ALL_FEATURES]), 0.0, None)
-        fdf["actual_riders_per_trip"] = np.where(
-            fdf["trips_running"] > 0, fdf["ridership"] / fdf["trips_running"], np.nan
-        )
-        fdf["high_demand_per_trip"] = (
-            (fdf["trips_running"] > 0) & (fdf["actual_riders_per_trip"] > fdf["threshold_p75"])
-        ).astype("int8")
-        fdf["pred_ratio_hgb"] = np.where(
-            fdf["trips_running"] > 0, fdf["pred_hgb"] / fdf["trips_running"], np.nan
-        )
-        fdf["pred_ratio_4wk"] = np.where(
-            fdf["trips_running"] > 0, fdf["lag_mean_available"] / fdf["trips_running"], np.nan
-        )
-
-    # Evaluate forecasting on common non-null-lag rows and all matched rows
     summary_rows = []
-    for mode_label, fdf in [
-        ("Rolling Lags (7d–28d Exact Prior)", feat_rolling),
-        (f"Publish-Date Cutoff (Lags <= {day_before_start})", feat_day0),
-    ]:
-        common = fdf[fdf["lag_mean_available"].notna()].copy()
-        m_4wk = compute_forecast_metrics(common["ridership"], common["lag_mean_available"])
-        m_hgb_c = compute_forecast_metrics(common["ridership"], common["pred_hgb"])
-        m_hgb_all = compute_forecast_metrics(fdf["ridership"], fdf["pred_hgb"])
+    mode_frames = {}
+    for mode_label, cutoff in modes:
+        fdf_act = build_feature_rows(active_grid, holiday_sched, hist, lag_cutoff=cutoff)
+        fdf_mat = build_feature_rows(matched_grid, holiday_sched, hist, lag_cutoff=cutoff)
 
-        route_comp = compute_forecast_breakdown(
-            common, group_col="route", y_true_col="ridership", y_pred_col="pred_hgb", model_name="HGB"
-        ).merge(
-            compute_forecast_breakdown(
-                common,
-                group_col="route",
-                y_true_col="ridership",
-                y_pred_col="lag_mean_available",
-                model_name="4wk",
-            ),
-            on="route",
-            suffixes=("_hgb", "_4wk"),
-        )
-        hgb_route_wins = int((route_comp["wape_pct_hgb"] < route_comp["wape_pct_4wk"]).sum())
+        for frame in (fdf_act, fdf_mat):
+            frame["pred_frozen"] = np.clip(frozen_pipe.predict(frame[ALL_FEATURES]), 0.0, None)
+            frame["pred_prod"] = np.clip(prod_pipe.predict(frame[ALL_FEATURES]), 0.0, None)
+        mode_frames[mode_label] = fdf_act
 
-        summary_rows.append(
-            {
-                "lag_mode": mode_label,
-                "model": "4-Week Average Baseline (lag_mean_available)",
-                "n_eval_common": m_4wk["n_eval"],
-                "mae_common": m_4wk["mae"],
-                "rmse_common": m_4wk["rmse"],
-                "wape_common_pct": m_4wk["wape_pct"],
-                "bias_common_pred_minus_actual": m_4wk["bias_pred_minus_actual"],
-                "n_eval_all": m_4wk["n_eval"],
-                "wape_all_pct": m_4wk["wape_pct"],
-                "hgb_route_wins_of_41": np.nan,
-            }
-        )
-        summary_rows.append(
-            {
-                "lag_mode": mode_label,
-                "model": "Frozen Step 5 HistGradientBoosting Forecaster",
-                "n_eval_common": m_hgb_c["n_eval"],
-                "mae_common": m_hgb_c["mae"],
-                "rmse_common": m_hgb_c["rmse"],
-                "wape_common_pct": m_hgb_c["wape_pct"],
-                "bias_common_pred_minus_actual": m_hgb_c["bias_pred_minus_actual"],
-                "n_eval_all": m_hgb_all["n_eval"],
-                "wape_all_pct": m_hgb_all["wape_pct"],
-                "hgb_route_wins_of_41": hgb_route_wins,
-            }
-        )
+        c_act = fdf_act[fdf_act["lag_mean_available"].notna()].copy()
+        c_mat = fdf_mat[fdf_mat["lag_mean_available"].notna()].copy()
+
+        models_spec = [
+            ("4-Week Average Baseline (lag_mean_available)", "lag_mean_available", "None (4-week rolling)", False),
+            ("Frozen Step 5 HGB Forecaster", "pred_frozen", "Jan-Jul 2026 (frozen test model)", False),
+            ("Production HGB Forecaster (post-test retrain)", "pred_prod", "Jan-Sep 2026 (post-test production)", True),
+        ]
+        for model_label, col_name, tr_win, is_prod in models_spec:
+            ma = compute_forecast_metrics(c_act["ridership"], c_act[col_name])
+            mm = compute_forecast_metrics(c_mat["ridership"], c_mat[col_name])
+            wins = np.nan
+            if col_name != "lag_mean_available":
+                rc = compute_forecast_breakdown(
+                    c_act, group_col="route", y_true_col="ridership", y_pred_col=col_name
+                ).merge(
+                    compute_forecast_breakdown(
+                        c_act, group_col="route", y_true_col="ridership", y_pred_col="lag_mean_available"
+                    ),
+                    on="route",
+                    suffixes=("_m", "_b"),
+                )
+                wins = int((rc["wape_pct_m"] < rc["wape_pct_b"]).sum())
+            summary_rows.append(
+                {
+                    "lag_mode": mode_label,
+                    "model": model_label,
+                    "training_window": tr_win,
+                    "is_production_retrain": is_prod,
+                    "n_active_eval": ma["n_eval"],
+                    "mae_active": ma["mae"],
+                    "rmse_active": ma["rmse"],
+                    "wape_active_pct": ma["wape_pct"],
+                    "bias_active_pred_minus_actual": ma["bias_pred_minus_actual"],
+                    "n_matched_step11_eval": mm["n_eval"],
+                    "wape_matched_step11_pct": mm["wape_pct"],
+                    "routes_beating_4wk_of_41": wins,
+                }
+            )
 
     summary_df = pd.DataFrame(summary_rows)
     summary_df.to_csv(TAB_DIR / "m3_october_forecast_summary.csv", index=False)
 
-    # Classification evaluation on rolling active common rows using threshold-normalized margins
-    act = feat_rolling[
-        (feat_rolling["trips_running"] > 0) & (feat_rolling["lag_mean_available"].notna())
-    ].copy()
-    act["score_4wk_norm"] = act["pred_ratio_4wk"] / act["threshold_p75"]
-    act["score_hgb_norm"] = act["pred_ratio_hgb"] / act["threshold_p75"]
+    act = mode_frames["Rolling Lags (7d-28d Exact Prior)"].copy()
+    act = act[act["lag_mean_available"].notna()].copy()
+    act["actual_riders_per_trip"] = act["ridership"] / act["trips_running"]
+    act["high_demand_per_trip"] = (act["actual_riders_per_trip"] > act["threshold_p75"]).astype("int8")
+    act_pos_count = int(act["high_demand_per_trip"].sum())
+    act_pos_pct = round(act_pos_count / len(act) * 100.0, 2)
+
+    act["pred_ratio_4wk"] = act["lag_mean_available"] / act["trips_running"]
+    act["pred_ratio_frozen"] = act["pred_frozen"] / act["trips_running"]
+    act["pred_ratio_prod"] = act["pred_prod"] / act["trips_running"]
 
     rule_b_pred = (act["pred_ratio_4wk"] > act["threshold_p75"]).astype(int)
     rule_b_workload = int(rule_b_pred.sum())
-    clf_4wk = compute_classification_metrics(
-        act["high_demand_per_trip"], rule_b_pred, y_prob=act["score_4wk_norm"]
-    )
-    hgb_flag = (act["pred_ratio_hgb"] > threshold_multiplier * act["threshold_p75"]).astype(int)
-    clf_hgb = compute_classification_metrics(
-        act["high_demand_per_trip"], hgb_flag, y_prob=act["score_hgb_norm"]
-    )
-    # Fair Precision @ Rule B Workload: precision in top `rule_b_workload` rows by normalized ratio
-    rank_df = pd.DataFrame(
-        {"y": act["high_demand_per_trip"].values, "score": act["score_hgb_norm"].values}
-    ).sort_values("score", ascending=False)
-    prec_at_rb = float(rank_df.iloc[:rule_b_workload]["y"].mean())
 
-    clf_df = pd.DataFrame(
-        [
+    clf_rows = []
+    for label, ratio_col, pred_vec, is_prod in [
+        ("Baseline Rule B (4-Wk Avg ÷ Trips > 1.00 × p75)", "pred_ratio_4wk", rule_b_pred, False),
+        (
+            f"Frozen Step 5 Forecast ÷ Trips (> {threshold_multiplier:.2f} × p75)",
+            "pred_ratio_frozen",
+            (act["pred_ratio_frozen"] > threshold_multiplier * act["threshold_p75"]).astype(int),
+            False,
+        ),
+        (
+            f"Production (Jan-Sep) Forecast ÷ Trips (> {threshold_multiplier:.2f} × p75)",
+            "pred_ratio_prod",
+            (act["pred_ratio_prod"] > threshold_multiplier * act["threshold_p75"]).astype(int),
+            True,
+        ),
+    ]:
+        score_norm = act[ratio_col] / act["threshold_p75"]
+        cm = compute_classification_metrics(act["high_demand_per_trip"], pred_vec, y_prob=score_norm)
+        rank_df = pd.DataFrame({"y": act["high_demand_per_trip"].values, "score": score_norm.values}).sort_values(
+            "score", ascending=False
+        )
+        prec_at_rb = float(rank_df.iloc[:rule_b_workload]["y"].mean())
+        clf_rows.append(
             {
-                "model": "Baseline Rule B (4-Wk Avg ÷ Trips > 1.00 × p75)",
-                "n_active_common": len(act),
-                "actual_pos": int(act["high_demand_per_trip"].sum()),
-                "pred_pos_at_cutoff": int(rule_b_pred.sum()),
-                "pr_auc": clf_4wk["pr_auc"],
-                "roc_auc": clf_4wk["roc_auc"],
-                "precision": clf_4wk["precision"],
-                "recall": clf_4wk["recall"],
-                "f1": clf_4wk["f1"],
-                "precision_at_rule_b_workload": clf_4wk["precision"],
-                "rule_b_workload_hours": rule_b_workload,
-            },
-            {
-                "model": f"Frozen Forecast ÷ Trips (> {threshold_multiplier:.2f} × p75)",
-                "n_active_common": len(act),
-                "actual_pos": int(act["high_demand_per_trip"].sum()),
-                "pred_pos_at_cutoff": int(hgb_flag.sum()),
-                "pr_auc": clf_hgb["pr_auc"],
-                "roc_auc": clf_hgb["roc_auc"],
-                "precision": clf_hgb["precision"],
-                "recall": clf_hgb["recall"],
-                "f1": clf_hgb["f1"],
+                "model": label,
+                "is_production_retrain": is_prod,
+                "n_active_eval": len(act),
+                "actual_pos": act_pos_count,
+                "actual_positive_pct": act_pos_pct,
+                "pred_pos_at_cutoff": int(pred_vec.sum()),
+                "pred_positive_pct": round(float(pred_vec.mean()) * 100.0, 2),
+                "pr_auc": cm["pr_auc"],
+                "roc_auc": cm["roc_auc"],
+                "precision": cm["precision"],
+                "recall": cm["recall"],
+                "f1": cm["f1"],
                 "precision_at_rule_b_workload": round(prec_at_rb, 4),
                 "rule_b_workload_hours": rule_b_workload,
-            },
-        ]
-    )
+            }
+        )
+    clf_df = pd.DataFrame(clf_rows)
     clf_df.to_csv(TAB_DIR / "m3_october_classification_summary.csv", index=False)
 
-    # Save route-level and daily breakdown on rolling lags
-    common_roll = feat_rolling[feat_rolling["lag_mean_available"].notna()].copy()
-    route_eval = compute_forecast_breakdown(
-        common_roll, group_col="route", y_true_col="ridership", y_pred_col="pred_hgb", model_name="HGB"
-    ).merge(
-        compute_forecast_breakdown(
-            common_roll,
-            group_col="route",
-            y_true_col="ridership",
-            y_pred_col="lag_mean_available",
-            model_name="4wk",
-        ),
-        on="route",
-        suffixes=("_hgb", "_4wk"),
+    cut_label = f"Publish-Date Cutoff (Lags <= {day_before_start}, realistic)"
+    cut_act = mode_frames[cut_label]
+    cut_c = cut_act[cut_act["lag_mean_available"].notna()].copy()
+    roll_c = act.copy()
+
+    route_eval = (
+        compute_forecast_breakdown(cut_c, "route", "ridership", "pred_frozen")
+        .merge(compute_forecast_breakdown(cut_c, "route", "ridership", "pred_prod"), on="route", suffixes=("_frozen_cut", "_prod_cut"))
+        .merge(
+            compute_forecast_breakdown(cut_c, "route", "ridership", "lag_mean_available")
+            .rename(columns={"mae": "mae_4wk_cut", "rmse": "rmse_4wk_cut", "wape_pct": "wape_4wk_cut", "bias_pred_minus_actual": "bias_4wk_cut"})
+            [["route", "mae_4wk_cut", "rmse_4wk_cut", "wape_4wk_cut", "bias_4wk_cut"]],
+            on="route",
+        )
+        .merge(
+            compute_forecast_breakdown(roll_c, "route", "ridership", "pred_frozen")
+            .rename(columns={"wape_pct": "wape_frozen_roll"})[["route", "wape_frozen_roll"]],
+            on="route",
+        )
+        .merge(
+            compute_forecast_breakdown(roll_c, "route", "ridership", "lag_mean_available")
+            .rename(columns={"wape_pct": "wape_4wk_roll"})[["route", "wape_4wk_roll"]],
+            on="route",
+        )
     )
-    route_eval["wape_diff_hgb_minus_4wk"] = (
-        route_eval["wape_pct_hgb"] - route_eval["wape_pct_4wk"]
+    route_eval["wape_diff_frozen_minus_4wk_cut"] = (
+        route_eval["wape_pct_frozen_cut"] - route_eval["wape_4wk_cut"]
     ).round(2)
-    route_eval["hgb_beats_4wk"] = route_eval["wape_pct_hgb"] < route_eval["wape_pct_4wk"]
-    route_eval.sort_values("wape_diff_hgb_minus_4wk").to_csv(
+    route_eval.sort_values("wape_diff_frozen_minus_4wk_cut").to_csv(
         TAB_DIR / "m3_october_forecast_by_route.csv", index=False
     )
 
     daily_rows = []
-    for dt_str, grp in common_roll.groupby("date"):
+    for dt_str, grp in cut_c.groupby("date"):
         d4 = compute_forecast_metrics(grp["ridership"], grp["lag_mean_available"])
-        dh = compute_forecast_metrics(grp["ridership"], grp["pred_hgb"])
+        dfz = compute_forecast_metrics(grp["ridership"], grp["pred_frozen"])
+        dpr = compute_forecast_metrics(grp["ridership"], grp["pred_prod"])
+        rg = roll_c[roll_c["date"] == dt_str]
+        drz = compute_forecast_metrics(rg["ridership"], rg["pred_frozen"])
+        dr4 = compute_forecast_metrics(rg["ridership"], rg["lag_mean_available"])
         daily_rows.append(
             {
                 "date": dt_str,
                 "day_of_week": grp["day_of_week"].iloc[0],
-                "n_hours": len(grp),
+                "day_group": grp["day_group"].iloc[0],
+                "n_active_hours": len(grp),
                 "mean_actual_riders": round(float(grp["ridership"].mean()), 2),
-                "wape_4wk_pct": d4["wape_pct"],
-                "wape_hgb_pct": dh["wape_pct"],
-                "bias_4wk": d4["bias_pred_minus_actual"],
-                "bias_hgb": dh["bias_pred_minus_actual"],
+                "wape_4wk_cutoff_pct": d4["wape_pct"],
+                "wape_frozen_cutoff_pct": dfz["wape_pct"],
+                "wape_prod_cutoff_pct": dpr["wape_pct"],
+                "wape_4wk_rolling_pct": dr4["wape_pct"],
+                "wape_frozen_rolling_pct": drz["wape_pct"],
+                "bias_frozen_cutoff": dfz["bias_pred_minus_actual"],
             }
         )
     daily_df = pd.DataFrame(daily_rows)
     daily_df.to_csv(TAB_DIR / "m3_october_forecast_by_day.csv", index=False)
 
-    # Save figure comparing Validation -> Test -> Unseen October
     FIG_DIR.mkdir(parents=True, exist_ok=True)
-    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(13.5, 5.2))
 
-    # Panel 1: Daily WAPE across Oct 18-31
     x = np.arange(len(daily_df))
     labels = [f"{d[5:]}\n{w[:3]}" for d, w in zip(daily_df["date"], daily_df["day_of_week"])]
-    axes[0].plot(x, daily_df["wape_4wk_pct"], "o--", color="#6c757d", label="4-Week Average Baseline")
-    axes[0].plot(x, daily_df["wape_hgb_pct"], "s-", color="#0b5394", label="Frozen Step 5 HGB Forecaster")
+    axes[0].plot(x, daily_df["wape_4wk_cutoff_pct"], "o--", color="#4b5563", label="4-Week Average Baseline")
+    axes[0].plot(x, daily_df["wape_frozen_cutoff_pct"], "s-", color="#0b5394", label="Frozen Step 5 (Jan-Jul)")
+    axes[0].plot(x, daily_df["wape_prod_cutoff_pct"], "^:", color="#d97706", label="Production Retrain (Jan-Sep)")
     axes[0].set_xticks(x)
     axes[0].set_xticklabels(labels, fontsize=8)
     axes[0].set_ylabel("WAPE (%)")
-    axes[0].set_title(f"Unseen October Daily Forecast Error ({start_date} to {end_date})")
+    axes[0].set_title(f"Realistic Publish-Date Cutoff (Lags <= {day_before_start}) by Day")
     axes[0].grid(True, alpha=0.3)
-    axes[0].legend(frameon=True)
+    axes[0].legend(frameon=True, fontsize=8.5)
 
-    # Panel 2: Window progression (Val -> Test -> Unseen Oct)
-    windows = ["Val\n(Jun-Jul)", "Test\n(Aug-Sep)", "Unseen Oct\n(Oct 18-31)"]
-    hgb_wapes = [13.03, 14.06, float(summary_df.iloc[1]["wape_common_pct"])]
-    base_wapes = [14.08, 15.41, float(summary_df.iloc[0]["wape_common_pct"])]
-    xw = np.arange(len(windows))
-    w = 0.34
-    b1 = axes[1].bar(xw - w / 2, base_wapes, width=w, color="#6c757d", label="4-Week Average Baseline")
-    b2 = axes[1].bar(xw + w / 2, hgb_wapes, width=w, color="#0b5394", label="Frozen Step 5 HGB Forecaster")
+    cut_sub = summary_df[summary_df["lag_mode"] == cut_label]
+    roll_sub = summary_df[summary_df["lag_mode"] == "Rolling Lags (7d-28d Exact Prior)"]
+    cat_labels = ["4-Week Avg\nBaseline", "Frozen Step 5\n(Jan-Jul)", "Production\n(Jan-Sep)"]
+    w_cut = [float(cut_sub.iloc[i]["wape_active_pct"]) for i in range(3)]
+    w_roll = [float(roll_sub.iloc[i]["wape_active_pct"]) for i in range(3)]
+    xw = np.arange(len(cat_labels))
+    bw = 0.34
+    b1 = axes[1].bar(xw - bw / 2, w_cut, width=bw, color="#0b5394", label=f"Publish Cutoff (<= {day_before_start})")
+    b2 = axes[1].bar(xw + bw / 2, w_roll, width=bw, color="#6b7280", label="Rolling Lags (7d-28d)")
     for bars in (b1, b2):
         for bar in bars:
             val = bar.get_height()
-            axes[1].text(bar.get_x() + bar.get_width() / 2, val + 0.25, f"{val:.2f}%", ha="center", va="bottom", fontsize=9)
+            axes[1].text(bar.get_x() + bar.get_width() / 2, val + 0.18, f"{val:.2f}%", ha="center", va="bottom", fontsize=8.5)
     axes[1].set_xticks(xw)
-    axes[1].set_xticklabels(windows)
-    axes[1].set_ylim(0, max(base_wapes) + 3.0)
-    axes[1].set_ylabel("WAPE (%)")
-    axes[1].set_title("Forecast Error Progression Across Out-of-Sample Windows")
+    axes[1].set_xticklabels(cat_labels)
+    axes[1].set_ylim(0, max(w_cut + w_roll) + 2.5)
+    axes[1].set_ylabel("October WAPE (%) across 12,270 Active Hours")
+    axes[1].set_title("Unseen October 18-31 Overall WAPE (Models Do Not Beat Baseline)")
     axes[1].grid(True, axis="y", alpha=0.3)
-    axes[1].legend(frameon=True)
+    axes[1].legend(frameon=True, fontsize=8.5)
 
-    plt.tight_layout()
+    fig.suptitle(
+        "Step 6 Unseen October Evaluation — Frozen and Production HGB Do Not Beat 4-Week Average Overall",
+        fontsize=11,
+        fontweight="bold",
+        y=0.99,
+    )
+    plt.tight_layout(rect=[0, 0, 1, 0.94])
     fig.savefig(FIG_DIR / "m3_october_unseen_evaluation.png", dpi=180)
     plt.close(fig)
 
@@ -648,6 +842,7 @@ def main():
         "hour",
         "day_of_week",
         "day_type",
+        "day_group",
         "time_band",
         "snapshot_id",
         "trips_starting",

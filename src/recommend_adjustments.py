@@ -3,17 +3,17 @@ Milestone 3 — Steps 8 & 9: Service Scenarios, Shared-Corridor Merge Checks &
 Budget-Neutral Service-Hour Reallocation Plan
 
 Step 8:
-  - Evaluates +/-10% and +/-20% trip changes across all underused and high-demand
-    (route, time_band) candidates from Step 7 under the explicit assumption that
-    ridership remains constant when trips change.
+  - Evaluates +/-10% and +/-20% trip changes across all fewer_trips_candidate and
+    more_trips_candidate (route, day_group, time_band) cells from Step 7 under the
+    explicit assumption that ridership remains constant when trips change.
   - Evaluates merge/consolidation feasibility strictly on shared_corridor route pairs
     (explicitly excluding same_family variants such as M15/M15+, M34+/M34A+, M14A+/M14D+).
 
 Step 9:
   - Builds one budget-neutral service reallocation plan transferring scheduled
-    service-hours from low-productivity night/early-morning corridors to congested
-    peak and midday corridors (net service-hour change <= 0.0), respecting stop
-    exclusivity guardrails and minimum hourly trip floors.
+    service-hours within weekday (10d) and weekend (4d) budgets from low riders/svc-hr
+    night/early-morning cells to cells with high riders per trip (net service-hour
+    change <= 0.0 per day_group), respecting stop exclusivity guardrails and trip floors.
 
 Outputs:
   reports/tables/m3_step8_candidate_scenarios.csv
@@ -50,20 +50,31 @@ FIG_DIR = ROOT / "reports" / "figures"
 def simulate_trip_scenarios(
     review_df: pd.DataFrame, preds_df: pd.DataFrame, cfg: dict
 ) -> pd.DataFrame:
-    """Test +/-10% and +/-20% trip changes per Step 7 candidate (underused & high_demand)."""
+    """Test +/-10% and +/-20% trip changes per Step 7 candidate (route, day_group, time_band)."""
     rules = cfg["step8_9_adjustment_rules"]
     c_cfg = cfg["step7_review_thresholds"]["coverage_guardrails"]
+    f_cat = cfg["step7_review_thresholds"]["fewer_trips_screening"]["category_name"]
+    m_cat = cfg["step7_review_thresholds"]["more_trips_screening"]["category_name"]
     deltas = rules["scenario_trip_changes_pct"]
     floor_per_hr = int(rules["min_trips_per_active_hour_floor"])
 
-    candidates = review_df[
-        review_df["review_category"].isin(["underused_candidate", "high_demand_candidate"])
-    ].copy()
+    if "day_group" not in preds_df.columns:
+        preds_df = preds_df.copy()
+        preds_df["day_group"] = np.where(
+            preds_df["day_of_week"].isin(["Saturday", "Sunday"]), "weekend", "weekday"
+        )
+
+    dg_svc_totals = preds_df.groupby("day_group")["service_hours"].sum().to_dict()
+    net_14d_svc = float(preds_df["service_hours"].sum())
+
+    candidates = review_df[review_df["review_category"].isin([f_cat, m_cat])].copy()
 
     rows = []
     for _, cand in candidates.iterrows():
         r = cand["route"]
         tb = cand["time_band"]
+        dg = cand["day_group"]
+        days_in_grp = int(cand["days_in_group"])
         cat = cand["review_category"]
         act_hrs = int(cand["active_hours"])
         base_trips = int(cand["total_trips_running"])
@@ -72,7 +83,11 @@ def simulate_trip_scenarios(
         base_hd_hrs = int(cand["high_demand_hours"])
         excl_share = float(cand["exclusive_stop_share"])
 
-        sub_hrs = preds_df[(preds_df["route"] == r) & (preds_df["time_band"] == tb)]
+        sub_hrs = preds_df[
+            (preds_df["route"] == r)
+            & (preds_df["time_band"] == tb)
+            & (preds_df["day_group"] == dg)
+        ]
         min_trips_floor = act_hrs * floor_per_hr
 
         for pct in deltas:
@@ -96,13 +111,15 @@ def simulate_trip_scenarios(
             if pct < 0 and excl_share >= c_cfg["high_exclusive_stop_share"] and abs(pct) > 10:
                 guardrail_status = "exceeds_10pct_exclusivity_guardrail"
             elif pct < 0 and hd_delta > 0:
-                guardrail_status = "warning_creates_new_high_demand_hours"
+                guardrail_status = "warning_pushes_hours_above_threshold"
             else:
                 guardrail_status = "ok"
 
             rows.append(
                 {
                     "route": r,
+                    "day_group": dg,
+                    "days_in_group": days_in_grp,
                     "time_band": tb,
                     "review_category": cat,
                     "group_id": int(cand["group_id"]),
@@ -115,6 +132,13 @@ def simulate_trip_scenarios(
                     "base_service_hours": base_svc_hrs,
                     "new_service_hours": new_svc_hrs,
                     "delta_service_hours": delta_svc_hrs,
+                    "delta_service_hours_per_day": round(delta_svc_hrs / days_in_grp, 2),
+                    "pct_of_day_group_service_hours": round(
+                        delta_svc_hrs / dg_svc_totals[dg] * 100.0, 3
+                    ),
+                    "pct_of_14day_network_service_hours": round(
+                        delta_svc_hrs / net_14d_svc * 100.0, 3
+                    ),
                     "constant_pred_ridership": tot_riders,
                     "base_riders_per_trip": float(cand["pred_riders_per_trip"]),
                     "new_riders_per_trip": new_r_per_trip,
@@ -252,141 +276,153 @@ def evaluate_shared_corridor_merges(
 def build_budget_neutral_reallocation(
     review_df: pd.DataFrame, scenarios_df: pd.DataFrame, cfg: dict
 ) -> pd.DataFrame:
-    """Construct one budget-neutral service reallocation plan (net service_hours <= 0)."""
+    """Construct one budget-neutral service reallocation plan balanced within each day_group."""
+    f_cat = cfg["step7_review_thresholds"]["fewer_trips_screening"]["category_name"]
+    m_cat = cfg["step7_review_thresholds"]["more_trips_screening"]["category_name"]
     c_cfg = cfg["step7_review_thresholds"]["coverage_guardrails"]
-    high_excl = c_cfg["high_exclusive_stop_share"]
 
-    # 1. Select eligible donor scenarios (underused_candidate, exclude M35 bridge lifeline, >=30 base hrs)
-    donors_pool = scenarios_df[
-        (scenarios_df["review_category"] == "underused_candidate")
-        & (scenarios_df["route"] != "M35")
-        & (scenarios_df["base_service_hours"] >= 30.0)
-        & (scenarios_df["scenario_trip_change_pct"] < 0)
-        & (scenarios_df["guardrail_status"] == "ok")
-        & (scenarios_df["high_demand_hours_delta"] == 0)
-    ].copy()
+    all_donors = []
+    all_recips = []
 
-    # For each donor (route, time_band), choose -20% if low exclusivity (<0.40) and -10% otherwise
-    chosen_donors = []
-    for (r, tb), grp in donors_pool.groupby(["route", "time_band"]):
-        excl = float(grp["exclusive_stop_share"].iloc[0])
-        target_pct = -20 if excl < 0.40 else -10
-        pick = grp[grp["scenario_trip_change_pct"] == target_pct]
-        if pick.empty:
-            pick = grp[grp["scenario_trip_change_pct"] == -10]
-        if not pick.empty:
-            chosen_donors.append(pick.iloc[0])
+    for dg, min_base_hrs in [("weekday", 20.0), ("weekend", 10.0)]:
+        # 1. Eligible donor trims within day_group (exclude M35 sole link, >= min_base_hrs, 0 hours moved > p75)
+        donors_pool = scenarios_df[
+            (scenarios_df["day_group"] == dg)
+            & (scenarios_df["review_category"] == f_cat)
+            & (scenarios_df["route"] != "M35")
+            & (scenarios_df["base_service_hours"] >= min_base_hrs)
+            & (scenarios_df["scenario_trip_change_pct"] < 0)
+            & (scenarios_df["guardrail_status"] == "ok")
+            & (scenarios_df["high_demand_hours_delta"] == 0)
+        ].copy()
 
-    donor_df = (
-        pd.DataFrame(chosen_donors)
-        .merge(
+        chosen_donors = []
+        for (r, tb), grp in donors_pool.groupby(["route", "time_band"]):
+            excl = float(grp["exclusive_stop_share"].iloc[0])
+            target_pct = -20 if excl < c_cfg["moderate_exclusive_stop_share"] else -10
+            pick = grp[grp["scenario_trip_change_pct"] == target_pct]
+            if pick.empty:
+                pick = grp[grp["scenario_trip_change_pct"] == -10]
+            if not pick.empty:
+                chosen_donors.append(pick.iloc[0])
+
+        donor_df = (
+            pd.DataFrame(chosen_donors)
+            .merge(
+                review_df[
+                    [
+                        "route",
+                        "day_group",
+                        "time_band",
+                        "high_demand_freq_pct",
+                        "top_shared_corridor_partner",
+                        "top_shared_corridor_share",
+                    ]
+                ],
+                on=["route", "day_group", "time_band"],
+                how="left",
+            )
+            .sort_values("base_riders_per_service_hour", ascending=True)
+            .reset_index(drop=True)
+        )
+        freed_hrs = round(float(-donor_df["delta_service_hours"].sum()), 2)
+
+        # 2. Eligible recipient additions within same day_group (high riders/trip cells >= 40 riders/svc-hr)
+        recip_pool = scenarios_df[
+            (scenarios_df["day_group"] == dg)
+            & (scenarios_df["review_category"] == m_cat)
+            & (scenarios_df["scenario_trip_change_pct"].isin([10, 20]))
+            & (scenarios_df["base_riders_per_service_hour"] >= 40.0)
+        ].merge(
             review_df[
                 [
                     "route",
+                    "day_group",
                     "time_band",
                     "high_demand_freq_pct",
                     "top_shared_corridor_partner",
                     "top_shared_corridor_share",
                 ]
             ],
-            on=["route", "time_band"],
+            on=["route", "day_group", "time_band"],
             how="left",
         )
-        .sort_values("base_riders_per_service_hour", ascending=True)
-        .reset_index(drop=True)
-    )
 
-    total_freed_hours = round(float(-donor_df["delta_service_hours"].sum()), 2)
+        best_per_cell = []
+        for (r, tb), grp in recip_pool.groupby(["route", "time_band"]):
+            freq = float(grp["high_demand_freq_pct"].iloc[0])
+            want_pct = 20 if freq >= 85.0 else 10
+            pick = grp[grp["scenario_trip_change_pct"] == want_pct]
+            if pick.empty:
+                pick = grp.iloc[[0]]
+            best_per_cell.append(pick.iloc[0].copy())
 
-    # 2. Select highest-priority recipients sorted by crowding pressure, without exceeding donor budget
-    recip_pool = scenarios_df[
-        (scenarios_df["review_category"] == "high_demand_candidate")
-        & (scenarios_df["scenario_trip_change_pct"].isin([10, 20]))
-        & (scenarios_df["base_riders_per_service_hour"] >= 40.0)
-    ].merge(
-        review_df[
-            [
-                "route",
-                "time_band",
-                "high_demand_freq_pct",
-                "top_shared_corridor_partner",
-                "top_shared_corridor_share",
-            ]
-        ],
-        on=["route", "time_band"],
-        how="left",
-    )
-
-    # Pick one primary action per high-demand candidate: +20% if >=85% high-demand hours, else +10%
-    best_per_cell = []
-    for (r, tb), grp in recip_pool.groupby(["route", "time_band"]):
-        freq = float(grp["high_demand_freq_pct"].iloc[0])
-        want_pct = 20 if freq >= 85.0 else 10
-        pick = grp[grp["scenario_trip_change_pct"] == want_pct]
-        if pick.empty:
-            pick = grp.iloc[[0]]
-        row = pick.iloc[0].copy()
-        row["relief_efficiency"] = abs(row["high_demand_hours_delta"]) / max(
-            row["delta_service_hours"], 0.1
+        recip_ranked = (
+            pd.DataFrame(best_per_cell)
+            .sort_values(
+                ["high_demand_freq_pct", "base_riders_per_service_hour"],
+                ascending=[False, False],
+            )
+            .reset_index(drop=True)
         )
-        best_per_cell.append(row)
 
-    recip_ranked = (
-        pd.DataFrame(best_per_cell)
-        .sort_values(
-            ["high_demand_freq_pct", "base_riders_per_service_hour"],
-            ascending=[False, False],
+        allocated = []
+        remaining = freed_hrs
+        for _, row in recip_ranked.iterrows():
+            cost = float(row["delta_service_hours"])
+            if cost <= remaining + 1e-6:
+                allocated.append(row)
+                remaining = round(remaining - cost, 2)
+            else:
+                alt = recip_pool[
+                    (recip_pool["route"] == row["route"])
+                    & (recip_pool["time_band"] == row["time_band"])
+                    & (recip_pool["scenario_trip_change_pct"] == 10)
+                ]
+                if not alt.empty:
+                    alt_row = alt.iloc[0].copy()
+                    alt_cost = float(alt_row["delta_service_hours"])
+                    if alt_cost <= remaining + 1e-6:
+                        allocated.append(alt_row)
+                        remaining = round(remaining - alt_cost, 2)
+
+        recip_df = pd.DataFrame(allocated)
+        assert round(float(recip_df["delta_service_hours"].sum() + donor_df["delta_service_hours"].sum()), 2) <= 0.0, (
+            f"day_group={dg} exceeded budget neutrality"
         )
-        .reset_index(drop=True)
-    )
+        all_donors.append(donor_df)
+        all_recips.append(recip_df)
 
-    # Allocate recipients up to total_freed_hours; check both desired +20% and fallback +10% if tight near cap
-    allocated_rows = []
-    remaining_budget = total_freed_hours
+    donor_all = pd.concat(all_donors, ignore_index=True)
+    recip_all = pd.concat(all_recips, ignore_index=True)
 
-    for _, row in recip_ranked.iterrows():
-        cost = float(row["delta_service_hours"])
-        if cost <= remaining_budget + 1e-6:
-            allocated_rows.append(row)
-            remaining_budget = round(remaining_budget - cost, 2)
-        else:
-            # Try +10% step if +20% was too large for remaining budget
-            alt = recip_pool[
-                (recip_pool["route"] == row["route"])
-                & (recip_pool["time_band"] == row["time_band"])
-                & (recip_pool["scenario_trip_change_pct"] == 10)
-            ]
-            if not alt.empty:
-                alt_row = alt.iloc[0].copy()
-                alt_cost = float(alt_row["delta_service_hours"])
-                if alt_cost <= remaining_budget + 1e-6:
-                    allocated_rows.append(alt_row)
-                    remaining_budget = round(remaining_budget - alt_cost, 2)
-
-    recip_df = pd.DataFrame(allocated_rows)
-
-    donor_df["reallocation_role"] = "donor_trim"
-    recip_df["reallocation_role"] = "recipient_add"
-    donor_df["rationale"] = [
+    donor_all["reallocation_role"] = "donor_trim"
+    recip_all["reallocation_role"] = "recipient_add"
+    donor_all["rationale"] = [
         (
-            f"Low October load ({r['base_riders_per_service_hour']:.1f} riders/svc-hr, "
-            f"{r['high_demand_freq_pct']:.1f}% high-demand hrs); "
-            f"{r['exclusive_stop_share']*100:.1f}% exclusive stops -> {r['scenario_trip_change_pct']}% trips "
-            f"frees {-r['delta_service_hours']:.1f} svc-hrs with 0 new high-demand hours created."
+            f"Low {r['day_group']} riders/svc-hr ({r['base_riders_per_service_hour']:.1f} riders/svc-hr, "
+            f"{r['high_demand_freq_pct']:.1f}% hrs >0.96x p75); {r['exclusive_stop_share']*100:.1f}% exclusive stops -> "
+            f"{r['scenario_trip_change_pct']}% trips shifts {-r['delta_service_hours']:.1f} svc-hrs over "
+            f"{int(r['days_in_group'])}d ({-r['delta_service_hours_per_day']:.1f}/day, "
+            f"{-r['pct_of_day_group_service_hours']:.2f}% of {r['day_group']} svc-hrs) with 0 hours moving >0.96x p75."
         )
-        for _, r in donor_df.iterrows()
+        for _, r in donor_all.iterrows()
     ]
-    recip_df["rationale"] = [
+    recip_all["rationale"] = [
         (
-            f"Persistent crowding ({r['high_demand_freq_pct']:.1f}% high-demand hrs, "
-            f"{r['base_riders_per_service_hour']:.1f} riders/svc-hr); +{r['scenario_trip_change_pct']}% trips "
-            f"uses +{r['delta_service_hours']:.1f} svc-hrs and relieves {-r['high_demand_hours_delta']} high-demand hrs."
+            f"High {r['day_group']} riders per trip ({r['high_demand_freq_pct']:.1f}% hrs >0.96x p75, "
+            f"{r['base_riders_per_service_hour']:.1f} riders/svc-hr); +{r['scenario_trip_change_pct']}% trips adds "
+            f"+{r['delta_service_hours']:.1f} svc-hrs over {int(r['days_in_group'])}d (+{r['delta_service_hours_per_day']:.1f}/day); "
+            f"with riders held constant, {-int(r['high_demand_hours_delta'])} "
+            f"{'hour falls' if -int(r['high_demand_hours_delta']) == 1 else 'hours fall'} below 0.96x p75."
         )
-        for _, r in recip_df.iterrows()
+        for _, r in recip_all.iterrows()
     ]
 
     cols = [
         "reallocation_role",
+        "day_group",
+        "days_in_group",
         "route",
         "time_band",
         "group_id",
@@ -399,6 +435,9 @@ def build_budget_neutral_reallocation(
         "base_service_hours",
         "new_service_hours",
         "delta_service_hours",
+        "delta_service_hours_per_day",
+        "pct_of_day_group_service_hours",
+        "pct_of_14day_network_service_hours",
         "constant_pred_ridership",
         "base_riders_per_trip",
         "new_riders_per_trip",
@@ -409,88 +448,86 @@ def build_budget_neutral_reallocation(
         "high_demand_hours_delta",
         "rationale",
     ]
-    plan_df = pd.concat([donor_df[cols], recip_df[cols]], ignore_index=True)
+    plan_df = pd.concat([donor_all[cols], recip_all[cols]], ignore_index=True)
 
-    # Assert strict budget-neutrality
     net_svc = round(float(plan_df["delta_service_hours"].sum()), 2)
     assert net_svc <= 0.0, f"Plan exceeded budget neutrality: net_service_hours={net_svc}"
     return plan_df
 
 
-def plot_reallocation_summary(plan_df: pd.DataFrame, out_path: Path) -> None:
+def plot_reallocation_summary(plan_df: pd.DataFrame, out_path: Path, preds_df: pd.DataFrame) -> None:
     FIG_DIR.mkdir(parents=True, exist_ok=True)
     donors = plan_df[plan_df["reallocation_role"] == "donor_trim"]
     recips = plan_df[plan_df["reallocation_role"] == "recipient_add"]
 
+    total_14d_svc = float(preds_df["service_hours"].sum())
     freed_hrs = float(-donors["delta_service_hours"].sum())
     added_hrs = float(recips["delta_service_hours"].sum())
     net_hrs = added_hrs - freed_hrs
-    relieved_hd = int(-recips["high_demand_hours_delta"].sum())
+    below_thresh = int(-recips["high_demand_hours_delta"].sum())
     created_hd = int(donors["high_demand_hours_delta"].sum())
+    freed_pct = freed_hrs / total_14d_svc * 100.0
 
-    fig, axes = plt.subplots(1, 2, figsize=(13.5, 5.4))
+    fig, axes = plt.subplots(1, 2, figsize=(14.0, 5.5))
 
-    # Left panel: Service-hours balance by role & time_band
+    # Left panel: Service-hours transferred over the 14-day period by time_band & day_group
     bands = ["early_morning", "morning_peak", "midday", "evening_peak", "night"]
-    donor_by_band = [
-        float(donors.loc[donors["time_band"] == b, "delta_service_hours"].sum()) for b in bands
-    ]
-    recip_by_band = [
-        float(recips.loc[recips["time_band"] == b, "delta_service_hours"].sum()) for b in bands
-    ]
+    wkd_d = [float(donors[(donors["time_band"] == b) & (donors["day_group"] == "weekday")]["delta_service_hours"].sum()) for b in bands]
+    wke_d = [float(donors[(donors["time_band"] == b) & (donors["day_group"] == "weekend")]["delta_service_hours"].sum()) for b in bands]
+    wkd_r = [float(recips[(recips["time_band"] == b) & (recips["day_group"] == "weekday")]["delta_service_hours"].sum()) for b in bands]
+    wke_r = [float(recips[(recips["time_band"] == b) & (recips["day_group"] == "weekend")]["delta_service_hours"].sum()) for b in bands]
+
     x = np.arange(len(bands))
     w = 0.55
-    b_d = axes[0].bar(x, donor_by_band, width=w, color="#b45309", label=f"Freed from Underused (-{freed_hrs:.1f} hrs)")
-    b_r = axes[0].bar(x, recip_by_band, width=w, color="#0b5394", label=f"Added to High-Demand (+{added_hrs:.1f} hrs)")
+    axes[0].bar(x, wkd_d, width=w, color="#b45309", label=f"Weekday trims (-{-sum(wkd_d):.0f} hrs / 10d)")
+    axes[0].bar(x, wke_d, bottom=wkd_d, width=w, color="#f59e0b", label=f"Weekend trims (-{-sum(wke_d):.0f} hrs / 4d)")
+    axes[0].bar(x, wkd_r, width=w, color="#0b5394", label=f"Weekday adds (+{sum(wkd_r):.0f} hrs / 10d)")
+    axes[0].bar(x, wke_r, bottom=wkd_r, width=w, color="#60a5fa", label=f"Weekend adds (+{sum(wke_r):.0f} hrs / 4d)")
     axes[0].axhline(0, color="black", linewidth=0.9)
-    for bars in (b_d, b_r):
-        for bar in bars:
-            val = bar.get_height()
-            if abs(val) > 1.0:
-                offset = 18 if val > 0 else -38
-                axes[0].text(
-                    bar.get_x() + bar.get_width() / 2,
-                    val + offset,
-                    f"{val:+.0f}",
-                    ha="center",
-                    va="bottom" if val > 0 else "top",
-                    fontsize=8.5,
-                    fontweight="bold",
-                )
+
+    tot_d = [a + b for a, b in zip(wkd_d, wke_d)]
+    tot_r = [a + b for a, b in zip(wkd_r, wke_r)]
+    for idx, (vd, vr) in enumerate(zip(tot_d, tot_r)):
+        if vd < -1.0:
+            axes[0].text(idx, vd - 15, f"{vd:.0f}", ha="center", va="top", fontsize=8.5, fontweight="bold")
+        if vr > 1.0:
+            axes[0].text(idx, vr + 12, f"+{vr:.0f}", ha="center", va="bottom", fontsize=8.5, fontweight="bold")
+
     axes[0].set_xticks(x)
     axes[0].set_xticklabels(["Early\nMorning", "Morning\nPeak", "Midday", "Evening\nPeak", "Night"])
-    min_y = min(donor_by_band) if donor_by_band else -100.0
-    max_y = max(recip_by_band) if recip_by_band else 100.0
-    axes[0].set_ylim(min(min_y * 1.28, -530), max(max_y * 1.25, 560))
-    axes[0].set_ylabel("2-Week Service-Hours Change (Oct 18–31 GTFS)")
+    axes[0].set_ylim(min(tot_d) * 1.28 - 40, max(max(tot_r) * 1.25 + 40, 260))
+    axes[0].set_ylabel("Service-Hours Change Over 14 Days (Oct 18–31)")
     axes[0].set_title(
-        f"Budget-Neutral Reallocation by Time Band (Net Change: {net_hrs:+.1f} hrs)"
+        f"{freed_hrs:.1f} Hrs Moved Over 14 Days ({freed_pct:.2f}% of Network, Net {net_hrs:+.1f} Hrs)"
     )
     axes[0].grid(True, axis="y", alpha=0.3)
-    axes[0].legend(loc="upper left", frameon=True, fontsize=8.5)
+    axes[0].legend(loc="upper left", frameon=True, fontsize=8)
 
-    # Right panel: Top recipient high-demand hour relief
+    # Right panel: Top cells with high riders per trip (before vs after under constant riders)
     top_recips = recips.sort_values("high_demand_hours_delta").head(12).iloc[::-1]
-    ylabels = [f"{r['route']} ({r['time_band'][:3]}) +{r['scenario_trip_change_pct']}%" for _, r in top_recips.iterrows()]
+    ylabels = [
+        f"{r['route']} ({'wkday' if r['day_group'] == 'weekday' else 'wkend'}, {r['time_band'][:3]}) +{r['scenario_trip_change_pct']}%"
+        for _, r in top_recips.iterrows()
+    ]
     y = np.arange(len(top_recips))
-    axes[1].barh(y - 0.18, top_recips["base_high_demand_hours"], height=0.34, color="#9ca3af", label="Before Reallocation")
-    axes[1].barh(y + 0.18, top_recips["sim_high_demand_hours"], height=0.34, color="#16a34a", label="After Added Trips")
+    axes[1].barh(y - 0.18, top_recips["base_high_demand_hours"], height=0.34, color="#9ca3af", label="Before Added Trips")
+    axes[1].barh(y + 0.18, top_recips["sim_high_demand_hours"], height=0.34, color="#16a34a", label="After (Riders Held Constant)")
     axes[1].set_yticks(y)
-    axes[1].set_yticklabels(ylabels, fontsize=8.5)
-    axes[1].set_xlabel("Predicted High-Demand Hours (2-Week Window)")
+    axes[1].set_yticklabels(ylabels, fontsize=8)
+    axes[1].set_xlabel("Hours Exceeding High-Demand Threshold (Oct 18–31)")
     axes[1].set_title(
-        f"{len(top_recips)} Recipient Corridors: {relieved_hd} High-Demand Hrs Relieved ({created_hd} Added)"
+        f"With Riders Constant, {below_thresh} Hours Fall Below Threshold ({created_hd} Added)"
     )
     axes[1].grid(True, axis="x", alpha=0.3)
     axes[1].legend(frameon=True, fontsize=8.5)
 
     fig.suptitle(
-        "Step 9 Budget-Neutral Reallocation Plan — Assumes Ridership Stays Constant When Trips Change",
-        fontsize=11.5,
+        "Step 9 Budget-Neutral Reallocation (10 Weekdays + 4 Weekend Days, Oct 18–31; Riders Held Constant)",
+        fontsize=11,
         fontweight="bold",
         y=0.99,
     )
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.tight_layout(rect=[0, 0, 1, 0.94])
     fig.savefig(out_path, dpi=180)
     plt.close(fig)
 
@@ -517,8 +554,9 @@ def main():
     plan_df.to_csv(plan_path, index=False)
 
     fig_path = FIG_DIR / "m3_step9_reallocation_summary.png"
-    plot_reallocation_summary(plan_df, fig_path)
+    plot_reallocation_summary(plan_df, fig_path, preds_df)
 
+    total_14d_svc = float(preds_df["service_hours"].sum())
     donors = plan_df[plan_df["reallocation_role"] == "donor_trim"]
     recips = plan_df[plan_df["reallocation_role"] == "recipient_add"]
     freed = float(-donors["delta_service_hours"].sum())
@@ -526,10 +564,25 @@ def main():
     print(f"Saved {len(scenarios_df)} candidate scenarios -> {scenarios_path}")
     print(f"Saved {len(merge_df)} shared_corridor merge checks -> {merge_path}")
     print(
-        f"Saved budget-neutral reallocation ({len(donors)} donors -{freed:.2f} hrs, "
+        f"Saved budget-neutral reallocation over 14 days ({len(donors)} donors -{freed:.2f} hrs "
+        f"[{freed/total_14d_svc*100:.2f}% of {total_14d_svc:,.1f} total svc-hrs], "
         f"{len(recips)} recipients +{added:.2f} hrs, net={added - freed:+.2f} hrs) -> {plan_path}"
     )
-    print(f"High-demand hours relieved: {-int(recips['high_demand_hours_delta'].sum())} (created on donors: {int(donors['high_demand_hours_delta'].sum())})")
+    for dg in ("weekday", "weekend"):
+        dd = donors[donors["day_group"] == dg]
+        rr = recips[recips["day_group"] == dg]
+        dg_tot = float(preds_df.loc[preds_df["day_group"] == dg, "service_hours"].sum())
+        days_n = int(preds_df.loc[preds_df["day_group"] == dg, "date"].nunique())
+        df_h = float(-dd["delta_service_hours"].sum())
+        da_h = float(rr["delta_service_hours"].sum())
+        print(
+            f"  {dg} ({days_n}d): -{df_h:.2f} hrs ({-df_h/days_n:.2f}/day, {df_h/dg_tot*100:.2f}% of {dg_tot:,.1f} {dg} svc-hrs) "
+            f"-> +{da_h:.2f} hrs (+{da_h/days_n:.2f}/day), net={da_h - df_h:+.2f} hrs"
+        )
+    print(
+        f"With riders held constant, {-int(recips['high_demand_hours_delta'].sum())} hours fall below the high-demand threshold "
+        f"(donor hours moving above: {int(donors['high_demand_hours_delta'].sum())})."
+    )
     print(f"Saved figure -> {fig_path}")
 
 

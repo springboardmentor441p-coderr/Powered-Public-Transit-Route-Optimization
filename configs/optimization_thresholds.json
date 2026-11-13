@@ -1,25 +1,31 @@
 {
-  "description": "Milestone 3 Steps 7-9 screening thresholds and service reallocation rules for Manhattan bus routes.",
+  "description": "Milestone 3 Steps 7-9 screening thresholds and service reallocation rules for Manhattan bus routes (split by weekday and weekend day groups).",
   "prediction_window": {
     "start_date": "2026-10-18",
     "end_date": "2026-10-31",
+    "dates_summary": "14 days total: 10 weekdays (2026-10-19..23, 2026-10-26..30) and 4 weekend days (2026-10-18, 2026-10-24, 2026-10-25, 2026-10-31)",
     "timetable_version": "2026-10-17",
     "high_demand_multiplier": 0.96,
     "forecaster_artifact": "models/final_forecaster.joblib"
   },
   "step7_review_thresholds": {
-    "underused_screening": {
+    "fewer_trips_screening": {
+      "category_name": "fewer_trips_candidate",
       "max_pred_riders_per_service_hour": 22.0,
       "max_high_demand_freq_pct": 15.0,
-      "min_active_hours_in_window": 10,
-      "min_trips_in_window": 20,
-      "note": "Targets route x time-band cells in roughly the bottom 20% of riders per service-hour without frequent high-demand alerts."
+      "min_active_hours_weekday": 10,
+      "min_trips_weekday": 20,
+      "min_active_hours_weekend": 4,
+      "min_trips_weekend": 8,
+      "note": "Targets (route, time_band, day_group) cells with low predicted riders per service-hour (<= 22.0) and rare threshold exceedances (<= 15.0%)."
     },
-    "high_demand_screening": {
+    "more_trips_screening": {
+      "category_name": "more_trips_candidate",
       "min_high_demand_freq_pct": 65.0,
       "min_pred_riders_per_service_hour": 40.0,
-      "min_active_hours_in_window": 15,
-      "note": "Targets route x time-band cells flagged high-demand >=65% of active hours AND carrying >=40 riders/service-hour (above network median ~34), excluding sparse low-volume outliers like M35."
+      "min_active_hours_weekday": 15,
+      "min_active_hours_weekend": 6,
+      "note": "Targets (route, time_band, day_group) cells with high riders per service-hour (>= 40.0) and frequent hours above 0.96x threshold_p75 (>= 65.0%), excluding tiny-denominator outliers such as M35."
     },
     "coverage_guardrails": {
       "high_exclusive_stop_share": 0.60,
@@ -41,7 +47,6 @@
     "min_trips_per_active_hour_floor": 1,
     "budget_neutral_net_service_hours_max": 0.0,
     "assumed_ridership_elasticity": 0.0,
-    "demand_assumption_statement": "Assumes total route-band ridership stays constant when scheduled trips change (+/-10% or +/-20%), isolating direct mechanical effects on riders per trip and riders per service-hour."
+    "demand_assumption_statement": "Assumes total ridership stays constant when scheduled trips change (+/-10% or +/-20%), isolating arithmetic changes in riders per trip, riders per service-hour, and hours exceeding the high-demand threshold."
   }
 }
-
