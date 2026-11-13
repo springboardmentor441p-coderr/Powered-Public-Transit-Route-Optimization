@@ -1,9 +1,9 @@
 # Stage 3 quality report: feature contracts
 
-Generated 2026-11-13T04:49:28+00:00 by `analytics/features/build_stage3.py` (spec v3.8, sections 9.9, 9.10.2-9.10.4, 9.14.3). No model is trained in this stage.
+Generated 2026-11-13T04:51:00+00:00 by `analytics/features/build_stage3.py` (spec v3.8, sections 9.9, 9.10.2-9.10.4, 9.14.3). No model is trained in this stage.
 
 - Data version: `cta_ref__r20261113__gtfs8__to20260731/features__delay1d` (built on Stage 2 version `cta_ref__r20261113__gtfs8__to20260731`)
-- Code version: git `4789fef+uncommitted`; feature schema version 1.0.0
+- Code version: git `91c305b`; feature schema version 1.0.0
 - Issue time: start of the target service day (00:00 local); **assumed reporting delay: 1 day(s)** (configurable in `analytics/config/features.json`; an assumption for the retrospective replay, not a verified feed capability)
 - Reference comparisons: **42 MATCH, 0 MISMATCH**
 
