@@ -1,10 +1,10 @@
 # Stage 2 quality report: daily reconstruction and exact matching
 
-Generated 2026-11-13T04:02:46+00:00 by `analytics/reconstruction/build_stage2.py` (spec v3.8, sections 9.5, 9.6.2-9.6.5, 9.19.1).
+Generated 2026-11-13T04:11:12+00:00 by `analytics/reconstruction/build_stage2.py` (spec v3.8, sections 9.5, 9.6.2-9.6.5, 9.19.1).
 
 - Data version: `cta_ref__r20261113__gtfs8__to20260731` (outputs in `data/processed/cta_ref__r20261113__gtfs8__to20260731/`)
 - Analysis period: 2025-11-23 to 2026-07-31; ridership rows dated on/before 2026-07-31 only
-- Code version: git `73a6927+uncommitted`
+- Code version: git `a1924aa`
 - Reference comparisons: **51 MATCH, 0 MISMATCH**
 
 > Reference counts are compared, never forced (spec 9.22.2). Missing passenger observations stay missing; they are never turned into zero rides. Payload integrity and schedule agreement do not verify actually operated service.
