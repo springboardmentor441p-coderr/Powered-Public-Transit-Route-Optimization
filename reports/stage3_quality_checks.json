@@ -1,0 +1,604 @@
+{
+  "data_version": "cta_ref__r20261113__gtfs8__to20260731/features__delay1d",
+  "comparisons": [
+    {
+      "section": "9.3.3",
+      "metric": "daily_forecasting_features rows",
+      "spec": 83997,
+      "ours": 83997,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.9.1",
+      "metric": "daily_forecasting_features columns",
+      "spec": 16,
+      "ours": 16,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.9.2",
+      "metric": "expanded_demand_service_features columns",
+      "spec": 22,
+      "ours": 22,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.3",
+      "metric": "demand-only train rows",
+      "spec": 63143,
+      "ours": 63143,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.3",
+      "metric": "demand-only validation rows",
+      "spec": 10246,
+      "ours": 10246,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.3",
+      "metric": "demand-only test rows",
+      "spec": 10608,
+      "ours": 10608,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.3",
+      "metric": "matched train rows",
+      "spec": 14501,
+      "ours": 14501,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.3",
+      "metric": "matched validation rows",
+      "spec": 6859,
+      "ours": 6859,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.3",
+      "metric": "matched test rows",
+      "spec": 7014,
+      "ours": 7014,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.9.3",
+      "metric": "worked example route 1 2024-08-01: rides",
+      "spec": 990,
+      "ours": 990,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.9.3",
+      "metric": "worked example route 1 2024-08-01: day_of_week",
+      "spec": 3,
+      "ours": 3,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.9.3",
+      "metric": "worked example route 1 2024-08-01: lag_1d_boardings",
+      "spec": 1111,
+      "ours": 1111,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.9.3",
+      "metric": "worked example route 1 2024-08-01: lag_7d_boardings",
+      "spec": 1219,
+      "ours": 1219,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.9.3",
+      "metric": "worked example route 1 2024-08-01: lag_14d_boardings",
+      "spec": 1134,
+      "ours": 1134,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.9.3",
+      "metric": "worked example route 1 2024-08-01: lag_21d_boardings",
+      "spec": 1040,
+      "ours": 1040,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.9.3",
+      "metric": "worked example route 1 2024-08-01: lag_28d_boardings",
+      "spec": null,
+      "ours": null,
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.9.3",
+      "metric": "worked example route 1 2024-08-01: seasonal_lag_observations",
+      "spec": 3,
+      "ours": 3,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.9.3",
+      "metric": "worked example route 1 2024-08-01: past_four_same_weekdays_mean",
+      "spec": 1131,
+      "ours": 1131,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "matched rows missing 28-day lag",
+      "spec": 182,
+      "ours": 182,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "missing 28-day lag, lag-date context: route_in_feed_no_active_trips",
+      "spec": 145,
+      "ours": 145,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "missing 28-day lag, lag-date context: route_absent_from_feed",
+      "spec": 25,
+      "ours": 25,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "missing 28-day lag, lag-date context: active_service_no_passenger_record",
+      "spec": 12,
+      "ours": 12,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "missing 28-day lag, route 10",
+      "spec": 12,
+      "ours": 12,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "matched rows, route 10",
+      "spec": 55,
+      "ours": 55,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "missing 28-day lag, route 130",
+      "spec": 13,
+      "ours": 13,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "matched rows, route 130",
+      "spec": 55,
+      "ours": 55,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "matched rows missing 1-day lag",
+      "spec": 1453,
+      "ours": 1453,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "missing 1-day lag: active scheduled service, no passenger record",
+      "spec": 4,
+      "ours": 4,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.6.4.3",
+      "metric": "missing 1-day lag: no active trips on lag date (all other contexts)",
+      "spec": 1449,
+      "ours": 1449,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.2",
+      "metric": "option_1 withheld, matched train",
+      "spec": 1073,
+      "ours": 1073,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.2",
+      "metric": "option_1 withheld, matched validation",
+      "spec": 299,
+      "ours": 299,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.2",
+      "metric": "option_1 withheld, matched test",
+      "spec": 523,
+      "ours": 523,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.2",
+      "metric": "option_2 withheld, matched train",
+      "spec": 1036,
+      "ours": 1036,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.2",
+      "metric": "option_2 withheld, matched validation",
+      "spec": 299,
+      "ours": 299,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.2",
+      "metric": "option_2 withheld, matched test",
+      "spec": 472,
+      "ours": 472,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.2",
+      "metric": "option_1 withheld, matched total",
+      "spec": 1895,
+      "ours": 1895,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.2",
+      "metric": "option_2 extra eligible test rows vs option_1",
+      "spec": 51,
+      "ours": 51,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.3",
+      "metric": "demand-only: dates shared between splits",
+      "spec": 0,
+      "ours": 0,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.10.3",
+      "metric": "matched: dates shared between splits",
+      "spec": 0,
+      "ours": 0,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.9.2",
+      "metric": "matched: service_date equals date",
+      "spec": true,
+      "ours": true,
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.14.3",
+      "metric": "matched: descriptive archive unusable for forecasting exactly on boundary dates",
+      "spec": true,
+      "ours": true,
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "9.14.3",
+      "metric": "forecast inputs: every archive captured strictly before target date",
+      "spec": true,
+      "ours": true,
+      "result": "MATCH",
+      "difference": ""
+    }
+  ],
+  "withheld": {
+    "demand/option_1": {
+      "train": 4287,
+      "validation": 541,
+      "test": 735
+    },
+    "demand/option_2": {
+      "train": 4077,
+      "validation": 537,
+      "test": 684
+    },
+    "matched/option_1": {
+      "train": 1073,
+      "validation": 299,
+      "test": 523
+    },
+    "matched_forecast_schedule/option_1": {
+      "train": 1159,
+      "validation": 299,
+      "test": 523
+    },
+    "matched/option_2": {
+      "train": 1036,
+      "validation": 299,
+      "test": 472
+    },
+    "matched_forecast_schedule/option_2": {
+      "train": 1122,
+      "validation": 299,
+      "test": 472
+    }
+  },
+  "missing_history": {
+    "1": {
+      "total": 1453,
+      "by_context": {
+        "route_in_feed_no_active_trips": 1449,
+        "active_service_no_passenger_record": 4
+      },
+      "by_route": {
+        "201": 40,
+        "55N": 40,
+        "62H": 40,
+        "85A": 40,
+        "1": 39,
+        "100": 39,
+        "108": 39,
+        "120": 39,
+        "121": 39,
+        "125": 39,
+        "134": 39,
+        "135": 39,
+        "136": 39,
+        "143": 39,
+        "148": 39,
+        "156": 39,
+        "157": 39,
+        "165": 39,
+        "169": 39,
+        "171": 39,
+        "192": 39,
+        "2": 39,
+        "206": 39,
+        "24": 39,
+        "26": 39,
+        "31": 39,
+        "37": 39,
+        "48": 39,
+        "54A": 39,
+        "55A": 39,
+        "86": 39,
+        "96": 39,
+        "X4": 39,
+        "X49": 39,
+        "X9": 39,
+        "59": 38,
+        "7": 38,
+        "172": 8
+      },
+      "by_split": {
+        "train": 813,
+        "test": 346,
+        "validation": 294
+      }
+    },
+    "28": {
+      "total": 182,
+      "by_context": {
+        "route_in_feed_no_active_trips": 145,
+        "route_absent_from_feed": 25,
+        "active_service_no_passenger_record": 12
+      },
+      "by_route": {
+        "130": 13,
+        "10": 12,
+        "169": 12,
+        "1": 4,
+        "100": 4,
+        "108": 4,
+        "120": 4,
+        "121": 4,
+        "125": 4,
+        "134": 4,
+        "135": 4,
+        "136": 4,
+        "143": 4,
+        "148": 4,
+        "156": 4,
+        "157": 4,
+        "165": 4,
+        "171": 4,
+        "192": 4,
+        "2": 4,
+        "201": 4,
+        "206": 4,
+        "24": 4,
+        "26": 4,
+        "31": 4,
+        "37": 4,
+        "48": 4,
+        "54A": 4,
+        "55A": 4,
+        "55N": 4,
+        "59": 4,
+        "62H": 4,
+        "7": 4,
+        "85A": 4,
+        "86": 4,
+        "96": 4,
+        "X4": 4,
+        "X49": 4,
+        "X9": 4,
+        "172": 1
+      },
+      "by_split": {
+        "test": 103,
+        "train": 75,
+        "validation": 4
+      }
+    }
+  },
+  "boundary_dates": [
+    {
+      "date": "2025-11-23",
+      "descriptive archive": "mdb-389-202511230128",
+      "forecast archive": NaN,
+      "matched rows": 86,
+      "available": 0,
+      "trip diffs": 0,
+      "hours diffs": 0,
+      "status": "no_archive_available_before_issue 86"
+    },
+    {
+      "date": "2025-12-19",
+      "descriptive archive": "mdb-389-202512190112",
+      "forecast archive": "mdb-389-202511230128",
+      "matched rows": 123,
+      "available": 123,
+      "trip diffs": 0,
+      "hours diffs": 0,
+      "status": "available 123"
+    },
+    {
+      "date": "2026-01-08",
+      "descriptive archive": "mdb-389-202601080131",
+      "forecast archive": "mdb-389-202512190112",
+      "matched rows": 123,
+      "available": 123,
+      "trip diffs": 0,
+      "hours diffs": 0,
+      "status": "available 123"
+    },
+    {
+      "date": "2026-02-10",
+      "descriptive archive": "mdb-389-202602100132",
+      "forecast archive": "mdb-389-202601080131",
+      "matched rows": 123,
+      "available": 123,
+      "trip diffs": 0,
+      "hours diffs": 0,
+      "status": "available 123"
+    },
+    {
+      "date": "2026-03-26",
+      "descriptive archive": "mdb-389-202603260020",
+      "forecast archive": "mdb-389-202602100132",
+      "matched rows": 123,
+      "available": 123,
+      "trip diffs": 0,
+      "hours diffs": 0,
+      "status": "available 123"
+    },
+    {
+      "date": "2026-04-24",
+      "descriptive archive": "mdb-389-202604240144",
+      "forecast archive": "mdb-389-202603260020",
+      "matched rows": 123,
+      "available": 123,
+      "trip diffs": 0,
+      "hours diffs": 0,
+      "status": "available 123"
+    },
+    {
+      "date": "2026-05-30",
+      "descriptive archive": "mdb-389-202605300003",
+      "forecast archive": "mdb-389-202604240144",
+      "matched rows": 92,
+      "available": 92,
+      "trip diffs": 0,
+      "hours diffs": 0,
+      "status": "available 92"
+    },
+    {
+      "date": "2026-07-11",
+      "descriptive archive": "mdb-389-202607110020",
+      "forecast archive": "mdb-389-202605300003",
+      "matched rows": 92,
+      "available": 92,
+      "trip diffs": 0,
+      "hours diffs": 0,
+      "status": "available 92"
+    }
+  ],
+  "holiday_disagreements": [],
+  "holiday_row_disagreements": 0,
+  "special_routes": [
+    {
+      "route": "10",
+      "policy": "option_1",
+      "matched rows": 55,
+      "splits": "test",
+      "eligible": 43,
+      "withheld": 12,
+      "missing 28-day lag": 12
+    },
+    {
+      "route": "10",
+      "policy": "option_2",
+      "matched rows": 55,
+      "splits": "test",
+      "eligible": 50,
+      "withheld": 5,
+      "missing 28-day lag": 12
+    },
+    {
+      "route": "130",
+      "policy": "option_1",
+      "matched rows": 55,
+      "splits": "test",
+      "eligible": 42,
+      "withheld": 13,
+      "missing 28-day lag": 13
+    },
+    {
+      "route": "130",
+      "policy": "option_2",
+      "matched rows": 55,
+      "splits": "test",
+      "eligible": 49,
+      "withheld": 6,
+      "missing 28-day lag": 13
+    }
+  ]
+}

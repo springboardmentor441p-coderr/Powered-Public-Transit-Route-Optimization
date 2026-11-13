@@ -72,5 +72,26 @@
       "130": {"2026-01": 0, "2026-02": 10, "2026-03": 0, "2026-04": 0, "2026-05": 9,  "2026-06": 30, "2026-07": 31}
     },
     "route_name_presence_pct_vs_september_schedule": 97.95
+  },
+  "stage3_reference": {
+    "_comment": "Reference findings (spec 9.3.3, 9.6.4.3, 9.9.3, 9.10.2, 9.10.3). Compared, never forced.",
+    "daily_forecasting_features_rows": 83997,
+    "demand_only_split_rows": {"train": 63143, "validation": 10246, "test": 10608},
+    "matched_split_rows": {"train": 14501, "validation": 6859, "test": 7014},
+    "worked_example": {"route": "1", "date": "2024-08-01", "rides": 990, "day_of_week": 3,
+                       "lag_1d_boardings": 1111, "lag_7d_boardings": 1219, "lag_14d_boardings": 1134,
+                       "lag_21d_boardings": 1040, "lag_28d_boardings": null,
+                       "seasonal_lag_observations": 3, "past_four_same_weekdays_mean": 1131},
+    "matched_missing_lag_28d": 182,
+    "matched_missing_lag_28d_by_context": {"route_in_feed_no_active_trips": 145, "route_absent_from_feed": 25,
+                                           "active_service_no_passenger_record": 12},
+    "matched_missing_lag_28d_by_route": {"10": 12, "130": 13},
+    "matched_rows_by_route": {"10": 55, "130": 55},
+    "matched_missing_lag_1d": 1453,
+    "matched_missing_lag_1d_by_context": {"no_active_trips_on_lag_date": 1449, "active_service_no_passenger_record": 4},
+    "option_1_withheld_by_split": {"train": 1073, "validation": 299, "test": 523},
+    "option_2_withheld_by_split": {"train": 1036, "validation": 299, "test": 472},
+    "option_1_withheld_total": 1895,
+    "option_2_extra_eligible_test_rows": 51
   }
 }

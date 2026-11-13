@@ -1,0 +1,38 @@
+{
+  "_comment": "Stage 3 feature-contract settings (spec 9.9, 9.10.2-9.10.4, 9.14.3). Changing any value requires rebuilding the features into a new folder.",
+  "schema_version": "1.0.0",
+  "timezone": "America/Chicago",
+  "issue_time": "start of the target service day (00:00 local)",
+  "reporting_delay_days": 1,
+  "_reporting_delay_note": "Assumed, not verified (spec 9.10.4): on virtual day D, rides through D - reporting_delay_days may be used. A lag of k days is usable only if k >= reporting_delay_days.",
+  "archive_availability_policy": "conservative: an archive is usable for forecasts issued on dates strictly after its capture date (available_from = captured + 1 day), spec 9.14.3",
+  "lags_days": [1, 7, 14, 21, 28],
+  "seasonal_lags_days": [7, 14, 21, 28],
+  "seasonal_min_observations": 2,
+  "target_window": ["2024-08-01", "2026-07-31"],
+  "splits": {
+    "demand_only": {"train": ["2024-08-01", "2026-01-31"], "validation": ["2026-02-01", "2026-04-30"], "test": ["2026-05-01", "2026-07-31"]},
+    "matched":     {"train": ["2025-11-23", "2026-03-31"], "validation": ["2026-04-01", "2026-05-31"], "test": ["2026-06-01", "2026-07-31"]}
+  },
+  "selected_policy": "option_2",
+  "comparison_policy": "option_1",
+  "sunday_service_holidays": {
+    "observance_rule": "us_federal_observed",
+    "_observance_rule_note": "US federal observed-holiday rule (5 U.S.C. 6103(b) / OPM): a holiday falling on a Saturday is observed on the Friday before; one falling on a Sunday is observed on the Monday after. The predictor marks the OBSERVED date. This is an official rule published in advance, adopted as a documented rule, not fitted to the ridership outcome. 'dates' below are the actual calendar dates of each holiday.",
+    "_source":"CTA runs a Sunday schedule on these six holidays: New Year's Day, Memorial Day, Independence Day, Labor Day, Thanksgiving Day, Christmas Day. This is CTA's general practice, entered as a fixed calendar known in advance; it has not been checked against a dated CTA notice in this project. It is compared with the reported daytype in the Stage 3 report.",
+    "dates": [
+      {"date": "2024-09-02", "name": "Labor Day"},
+      {"date": "2024-11-28", "name": "Thanksgiving Day"},
+      {"date": "2024-12-25", "name": "Christmas Day"},
+      {"date": "2025-01-01", "name": "New Year's Day"},
+      {"date": "2025-05-26", "name": "Memorial Day"},
+      {"date": "2025-07-04", "name": "Independence Day"},
+      {"date": "2025-09-01", "name": "Labor Day"},
+      {"date": "2025-11-27", "name": "Thanksgiving Day"},
+      {"date": "2025-12-25", "name": "Christmas Day"},
+      {"date": "2026-01-01", "name": "New Year's Day"},
+      {"date": "2026-05-25", "name": "Memorial Day"},
+      {"date": "2026-07-04", "name": "Independence Day"}
+    ]
+  }
+}

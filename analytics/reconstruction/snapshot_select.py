@@ -19,6 +19,22 @@ def select_snapshot(d: date, archives: list[dict]) -> str | None:
     return max(eligible, key=lambda a: (a["captured"], a["snapshot_id"]))["snapshot_id"]
 
 
+def archive_available_from(captured: date) -> date:
+    """Conservative availability (spec 9.14.3): only the capture DATE is known, not the time of day, so an
+    archive may be used for forecasts issued on dates strictly after the capture date."""
+    return captured + timedelta(days=1)
+
+
+def select_forecast_snapshot(target: date, archives: list[dict]) -> str | None:
+    """Forecast-input selection (spec 9.14.3): latest archive available by the issue time (start of `target`),
+    i.e. captured strictly BEFORE the target date. Whole snapshot only; the caller must still check that it
+    defines service on the target date. The descriptive select_snapshot() above is unchanged."""
+    eligible = [a for a in archives if archive_available_from(a["captured"]) <= target]
+    if not eligible:
+        return None
+    return max(eligible, key=lambda a: (a["captured"], a["snapshot_id"]))["snapshot_id"]
+
+
 def date_range(start: date, end: date) -> list[date]:
     return [start + timedelta(days=i) for i in range((end - start).days + 1)]
 
