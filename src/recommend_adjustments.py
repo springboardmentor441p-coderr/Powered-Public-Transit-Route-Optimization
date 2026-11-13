@@ -518,9 +518,10 @@ def plot_reallocation_summary(plan_df: pd.DataFrame, out_path: Path, obs_df: pd.
     axes[1].barh(y + 0.18, top_recips["sim_high_demand_hours"], height=0.34, color="#16a34a", label="After (Riders Held Constant)")
     axes[1].set_yticks(y)
     axes[1].set_yticklabels(ylabels, fontsize=8)
-    axes[1].set_xlabel(f"Observed Hours Exceeding p75 Threshold ({wkd_days} Wkdays / {wke_days} Wkends)")
+    axes[1].set_xlabel(f"Observed Route-Hours Exceeding p75 Threshold ({wkd_days} Wkdays / {wke_days} Wkends)")
     axes[1].set_title(
-        f"With Riders Constant, {below_thresh:,} Hours Fall Below Threshold ({created_hd} Added)"
+        f"{below_thresh:,} Route-Hours (~{below_thresh / (wkd_days + wke_days):.1f}/day) Fall Below p75 ({created_hd} Added)",
+        fontsize=10.5,
     )
     axes[1].grid(True, axis="x", alpha=0.3)
     axes[1].legend(frameon=True, fontsize=8.5)
@@ -588,8 +589,9 @@ def main():
             f"-> +{da_h:.2f} hrs (+{da_h/days_n:.2f}/day), net={da_h - df_h:+.2f} hrs"
         )
     print(
-        f"With riders held constant, {-int(recips['high_demand_hours_delta'].sum())} hours fall below the high-demand threshold "
-        f"(donor hours moving above: {int(donors['high_demand_hours_delta'].sum())})."
+        f"With riders held constant, {-int(recips['high_demand_hours_delta'].sum())} route-hours over {n_days} typical days "
+        f"(about {-int(recips['high_demand_hours_delta'].sum()) / n_days:.1f} per day) fall below the high-demand threshold "
+        f"(donor route-hours moving above: {int(donors['high_demand_hours_delta'].sum())})."
     )
     print(f"Saved figure -> {fig_path}")
 

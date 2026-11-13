@@ -25,7 +25,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from src.build_matched_table import assign_time_band
+import src.build_matched_table as bmt
+from src.build_matched_table import assign_time_band, find_outage_hours_relative
 from src.eda_utils import TIME_BAND_ORDER, get_time_band_label
 from src.predict import (
     EXTENDED_PUBLIC_HOLIDAYS,
@@ -93,12 +94,33 @@ def load_observed_review_window_hourly(
         oct_df["ridership"] = oct_df["ridership"].fillna(0.0)
         oct_df = oct_df[oct_df["trips_running"] > 0].copy()
 
+        # Enforce Step 11 20% relative outage rule dynamically over Oct using Sep+Oct context
+        sep_ctx = matched[
+            (matched["date"] >= "2026-09-01") & (matched["date"] <= "2026-09-30")
+        ][["route", "date", "hour", "ridership", "trips_running"]]
+        comb_oct_ctx = pd.concat(
+            [sep_ctx, oct_df[["route", "date", "hour", "ridership", "trips_running"]]],
+            ignore_index=True,
+        )
+        orig_hol = bmt.PUBLIC_HOLIDAYS
+        try:
+            bmt.PUBLIC_HOLIDAYS = EXTENDED_PUBLIC_HOLIDAYS
+            oct_outages = {
+                (d, int(h))
+                for d, h, *_ in find_outage_hours_relative(comb_oct_ctx, threshold=0.20)
+                if d >= oct_start
+            }
+        finally:
+            bmt.PUBLIC_HOLIDAYS = orig_hol
+
         dt_s = pd.to_datetime(oct_df["date"])
         oct_df["day_of_week"] = dt_s.dt.day_name()
         oct_df["is_weekend"] = oct_df["day_of_week"].isin(["Saturday", "Sunday"])
         oct_df["is_public_holiday"] = oct_df["date"].isin(EXTENDED_PUBLIC_HOLIDAYS)
         oct_df["holiday_schedule"] = oct_df["date"].map(hol_flags).fillna(False).astype(bool)
-        oct_df["is_storm"] = oct_df["date"].isin(STORM_DATES)
+        oct_df["is_storm"] = oct_df["date"].isin(STORM_DATES) | pd.Series(
+            list(zip(oct_df["date"], oct_df["hour"].astype(int))), index=oct_df.index
+        ).isin(oct_outages)
         oct_df["is_outlier"] = False
         oct_df["time_band"] = oct_df["hour"].apply(assign_time_band)
         frames.append(oct_df[aug_sep.columns])

@@ -697,6 +697,8 @@ def test_week6_config_and_outputs():
     assert "fewer_trips_candidate" in report_txt
     assert "more_trips_candidate" in report_txt
     assert "fall below the high-demand threshold" in report_txt
+    assert "route-hours" in report_txt.lower()
+    assert "2026-09-03" in report_txt
     assert "consistent with" in report_txt.lower()
     oct_diag_section = report_txt.split("### 7.1")[1].split("### 7.2")[0]
     assert "confirmed" not in oct_diag_section.split("Checked Diagnostic Possibilities")[1].lower()
