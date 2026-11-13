@@ -1,0 +1,2 @@
+model_name,subset,n_eval,actual_pos,pred_pos,precision,recall,f1,pr_auc,roc_auc,tp,fp,fn,tn,storm_note
+"HistGradientBoosting Classifier (Best Direct Classifier, cutoff=0.63)",All Hours,53406,12987,18390,0.5854,0.829,0.6862,0.729,0.9025,10766,7624,2221,32795,0 storm days in window; duplicate 'Without Storm Days' row omitted

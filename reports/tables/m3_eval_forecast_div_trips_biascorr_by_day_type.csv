@@ -1,0 +1,5 @@
+model_name,day_type,n_eval,actual_positive,pred_positive,positive_prevalence_pct,precision,recall,f1,pr_auc,tp,fp,fn,tn,subset
+"Forecast ÷ Trips (HGB Forecast / trips_running > 1.03 * threshold_p75, Bias-Corrected)",Typical Weekday,38067,8607,8042,22.61,0.7026,0.6564,0.6787,0.7246,5650,2392,2957,27068,All Hours
+"Forecast ÷ Trips (HGB Forecast / trips_running > 1.03 * threshold_p75, Bias-Corrected)",Typical Saturday,5981,1325,1328,22.15,0.5828,0.5842,0.5835,0.5965,774,554,551,4102,All Hours
+"Forecast ÷ Trips (HGB Forecast / trips_running > 1.03 * threshold_p75, Bias-Corrected)",Typical Sunday,6768,1849,1882,27.32,0.6525,0.6641,0.6583,0.666,1228,654,621,4265,All Hours
+"Forecast ÷ Trips (HGB Forecast / trips_running > 1.03 * threshold_p75, Bias-Corrected)",Special/Excluded,2590,1206,1408,46.56,0.7528,0.8789,0.811,0.8589,1060,348,146,1036,All Hours

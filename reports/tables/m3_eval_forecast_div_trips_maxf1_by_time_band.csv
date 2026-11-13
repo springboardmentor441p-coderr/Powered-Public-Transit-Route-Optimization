@@ -1,0 +1,6 @@
+model_name,time_band,time_band_label,n_eval,actual_positive,pred_positive,positive_prevalence_pct,precision,recall,f1,pr_auc,tp,fp,fn,tn,subset
+"Forecast ÷ Trips (HGB Forecast / trips_running > 0.96 * threshold_p75, Max F1)",early_morning,Early Morning (04:00–06:59),5703,152,163,2.67,0.4724,0.5066,0.4889,0.4727,77,86,75,5465,All Hours
+"Forecast ÷ Trips (HGB Forecast / trips_running > 0.96 * threshold_p75, Max F1)",morning_peak,Morning Peak (07:00–09:59),7417,2649,3458,35.72,0.6596,0.8611,0.747,0.8047,2281,1177,368,3591,All Hours
+"Forecast ÷ Trips (HGB Forecast / trips_running > 0.96 * threshold_p75, Max F1)",midday,Midday (10:00–15:59),14724,5848,8369,39.72,0.5879,0.8413,0.6921,0.7094,4920,3449,928,5427,All Hours
+"Forecast ÷ Trips (HGB Forecast / trips_running > 0.96 * threshold_p75, Max F1)",evening_peak,Evening Peak (16:00–18:59),7446,3732,5339,50.12,0.6175,0.8834,0.7269,0.7172,3297,2042,435,1672,All Hours
+"Forecast ÷ Trips (HGB Forecast / trips_running > 0.96 * threshold_p75, Max F1)",night,Night (19:00–03:59),18116,606,460,3.35,0.4217,0.3201,0.364,0.3499,194,266,412,17244,All Hours

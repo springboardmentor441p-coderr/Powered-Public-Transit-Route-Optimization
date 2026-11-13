@@ -1,0 +1,4 @@
+Actual Class,Pred Normal (0),Pred High (1),Total Actual,Model
+Actual Normal Demand (0),33399,7020,40419,"Forecast ÷ Trips (HGB Forecast / trips_running > 0.96 * threshold_p75, Max F1) (All Hours)"
+Actual High Demand (1),2218,10769,12987,"Forecast ÷ Trips (HGB Forecast / trips_running > 0.96 * threshold_p75, Max F1) (All Hours)"
+Total Predicted,35617,17789,53406,"Forecast ÷ Trips (HGB Forecast / trips_running > 0.96 * threshold_p75, Max F1) (All Hours)"

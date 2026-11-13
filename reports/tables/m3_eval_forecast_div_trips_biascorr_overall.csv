@@ -1,0 +1,2 @@
+model_name,subset,n_eval,actual_pos,pred_pos,precision,recall,f1,pr_auc,roc_auc,tp,fp,fn,tn,storm_note
+"Forecast ÷ Trips (HGB Forecast / trips_running > 1.03 * threshold_p75, Bias-Corrected)",All Hours,53406,12987,12660,0.6882,0.6708,0.6794,0.7205,0.9064,8712,3948,4275,36471,0 storm days in window; duplicate 'Without Storm Days' row omitted

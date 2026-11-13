@@ -1,0 +1,4 @@
+Actual Class,Pred Normal (0),Pred High (1),Total Actual,Model
+Actual Normal Demand (0),32795,7624,40419,"HistGradientBoosting Classifier (Best Direct Classifier, cutoff=0.63) (All Hours)"
+Actual High Demand (1),2221,10766,12987,"HistGradientBoosting Classifier (Best Direct Classifier, cutoff=0.63) (All Hours)"
+Total Predicted,35016,18390,53406,"HistGradientBoosting Classifier (Best Direct Classifier, cutoff=0.63) (All Hours)"

@@ -115,6 +115,7 @@ python src/evaluate_baselines.py     # Scores lag-7d and 4-week average baseline
 # Milestone 3: Shared Evaluation & Models
 python src/evaluate.py               # Runs shared forecasting & classification evaluation framework on validation baselines
 python src/train_forecasting.py      # Tunes Ridge, Ridge-Log, Random Forest & HistGradientBoosting forecasters on validation
+python src/train_classification.py   # Tunes Logistic Regression, Random Forest, HistGradientBoosting & Forecast/Trips classifiers
 ```
 
 ---
@@ -156,5 +157,5 @@ python -m pytest tests/ -v
 ```
 - [`tests/test_milestone1_steps6_9.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_milestone1_steps6_9.py) (27 tests): GTFS integrity, DST night handling, Memorial Day Sunday equivalence, outage exclusions, service hours calculations.
 - [`tests/test_milestone2.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_milestone2.py) (10 tests): Generated figures/tables existence, route overlap ordering, stop coverage metrics, data split sizes, pipeline transformation, clustering correlations, baseline forecast hurdles, and `notebooks/routeranker.ipynb` integrity.
-- [`tests/test_evaluate.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_evaluate.py) (13 tests): Shared evaluation metrics, zero-demand WAPE handling, test-set isolation enforcement, canonical time-band labels, validation baseline hurdles, and Step 2 forecasting model tuning/comparison checks.
+- [`tests/test_evaluate.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_evaluate.py) (14 tests): Shared evaluation metrics, zero-demand WAPE handling, test-set isolation enforcement, canonical time-band labels, validation baseline hurdles, Step 2 forecasting checks (weekly bias/WAPE, 41-route gain, factual misses), and Step 3 classification checks.
 

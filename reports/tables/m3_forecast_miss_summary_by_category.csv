@@ -1,5 +1,7 @@
 miss_category,hours_in_top_100,mean_abs_error,mean_bias_pred_minus_actual,example_routes
-Localised Schedule / Weather / Construction Variance,36,400.1,380.1,"M103, M15, M86+, M101"
-High-Volume Trunk Commuter Peak Fluctuation,27,459.7,162.5,"M15+, M103, M101, M86+"
-Public Holiday / Holiday Schedule Over-prediction,21,522.2,522.2,"M15+, M86+, M96, M4"
-High-Volume Trunk Midday Surge / Dip,16,428.9,227.7,"M15+, M101, M86+"
+Unexplained drop; cause not confirmed,59,411.4,411.4,"M15+, M103, M86+, M15"
+Unexplained surge; cause not confirmed,14,427.4,-427.4,"M15+, M101, M103, M15"
+"Saturday public holiday (4 Jul Independence Day, holiday_schedule=False): holiday demand below normal Saturday",8,496.8,496.8,M15+
+Public holiday with holiday_schedule=True (3 Jul Independence Day observed): holiday over-prediction,8,562.8,562.8,"M15+, M86+"
+Unexplained drop at 16:00-18:00; cause not confirmed,6,569.9,569.9,"M15+, M103, M42"
+"Juneteenth (is_public_holiday=True, holiday_schedule=False): normal weekday timetable on a public holiday, unseen in Jan-May training",5,497.8,497.8,"M15+, M86+, M96, M4"

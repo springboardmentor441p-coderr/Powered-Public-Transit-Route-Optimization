@@ -15,9 +15,22 @@ Evaluation & Reporting Rules:
   exact same 53,585 validation rows where both lags are present, and reports all
   54,046 validation rows separately.
 - Computes permutation importance on the validation set for the best model across all
-  22 semantic input features.
+  22 semantic input features (noting that `lag_mean_available` and the four separate
+  weekly lags are collinear and share the historical demand signal).
 - Identifies where the best model misses most (top 25 largest validation route-hour
-  errors plus systematic breakdown by error regime).
+  errors plus factual breakdown without speculative weather/event causes).
+- Checks weekly bias and weekly WAPE across the 9 validation weeks (1 June to 31 July
+  2026) and route-level gains across all 41 Manhattan routes.
+
+Final Test Evaluation Protocol (Step 5 Decision, Fixed Prior to Test Run):
+- Because training (Jan–May 2026) reflects higher spring ridership whereas validation
+  (Jun–Jul 2026) enters the ~11% summer recess drop, models trained only on Jan–May
+  overpredict June–July by ~8.7 to 9.3 riders/hr (+3.5%).
+- For the final one-time test evaluation in Step 5 (Aug–Sep 2026), after selecting
+  hyperparameter settings on validation, every compared model will be retrained on
+  `train + val` combined (January to July 2026) with its validation-chosen settings
+  held strictly fixed. This avoids any test-set leakage while giving all compared
+  models exposure to summer demand levels.
 """
 
 import sys
@@ -105,16 +118,24 @@ def make_log_input_df(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def classify_miss_reason(row: pd.Series) -> str:
-    """Categorize why a large validation route-hour forecast error occurred."""
-    if bool(row.get("is_public_holiday", False)) or bool(row.get("holiday_schedule", False)):
-        return "Public Holiday / Holiday Schedule Over-prediction"
-    if str(row.get("route", "")) == "M35":
-        return "M35 Randall's Island Event / Ferry Surge"
-    if str(row.get("time_band", "")) in ("morning_peak", "evening_peak") and row.get("actual_ridership", 0) >= 800:
-        return "High-Volume Trunk Commuter Peak Fluctuation"
-    if str(row.get("time_band", "")) == "midday" and row.get("actual_ridership", 0) >= 700:
-        return "High-Volume Trunk Midday Surge / Dip"
-    return "Localised Schedule / Weather / Construction Variance"
+    """Categorize large validation route-hour forecast errors using strictly factual dataset attributes."""
+    d_str = str(row.get("date", ""))
+    is_hol = bool(row.get("is_public_holiday", False))
+    hol_sched = bool(row.get("holiday_schedule", False))
+    hr = int(row.get("hour", -1))
+    bias = float(row.get("bias_pred_minus_actual", 0.0))
+
+    if d_str == "2026-06-19":
+        return "Juneteenth (is_public_holiday=True, holiday_schedule=False): normal weekday timetable on a public holiday, unseen in Jan-May training"
+    if is_hol and hol_sched:
+        return "Public holiday with holiday_schedule=True (3 Jul Independence Day observed): holiday over-prediction"
+    if is_hol and not hol_sched:
+        return "Saturday public holiday (4 Jul Independence Day, holiday_schedule=False): holiday demand below normal Saturday"
+    if d_str == "2026-07-07" and 16 <= hr <= 18:
+        return "Unexplained drop at 16:00-18:00; cause not confirmed"
+    if bias < 0:
+        return "Unexplained surge; cause not confirmed"
+    return "Unexplained drop; cause not confirmed"
 
 
 def run_step2_forecasting() -> None:
@@ -693,9 +714,161 @@ def run_step2_forecasting() -> None:
     fig.tight_layout()
     fig.savefig(FIG_DIR / "m3_forecast_permutation_importance.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
-    print("Saved Step 2 figures to reports/figures/", flush=True)
+
+    run_step2_diagnostics()
+    print("Saved Step 2 figures and diagnostics to reports/", flush=True)
+
+
+def run_step2_diagnostics() -> None:
+    """Compute weekly bias/WAPE check across the 9 validation weeks, 41-route gain check,
+    and factual largest-misses tables using the saved best forecaster.
+    """
+    val_df = load_dataset("val")
+    bundle = joblib.load(MODELS_DIR / "best_forecaster.joblib")
+    pipe = bundle["pipeline"]
+    y_val = val_df["ridership"].values.astype(float)
+    best_pred = np.clip(pipe.predict(val_df[ALL_FEATURES]), 0.0, None)
+
+    common_val_mask = (
+        val_df["ridership"].notnull()
+        & val_df["lag_7d"].notnull()
+        & val_df["lag_mean_available"].notnull()
+    ).values
+
+    # 1. Weekly bias & WAPE check across the 9 validation weeks (53,585 common rows)
+    vc = val_df[common_val_mask].copy()
+    vc["pred_hgb"] = best_pred[common_val_mask]
+    vc["dt"] = pd.to_datetime(vc["date"])
+    vc["week_start"] = vc["dt"].dt.to_period("W-SUN").apply(lambda r: r.start_time.strftime("%Y-%m-%d"))
+
+    weekly_rows = []
+    for wk_idx, (wk_start, grp) in enumerate(vc.groupby("week_start"), start=1):
+        m_4wk = compute_forecast_metrics(grp["ridership"], grp["lag_mean_available"])
+        m_hgb = compute_forecast_metrics(grp["ridership"], grp["pred_hgb"])
+        weekly_rows.append({
+            "week_num": wk_idx,
+            "week_start": wk_start,
+            "week_end": grp["date"].max(),
+            "n_hours": len(grp),
+            "mean_actual_riders": round(float(grp["ridership"].mean()), 1),
+            "wape_4wk_pct": m_4wk["wape_pct"],
+            "wape_hgb_pct": m_hgb["wape_pct"],
+            "wape_diff_hgb_minus_4wk": round(m_hgb["wape_pct"] - m_4wk["wape_pct"], 2),
+            "hgb_wins_wape": bool(m_hgb["wape_pct"] < m_4wk["wape_pct"]),
+            "mae_4wk": m_4wk["mae"],
+            "mae_hgb": m_hgb["mae"],
+            "bias_4wk_pred_minus_actual": m_4wk["bias_pred_minus_actual"],
+            "bias_hgb_pred_minus_actual": m_hgb["bias_pred_minus_actual"],
+        })
+    weekly_df = pd.DataFrame(weekly_rows)
+    weekly_path = TAB_DIR / "m3_forecast_weekly_check.csv"
+    weekly_df.to_csv(weekly_path, index=False)
+    print(f"\nSaved 9-week validation check to {weekly_path.relative_to(ROOT)}:", flush=True)
+    print(weekly_df.to_string(index=False), flush=True)
+
+    # Plot 2-panel weekly bias & weekly WAPE chart
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12.5, 4.6), dpi=150)
+    x_wk = np.arange(len(weekly_df))
+    wk_labels = [f"W{r.week_num}\n({r.week_start[5:]})" for _, r in weekly_df.iterrows()]
+
+    ax1.axhline(0.0, color="#64748b", linestyle=":", linewidth=1.1)
+    ax1.plot(x_wk, weekly_df["bias_4wk_pred_minus_actual"], marker="s", linestyle="--", color="#64748b", linewidth=1.8, label="4-Week Average Baseline")
+    ax1.plot(x_wk, weekly_df["bias_hgb_pred_minus_actual"], marker="o", color="#dc2626", linewidth=2.2, label="HistGradientBoosting (Spring-Trained)")
+    for i, r in weekly_df.iterrows():
+        ax1.text(i, r["bias_hgb_pred_minus_actual"] + 1.1, f"{r['bias_hgb_pred_minus_actual']:+.1f}", ha="center", fontsize=7.5, color="#991b1b", fontweight="bold")
+    ax1.set_title("A. Weekly Forecast Bias (Predicted − Actual Riders/Hr)", fontsize=10.5, fontweight="bold", pad=8)
+    ax1.set_ylabel("Bias: Mean(Predicted − Actual)", fontsize=9.5)
+    ax1.set_xticks(x_wk)
+    ax1.set_xticklabels(wk_labels, fontsize=8)
+    ax1.set_ylim(-18, 35)
+    ax1.grid(True, alpha=0.3)
+    ax1.legend(loc="upper left", fontsize=8)
+
+    w = 0.36
+    ax2.bar(x_wk - w / 2, weekly_df["wape_4wk_pct"], w, color="#93c5fd", edgecolor="#1d4ed8", label="4-Week Average Baseline")
+    ax2.bar(x_wk + w / 2, weekly_df["wape_hgb_pct"], w, color="#1d4ed8", edgecolor="#1e3a8a", label="HistGradientBoosting (Wins 9/9 Weeks)")
+    ax2.set_title("B. Weekly WAPE (%) Across All 9 Validation Weeks", fontsize=10.5, fontweight="bold", pad=8)
+    ax2.set_ylabel("Weekly WAPE (%)", fontsize=9.5)
+    ax2.set_xticks(x_wk)
+    ax2.set_xticklabels(wk_labels, fontsize=8)
+    ax2.set_ylim(0, 24.5)
+    ax2.grid(axis="y", alpha=0.3)
+    ax2.legend(loc="upper left", fontsize=8)
+
+    fig.tight_layout()
+    fig.savefig(FIG_DIR / "m3_forecast_weekly_bias_wape.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+    # 2. Route-by-route gain check across all 41 routes
+    r_4wk = pd.read_csv(TAB_DIR / "m3_eval_baseline_4wk_by_route.csv")
+    r_hgb = pd.read_csv(TAB_DIR / "m3_eval_best_forecast_by_route.csv")
+    route_cmp = r_4wk[["route", "n_eval", "total_actual", "mae", "rmse", "wape_pct", "bias_pred_minus_actual"]].merge(
+        r_hgb[["route", "mae", "rmse", "wape_pct", "bias_pred_minus_actual"]],
+        on="route",
+        suffixes=("_4wk", "_hgb"),
+    )
+    route_cmp["wape_diff_hgb_minus_4wk"] = (route_cmp["wape_pct_hgb"] - route_cmp["wape_pct_4wk"]).round(2)
+    route_cmp["mae_diff_hgb_minus_4wk"] = (route_cmp["mae_hgb"] - route_cmp["mae_4wk"]).round(2)
+    route_cmp["hgb_improves_wape"] = route_cmp["wape_diff_hgb_minus_4wk"] < 0
+    route_cmp = route_cmp.sort_values("wape_diff_hgb_minus_4wk", ascending=True).reset_index(drop=True)
+    route_cmp_path = TAB_DIR / "m3_forecast_route_gain_check.csv"
+    route_cmp.to_csv(route_cmp_path, index=False)
+    n_imp = int(route_cmp["hgb_improves_wape"].sum())
+    n_worse = int((route_cmp["wape_diff_hgb_minus_4wk"] > 0).sum())
+    print(f"\nRoute-level gain check: {n_imp}/41 routes improve in WAPE, {n_worse}/41 get worse -> {route_cmp_path.relative_to(ROOT)}", flush=True)
+
+    # 3. Refresh worst misses and category summary with factual descriptions
+    misses_df = val_df.copy()
+    misses_df["actual_ridership"] = y_val.round(1)
+    misses_df["predicted_ridership"] = np.round(best_pred, 1)
+    misses_df["bias_pred_minus_actual"] = np.round(best_pred - y_val, 1)
+    misses_df["abs_error"] = np.round(np.abs(best_pred - y_val), 1)
+    misses_df["lag_mean_available"] = misses_df["lag_mean_available"].round(1)
+    misses_df["miss_category"] = misses_df.apply(classify_miss_reason, axis=1)
+
+    top_misses = misses_df.sort_values("abs_error", ascending=False).head(25).copy()
+    top_misses["rank"] = np.arange(1, len(top_misses) + 1)
+    miss_cols = [
+        "rank",
+        "route",
+        "date",
+        "day_of_week",
+        "hour",
+        "time_band",
+        "day_type",
+        "is_public_holiday",
+        "holiday_schedule",
+        "trips_running",
+        "actual_ridership",
+        "predicted_ridership",
+        "bias_pred_minus_actual",
+        "abs_error",
+        "lag_mean_available",
+        "miss_category",
+    ]
+    top_misses = top_misses[miss_cols]
+    top_misses.to_csv(TAB_DIR / "m3_forecast_worst_misses.csv", index=False)
+
+    top100 = misses_df.sort_values("abs_error", ascending=False).head(100)
+    cat_summary = (
+        top100.groupby("miss_category")
+        .agg(
+            hours_in_top_100=("abs_error", "count"),
+            mean_abs_error=("abs_error", "mean"),
+            mean_bias_pred_minus_actual=("bias_pred_minus_actual", "mean"),
+            example_routes=("route", lambda s: ", ".join(pd.Series(s).value_counts().head(4).index)),
+        )
+        .reset_index()
+        .sort_values("hours_in_top_100", ascending=False)
+    )
+    cat_summary["mean_abs_error"] = cat_summary["mean_abs_error"].round(1)
+    cat_summary["mean_bias_pred_minus_actual"] = cat_summary["mean_bias_pred_minus_actual"].round(1)
+    cat_summary.to_csv(TAB_DIR / "m3_forecast_miss_summary_by_category.csv", index=False)
 
 
 if __name__ == "__main__":
-    run_step2_forecasting()
+    if "--diagnostics-only" in sys.argv:
+        run_step2_diagnostics()
+    else:
+        run_step2_forecasting()
 

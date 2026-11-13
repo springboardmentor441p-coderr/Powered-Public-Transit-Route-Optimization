@@ -301,8 +301,72 @@ def test_step2_forecasting_outputs_and_hurdle():
     # Worst misses table must list top 25 route-hours sorted by abs_error descending
     assert len(misses_df) == 25
     assert misses_df["abs_error"].is_monotonic_decreasing
+    miss_cats = " ".join(misses_df["miss_category"].astype(str).tolist())
+    assert "cause not confirmed" in miss_cats
+    assert "Juneteenth" in miss_cats
+    assert "weather" not in miss_cats.lower()
+
+    # Weekly bias & WAPE check (9 validation weeks) and 41-route gain check
+    weekly_df = pd.read_csv(tab_dir / "m3_forecast_weekly_check.csv")
+    assert len(weekly_df) == 9
+    assert int(weekly_df["hgb_wins_wape"].sum()) == 9
+
+    route_gain_df = pd.read_csv(tab_dir / "m3_forecast_route_gain_check.csv")
+    assert len(route_gain_df) == 41
+    assert int(route_gain_df["hgb_improves_wape"].sum()) == 37
 
     # Figures must exist and be non-empty
-    for fig_name in ["m3_forecast_model_comparison.png", "m3_forecast_permutation_importance.png"]:
+    for fig_name in [
+        "m3_forecast_model_comparison.png",
+        "m3_forecast_permutation_importance.png",
+        "m3_forecast_weekly_bias_wape.png",
+    ]:
         p = fig_dir / fig_name
         assert p.exists() and p.stat().st_size > 10_000
+
+
+# ==============================================================================
+# 6. MILESTONE 3 STEP 3: CLASSIFICATION MODELS & FORECAST ÷ TRIPS CHECK
+# ==============================================================================
+
+def test_step3_classification_outputs_and_hurdle():
+    """Verify Step 3 classification tuning grid, 53,406 vs 53,495 active-row comparison,
+    Rule B hurdle (F1 > 0.6665, PR-AUC > 0.6904), and Forecast ÷ Trips precision check.
+    """
+    tab_dir = ROOT / "reports" / "tables"
+    fig_dir = ROOT / "reports" / "figures"
+
+    tuning_df = pd.read_csv(tab_dir / "m3_classification_tuning_results.csv")
+    comp_df = pd.read_csv(tab_dir / "m3_classification_model_comparison.csv")
+
+    expected_families = {
+        "Logistic Regression",
+        "Random Forest Classifier",
+        "HistGradientBoosting Classifier",
+        "Forecast ÷ Trips (HGB)",
+    }
+    assert set(tuning_df["model_family"].unique()) == expected_families
+    for fam in expected_families:
+        n_settings = int((tuning_df["model_family"] == fam).sum())
+        assert 10 <= n_settings <= 20, f"{fam} has {n_settings} settings; expected 10..20"
+
+    # Verify common active-service row count (53,406) and all active-service rows (53,495)
+    assert (comp_df["n_eval_53406"] == 53406).all()
+    ml_comp = comp_df[~comp_df["model_category"].str.startswith("Baseline")]
+    assert (ml_comp["n_eval_all_active"] == 53495).all()
+
+    # Best direct classifier and Forecast ÷ Trips must beat Rule B (F1 = 0.6665, PR-AUC = 0.6904)
+    assert ml_comp["f1_53406"].max() > 0.6665
+    assert ml_comp["pr_auc_53406"].max() > 0.6904
+
+    # Verify Forecast ÷ Trips precision check: unadjusted 1.00x has lower precision than Rule B (0.6641)
+    # due to +8.83 seasonal overprediction, while bias-corrected 1.03x restores precision > 0.6641
+    raw_div = comp_df[comp_df["model_name"].str.contains("1.00x")].iloc[0]
+    adj_div = comp_df[comp_df["model_name"].str.contains("1.03x")].iloc[0]
+    assert raw_div["precision_53406"] < 0.6641
+    assert adj_div["precision_53406"] > 0.6641
+    assert adj_div["recall_53406"] > 0.6689
+    assert adj_div["f1_53406"] > 0.6665
+
+    p = fig_dir / "m3_classification_model_comparison.png"
+    assert p.exists() and p.stat().st_size > 10_000

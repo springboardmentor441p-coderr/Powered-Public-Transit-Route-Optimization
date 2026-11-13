@@ -1,0 +1,5 @@
+model_name,day_type,n_eval,actual_positive,pred_positive,positive_prevalence_pct,precision,recall,f1,pr_auc,tp,fp,fn,tn,subset
+"HistGradientBoosting Classifier (Best Direct Classifier, cutoff=0.63)",Typical Weekday,38067,8607,12132,22.61,0.5826,0.8212,0.6816,0.7397,7068,5064,1539,24396,All Hours
+"HistGradientBoosting Classifier (Best Direct Classifier, cutoff=0.63)",Typical Saturday,5981,1325,2313,22.15,0.4877,0.8513,0.6201,0.5739,1128,1185,197,3471,All Hours
+"HistGradientBoosting Classifier (Best Direct Classifier, cutoff=0.63)",Typical Sunday,6768,1849,2585,27.32,0.595,0.8318,0.6937,0.6501,1538,1047,311,3872,All Hours
+"HistGradientBoosting Classifier (Best Direct Classifier, cutoff=0.63)",Special/Excluded,2590,1206,1360,46.56,0.7588,0.8557,0.8044,0.8545,1032,328,174,1056,All Hours
