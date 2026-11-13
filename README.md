@@ -1,3 +1,31 @@
+# RouteRanker: CTA reference case
+
+Transit-route analysis for Chicago Transit Authority (CTA) buses. It covers daily ridership forecasting, route grouping,
+named ranking indicators, historical replay and service scenarios. The work follows the project technical spec (v3.8, Section 9).
+
+**Status:** Stage 1 (Source foundation) is complete. See `reports/stage1_quality_report.md` and `NOTES.md`.
+
+## Setup (Windows CMD, Python 3.12)
+```
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## Stage 1: download, register, validate
+```
+python -I analytics\source\download_sources.py --config analytics\config\sources.json --raw data\raw
+python -I analytics\source\build_register.py --config analytics\config\sources.json --raw data\raw --out reports
+python -I analytics\source\validate_raw.py --config analytics\config\sources.json --register data\raw\source_register.csv --out reports
+```
+Raw data (~610 MB) goes to `data/raw/` and is not committed. Raw files are never overwritten.
+If the 2026-10-22 reference export becomes available, place it in `data/raw/ridership/` and rerun the last two commands.
+
+## Layout
+`data/` raw + processed (gitignored) · `analytics/` pipeline code · `artifacts/` fitted models · `backend/` FastAPI · `frontend/` React · `reports/` quality and evaluation reports
+
+---
+
 ## Contributing Guidelines (For Interns / Collaborators)
 
 All interns added as collaborators to this repository must follow the branch workflow below. **Direct commits or pushes to the `main` branch are not allowed.**

@@ -1,0 +1,1723 @@
+[
+  {
+    "kind": "Ridership",
+    "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+    "checks": [
+      {
+        "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+        "check": "CSV schema",
+        "status": "PASS",
+        "detail": "columns = ['route', 'date', 'daytype', 'rides']"
+      },
+      {
+        "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+        "check": "Row count",
+        "status": "INFO",
+        "detail": "1,124,170 data records"
+      },
+      {
+        "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+        "check": "Route whitespace",
+        "status": "INFO",
+        "detail": "0 route values have surrounding whitespace (trimmed for analysis)"
+      },
+      {
+        "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+        "check": "Missing identifiers",
+        "status": "PASS",
+        "detail": "0 empty route, 0 empty date"
+      },
+      {
+        "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+        "check": "Date parsing (MM/DD/YYYY)",
+        "status": "PASS",
+        "detail": "0 unparseable non-empty dates"
+      },
+      {
+        "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+        "check": "Numeric conversion",
+        "status": "PASS",
+        "detail": "0 non-numeric/empty rides; 0 values contained a ',' separator"
+      },
+      {
+        "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+        "check": "Negative counts",
+        "status": "PASS",
+        "detail": "0 negative rides"
+      },
+      {
+        "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+        "check": "Fractional counts",
+        "status": "PASS",
+        "detail": "0 non-integer rides"
+      },
+      {
+        "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+        "check": "Day types (W/A/U)",
+        "status": "PASS",
+        "detail": "0 unknown; observed = ['A', 'U', 'W']"
+      },
+      {
+        "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+        "check": "Genuine zero counts",
+        "status": "INFO",
+        "detail": "36 records with rides = 0 (kept; not missing)"
+      },
+      {
+        "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+        "check": "Exact duplicate records",
+        "status": "PASS",
+        "detail": "0 exact copies (to be removed in processing, with this report as the record)"
+      },
+      {
+        "source": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+        "check": "Conflicting route/date records",
+        "status": "PASS",
+        "detail": "0 route/date keys with differing records (0 rows) "
+      }
+    ],
+    "extra": {
+      "comparison": [
+        {
+          "metric": "records",
+          "spec": 1120604,
+          "ours": 1120604,
+          "result": "MATCH",
+          "difference": "+0"
+        },
+        {
+          "metric": "route_identifiers",
+          "spec": 188,
+          "ours": 188,
+          "result": "MATCH",
+          "difference": "+0"
+        },
+        {
+          "metric": "first_date",
+          "spec": "2001-01-01",
+          "ours": "2001-01-01",
+          "result": "MATCH",
+          "difference": "+0 days"
+        },
+        {
+          "metric": "last_date",
+          "spec": "2026-07-31",
+          "ours": "2026-07-31",
+          "result": "MATCH",
+          "difference": "+0 days"
+        },
+        {
+          "metric": "zero_count_records",
+          "spec": 36,
+          "ours": 36,
+          "result": "MATCH",
+          "difference": "+0"
+        }
+      ],
+      "post_cutoff": {
+        "records": 3566,
+        "first_date": "2026-08-01",
+        "last_date": "2026-08-31",
+        "route_identifiers": 128,
+        "rides_sum": 17378341
+      },
+      "records_by_year_to_cutoff": {
+        "2001": 42434,
+        "2002": 43185,
+        "2003": 44135,
+        "2004": 45661,
+        "2005": 46276,
+        "2006": 47070,
+        "2007": 48826,
+        "2008": 48521,
+        "2009": 48109,
+        "2010": 45201,
+        "2011": 44782,
+        "2012": 44730,
+        "2013": 43002,
+        "2014": 42198,
+        "2015": 42346,
+        "2016": 42549,
+        "2017": 42259,
+        "2018": 42261,
+        "2019": 41810,
+        "2020": 41589,
+        "2021": 41629,
+        "2022": 41817,
+        "2023": 41862,
+        "2024": 41768,
+        "2025": 42201,
+        "2026": 24383
+      },
+      "spec_cutoff": "2026-07-31"
+    }
+  },
+  {
+    "kind": "GTFS",
+    "source": "mdb-389-202511230128",
+    "checks": [
+      {
+        "source": "mdb-389-202511230128",
+        "check": "ZIP readable",
+        "status": "PASS",
+        "detail": "11 members"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "ZIP CRC (testzip)",
+        "status": "PASS",
+        "detail": "all member CRCs valid"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Extracted-byte agreement",
+        "status": "PASS",
+        "detail": "every extracted file matches ZIP size and CRC32"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Required columns routes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Required columns trips.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Required columns calendar.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Required columns calendar_dates.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Required columns stop_times.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Required columns stops.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Required columns shapes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Required columns agency.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Unique key routes.route_id",
+        "status": "PASS",
+        "detail": "131 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Unique key trips.trip_id",
+        "status": "PASS",
+        "detail": "94,594 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Unique key stops.stop_id",
+        "status": "PASS",
+        "detail": "11,155 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Foreign key trips.route_id -> routes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Foreign key trips.service_id -> calendar/calendar_dates",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Foreign key stop_times.trip_id -> trips",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Foreign key stop_times.stop_id -> stops",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Foreign key trips.shape_id -> shapes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Trips without stop_times",
+        "status": "INFO",
+        "detail": "0 trips have no stop events"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Calendar validity (calendar.txt)",
+        "status": "PASS",
+        "detail": "0 bad weekday flags, 0 unparseable dates, 0 start>end, 0 duplicate service_id"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Calendar validity (calendar_dates.txt)",
+        "status": "PASS",
+        "detail": "0 unparseable dates, 0 bad exception_type, 0 duplicate service/date pairs"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Duplicate stop sequences",
+        "status": "PASS",
+        "detail": "0 duplicated (trip_id, stop_sequence); 0 non-integer stop_sequence"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Time syntax (H:MM:SS, >24h allowed)",
+        "status": "PASS",
+        "detail": "0 malformed; 0 rows with an empty time (allowed between timepoints); 47,010 departures at/after 24:00:00 (kept on their original service date)"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Duration completeness",
+        "status": "PASS",
+        "detail": "94,594 trips with stop events; 0 missing a first departure or last arrival; 0 with last arrival before first departure"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "Agency timezone",
+        "status": "PASS",
+        "detail": "agency_timezone = ['America/Chicago']"
+      },
+      {
+        "source": "mdb-389-202511230128",
+        "check": "frequencies.txt",
+        "status": "PASS",
+        "detail": "0 rows (empty, as in spec)"
+      }
+    ],
+    "extra": {
+      "bus_routes_with_trips": 123,
+      "spec_bus_routes_with_trips": 123,
+      "bus_trips": 89536,
+      "bus_stop_times": 5661993,
+      "spec_bus_stop_times": null,
+      "bus_calendar_window": [
+        "2025-11-19",
+        "2026-01-31"
+      ],
+      "spec_active_window": [
+        "2025-11-19",
+        "2026-01-31"
+      ],
+      "members": [
+        "agency.txt",
+        "calendar.txt",
+        "calendar_dates.txt",
+        "developers_license_agreement.htm",
+        "frequencies.txt",
+        "routes.txt",
+        "shapes.txt",
+        "stop_times.txt",
+        "stops.txt",
+        "transfers.txt",
+        "trips.txt"
+      ]
+    }
+  },
+  {
+    "kind": "GTFS",
+    "source": "mdb-389-202512190112",
+    "checks": [
+      {
+        "source": "mdb-389-202512190112",
+        "check": "ZIP readable",
+        "status": "PASS",
+        "detail": "11 members"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "ZIP CRC (testzip)",
+        "status": "PASS",
+        "detail": "all member CRCs valid"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Extracted-byte agreement",
+        "status": "PASS",
+        "detail": "every extracted file matches ZIP size and CRC32"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Required columns routes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Required columns trips.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Required columns calendar.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Required columns calendar_dates.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Required columns stop_times.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Required columns stops.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Required columns shapes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Required columns agency.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Unique key routes.route_id",
+        "status": "PASS",
+        "detail": "131 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Unique key trips.trip_id",
+        "status": "PASS",
+        "detail": "94,704 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Unique key stops.stop_id",
+        "status": "PASS",
+        "detail": "11,185 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Foreign key trips.route_id -> routes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Foreign key trips.service_id -> calendar/calendar_dates",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Foreign key stop_times.trip_id -> trips",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Foreign key stop_times.stop_id -> stops",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Foreign key trips.shape_id -> shapes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Trips without stop_times",
+        "status": "INFO",
+        "detail": "0 trips have no stop events"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Calendar validity (calendar.txt)",
+        "status": "PASS",
+        "detail": "0 bad weekday flags, 0 unparseable dates, 0 start>end, 0 duplicate service_id"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Calendar validity (calendar_dates.txt)",
+        "status": "PASS",
+        "detail": "0 unparseable dates, 0 bad exception_type, 0 duplicate service/date pairs"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Duplicate stop sequences",
+        "status": "PASS",
+        "detail": "0 duplicated (trip_id, stop_sequence); 0 non-integer stop_sequence"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Time syntax (H:MM:SS, >24h allowed)",
+        "status": "PASS",
+        "detail": "0 malformed; 0 rows with an empty time (allowed between timepoints); 47,781 departures at/after 24:00:00 (kept on their original service date)"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Duration completeness",
+        "status": "PASS",
+        "detail": "94,704 trips with stop events; 0 missing a first departure or last arrival; 0 with last arrival before first departure"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "Agency timezone",
+        "status": "PASS",
+        "detail": "agency_timezone = ['America/Chicago']"
+      },
+      {
+        "source": "mdb-389-202512190112",
+        "check": "frequencies.txt",
+        "status": "PASS",
+        "detail": "0 rows (empty, as in spec)"
+      }
+    ],
+    "extra": {
+      "bus_routes_with_trips": 123,
+      "spec_bus_routes_with_trips": 123,
+      "bus_trips": 89646,
+      "bus_stop_times": 5689188,
+      "spec_bus_stop_times": null,
+      "bus_calendar_window": [
+        "2025-12-16",
+        "2026-02-28"
+      ],
+      "spec_active_window": [
+        "2025-12-16",
+        "2026-02-28"
+      ],
+      "members": [
+        "agency.txt",
+        "calendar.txt",
+        "calendar_dates.txt",
+        "developers_license_agreement.htm",
+        "frequencies.txt",
+        "routes.txt",
+        "shapes.txt",
+        "stop_times.txt",
+        "stops.txt",
+        "transfers.txt",
+        "trips.txt"
+      ]
+    }
+  },
+  {
+    "kind": "GTFS",
+    "source": "mdb-389-202601080131",
+    "checks": [
+      {
+        "source": "mdb-389-202601080131",
+        "check": "ZIP readable",
+        "status": "PASS",
+        "detail": "11 members"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "ZIP CRC (testzip)",
+        "status": "PASS",
+        "detail": "all member CRCs valid"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Extracted-byte agreement",
+        "status": "PASS",
+        "detail": "every extracted file matches ZIP size and CRC32"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Required columns routes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Required columns trips.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Required columns calendar.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Required columns calendar_dates.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Required columns stop_times.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Required columns stops.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Required columns shapes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Required columns agency.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Unique key routes.route_id",
+        "status": "PASS",
+        "detail": "131 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Unique key trips.trip_id",
+        "status": "PASS",
+        "detail": "49,936 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Unique key stops.stop_id",
+        "status": "PASS",
+        "detail": "11,130 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Foreign key trips.route_id -> routes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Foreign key trips.service_id -> calendar/calendar_dates",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Foreign key stop_times.trip_id -> trips",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Foreign key stop_times.stop_id -> stops",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Foreign key trips.shape_id -> shapes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Trips without stop_times",
+        "status": "INFO",
+        "detail": "0 trips have no stop events"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Calendar validity (calendar.txt)",
+        "status": "PASS",
+        "detail": "0 bad weekday flags, 0 unparseable dates, 0 start>end, 0 duplicate service_id"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Calendar validity (calendar_dates.txt)",
+        "status": "PASS",
+        "detail": "0 unparseable dates, 0 bad exception_type, 0 duplicate service/date pairs"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Duplicate stop sequences",
+        "status": "PASS",
+        "detail": "0 duplicated (trip_id, stop_sequence); 0 non-integer stop_sequence"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Time syntax (H:MM:SS, >24h allowed)",
+        "status": "PASS",
+        "detail": "0 malformed; 0 rows with an empty time (allowed between timepoints); 25,492 departures at/after 24:00:00 (kept on their original service date)"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Duration completeness",
+        "status": "PASS",
+        "detail": "49,936 trips with stop events; 0 missing a first departure or last arrival; 0 with last arrival before first departure"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "Agency timezone",
+        "status": "PASS",
+        "detail": "agency_timezone = ['America/Chicago']"
+      },
+      {
+        "source": "mdb-389-202601080131",
+        "check": "frequencies.txt",
+        "status": "PASS",
+        "detail": "0 rows (empty, as in spec)"
+      }
+    ],
+    "extra": {
+      "bus_routes_with_trips": 123,
+      "spec_bus_routes_with_trips": 123,
+      "bus_trips": 44878,
+      "bus_stop_times": 2859229,
+      "spec_bus_stop_times": 2859229,
+      "bus_calendar_window": [
+        "2026-01-06",
+        "2026-03-31"
+      ],
+      "spec_active_window": [
+        "2026-01-06",
+        "2026-03-31"
+      ],
+      "members": [
+        "agency.txt",
+        "calendar.txt",
+        "calendar_dates.txt",
+        "developers_license_agreement.htm",
+        "frequencies.txt",
+        "routes.txt",
+        "shapes.txt",
+        "stop_times.txt",
+        "stops.txt",
+        "transfers.txt",
+        "trips.txt"
+      ]
+    }
+  },
+  {
+    "kind": "GTFS",
+    "source": "mdb-389-202602100132",
+    "checks": [
+      {
+        "source": "mdb-389-202602100132",
+        "check": "ZIP readable",
+        "status": "PASS",
+        "detail": "11 members"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "ZIP CRC (testzip)",
+        "status": "PASS",
+        "detail": "all member CRCs valid"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Extracted-byte agreement",
+        "status": "PASS",
+        "detail": "every extracted file matches ZIP size and CRC32"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Required columns routes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Required columns trips.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Required columns calendar.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Required columns calendar_dates.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Required columns stop_times.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Required columns stops.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Required columns shapes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Required columns agency.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Unique key routes.route_id",
+        "status": "PASS",
+        "detail": "131 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Unique key trips.trip_id",
+        "status": "PASS",
+        "detail": "49,936 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Unique key stops.stop_id",
+        "status": "PASS",
+        "detail": "11,130 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Foreign key trips.route_id -> routes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Foreign key trips.service_id -> calendar/calendar_dates",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Foreign key stop_times.trip_id -> trips",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Foreign key stop_times.stop_id -> stops",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Foreign key trips.shape_id -> shapes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Trips without stop_times",
+        "status": "INFO",
+        "detail": "0 trips have no stop events"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Calendar validity (calendar.txt)",
+        "status": "PASS",
+        "detail": "0 bad weekday flags, 0 unparseable dates, 0 start>end, 0 duplicate service_id"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Calendar validity (calendar_dates.txt)",
+        "status": "PASS",
+        "detail": "0 unparseable dates, 0 bad exception_type, 0 duplicate service/date pairs"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Duplicate stop sequences",
+        "status": "PASS",
+        "detail": "0 duplicated (trip_id, stop_sequence); 0 non-integer stop_sequence"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Time syntax (H:MM:SS, >24h allowed)",
+        "status": "PASS",
+        "detail": "0 malformed; 0 rows with an empty time (allowed between timepoints); 25,492 departures at/after 24:00:00 (kept on their original service date)"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Duration completeness",
+        "status": "PASS",
+        "detail": "49,936 trips with stop events; 0 missing a first departure or last arrival; 0 with last arrival before first departure"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "Agency timezone",
+        "status": "PASS",
+        "detail": "agency_timezone = ['America/Chicago']"
+      },
+      {
+        "source": "mdb-389-202602100132",
+        "check": "frequencies.txt",
+        "status": "PASS",
+        "detail": "0 rows (empty, as in spec)"
+      }
+    ],
+    "extra": {
+      "bus_routes_with_trips": 123,
+      "spec_bus_routes_with_trips": 123,
+      "bus_trips": 44878,
+      "bus_stop_times": 2859229,
+      "spec_bus_stop_times": 2859229,
+      "bus_calendar_window": [
+        "2026-01-06",
+        "2026-03-31"
+      ],
+      "spec_active_window": [
+        "2026-01-06",
+        "2026-03-31"
+      ],
+      "members": [
+        "agency.txt",
+        "calendar.txt",
+        "calendar_dates.txt",
+        "developers_license_agreement.htm",
+        "frequencies.txt",
+        "routes.txt",
+        "shapes.txt",
+        "stop_times.txt",
+        "stops.txt",
+        "transfers.txt",
+        "trips.txt"
+      ]
+    }
+  },
+  {
+    "kind": "GTFS",
+    "source": "mdb-389-202603260020",
+    "checks": [
+      {
+        "source": "mdb-389-202603260020",
+        "check": "ZIP readable",
+        "status": "PASS",
+        "detail": "11 members"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "ZIP CRC (testzip)",
+        "status": "PASS",
+        "detail": "all member CRCs valid"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Extracted-byte agreement",
+        "status": "PASS",
+        "detail": "every extracted file matches ZIP size and CRC32"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Required columns routes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Required columns trips.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Required columns calendar.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Required columns calendar_dates.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Required columns stop_times.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Required columns stops.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Required columns shapes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Required columns agency.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Unique key routes.route_id",
+        "status": "PASS",
+        "detail": "131 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Unique key trips.trip_id",
+        "status": "PASS",
+        "detail": "94,496 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Unique key stops.stop_id",
+        "status": "PASS",
+        "detail": "11,184 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Foreign key trips.route_id -> routes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Foreign key trips.service_id -> calendar/calendar_dates",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Foreign key stop_times.trip_id -> trips",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Foreign key stop_times.stop_id -> stops",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Foreign key trips.shape_id -> shapes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Trips without stop_times",
+        "status": "INFO",
+        "detail": "0 trips have no stop events"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Calendar validity (calendar.txt)",
+        "status": "PASS",
+        "detail": "0 bad weekday flags, 0 unparseable dates, 0 start>end, 0 duplicate service_id"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Calendar validity (calendar_dates.txt)",
+        "status": "PASS",
+        "detail": "0 unparseable dates, 0 bad exception_type, 0 duplicate service/date pairs"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Duplicate stop sequences",
+        "status": "PASS",
+        "detail": "0 duplicated (trip_id, stop_sequence); 0 non-integer stop_sequence"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Time syntax (H:MM:SS, >24h allowed)",
+        "status": "PASS",
+        "detail": "0 malformed; 0 rows with an empty time (allowed between timepoints); 48,446 departures at/after 24:00:00 (kept on their original service date)"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Duration completeness",
+        "status": "PASS",
+        "detail": "94,496 trips with stop events; 0 missing a first departure or last arrival; 0 with last arrival before first departure"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "Agency timezone",
+        "status": "PASS",
+        "detail": "agency_timezone = ['America/Chicago']"
+      },
+      {
+        "source": "mdb-389-202603260020",
+        "check": "frequencies.txt",
+        "status": "PASS",
+        "detail": "0 rows (empty, as in spec)"
+      }
+    ],
+    "extra": {
+      "bus_routes_with_trips": 123,
+      "spec_bus_routes_with_trips": 123,
+      "bus_trips": 89438,
+      "bus_stop_times": 5701512,
+      "spec_bus_stop_times": null,
+      "bus_calendar_window": [
+        "2026-03-20",
+        "2026-05-31"
+      ],
+      "spec_active_window": [
+        "2026-03-20",
+        "2026-05-31"
+      ],
+      "members": [
+        "agency.txt",
+        "calendar.txt",
+        "calendar_dates.txt",
+        "developers_license_agreement.htm",
+        "frequencies.txt",
+        "routes.txt",
+        "shapes.txt",
+        "stop_times.txt",
+        "stops.txt",
+        "transfers.txt",
+        "trips.txt"
+      ]
+    }
+  },
+  {
+    "kind": "GTFS",
+    "source": "mdb-389-202604240144",
+    "checks": [
+      {
+        "source": "mdb-389-202604240144",
+        "check": "ZIP readable",
+        "status": "PASS",
+        "detail": "11 members"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "ZIP CRC (testzip)",
+        "status": "PASS",
+        "detail": "all member CRCs valid"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Extracted-byte agreement",
+        "status": "PASS",
+        "detail": "every extracted file matches ZIP size and CRC32"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Required columns routes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Required columns trips.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Required columns calendar.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Required columns calendar_dates.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Required columns stop_times.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Required columns stops.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Required columns shapes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Required columns agency.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Unique key routes.route_id",
+        "status": "PASS",
+        "detail": "131 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Unique key trips.trip_id",
+        "status": "PASS",
+        "detail": "54,663 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Unique key stops.stop_id",
+        "status": "PASS",
+        "detail": "11,164 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Foreign key trips.route_id -> routes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Foreign key trips.service_id -> calendar/calendar_dates",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Foreign key stop_times.trip_id -> trips",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Foreign key stop_times.stop_id -> stops",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Foreign key trips.shape_id -> shapes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Trips without stop_times",
+        "status": "INFO",
+        "detail": "0 trips have no stop events"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Calendar validity (calendar.txt)",
+        "status": "PASS",
+        "detail": "0 bad weekday flags, 0 unparseable dates, 0 start>end, 0 duplicate service_id"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Calendar validity (calendar_dates.txt)",
+        "status": "PASS",
+        "detail": "0 unparseable dates, 0 bad exception_type, 0 duplicate service/date pairs"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Duplicate stop sequences",
+        "status": "PASS",
+        "detail": "0 duplicated (trip_id, stop_sequence); 0 non-integer stop_sequence"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Time syntax (H:MM:SS, >24h allowed)",
+        "status": "PASS",
+        "detail": "0 malformed; 0 rows with an empty time (allowed between timepoints); 27,760 departures at/after 24:00:00 (kept on their original service date)"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Duration completeness",
+        "status": "PASS",
+        "detail": "54,663 trips with stop events; 0 missing a first departure or last arrival; 0 with last arrival before first departure"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "Agency timezone",
+        "status": "PASS",
+        "detail": "agency_timezone = ['America/Chicago']"
+      },
+      {
+        "source": "mdb-389-202604240144",
+        "check": "frequencies.txt",
+        "status": "PASS",
+        "detail": "0 rows (empty, as in spec)"
+      }
+    ],
+    "extra": {
+      "bus_routes_with_trips": 123,
+      "spec_bus_routes_with_trips": 123,
+      "bus_trips": 44560,
+      "bus_stop_times": 2842263,
+      "spec_bus_stop_times": null,
+      "bus_calendar_window": [
+        "2026-04-15",
+        "2026-06-30"
+      ],
+      "spec_active_window": [
+        "2026-04-15",
+        "2026-06-30"
+      ],
+      "members": [
+        "agency.txt",
+        "calendar.txt",
+        "calendar_dates.txt",
+        "developers_license_agreement.htm",
+        "frequencies.txt",
+        "routes.txt",
+        "shapes.txt",
+        "stop_times.txt",
+        "stops.txt",
+        "transfers.txt",
+        "trips.txt"
+      ]
+    }
+  },
+  {
+    "kind": "GTFS",
+    "source": "mdb-389-202605300003",
+    "checks": [
+      {
+        "source": "mdb-389-202605300003",
+        "check": "ZIP readable",
+        "status": "PASS",
+        "detail": "11 members"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "ZIP CRC (testzip)",
+        "status": "PASS",
+        "detail": "all member CRCs valid"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Extracted-byte agreement",
+        "status": "PASS",
+        "detail": "every extracted file matches ZIP size and CRC32"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Required columns routes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Required columns trips.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Required columns calendar.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Required columns calendar_dates.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Required columns stop_times.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Required columns stops.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Required columns shapes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Required columns agency.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Unique key routes.route_id",
+        "status": "PASS",
+        "detail": "133 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Unique key trips.trip_id",
+        "status": "PASS",
+        "detail": "94,420 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Unique key stops.stop_id",
+        "status": "PASS",
+        "detail": "11,177 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Foreign key trips.route_id -> routes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Foreign key trips.service_id -> calendar/calendar_dates",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Foreign key stop_times.trip_id -> trips",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Foreign key stop_times.stop_id -> stops",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Foreign key trips.shape_id -> shapes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Trips without stop_times",
+        "status": "INFO",
+        "detail": "0 trips have no stop events"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Calendar validity (calendar.txt)",
+        "status": "PASS",
+        "detail": "0 bad weekday flags, 0 unparseable dates, 0 start>end, 0 duplicate service_id"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Calendar validity (calendar_dates.txt)",
+        "status": "PASS",
+        "detail": "0 unparseable dates, 0 bad exception_type, 0 duplicate service/date pairs"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Duplicate stop sequences",
+        "status": "PASS",
+        "detail": "0 duplicated (trip_id, stop_sequence); 0 non-integer stop_sequence"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Time syntax (H:MM:SS, >24h allowed)",
+        "status": "PASS",
+        "detail": "0 malformed; 0 rows with an empty time (allowed between timepoints); 48,736 departures at/after 24:00:00 (kept on their original service date)"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Duration completeness",
+        "status": "PASS",
+        "detail": "94,420 trips with stop events; 0 missing a first departure or last arrival; 0 with last arrival before first departure"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "Agency timezone",
+        "status": "PASS",
+        "detail": "agency_timezone = ['America/Chicago']"
+      },
+      {
+        "source": "mdb-389-202605300003",
+        "check": "frequencies.txt",
+        "status": "PASS",
+        "detail": "0 rows (empty, as in spec)"
+      }
+    ],
+    "extra": {
+      "bus_routes_with_trips": 125,
+      "spec_bus_routes_with_trips": 125,
+      "bus_trips": 89367,
+      "bus_stop_times": 5692185,
+      "spec_bus_stop_times": null,
+      "bus_calendar_window": [
+        "2026-05-28",
+        "2026-07-31"
+      ],
+      "spec_active_window": [
+        "2026-05-28",
+        "2026-07-31"
+      ],
+      "members": [
+        "calendar.txt",
+        "calendar_dates.txt",
+        "developers_license_agreement.htm",
+        "frequencies.txt",
+        "routes.txt",
+        "shapes.txt",
+        "stop_times.txt",
+        "stops.txt",
+        "transfers.txt",
+        "trips.txt",
+        "agency.txt"
+      ]
+    }
+  },
+  {
+    "kind": "GTFS",
+    "source": "mdb-389-202607110020",
+    "checks": [
+      {
+        "source": "mdb-389-202607110020",
+        "check": "ZIP readable",
+        "status": "PASS",
+        "detail": "11 members"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "ZIP CRC (testzip)",
+        "status": "PASS",
+        "detail": "all member CRCs valid"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Extracted-byte agreement",
+        "status": "PASS",
+        "detail": "every extracted file matches ZIP size and CRC32"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Required columns routes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Required columns trips.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Required columns calendar.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Required columns calendar_dates.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Required columns stop_times.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Required columns stops.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Required columns shapes.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Required columns agency.txt",
+        "status": "PASS",
+        "detail": "all present"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Unique key routes.route_id",
+        "status": "PASS",
+        "detail": "133 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Unique key trips.trip_id",
+        "status": "PASS",
+        "detail": "94,667 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Unique key stops.stop_id",
+        "status": "PASS",
+        "detail": "11,125 rows, 0 duplicates, 0 empty"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Foreign key trips.route_id -> routes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Foreign key trips.service_id -> calendar/calendar_dates",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Foreign key stop_times.trip_id -> trips",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Foreign key stop_times.stop_id -> stops",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Foreign key trips.shape_id -> shapes",
+        "status": "PASS",
+        "detail": "0 orphan rows"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Trips without stop_times",
+        "status": "INFO",
+        "detail": "0 trips have no stop events"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Calendar validity (calendar.txt)",
+        "status": "PASS",
+        "detail": "0 bad weekday flags, 0 unparseable dates, 0 start>end, 0 duplicate service_id"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Calendar validity (calendar_dates.txt)",
+        "status": "PASS",
+        "detail": "0 unparseable dates, 0 bad exception_type, 0 duplicate service/date pairs"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Duplicate stop sequences",
+        "status": "PASS",
+        "detail": "0 duplicated (trip_id, stop_sequence); 0 non-integer stop_sequence"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Time syntax (H:MM:SS, >24h allowed)",
+        "status": "PASS",
+        "detail": "0 malformed; 0 rows with an empty time (allowed between timepoints); 49,142 departures at/after 24:00:00 (kept on their original service date)"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Duration completeness",
+        "status": "PASS",
+        "detail": "94,667 trips with stop events; 0 missing a first departure or last arrival; 0 with last arrival before first departure"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "Agency timezone",
+        "status": "PASS",
+        "detail": "agency_timezone = ['America/Chicago']"
+      },
+      {
+        "source": "mdb-389-202607110020",
+        "check": "frequencies.txt",
+        "status": "PASS",
+        "detail": "0 rows (empty, as in spec)"
+      }
+    ],
+    "extra": {
+      "bus_routes_with_trips": 125,
+      "spec_bus_routes_with_trips": 125,
+      "bus_trips": 89614,
+      "bus_stop_times": 5697928,
+      "spec_bus_stop_times": null,
+      "bus_calendar_window": [
+        "2026-07-07",
+        "2026-09-30"
+      ],
+      "spec_active_window": [
+        "2026-07-07",
+        "2026-09-30"
+      ],
+      "members": [
+        "calendar_dates.txt",
+        "frequencies.txt",
+        "routes.txt",
+        "developers_license_agreement.htm",
+        "trips.txt",
+        "stop_times.txt",
+        "transfers.txt",
+        "shapes.txt",
+        "stops.txt",
+        "agency.txt",
+        "calendar.txt"
+      ]
+    }
+  }
+]

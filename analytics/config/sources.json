@@ -1,0 +1,41 @@
+{
+  "_comment": "Source manifest for the CTA reference case (spec v3.8, sections 9.3, 9.4.2, 9.22.1). URLs are the exact links supplied for the spec.",
+  "catalog_retrieved_date": "2026-11-11",
+  "primary_ridership_snapshot": null,
+  "ridership": {
+    "dataset_id": "cta_bus_ridership_daily",
+    "title": "CTA - Ridership - Bus Routes - Daily Totals by Route",
+    "source_url": "https://data.cityofchicago.org/api/views/jyb9-n7fm/rows.csv?accessType=DOWNLOAD",
+    "metadata_url": "https://data.cityofchicago.org/api/views/jyb9-n7fm.json",
+    "filename_prefix": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_",
+    "spec_reference": {
+      "snapshot_id": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261022",
+      "sha256": "6a999ea344084036310a779886bc6a72de6bad24cbb696e90822c83a337e608a",
+      "observation_cutoff": "2026-07-31",
+      "records": 1120604,
+      "route_identifiers": 188,
+      "first_date": "2001-01-01",
+      "last_date": "2026-07-31",
+      "zero_count_records": 36
+    }
+  },
+  "gtfs": {
+    "dataset_id": "cta_gtfs_mdb389",
+    "agency_timezone": "America/Chicago",
+    "archives": [
+      {"snapshot_id": "mdb-389-202511230128", "captured": "2025-11-23", "active_window": ["2025-11-19", "2026-01-31"], "applied_dates": ["2025-11-23", "2025-12-18"], "sha256": "4a34e0c78a12d797ae5b3f5075005e91db8b6e6715eda9b146fa3946b1136964"},
+      {"snapshot_id": "mdb-389-202512190112", "captured": "2025-12-19", "active_window": ["2025-12-16", "2026-02-28"], "applied_dates": ["2025-12-19", "2026-01-07"], "sha256": "1d49526cbce5bf3188cad4524cafdae581e3ad6a4920d256d4577a51e3c3bb4d"},
+      {"snapshot_id": "mdb-389-202601080131", "captured": "2026-01-08", "active_window": ["2026-01-06", "2026-03-31"], "applied_dates": ["2026-01-08", "2026-02-09"], "sha256": "41cc4ddabefed327cd0093ba9f707f8ce9f2fd39405d95abdffb8a4702099156"},
+      {"snapshot_id": "mdb-389-202602100132", "captured": "2026-02-10", "active_window": ["2026-01-06", "2026-03-31"], "applied_dates": ["2026-02-10", "2026-03-25"], "sha256": "a2115731f779a6c12d27ed72d45027d5a5c213ad99945da10452994a451d281c"},
+      {"snapshot_id": "mdb-389-202603260020", "captured": "2026-03-26", "active_window": ["2026-03-20", "2026-05-31"], "applied_dates": ["2026-03-26", "2026-04-23"], "sha256": "57715a5a369542ec95dcfe6b1f519e9c37dbf8032801912eb88379cccbcf9aba"},
+      {"snapshot_id": "mdb-389-202604240144", "captured": "2026-04-24", "active_window": ["2026-04-15", "2026-06-30"], "applied_dates": ["2026-04-24", "2026-05-29"], "sha256": "b3e31c8fb050b9a3d32d7851e2d8b5c4a0fb39776ba1574f85fecd4f65cd8502"},
+      {"snapshot_id": "mdb-389-202605300003", "captured": "2026-05-30", "active_window": ["2026-05-28", "2026-07-31"], "applied_dates": ["2026-05-30", "2026-07-10"], "sha256": "3253ed0b0e19ced092c97d800acb07a7ae9df2bcfb593039e170c684639773d5"},
+      {"snapshot_id": "mdb-389-202607110020", "captured": "2026-07-11", "active_window": ["2026-07-07", "2026-09-30"], "applied_dates": ["2026-07-11", "2026-07-31"], "sha256": "cf14e64fa93bb3f5bed661c70d5834beb0be98a677f0b3e3487343bf42a76aa0"}
+    ],
+    "url_template": "https://files.mobilitydatabase.org/mdb-389/{id}/{id}.zip",
+    "spec_reference": {
+      "bus_routes_with_trips": {"mdb-389-202511230128": 123, "mdb-389-202512190112": 123, "mdb-389-202601080131": 123, "mdb-389-202602100132": 123, "mdb-389-202603260020": 123, "mdb-389-202604240144": 123, "mdb-389-202605300003": 125, "mdb-389-202607110020": 125},
+      "bus_stop_times": {"mdb-389-202601080131": 2859229, "mdb-389-202602100132": 2859229}
+    }
+  }
+}

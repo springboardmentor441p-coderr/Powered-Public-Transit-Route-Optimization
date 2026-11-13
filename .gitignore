@@ -1,0 +1,20 @@
+# --- Private mentor documents: must NEVER be uploaded ---
+docs-private/
+
+# --- Data (raw downloads and processed tables are large and reproducible) ---
+data/
+
+# --- Python environment and caches ---
+.venv/
+__pycache__/
+*.pyc
+
+# --- Frontend dependencies ---
+node_modules/
+
+# --- Secrets ---
+.env
+
+# --- Fitted model files in artifacts/ (keep the folder itself) ---
+artifacts/**
+!artifacts/.gitkeep
