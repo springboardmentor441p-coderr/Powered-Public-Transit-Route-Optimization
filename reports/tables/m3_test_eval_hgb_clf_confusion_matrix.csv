@@ -1,0 +1,4 @@
+Actual Class,Pred Normal (0),Pred High (1),Total Actual,Model
+Actual Normal Demand (0),33582,6279,39861,"HistGradientBoosting Classifier (Fixed 0.63 Cutoff, Retrained Jan–Jul, Test Set) (All Hours)"
+Actual High Demand (1),2780,10675,13455,"HistGradientBoosting Classifier (Fixed 0.63 Cutoff, Retrained Jan–Jul, Test Set) (All Hours)"
+Total Predicted,36362,16954,53316,"HistGradientBoosting Classifier (Fixed 0.63 Cutoff, Retrained Jan–Jul, Test Set) (All Hours)"

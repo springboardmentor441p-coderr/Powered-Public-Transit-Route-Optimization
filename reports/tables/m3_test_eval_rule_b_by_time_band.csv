@@ -1,0 +1,6 @@
+model_name,time_band,time_band_label,n_eval,actual_positive,pred_positive,positive_prevalence_pct,precision,recall,f1,pr_auc,tp,fp,fn,tn,subset
+"Baseline Rule B (4-Week Avg ÷ Trips > Threshold, Test Set)",early_morning,Early Morning (04:00–06:59),5698,181,135,3.18,0.4519,0.337,0.3861,0.3509,61,74,120,5443,All Hours
+"Baseline Rule B (4-Week Avg ÷ Trips > Threshold, Test Set)",morning_peak,Morning Peak (07:00–09:59),7418,2576,2100,34.73,0.7233,0.5897,0.6497,0.6947,1519,581,1057,4261,All Hours
+"Baseline Rule B (4-Week Avg ÷ Trips > Threshold, Test Set)",midday,Midday (10:00–15:59),14724,6028,5298,40.94,0.6899,0.6063,0.6454,0.6973,3655,1643,2373,7053,All Hours
+"Baseline Rule B (4-Week Avg ÷ Trips > Threshold, Test Set)",evening_peak,Evening Peak (16:00–18:59),7446,4030,3730,54.12,0.7214,0.6677,0.6936,0.7439,2691,1039,1339,2377,All Hours
+"Baseline Rule B (4-Week Avg ÷ Trips > Threshold, Test Set)",night,Night (19:00–03:59),18030,640,391,3.55,0.4501,0.275,0.3414,0.325,176,215,464,17175,All Hours

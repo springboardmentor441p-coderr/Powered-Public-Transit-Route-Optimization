@@ -1,0 +1,3 @@
+model_name,subset,n_eval,total_actual,mae,rmse,wape_pct,bias_pred_minus_actual,storm_note
+4-Week Average Baseline (Test Set),All Hours,53501,13613014.0,39.21,73.02,15.41,-6.36,0 storm days in window; duplicate 'Without Storm Days' row omitted
+4-Week Average Baseline (Test Set),Without Outlier Hours,53495,13609845.0,39.16,72.77,15.39,-6.3,Outlier hours excluded

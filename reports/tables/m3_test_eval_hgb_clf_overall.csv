@@ -1,0 +1,3 @@
+model_name,subset,n_eval,actual_pos,pred_pos,precision,recall,f1,pr_auc,roc_auc,tp,fp,fn,tn,storm_note
+"HistGradientBoosting Classifier (Fixed 0.63 Cutoff, Retrained Jan–Jul, Test Set)",All Hours,53316,13455,16954,0.6296,0.7934,0.7021,0.7495,0.9088,10675,6279,2780,33582,0 storm days in window; duplicate 'Without Storm Days' row omitted
+"HistGradientBoosting Classifier (Fixed 0.63 Cutoff, Retrained Jan–Jul, Test Set)",Without Outlier Hours,53310,13449,16949,0.6295,0.7934,0.702,0.7494,0.9088,10670,6279,2779,33582,Outlier hours excluded

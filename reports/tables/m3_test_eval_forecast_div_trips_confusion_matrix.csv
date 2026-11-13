@@ -1,0 +1,4 @@
+Actual Class,Pred Normal (0),Pred High (1),Total Actual,Model
+Actual Normal Demand (0),34474,5387,39861,"Forecast ÷ Trips (Official 0.96x Rule, Retrained Jan–Jul, Test Set) (All Hours)"
+Actual High Demand (1),3287,10168,13455,"Forecast ÷ Trips (Official 0.96x Rule, Retrained Jan–Jul, Test Set) (All Hours)"
+Total Predicted,37761,15555,53316,"Forecast ÷ Trips (Official 0.96x Rule, Retrained Jan–Jul, Test Set) (All Hours)"

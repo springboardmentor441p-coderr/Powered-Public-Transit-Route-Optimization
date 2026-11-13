@@ -1,0 +1,5 @@
+model_name,day_type,n_eval,actual_positive,pred_positive,positive_prevalence_pct,precision,recall,f1,pr_auc,tp,fp,fn,tn,subset
+"Forecast ÷ Trips (Official 0.96x Rule, Retrained Jan–Jul, Test Set)",Typical Weekday,37240,9126,10222,24.51,0.66,0.7393,0.6974,0.7232,6747,3475,2379,24639,All Hours
+"Forecast ÷ Trips (Official 0.96x Rule, Retrained Jan–Jul, Test Set)",Typical Saturday,7689,1762,2154,22.92,0.571,0.6981,0.6282,0.6102,1230,924,532,5003,All Hours
+"Forecast ÷ Trips (Official 0.96x Rule, Retrained Jan–Jul, Test Set)",Typical Sunday,7536,2076,2683,27.55,0.6485,0.8382,0.7312,0.682,1740,943,336,4517,All Hours
+"Forecast ÷ Trips (Official 0.96x Rule, Retrained Jan–Jul, Test Set)",Special/Excluded,851,491,496,57.7,0.9093,0.9185,0.9139,0.9694,451,45,40,315,All Hours

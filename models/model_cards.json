@@ -1,0 +1,190 @@
+{
+  "final_forecaster": {
+    "model_name": "HistGradientBoostingRegressor (Final Retrained Ridership Forecaster)",
+    "artifact_path": "models/final_forecaster.joblib",
+    "task": "Route-hour ridership forecasting (boardings per hour) and Forecast \u00f7 Trips high-demand alerting",
+    "training_date_window": "2026-01-04 to 2026-07-31 (Train + Validation combined)",
+    "n_training_rows": 179491,
+    "n_routes": 41,
+    "input_features_count": 22,
+    "input_features": [
+      "route",
+      "day_of_week",
+      "time_band",
+      "trips_running",
+      "trips_starting",
+      "service_hours",
+      "route_length_km",
+      "stop_count",
+      "hour_sin",
+      "hour_cos",
+      "is_weekend",
+      "is_public_holiday",
+      "holiday_schedule",
+      "is_storm",
+      "is_sbs",
+      "is_24h",
+      "lag_7d",
+      "lag_14d",
+      "lag_21d",
+      "lag_28d",
+      "lag_mean_available",
+      "lags_available_count"
+    ],
+    "transformed_feature_dimension": 77,
+    "hyperparameters": {
+      "loss": "poisson",
+      "learning_rate": 0.05,
+      "max_leaf_nodes": 127,
+      "min_samples_leaf": 25,
+      "l2_regularization": 1.0,
+      "max_iter": 300,
+      "early_stopping": true,
+      "validation_fraction": 0.1,
+      "n_iter_no_change": 15,
+      "random_state": 42
+    },
+    "actual_iterations_fitted": 300,
+    "validation_scores_jan_may_fit": {
+      "window": "2026-06-01 to 2026-07-31 (53,585 common rows / 54,046 all rows)",
+      "mae_common": 33.0,
+      "rmse_common": 56.05,
+      "wape_common_pct": 13.03,
+      "bias_common_pred_minus_actual": 8.83,
+      "baseline_4wk_wape_pct": 14.08
+    },
+    "test_scores_aug_sep_2026": {
+      "window": "2026-08-01 to 2026-09-30 (0 storm days)",
+      "with_m35_surge_hours": {
+        "n_eval_common": 53501,
+        "mae_common": 35.77,
+        "rmse_common": 63.94,
+        "wape_common_pct": 14.06,
+        "bias_common_pred_minus_actual": -1.89,
+        "baseline_4wk_wape_pct": 15.41,
+        "wape_diff_vs_4wk_pct_pts": -1.35
+      },
+      "without_m35_surge_hours": {
+        "n_eval_common": 53495,
+        "mae_common": 35.72,
+        "rmse_common": 63.67,
+        "wape_common_pct": 14.04,
+        "bias_common_pred_minus_actual": -1.84,
+        "baseline_4wk_wape_pct": 15.39,
+        "wape_diff_vs_4wk_pct_pts": -1.35
+      }
+    },
+    "forecast_div_trips_classification": {
+      "official_rule": "pred_hgb / trips_running > 0.96 * threshold_p75 (Jan\u2013May thresholds kept fixed)",
+      "validation_scores": {
+        "pr_auc": 0.7205,
+        "precision_at_rule_b_workload_13081": 0.6801,
+        "f1_at_096x": 0.6998,
+        "precision_at_096x": 0.6054,
+        "recall_at_096x": 0.8292
+      },
+      "test_scores_with_m35_surge": {
+        "pr_auc": 0.7165,
+        "precision_at_rule_b_workload": 0.7166,
+        "f1_at_rule_b_workload": 0.6652,
+        "pred_pos_at_096x": 15555,
+        "precision_at_096x": 0.6537,
+        "recall_at_096x": 0.7557,
+        "f1_at_096x": 0.701
+      },
+      "test_scores_without_m35_surge": {
+        "pr_auc": 0.7161,
+        "precision_at_rule_b_workload": 0.7164,
+        "f1_at_rule_b_workload": 0.665,
+        "pred_pos_at_096x": 15549,
+        "precision_at_096x": 0.6535,
+        "recall_at_096x": 0.7556,
+        "f1_at_096x": 0.7009
+      }
+    },
+    "created_at_utc": "2026-11-13T06:01:52.061165+00:00"
+  },
+  "final_classifier": {
+    "model_name": "HistGradientBoostingClassifier (Final Retrained High-Demand-per-Trip Classifier)",
+    "artifact_path": "models/final_classifier.joblib",
+    "task": "Binary classification of high_demand_per_trip (riders_per_trip > Jan\u2013May threshold_p75 on active hours)",
+    "training_date_window": "2026-01-04 to 2026-07-31 (Train + Validation active-service hours)",
+    "n_training_rows": 177654,
+    "n_routes": 41,
+    "input_features_count": 22,
+    "input_features": [
+      "route",
+      "day_of_week",
+      "time_band",
+      "trips_running",
+      "trips_starting",
+      "service_hours",
+      "route_length_km",
+      "stop_count",
+      "hour_sin",
+      "hour_cos",
+      "is_weekend",
+      "is_public_holiday",
+      "holiday_schedule",
+      "is_storm",
+      "is_sbs",
+      "is_24h",
+      "lag_7d",
+      "lag_14d",
+      "lag_21d",
+      "lag_28d",
+      "lag_mean_available",
+      "lags_available_count"
+    ],
+    "transformed_feature_dimension": 77,
+    "hyperparameters": {
+      "learning_rate": 0.08,
+      "max_leaf_nodes": 127,
+      "min_samples_leaf": 30,
+      "l2_regularization": 5.0,
+      "class_weight": "balanced",
+      "max_iter": 300,
+      "early_stopping": true,
+      "validation_fraction": 0.1,
+      "n_iter_no_change": 15,
+      "random_state": 42
+    },
+    "fixed_probability_cutoff": 0.63,
+    "threshold_label_rule": "Per-route \u00d7 day_type 75th percentile thresholds (threshold_p75) kept fixed from Jan\u2013May 2026",
+    "actual_iterations_fitted": 221,
+    "validation_scores_jan_may_fit": {
+      "window": "2026-06-01 to 2026-07-31 (53,406 common active rows)",
+      "pr_auc": 0.729,
+      "precision_at_rule_b_workload_13081": 0.661,
+      "f1_at_063": 0.6862,
+      "precision_at_063": 0.5854,
+      "recall_at_063": 0.829
+    },
+    "test_scores_aug_sep_2026": {
+      "window": "2026-08-01 to 2026-09-30 (0 storm days)",
+      "with_m35_surge_hours": {
+        "n_eval_common": 53316,
+        "pr_auc": 0.7495,
+        "roc_auc": 0.9088,
+        "precision_at_rule_b_workload": 0.7128,
+        "f1_at_rule_b_workload": 0.6617,
+        "pred_pos_at_063": 16954,
+        "precision_at_063": 0.6296,
+        "recall_at_063": 0.7934,
+        "f1_at_063": 0.7021
+      },
+      "without_m35_surge_hours": {
+        "n_eval_common": 53310,
+        "pr_auc": 0.7494,
+        "roc_auc": 0.9088,
+        "precision_at_rule_b_workload": 0.7127,
+        "f1_at_rule_b_workload": 0.6615,
+        "pred_pos_at_063": 16949,
+        "precision_at_063": 0.6295,
+        "recall_at_063": 0.7934,
+        "f1_at_063": 0.702
+      }
+    },
+    "created_at_utc": "2026-11-13T06:01:52.061225+00:00"
+  }
+}

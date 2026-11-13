@@ -1,0 +1,1 @@
+[2026-11-13T11:30:59.750143] AUDIT TEST ACCESS: test_features.parquet loaded with final=True. Caller: src/run_final_test.py::run_step5_final_test (Single Official Test Run)

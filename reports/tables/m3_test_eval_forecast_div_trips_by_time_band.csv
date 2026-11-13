@@ -1,0 +1,6 @@
+model_name,time_band,time_band_label,n_eval,actual_positive,pred_positive,positive_prevalence_pct,precision,recall,f1,pr_auc,tp,fp,fn,tn,subset
+"Forecast ÷ Trips (Official 0.96x Rule, Retrained Jan–Jul, Test Set)",early_morning,Early Morning (04:00–06:59),5698,181,114,3.18,0.614,0.3867,0.4746,0.509,70,44,111,5473,All Hours
+"Forecast ÷ Trips (Official 0.96x Rule, Retrained Jan–Jul, Test Set)",morning_peak,Morning Peak (07:00–09:59),7418,2576,2816,34.73,0.6839,0.7477,0.7144,0.7565,1926,890,650,3952,All Hours
+"Forecast ÷ Trips (Official 0.96x Rule, Retrained Jan–Jul, Test Set)",midday,Midday (10:00–15:59),14724,6028,7306,40.94,0.6337,0.7681,0.6945,0.7052,4630,2676,1398,6020,All Hours
+"Forecast ÷ Trips (Official 0.96x Rule, Retrained Jan–Jul, Test Set)",evening_peak,Evening Peak (16:00–18:59),7446,4030,4934,54.12,0.681,0.8337,0.7497,0.7565,3360,1574,670,1842,All Hours
+"Forecast ÷ Trips (Official 0.96x Rule, Retrained Jan–Jul, Test Set)",night,Night (19:00–03:59),18030,640,385,3.55,0.4727,0.2844,0.3551,0.3301,182,203,458,17187,All Hours

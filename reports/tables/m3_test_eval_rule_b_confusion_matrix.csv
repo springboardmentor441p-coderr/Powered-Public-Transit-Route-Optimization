@@ -1,0 +1,4 @@
+Actual Class,Pred Normal (0),Pred High (1),Total Actual,Model
+Actual Normal Demand (0),36309,3552,39861,"Baseline Rule B (4-Week Avg ÷ Trips > Threshold, Test Set) (All Hours)"
+Actual High Demand (1),5353,8102,13455,"Baseline Rule B (4-Week Avg ÷ Trips > Threshold, Test Set) (All Hours)"
+Total Predicted,41662,11654,53316,"Baseline Rule B (4-Week Avg ÷ Trips > Threshold, Test Set) (All Hours)"

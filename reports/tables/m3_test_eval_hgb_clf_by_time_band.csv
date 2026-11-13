@@ -1,0 +1,6 @@
+model_name,time_band,time_band_label,n_eval,actual_positive,pred_positive,positive_prevalence_pct,precision,recall,f1,pr_auc,tp,fp,fn,tn,subset
+"HistGradientBoosting Classifier (Fixed 0.63 Cutoff, Retrained Jan–Jul, Test Set)",early_morning,Early Morning (04:00–06:59),5698,181,180,3.18,0.5556,0.5525,0.554,0.5727,100,80,81,5437,All Hours
+"HistGradientBoosting Classifier (Fixed 0.63 Cutoff, Retrained Jan–Jul, Test Set)",morning_peak,Morning Peak (07:00–09:59),7418,2576,3037,34.73,0.6592,0.7772,0.7133,0.7911,2002,1035,574,3807,All Hours
+"HistGradientBoosting Classifier (Fixed 0.63 Cutoff, Retrained Jan–Jul, Test Set)",midday,Midday (10:00–15:59),14724,6028,8096,40.94,0.6042,0.8115,0.6927,0.7293,4892,3204,1136,5492,All Hours
+"HistGradientBoosting Classifier (Fixed 0.63 Cutoff, Retrained Jan–Jul, Test Set)",evening_peak,Evening Peak (16:00–18:59),7446,4030,5471,54.12,0.6542,0.8881,0.7534,0.7866,3579,1892,451,1524,All Hours
+"HistGradientBoosting Classifier (Fixed 0.63 Cutoff, Retrained Jan–Jul, Test Set)",night,Night (19:00–03:59),18030,640,170,3.55,0.6,0.1594,0.2519,0.4086,102,68,538,17322,All Hours

@@ -391,9 +391,10 @@ def test_step3_classification_outputs_and_hurdle():
 # ==============================================================================
 
 def test_step4_clustering_outputs_and_stability():
-    """Verify Step 4 KMeans evaluation across k=2..6, 20-start and LOO ARI stability checks,
-    DBSCAN k-distance and sensitivity tables, 41-route assignments, unscaled median profiles,
-    and figures/maps.
+    """Verify Step 4 KMeans evaluation across k=2..6 on the 40 routes (excluding M35 outlier),
+    10-start, LOO, and 1-start ARI stability checks, DBSCAN k-distance and sensitivity tables,
+    41-route assignments (3 KMeans groups + M35 outlier), unscaled median profiles with
+    measured-feature group names and non-fitting members, and figures/maps.
     """
     tab_dir = ROOT / "reports" / "tables"
     fig_dir = ROOT / "reports" / "figures"
@@ -404,16 +405,20 @@ def test_step4_clustering_outputs_and_stability():
     assigned_df = pd.read_csv(tab_dir / "m3_route_clusters_assigned.csv")
     profile_df = pd.read_csv(tab_dir / "m3_cluster_group_profiles_unscaled.csv")
 
-    # KMeans tested for k = 2..6 with silhouette, 20-start ARI, and LOO ARI
-    assert list(ksel_df["k"]) == [2, 3, 4, 5, 6]
-    assert ksel_df["silhouette_score"].notnull().all()
-    assert ksel_df["ari_20starts_mean"].notnull().all()
-    assert ksel_df["ari_loo_mean"].notnull().all()
-    # k = 4 must be selected and have the highest 20-start ARI
-    sel_row = ksel_df[ksel_df["is_selected_k"]].iloc[0]
-    assert int(sel_row["k"]) == 4
-    assert sel_row["ari_20starts_mean"] == ksel_df["ari_20starts_mean"].max()
-    assert sel_row["ari_loo_mean"] > 0.90
+    # KMeans tested for k = 2..6 on the 40 routes excluding M35
+    ksel_40 = ksel_df[ksel_df["n_routes_clustered"] == 40]
+    assert list(ksel_40["k"]) == [2, 3, 4, 5, 6]
+    assert ksel_40["silhouette_score"].notnull().all()
+    assert ksel_40["ari_10starts_mean"].notnull().all()
+    assert ksel_40["ari_loo_mean"].notnull().all()
+    assert ksel_40["ari_1start_mean"].notnull().all()
+
+    # k = 3 must be selected on the 40 routes (no singletons, 0.9831 10-start ARI, 0.9126 LOO ARI)
+    sel_row = ksel_40[ksel_40["is_selected_k"]].iloc[0]
+    assert int(sel_row["k"]) == 3
+    assert pd.isna(sel_row["singletons"]) or str(sel_row["singletons"]).lower() == "none"
+    assert sel_row["ari_10starts_mean"] > 0.98
+    assert sel_row["ari_loo_mean"] > 0.91
 
     # DBSCAN k-distance and sensitivity tables
     assert len(kdist_df) == 41
@@ -424,15 +429,22 @@ def test_step4_clustering_outputs_and_stability():
     assert int(elbow_row["n_clusters"]) == 3
     assert int(elbow_row["n_noise_routes"]) == 12
 
-    # 41 routes assigned across 4 KMeans groups (18, 15, 7, 1)
+    # 41 routes: 40 clustered across 3 KMeans groups (18, 15, 7) + 1 pre-clustering outlier (M35 = group 0)
     assert len(assigned_df) == 41
-    assert set(assigned_df["group_id"].unique()) == {1, 2, 3, 4}
+    assert set(assigned_df["group_id"].unique()) == {0, 1, 2, 3}
     group_counts = assigned_df["group_id"].value_counts().to_dict()
-    assert group_counts == {1: 18, 2: 15, 3: 7, 4: 1}
+    assert group_counts == {1: 18, 2: 15, 3: 7, 0: 1}
+    m35_row = assigned_df[assigned_df["route_id"] == "M35"].iloc[0]
+    assert int(m35_row["group_id"]) == 0
+    assert "Unlike every other route" in str(m35_row["group_label"])
 
-    # Unscaled median profiles table (4 groups + 1 network median row = 5 rows)
+    # Unscaled median profiles table (3 KMeans groups + 1 M35 outlier + 1 40-route median row = 5 rows)
     assert len(profile_df) == 5
-    assert set(profile_df["group_id"]) == {0, 1, 2, 3, 4}
+    assert set(profile_df["group_id"]) == {-1, 0, 1, 2, 3}
+    assert "non_fitting_members" in profile_df.columns
+    non_fit_text = " ".join(profile_df["non_fitting_members"].astype(str).tolist())
+    assert "M15+" in non_fit_text
+    assert "M98" in non_fit_text
 
     for fname in [
         "m3_clustering_evaluation.png",
@@ -441,4 +453,85 @@ def test_step4_clustering_outputs_and_stability():
     ]:
         p = fig_dir / fname
         assert p.exists() and p.stat().st_size > 10_000
+
+
+# ==============================================================================
+# 8. MILESTONE 3 STEP 5: SINGLE FINAL TEST RUN & MODEL CARDS
+# ==============================================================================
+
+def test_step5_final_test_outputs_and_model_cards():
+    """Verify Step 5 single official test run outputs, audit log count (1 official run),
+    forecasting and classification test tables (with and without M35 surge hours, 0 storm days),
+    saved model artifacts, and model cards.
+    """
+    import json
+    import joblib
+
+    tab_dir = ROOT / "reports" / "tables"
+    fig_dir = ROOT / "reports" / "figures"
+    models_dir = ROOT / "models"
+
+    # 1. Verify reports/test_runs.log has exactly 1 official test run recorded
+    log_path = ROOT / "reports" / "test_runs.log"
+    assert log_path.exists()
+    log_lines = [ln.strip() for ln in log_path.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    assert len(log_lines) == 1, f"Expected exactly 1 official test run in test_runs.log, found {len(log_lines)}"
+    assert "run_step5_final_test" in log_lines[0]
+
+    # 2. Verify forecasting test tables (overall, by week, by route)
+    f_ov = pd.read_csv(tab_dir / "m3_test_forecast_overall.csv")
+    f_wk = pd.read_csv(tab_dir / "m3_test_forecast_by_week.csv")
+    f_rt = pd.read_csv(tab_dir / "m3_test_forecast_by_route.csv")
+
+    assert any(f_ov["evaluation_subset"].str.startswith("With M35 Surge Hours"))
+    assert any(f_ov["evaluation_subset"].str.startswith("Without M35 Surge Hours"))
+    assert (f_ov["storm_days_note"].str.contains("0 storm days")).all()
+
+    hgb_with = f_ov[(f_ov["evaluation_subset"].str.startswith("With M35")) & (f_ov["model_name"].str.startswith("HistGradientBoosting"))].iloc[0]
+    base_with = f_ov[(f_ov["evaluation_subset"].str.startswith("With M35")) & (f_ov["model_name"].str.startswith("4-Week"))].iloc[0]
+    assert hgb_with["wape_common_pct"] < base_with["wape_common_pct"]
+    assert abs(hgb_with["bias_common_pred_minus_actual"]) < abs(base_with["bias_common_pred_minus_actual"])
+
+    assert len(f_wk) == 18  # 9 test weeks x 2 subsets (With and Without M35 Surge Hours)
+    assert len(f_rt) == 82  # 41 routes x 2 subsets (With and Without M35 Surge Hours)
+    rt_with = f_rt[f_rt["evaluation_subset"] == "With M35 Surge Hours"]
+    rt_no = f_rt[f_rt["evaluation_subset"] == "Without M35 Surge Hours"]
+    assert int(rt_with["hgb_improves_wape"].sum()) == 41
+    assert int(rt_no["hgb_improves_wape"].sum()) == 41
+
+    # 3. Verify classification test table (With and Without M35 Surge Hours)
+    c_ov = pd.read_csv(tab_dir / "m3_test_classification_overall.csv")
+    assert any(c_ov["evaluation_subset"].str.startswith("With M35 Surge Hours"))
+    assert any(c_ov["evaluation_subset"].str.startswith("Without M35 Surge Hours"))
+    assert (c_ov["storm_days_note"].str.contains("0 storm days")).all()
+
+    div_with = c_ov[(c_ov["evaluation_subset"].str.startswith("With M35")) & (c_ov["model_name"].str.startswith("Forecast ÷ Trips"))].iloc[0]
+    rb_with = c_ov[(c_ov["evaluation_subset"].str.startswith("With M35")) & (c_ov["model_name"].str.startswith("Baseline Rule B"))].iloc[0]
+    assert div_with["pr_auc_common"] > rb_with["pr_auc_common"]
+    assert div_with["precision_at_rule_b_workload"] > rb_with["precision_at_rule_b_workload"]
+    assert div_with["f1_at_fixed_cutoff"] > rb_with["f1_at_fixed_cutoff"]
+
+    # 4. Verify saved models and model cards
+    for mfile in ["final_forecaster.joblib", "final_classifier.joblib", "route_clustering.joblib"]:
+        mp = models_dir / mfile
+        assert mp.exists() and mp.stat().st_size > 1_000
+
+    cards_json = json.loads((models_dir / "model_cards.json").read_text(encoding="utf-8"))
+    assert "final_forecaster" in cards_json
+    assert "final_classifier" in cards_json
+    for key in ["final_forecaster", "final_classifier"]:
+        card = cards_json[key]
+        assert "training_date_window" in card
+        assert "input_features" in card and len(card["input_features"]) == 22
+        assert "hyperparameters" in card
+        assert "validation_scores_jan_may_fit" in card
+        assert "test_scores_aug_sep_2026" in card
+
+    md_card_path = ROOT / "reports" / "model_cards.md"
+    assert md_card_path.exists() and md_card_path.stat().st_size > 1_000
+
+    for fig_name in ["m3_test_forecast_results.png", "m3_test_classification_results.png"]:
+        fp = fig_dir / fig_name
+        assert fp.exists() and fp.stat().st_size > 10_000
+
 
