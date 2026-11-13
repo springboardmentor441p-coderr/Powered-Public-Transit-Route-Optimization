@@ -1,0 +1,4 @@
+model,is_production_retrain,n_active_eval,actual_pos,actual_positive_pct,pred_pos_at_cutoff,pred_positive_pct,pr_auc,roc_auc,precision,recall,f1,precision_at_rule_b_workload,rule_b_workload_hours
+Baseline Rule B (4-Wk Avg ÷ Trips > 1.00 × p75),False,12270,4568,37.23,4132,33.68,0.8878,0.9418,0.8572,0.7754,0.8143,0.8572,4132
+Frozen Step 5 Forecast ÷ Trips (> 0.96 × p75),False,12270,4568,37.23,4682,38.16,0.8967,0.9492,0.8353,0.8562,0.8456,0.8688,4132
+Production (Jan-Sep) Forecast ÷ Trips (> 0.96 × p75),True,12270,4568,37.23,4671,38.07,0.899,0.9498,0.8354,0.8542,0.8447,0.8698,4132

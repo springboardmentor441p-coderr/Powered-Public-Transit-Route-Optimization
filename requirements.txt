@@ -5,3 +5,10 @@ requests
 duckdb
 matplotlib
 pytest
+scikit-learn
+joblib
+fastapi
+uvicorn
+pydantic
+httpx
+python-multipart

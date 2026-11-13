@@ -1,0 +1,7 @@
+pr_auc_rank,model_name,test_set_role,pr_auc_53406,precision_at_13081_hours,f1_at_13081_hours,pred_pos_at_max_f1,precision_at_max_f1,recall_at_max_f1,f1_at_max_f1
+1,"HistGradientBoosting Classifier (lr=0.08, leaf=127, min=30, l2=5.0, cw=balanced)",Dedicated Classifier Comparison (Official Test Candidate),0.729,0.661,0.6634,18390,0.5854,0.829,0.6862
+2,Forecast ÷ Trips: Official Max-F1 Rule (0.96x Threshold),Recommended Main Approach (Official Test Candidate),0.7205,0.6801,0.6825,17789,0.6054,0.8292,0.6998
+3,"Random Forest Classifier (depth=18, leaf=5, feat=0.8, cw=balanced)",Validation Candidate,0.6992,0.6417,0.644,19820,0.5623,0.8582,0.6794
+4,Baseline Rule B: 4-Week Avg ÷ Trips > Threshold (Target to Beat),Baseline Benchmark,0.6904,0.6641,0.6665,13081,0.6641,0.6689,0.6665
+5,Baseline Rule A: 7-Day Lag ÷ Trips > Threshold,Baseline Reference,0.6295,0.6235,0.6257,13263,0.6211,0.6342,0.6276
+6,"Logistic Regression (C=1.0, class_weight=weight_1:1.5)",Validation Candidate,0.6271,0.5944,0.5966,18769,0.5351,0.7733,0.6325

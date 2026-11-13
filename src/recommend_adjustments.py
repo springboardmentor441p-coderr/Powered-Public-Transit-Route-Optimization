@@ -50,6 +50,96 @@ TAB_DIR = ROOT / "reports" / "tables"
 FIG_DIR = ROOT / "reports" / "figures"
 
 
+def compute_cell_scenario_effect(
+    *,
+    route: str,
+    day_group: str,
+    days_count: int,
+    days_in_day_group: int,
+    time_band: str,
+    review_category: str,
+    group_id: int,
+    exclusive_stop_share: float,
+    active_hours: int,
+    base_trips: int,
+    base_service_hours: float,
+    constant_obs_ridership: float,
+    base_riders_per_trip: float,
+    base_riders_per_service_hour: float,
+    base_high_demand_hours: int,
+    hourly_trips: np.ndarray,
+    hourly_riders: np.ndarray,
+    hourly_p75: np.ndarray,
+    dg_svc_total: float,
+    net_window_svc: float,
+    pct: float,
+    floor_per_hr: int,
+    high_excl_threshold: float,
+) -> dict:
+    """Compute constant-ridership trip & service-hour scenario metrics for one cell."""
+    min_trips_floor = active_hours * floor_per_hr
+    scale_target = 1.0 + pct / 100.0
+    new_trips = int(max(min_trips_floor, round(base_trips * scale_target)))
+    actual_scale = new_trips / base_trips if base_trips > 0 else 1.0
+    new_svc_hrs = round(base_service_hours * actual_scale, 2)
+    delta_trips = new_trips - base_trips
+    delta_svc_hrs = round(new_svc_hrs - base_service_hours, 2)
+
+    # Constant ridership assumption: riders stay the same when trips change
+    new_r_per_trip = round(constant_obs_ridership / new_trips, 2) if new_trips > 0 else np.nan
+    new_r_per_svch = round(constant_obs_ridership / new_svc_hrs, 2) if new_svc_hrs > 0 else np.nan
+
+    # Recompute hourly p75 threshold exceedance under scaled trips
+    sim_trips_hr = np.maximum(floor_per_hr, hourly_trips * actual_scale)
+    sim_ratio_hr = hourly_riders / sim_trips_hr
+    sim_hd_hrs = int((sim_ratio_hr > hourly_p75).sum())
+    hd_delta = sim_hd_hrs - base_high_demand_hours
+
+    if pct < 0 and exclusive_stop_share >= high_excl_threshold and abs(pct) > 10:
+        guardrail_status = "exceeds_10pct_exclusivity_guardrail"
+    elif pct < 0 and hd_delta > 0:
+        guardrail_status = "warning_pushes_hours_above_threshold"
+    else:
+        guardrail_status = "ok"
+
+    return {
+        "route": route,
+        "day_group": day_group,
+        "days_count": int(days_count),
+        "days_in_day_group": int(days_in_day_group),
+        "time_band": time_band,
+        "review_category": review_category,
+        "group_id": int(group_id),
+        "exclusive_stop_share": float(exclusive_stop_share),
+        "scenario_trip_change_pct": pct,
+        "effective_trip_change_pct": round((actual_scale - 1.0) * 100.0, 2),
+        "base_trips": int(base_trips),
+        "new_trips": new_trips,
+        "delta_trips": delta_trips,
+        "base_service_hours": float(base_service_hours),
+        "new_service_hours": new_svc_hrs,
+        "delta_service_hours": delta_svc_hrs,
+        "delta_service_hours_per_day": (
+            round(delta_svc_hrs / days_count, 2) if days_count > 0 else np.nan
+        ),
+        "pct_of_day_group_service_hours": (
+            round(delta_svc_hrs / dg_svc_total * 100.0, 3) if dg_svc_total > 0 else np.nan
+        ),
+        "pct_of_window_network_service_hours": (
+            round(delta_svc_hrs / net_window_svc * 100.0, 3) if net_window_svc > 0 else np.nan
+        ),
+        "constant_obs_ridership": float(constant_obs_ridership),
+        "base_riders_per_trip": float(base_riders_per_trip),
+        "new_riders_per_trip": new_r_per_trip,
+        "base_riders_per_service_hour": float(base_riders_per_service_hour),
+        "new_riders_per_service_hour": new_r_per_svch,
+        "base_high_demand_hours": int(base_high_demand_hours),
+        "sim_high_demand_hours": sim_hd_hrs,
+        "high_demand_hours_delta": hd_delta,
+        "guardrail_status": guardrail_status,
+    }
+
+
 def simulate_trip_scenarios(
     review_df: pd.DataFrame, obs_df: pd.DataFrame, cfg: dict
 ) -> pd.DataFrame:
@@ -71,83 +161,39 @@ def simulate_trip_scenarios(
         r = cand["route"]
         tb = cand["time_band"]
         dg = cand["day_group"]
-        days_cnt = int(cand["days_count"])
-        days_in_dg = int(cand["days_in_day_group"])
-        cat = cand["review_category"]
-        act_hrs = int(cand["active_hours"])
-        base_trips = int(cand["total_trips_running"])
-        base_svc_hrs = float(cand["total_service_hours"])
-        tot_riders = float(cand["total_obs_ridership"])
-        base_hd_hrs = int(cand["high_demand_hours"])
-        excl_share = float(cand["exclusive_stop_share"])
-
         sub_hrs = obs_df[
             (obs_df["route"] == r)
             & (obs_df["time_band"] == tb)
             & (obs_df["day_group"] == dg)
         ]
-        min_trips_floor = act_hrs * floor_per_hr
 
         for pct in deltas:
-            scale_target = 1.0 + pct / 100.0
-            new_trips = int(max(min_trips_floor, round(base_trips * scale_target)))
-            actual_scale = new_trips / base_trips if base_trips > 0 else 1.0
-            new_svc_hrs = round(base_svc_hrs * actual_scale, 2)
-            delta_trips = new_trips - base_trips
-            delta_svc_hrs = round(new_svc_hrs - base_svc_hrs, 2)
-
-            # Constant ridership assumption: total riders unchanged when trips change
-            new_r_per_trip = round(tot_riders / new_trips, 2) if new_trips > 0 else np.nan
-            new_r_per_svch = round(tot_riders / new_svc_hrs, 2) if new_svc_hrs > 0 else np.nan
-
-            # Recompute hourly p75 threshold exceedance under scaled trips
-            sim_trips_hr = np.maximum(floor_per_hr, sub_hrs["trips_running"].values * actual_scale)
-            sim_ratio_hr = sub_hrs["ridership"].values / sim_trips_hr
-            sim_hd_hrs = int((sim_ratio_hr > sub_hrs["threshold_p75"].values).sum())
-            hd_delta = sim_hd_hrs - base_hd_hrs
-
-            if pct < 0 and excl_share >= c_cfg["high_exclusive_stop_share"] and abs(pct) > 10:
-                guardrail_status = "exceeds_10pct_exclusivity_guardrail"
-            elif pct < 0 and hd_delta > 0:
-                guardrail_status = "warning_pushes_hours_above_threshold"
-            else:
-                guardrail_status = "ok"
-
             rows.append(
-                {
-                    "route": r,
-                    "day_group": dg,
-                    "days_count": days_cnt,
-                    "days_in_day_group": days_in_dg,
-                    "time_band": tb,
-                    "review_category": cat,
-                    "group_id": int(cand["group_id"]),
-                    "exclusive_stop_share": excl_share,
-                    "scenario_trip_change_pct": pct,
-                    "effective_trip_change_pct": round((actual_scale - 1.0) * 100.0, 2),
-                    "base_trips": base_trips,
-                    "new_trips": new_trips,
-                    "delta_trips": delta_trips,
-                    "base_service_hours": base_svc_hrs,
-                    "new_service_hours": new_svc_hrs,
-                    "delta_service_hours": delta_svc_hrs,
-                    "delta_service_hours_per_day": round(delta_svc_hrs / days_cnt, 2),
-                    "pct_of_day_group_service_hours": round(
-                        delta_svc_hrs / dg_svc_totals[dg] * 100.0, 3
-                    ),
-                    "pct_of_window_network_service_hours": round(
-                        delta_svc_hrs / net_window_svc * 100.0, 3
-                    ),
-                    "constant_obs_ridership": tot_riders,
-                    "base_riders_per_trip": float(cand["obs_riders_per_trip"]),
-                    "new_riders_per_trip": new_r_per_trip,
-                    "base_riders_per_service_hour": float(cand["obs_riders_per_service_hour"]),
-                    "new_riders_per_service_hour": new_r_per_svch,
-                    "base_high_demand_hours": base_hd_hrs,
-                    "sim_high_demand_hours": sim_hd_hrs,
-                    "high_demand_hours_delta": hd_delta,
-                    "guardrail_status": guardrail_status,
-                }
+                compute_cell_scenario_effect(
+                    route=r,
+                    day_group=dg,
+                    days_count=int(cand["days_count"]),
+                    days_in_day_group=int(cand["days_in_day_group"]),
+                    time_band=tb,
+                    review_category=cand["review_category"],
+                    group_id=int(cand["group_id"]),
+                    exclusive_stop_share=float(cand["exclusive_stop_share"]),
+                    active_hours=int(cand["active_hours"]),
+                    base_trips=int(cand["total_trips_running"]),
+                    base_service_hours=float(cand["total_service_hours"]),
+                    constant_obs_ridership=float(cand["total_obs_ridership"]),
+                    base_riders_per_trip=float(cand["obs_riders_per_trip"]),
+                    base_riders_per_service_hour=float(cand["obs_riders_per_service_hour"]),
+                    base_high_demand_hours=int(cand["high_demand_hours"]),
+                    hourly_trips=sub_hrs["trips_running"].values,
+                    hourly_riders=sub_hrs["ridership"].values,
+                    hourly_p75=sub_hrs["threshold_p75"].values,
+                    dg_svc_total=float(dg_svc_totals[dg]),
+                    net_window_svc=net_window_svc,
+                    pct=pct,
+                    floor_per_hr=floor_per_hr,
+                    high_excl_threshold=float(c_cfg["high_exclusive_stop_share"]),
+                )
             )
 
     return pd.DataFrame(rows)

@@ -4,4 +4,10 @@ __pycache__/
 .ipynb_checkpoints/
 .venv/
 scratch/
+.pytest_cache/
+frontend/node_modules/
+frontend/dist/
+frontend/playwright-report/
+frontend/test-results/
+
 

@@ -1,0 +1,5 @@
+model_name,day_type,n_eval,total_actual,mae,rmse,wape_pct,bias_pred_minus_actual,subset
+"HistGradientBoosting (Retrained Jan–Jul, Test Set)",Typical Weekday,37369,10602116.0,38.0,68.23,13.39,-2.94,All Hours
+"HistGradientBoosting (Retrained Jan–Jul, Test Set)",Typical Saturday,7700,1547187.0,34.16,57.79,17.0,0.84,All Hours
+"HistGradientBoosting (Retrained Jan–Jul, Test Set)",Typical Sunday,7570,1298156.0,26.74,44.55,15.59,2.49,All Hours
+"HistGradientBoosting (Retrained Jan–Jul, Test Set)",Special/Excluded,862,165555.0,32.83,68.14,17.09,-19.24,All Hours

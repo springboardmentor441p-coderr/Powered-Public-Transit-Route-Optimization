@@ -37,25 +37,53 @@ USABLE_SNAPSHOTS = [
 
 def parse_gtfs_time_to_seconds(time_series: pd.Series) -> pd.Series:
     """Parse HH:MM:SS (including HH >= 24) to total seconds from service day start."""
-    parts = time_series.str.split(":", expand=True).astype(int)
+    parts = time_series.str.strip().str.split(":", expand=True)
+    if parts.shape[1] != 3:
+        raise ValueError("Invalid GTFS time format; expected HH:MM:SS")
+    parts = parts.astype(int)
+    if ((parts[1] < 0) | (parts[1] >= 60) | (parts[2] < 0) | (parts[2] >= 60) | (parts[0] < 0)).any():
+        raise ValueError("Out-of-range HH/MM/SS values in GTFS times")
     return parts[0] * 3600 + parts[1] * 60 + parts[2]
 
 
-def check_snapshot_integrity(snapshot_date: str) -> dict:
-    zip_path = GTFS_DIR / snapshot_date / "original.zip"
+def _read_gtfs_member(z: zipfile.ZipFile, member_map: dict[str, str], filename: str, **kwargs) -> pd.DataFrame | None:
+    key = filename.lower()
+    if key not in member_map:
+        return None
+    with z.open(member_map[key]) as fh:
+        return pd.read_csv(fh, dtype=str, **kwargs)
+
+
+def check_gtfs_zip_integrity(zip_path: Path, label: str = "uploaded", quiet: bool = False) -> dict:
+    """Run all 6 Milestone 1 referential integrity & timestamp checks on any GTFS zip archive."""
     if not zip_path.exists():
         raise FileNotFoundError(f"Missing GTFS archive: {zip_path}")
 
-    print(f"\nChecking GTFS snapshot: {snapshot_date} ({zip_path.stat().st_size / 1e6:.1f} MB)...")
+    if not quiet:
+        print(f"\nChecking GTFS snapshot: {label} ({zip_path.stat().st_size / 1e6:.1f} MB)...")
 
     with zipfile.ZipFile(zip_path) as z:
-        routes = pd.read_csv(z.open("routes.txt"), dtype=str)
-        trips = pd.read_csv(z.open("trips.txt"), dtype=str)
-        st = pd.read_csv(z.open("stop_times.txt"), dtype=str)
-        stops = pd.read_csv(z.open("stops.txt"), dtype=str)
-        calendar = pd.read_csv(z.open("calendar.txt"), dtype=str) if "calendar.txt" in z.namelist() else None
-        calendar_dates = pd.read_csv(z.open("calendar_dates.txt"), dtype=str) if "calendar_dates.txt" in z.namelist() else None
-        shapes = pd.read_csv(z.open("shapes.txt"), dtype=str, usecols=["shape_id"]) if "shapes.txt" in z.namelist() else None
+        # Support either root-level or single nested folder GTFS files safely inside the zip
+        member_map: dict[str, str] = {}
+        for info in z.infolist():
+            if info.is_dir():
+                continue
+            base = Path(info.filename).name.lower()
+            if base not in member_map or "/" not in info.filename:
+                member_map[base] = info.filename
+
+        required = ["routes.txt", "trips.txt", "stop_times.txt", "stops.txt"]
+        missing_files = [f for f in required if f not in member_map]
+        if missing_files:
+            raise ValueError(f"Missing required GTFS file(s): {', '.join(missing_files)}")
+
+        routes = _read_gtfs_member(z, member_map, "routes.txt")
+        trips = _read_gtfs_member(z, member_map, "trips.txt")
+        st = _read_gtfs_member(z, member_map, "stop_times.txt")
+        stops = _read_gtfs_member(z, member_map, "stops.txt")
+        calendar = _read_gtfs_member(z, member_map, "calendar.txt")
+        calendar_dates = _read_gtfs_member(z, member_map, "calendar_dates.txt")
+        shapes = _read_gtfs_member(z, member_map, "shapes.txt", usecols=["shape_id"])
 
     # Every trip's service_id must be defined in calendar or calendar_dates
     known_services = set()
@@ -92,13 +120,13 @@ def check_snapshot_integrity(snapshot_date: str) -> dict:
 
     # Check 6: spillover times >= 24:00:00
     times_ge_24h = int((st["arr_sec"] >= 86400).sum())
-    max_hour = int(st["arr_sec"].max() // 3600)
+    max_hour = int(st["arr_sec"].max() // 3600) if len(st) > 0 else 0
 
     # Routes with trips
     routes_with_trips = sorted(trips["route_id"].unique().tolist())
 
     res = {
-        "snapshot_date": snapshot_date,
+        "snapshot_date": label,
         "n_routes_total": len(routes),
         "n_routes_with_trips": len(routes_with_trips),
         "n_trips": len(trips),
@@ -126,13 +154,19 @@ def check_snapshot_integrity(snapshot_date: str) -> dict:
         ),
     }
 
-    status = "PASSED" if res["referential_integrity_passed"] else "FAILED"
-    print(f"  Referential integrity: {status}")
-    print(f"  Trips: {res['n_trips']:,} across {res['n_routes_with_trips']} routes")
-    print(f"  Stop times: {res['n_stop_times']:,} ({times_ge_24h:,} times >= 24:00, max hour={max_hour})")
-    print(f"  Violations (routes/trips/stops/times): {trips_missing_routes}/{st_missing_trips}/{st_missing_stops}/{time_order_violations}")
+    if not quiet:
+        status = "PASSED" if res["referential_integrity_passed"] else "FAILED"
+        print(f"  Referential integrity: {status}")
+        print(f"  Trips: {res['n_trips']:,} across {res['n_routes_with_trips']} routes")
+        print(f"  Stop times: {res['n_stop_times']:,} ({times_ge_24h:,} times >= 24:00, max hour={max_hour})")
+        print(f"  Violations (routes/trips/stops/times): {trips_missing_routes}/{st_missing_trips}/{st_missing_stops}/{time_order_violations}")
 
     return res
+
+
+def check_snapshot_integrity(snapshot_date: str) -> dict:
+    zip_path = GTFS_DIR / snapshot_date / "original.zip"
+    return check_gtfs_zip_integrity(zip_path, label=snapshot_date)
 
 
 def main():

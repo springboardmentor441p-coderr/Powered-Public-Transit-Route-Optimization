@@ -1,0 +1,7 @@
+check_name,result,details
+ridership_validation_checks,PASSED (0 issues),"null_values=0, non_integer_counts=0, negative_ridership=0, negative_transfers=0, transfers_gt_ridership=0, duplicate_route_hours=0"
+outage_rule_20pct_october,0 outage hours flagged,"Applied find_outage_hours_relative(..., threshold=0.20) excluding Columbus Day (2026-10-12)."
+gtfs_bm_and_trips_running_definition,regular=6229..8573/day; -BM bridge=2..3/day,"Matches src/build_schedule.py (GTFSFeed + count_trip_hours with overnight spillover; regular trips excl. -BM define full service ownership, -BM bridge trips included in hourly count)."
+month_feature_in_model,in_model=False (0.00 prediction effect),Model uses 22 semantic features; raw calendar month is excluded.
+mean_ridership_shift,Oct=293.75/hr vs Jan-Jul=250.89/hr (+17.1%),"Train+Val Jan-Jul=250.89, Test Aug-Sep=255.30 (Sep=270.99), Unseen Oct 18-31=293.75 riders/active hr."
+row_reconciliation_12270_vs_12335,"active=12,270, unscheduled_riders_only=65, matched=12,335","Total 41x14x24=13,776: dropped 1,441 neither rows; 65 rows have trips_running==0 & ridership>0 (113 riders total). Both scored and active evaluation sets use n=12,270."

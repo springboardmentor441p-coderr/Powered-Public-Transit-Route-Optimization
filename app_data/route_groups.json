@@ -1,0 +1,60 @@
+{
+  "outlier_route": "M35",
+  "selected_k_on_40_routes": 3,
+  "selected_features": [
+    "weekday_riders_log",
+    "weekend_to_weekday_ratio",
+    "morning_peak_share",
+    "night_share",
+    "peak_riders_per_service_hour",
+    "route_length_km",
+    "scheduled_speed_kmh",
+    "demand_variability",
+    "exclusive_stop_share"
+  ],
+  "pca_explained_variance_ratio": [
+    0.3606,
+    0.2306
+  ],
+  "pca_total_variance_explained": 0.5913,
+  "group_metadata": {
+    "1": {
+      "group_id": 1,
+      "group_label": "Group 1: Longer routes (median 12.6 km, ~7,000 weekday riders)",
+      "short_label": "Group 1: Longer routes, ~7,000 riders (n=18)",
+      "color": "#1d4ed8",
+      "marker": "o",
+      "non_fitting_members": "M12 (6.10 km, ~480 weekday riders/day) and M55 (8.16 km, ~1,210 riders/day) are shorter and carry far fewer riders than the 12.58 km / ~7,018-rider median, while M10 (8.36 km, ~1,943 riders/day) and M20 (8.30 km, ~1,813 riders/day) are mid-length routes under 2,000 riders/day; KMeans places them here because of their high weekend-to-weekday ratios (0.75\u20131.04) and late-night shares (11.9\u201315.4%).",
+      "plain_description": "Longer routes (median 12.58 km, scheduled speed 10.0 km/h) averaging about 7,018 weekday riders/day (log=8.86), with the highest weekend-to-weekday ratio (0.755) and night share (13.7%), moderate peak riders per service-hour (32.45), steady weekday demand (variability=0.175), and the lowest exclusive-stop share (44.7%). Exceptions inside this group: M12 (6.10 km, ~480 riders/day), M55 (8.16 km, ~1,210 riders/day), M10 (8.36 km, ~1,943 riders/day), and M20 (8.30 km, ~1,813 riders/day) have much lower ridership and shorter lengths, but group here due to their high weekend retention (0.75\u20131.04) and night shares."
+    },
+    "2": {
+      "group_id": 2,
+      "group_label": "Group 2: Short routes with the most riders per service-hour (median 4.2 km, 66 peak riders/service-hr)",
+      "short_label": "Group 2: Short routes, 66 peak riders/service-hr (n=15)",
+      "color": "#059669",
+      "marker": "s",
+      "non_fitting_members": "M15+ is a 13.86 km north\u2013south Select Bus Service route (more than 3x the 4.24 km group median), yet it falls into this short-route group because its 94.2 peak riders per service-hour, ~26,160 weekday riders/day (log=10.17), low variability (0.141), and 0.583 weekend ratio match the short high-density corridors. M31 (7.09 km) and M57 (6.66 km) are also somewhat longer than the 4.24 km median.",
+      "plain_description": "Short routes (median 4.24 km, scheduled speed 9.7 km/h) with the most riders per service-hour at peak (median 65.76 peak riders/service-hr, double Group 1), high weekday ridership (~6,871 riders/day, log=8.84), the lowest day-to-day demand variability (0.163), moderate weekend ratio (0.539), and 50.0% exclusive stops. Key exception: M15+ is 13.86 km long (a north\u2013south route, not a short crosstown route), but lands here because of its 94.2 peak riders per service-hour and low variability (0.141)."
+    },
+    "3": {
+      "group_id": 3,
+      "group_label": "Group 3: Short routes with fewer riders and less steady demand (median 4.1 km, ~1,400 riders, variability 0.28)",
+      "short_label": "Group 3: Short routes, ~1,400 riders & higher CV (n=7)",
+      "color": "#d97706",
+      "marker": "^",
+      "non_fitting_members": "M98 is 15.56 km long (nearly 4x the 4.06 km group median) with 13.4 km/h speed, 0.00 weekend ratio (weekday peak-only service), and 0.525 demand variability; it stays in Group 3 at k=2..4 because of its low daily ridership (~356 riders/day, log=5.88) and 57.2% morning peak share, before splitting into a singleton at k=5 and k=6.",
+      "plain_description": "Short routes (median 4.06 km, scheduled speed 9.8 km/h) with fewer weekday riders (~1,431 riders/day, log=7.27) and less steady demand (median variability=0.276), alongside the highest morning peak share (34.7% of daily riders in 07:00\u201309:59), lowest night share (7.6%) and weekend ratio (0.470), 36.08 peak riders per service-hour, and 69.1% exclusive stops. Key exception: M98 is 15.56 km long (at 13.4 km/h) with 0.00 weekend ratio, grouping here due to its low riders (~356/day) and 57.2% morning peak share."
+    },
+    "0": {
+      "group_id": 0,
+      "group_label": "Outlier (Removed Before Clustering): M35 \u2014 Unlike every other route",
+      "short_label": "Outlier (Removed): M35 (n=1)",
+      "color": "#dc2626",
+      "marker": "D",
+      "non_fitting_members": "N/A \u2014 M35 is reported separately as a 1-route outlier (3-NN distance = 7.97) rather than a cluster.",
+      "plain_description": "Removed before clustering because one route on its own is an outlier, not a group: M35 (4.95 km across the RFK Bridge to Randall's Island) has the lowest weekday riders (~146/day in Jan\u2013May, log=4.99), the only weekend-to-weekday ratio above 1.0 (1.666), the lowest peak riders per service-hour (4.42), the fastest scheduled speed (21.7 km/h vs 9.8 km/h network median), the highest demand variability (0.847), and 100.0% exclusive stops."
+    }
+  },
+  "overlap_note": "Route groups reflect 9 route-level schedule/demand characteristics plus exclusive stop share (40 routes with M35 analyzed separately as an outlier). Shared corridors appear as moderate exclusive stop shares (median 44.7% in Group 1 vs 50.0% in Group 2 and 69.1% in Group 3); pair-level corridor relationships require inspecting the stop overlap pairs alongside group labels.",
+  "k2_vs_k3_decision_note": "The pre-set stability rule selected k=2 (10-start ARI 1.000, LOO ARI 0.987, sil 0.255), but k=3 was chosen as an explicit departure because k=2 merges low-volume routes (~1,431 weekday riders/day) with ~6,871-rider short crosstown corridors."
+}

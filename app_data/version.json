@@ -1,0 +1,13 @@
+{
+  "git_commit": "c605bab-dirty",
+  "git_sha": "c605bab",
+  "export_date": "2026-11-13T16:18:19.961231+00:00",
+  "study_window": "2026-01-04 to 2026-10-31 (Training: Jan-May, Validation: Jun-Jul, Test: Aug-Sep, Operational Check: Oct 18-31; Review Window: Aug-Oct observed typical days)",
+  "data_sources": "MTA Bus Hourly Ridership (2026-01 to 2026-10) & NYC Manhattan Bus GTFS Feeds (2025-12-30 to 2026-10-17)",
+  "official_test_runs_logged": 1,
+  "official_test_log": [
+    "[2026-11-13T11:30:59.750143] AUDIT TEST ACCESS: test_features.parquet loaded with final=True. Caller: src/run_final_test.py::run_step5_final_test (Single Official Test Run)"
+  ],
+  "scenario_assumption": "Riders stay the same when trips change (0.0 elasticity arithmetic simulation)",
+  "terminology_note": "Uses plain threshold terms ('high riders per trip'); avoids crowding/underused claims."
+}
