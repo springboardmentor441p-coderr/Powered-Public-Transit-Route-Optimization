@@ -169,13 +169,18 @@ export const ScenariosPage: React.FC<ScenariosPageProps> = ({
             <input
               id="sc-pct"
               type="range"
-              min={-40}
-              max={60}
+              min={-50}
+              max={50}
               step={5}
               value={tripChangePct}
               onChange={(e) => setTripChangePct(Number(e.target.value))}
               className="mt-2 w-full accent-blue-600"
             />
+            <div className="mt-1 flex justify-between text-[11px] text-slate-400">
+              <span>-50% (limit)</span>
+              <span>0%</span>
+              <span>+50% (limit)</span>
+            </div>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {[-20, -10, 10, 20].map((v) => (
                 <button
@@ -192,6 +197,9 @@ export const ScenariosPage: React.FC<ScenariosPageProps> = ({
                 </button>
               ))}
             </div>
+            <p className="mt-2 text-[11px] text-slate-500">
+              Allowed range: -50% to +50%. On routes with &gt;=60% exclusive stops, cuts beyond -10% are automatically capped at -10%.
+            </p>
           </div>
           <button
             type="submit"
@@ -223,12 +231,19 @@ export const ScenariosPage: React.FC<ScenariosPageProps> = ({
                   className={`rounded px-2 py-0.5 font-semibold ${
                     sc.guardrail_status === "ok"
                       ? "bg-emerald-100 text-emerald-800"
+                      : sc.guardrail_capped
+                      ? "bg-amber-100 text-amber-900"
                       : "bg-rose-100 text-rose-800"
                   }`}
                 >
                   Guardrail: {sc.guardrail_status}
                 </span>
               </div>
+              {sc.guardrail_warning ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
+                  {sc.guardrail_warning}
+                </div>
+              ) : null}
 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 <div className="rounded-lg border border-slate-100 p-3">

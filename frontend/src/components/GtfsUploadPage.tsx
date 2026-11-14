@@ -49,7 +49,7 @@ export const GtfsUploadPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="GTFS Feed Upload & Safe Schedule Inspector"
-        subtitle="Upload any GTFS .zip feed (up to 50 MB). Safely extracts to an isolated temporary directory with Zip Slip prevention, runs Milestone 1 integrity, schedule & overlap checks, and matches against the 41 Manhattan study routes."
+        subtitle="Upload any GTFS .zip feed (up to 50 MB compressed / 300 MB uncompressed). Safely extracts to an isolated temporary directory with Zip Slip prevention, runs Milestone 1 integrity, schedule & overlap checks, and matches against the 41 Manhattan study routes."
         period={result?.period ?? "On-demand uploaded GTFS archive"}
         source={result?.source ?? "POST /api/gtfs/upload (Milestone 1 integrity, profile & overlap checks)"}
       />
@@ -62,7 +62,7 @@ export const GtfsUploadPage: React.FC = () => {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <div className="flex-1">
             <label htmlFor="gtfs-file-input" className="block text-xs font-semibold text-slate-800">
-              GTFS Archive (.zip, max 50 MB)
+              GTFS Archive (.zip, max 50 MB upload / 300 MB unzipped)
             </label>
             <input
               id="gtfs-file-input"
@@ -87,6 +87,12 @@ export const GtfsUploadPage: React.FC = () => {
           </span>{" "}
           and never invent ridership numbers.
         </p>
+        {loading ? (
+          <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-900">
+            Inspecting GTFS archive... Full city feeds (~8 MB / ~1.2M stop times) typically take
+            10–30 seconds to check referential integrity, service schedules, and stop overlaps.
+          </div>
+        ) : null}
         {error ? (
           <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">
             {error}
@@ -175,7 +181,7 @@ export const GtfsUploadPage: React.FC = () => {
                   <XAxis dataKey="hour" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Bar dataKey="trips_running" name="Trips Running" fill="#2563eb" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="trips_running" name="Trips Running" fill="#2563eb" radius={[3, 3, 0, 0]} isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

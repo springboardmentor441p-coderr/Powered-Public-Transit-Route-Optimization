@@ -59,9 +59,23 @@ export const RouteGroupsPage: React.FC<RouteGroupsPageProps> = ({
     return out;
   }, [groups.routes]);
 
+  const pcaTable = groups.pca_variance ?? [];
+  const pc1Row = pcaTable.find((r) => r.component === "PC1");
+  const pc2Row = pcaTable.find((r) => r.component === "PC2");
   const varRatio = groups.metadata.pca_explained_variance_ratio;
-  const pc1Pct = varRatio?.[0] !== undefined ? (varRatio[0] * 100).toFixed(1) : "36.1";
-  const pc2Pct = varRatio?.[1] !== undefined ? (varRatio[1] * 100).toFixed(1) : "23.1";
+  const pc1Pct = pc1Row
+    ? fmtNum(pc1Row.explained_variance_pct, 1)
+    : varRatio?.[0] !== undefined
+    ? (varRatio[0] * 100).toFixed(1)
+    : "36.1";
+  const pc2Pct = pc2Row
+    ? fmtNum(pc2Row.explained_variance_pct, 1)
+    : varRatio?.[1] !== undefined
+    ? (varRatio[1] * 100).toFixed(1)
+    : "23.1";
+  const pcaTotalPct = pc2Row
+    ? fmtNum(pc2Row.cumulative_variance_pct, 1)
+    : fmtNum((groups.metadata.pca_total_variance_explained ?? 0.5913) * 100, 1);
 
   return (
     <div className="space-y-6">
@@ -161,28 +175,41 @@ export const RouteGroupsPage: React.FC<RouteGroupsPageProps> = ({
             2D PCA Scatter of 40 Clustered Routes (M35 Excluded as Outlier)
           </h2>
           <p className="mb-3 text-xs text-slate-500">
-            PC1 ({pc1Pct}% var) and PC2 ({pc2Pct}% var) capture{" "}
-            {fmtNum((groups.metadata.pca_total_variance_explained ?? 0.5913) * 100, 1)}% of total variance.
+            PC1 ({pc1Pct}% var) and PC2 ({pc2Pct}% var) capture {pcaTotalPct}% of total variance (table:{" "}
+            <code>m3_clustering_pca_variance.csv</code>, 40 clustered routes).
           </p>
           <div className="h-96 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 12, right: 20, bottom: 16, left: 4 }}>
+              <ScatterChart margin={{ top: 8, right: 20, bottom: 28, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis
                   type="number"
                   dataKey="pc1_40"
                   name="PC1"
+                  domain={[-3.2, 4.4]}
                   tick={{ fontSize: 11 }}
-                  label={{ value: `PC1 (${pc1Pct}% variance)`, position: "bottom", fontSize: 11 }}
+                  label={{
+                    value: `PC1 (${pc1Pct}% variance)`,
+                    position: "bottom",
+                    offset: 8,
+                    fontSize: 11,
+                  }}
                 />
                 <YAxis
                   type="number"
                   dataKey="pc2_40"
                   name="PC2"
+                  domain={[-4.4, 3.4]}
                   tick={{ fontSize: 11 }}
-                  label={{ value: `PC2 (${pc2Pct}% variance)`, angle: -90, position: "insideLeft", fontSize: 11 }}
+                  label={{
+                    value: `PC2 (${pc2Pct}% variance)`,
+                    angle: -90,
+                    position: "insideLeft",
+                    dx: -10,
+                    style: { textAnchor: "middle", fontSize: 11 },
+                  }}
                 />
-                <ZAxis type="number" dataKey="weekday_riders_est" range={[50, 260]} />
+                <ZAxis type="number" dataKey="weekday_riders_est" range={[60, 260]} />
                 <Tooltip
                   cursor={{ strokeDasharray: "3 3" }}
                   content={({ active, payload }) => {
@@ -203,7 +230,7 @@ export const RouteGroupsPage: React.FC<RouteGroupsPageProps> = ({
                     );
                   }}
                 />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Legend verticalAlign="top" height={28} wrapperStyle={{ fontSize: 11 }} />
                 {[1, 2, 3].map((gid) =>
                   visibleGroups[gid] ? (
                     <Scatter
@@ -211,6 +238,8 @@ export const RouteGroupsPage: React.FC<RouteGroupsPageProps> = ({
                       name={`Group ${gid}`}
                       data={routesByGroup[gid]}
                       fill={GROUP_COLORS[gid]}
+                      fillOpacity={0.85}
+                      isAnimationActive={false}
                       onClick={(entry) => {
                         if (entry?.route_id) onSelectRoute(String(entry.route_id));
                       }}

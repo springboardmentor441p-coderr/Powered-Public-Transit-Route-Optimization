@@ -47,6 +47,8 @@ export function formatReviewCategory(cat: string): string {
     fewer_trips_candidate: "Fewer trips review",
     more_trips_candidate: "More trips review (high riders per trip)",
     within_threshold: "Within threshold",
+    no_change_watch: "Within threshold (watch)",
+    shared_corridor_overlap_watch: "Shared corridor watch",
   };
   return map[cat] ?? cat;
 }
@@ -323,8 +325,12 @@ export interface ScenarioResult {
   review_category: string;
   group_id: number;
   exclusive_stop_share: number;
+  requested_trip_change_pct?: number | null;
   scenario_trip_change_pct: number;
   effective_trip_change_pct: number;
+  guardrail_capped?: boolean;
+  max_recommended_cut_pct?: number | null;
+  guardrail_warning?: string | null;
   base_trips: number;
   new_trips: number;
   delta_trips: number;
@@ -366,6 +372,15 @@ export interface GroupsData {
     overlap_note: string;
     k2_vs_k3_decision_note: string;
   };
+  pca_variance?: Array<{
+    component: string;
+    explained_variance_ratio: number;
+    explained_variance_pct: number;
+    cumulative_variance_ratio: number;
+    cumulative_variance_pct: number;
+    n_routes: number;
+    excluded_outlier: string;
+  }>;
   routes: Array<Record<string, unknown>>;
   group_profiles: Array<Record<string, unknown>>;
   k_selection: Array<Record<string, unknown>>;
@@ -463,8 +478,19 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   if (!res.ok) {
     let detail = `Request failed (${res.status})`;
     try {
-      const errBody = (await res.json()) as { detail?: string };
-      if (errBody.detail) detail = errBody.detail;
+      const errBody = (await res.json()) as {
+        detail?: string | Array<{ msg?: string; loc?: unknown[] }>;
+      };
+      if (typeof errBody.detail === "string") {
+        detail = errBody.detail;
+      } else if (Array.isArray(errBody.detail) && errBody.detail.length > 0) {
+        detail = errBody.detail
+          .map((item) => {
+            const loc = Array.isArray(item.loc) ? item.loc.slice(1).join(".") : "";
+            return loc ? `${loc}: ${item.msg ?? "invalid"}` : (item.msg ?? "Invalid request");
+          })
+          .join("; ");
+      }
     } catch {
       // keep status text
     }

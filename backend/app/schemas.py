@@ -18,10 +18,22 @@ class ScenarioRequest(BaseModel):
     )
     trip_change_pct: float = Field(
         ...,
-        gt=-100.0,
-        le=200.0,
-        description="Percentage change in scheduled trips (e.g., -20, -10, +10, +20).",
+        ge=-50.0,
+        le=50.0,
+        description="Percentage change in scheduled trips (-50% to +50%).",
     )
+    apply_guardrail_cap: bool = Field(
+        default=True,
+        description="Cap trip cuts at -10% on routes where >=60% of stops are served by no other route.",
+    )
+
+    @field_validator("route")
+    @classmethod
+    def normalize_route(cls, value: str) -> str:
+        v = value.strip()
+        if not v:
+            raise ValueError("route must not be empty")
+        return v
 
     @field_validator("day_group")
     @classmethod
@@ -31,7 +43,9 @@ class ScenarioRequest(BaseModel):
             return "weekday"
         if v in {"weekend", "typical saturday", "typical sunday"}:
             return "weekend"
-        raise ValueError("day_group must be 'weekday' or 'weekend'")
+        raise ValueError(
+            "day_group must be 'weekday' or 'weekend' (or 'Typical Weekday'/'Typical Saturday'/'Typical Sunday')"
+        )
 
     @field_validator("time_band")
     @classmethod
@@ -52,8 +66,12 @@ class ScenarioResult(BaseModel):
     review_category: str
     group_id: int
     exclusive_stop_share: float
+    requested_trip_change_pct: float | None = None
     scenario_trip_change_pct: float
     effective_trip_change_pct: float
+    guardrail_capped: bool = False
+    max_recommended_cut_pct: float | None = None
+    guardrail_warning: str | None = None
     base_trips: int
     new_trips: int
     delta_trips: int
@@ -127,6 +145,7 @@ class GroupsResponse(BaseModel):
     period: str
     source: str
     metadata: dict[str, Any]
+    pca_variance: list[dict[str, Any]] = Field(default_factory=list)
     routes: list[dict[str, Any]]
     group_profiles: list[dict[str, Any]]
     k_selection: list[dict[str, Any]]

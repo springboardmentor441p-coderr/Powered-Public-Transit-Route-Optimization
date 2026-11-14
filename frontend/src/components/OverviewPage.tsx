@@ -205,6 +205,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                 fill="#dbeafe"
                 strokeWidth={1.8}
                 connectNulls={false}
+                isAnimationActive={false}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -262,6 +263,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                 stroke="#1d4ed8"
                 strokeWidth={2.2}
                 dot={false}
+                isAnimationActive={false}
               />
               <Line
                 type="monotone"
@@ -270,6 +272,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                 stroke="#059669"
                 strokeWidth={2}
                 dot={false}
+                isAnimationActive={false}
               />
               <Line
                 type="monotone"
@@ -278,6 +281,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                 stroke="#d97706"
                 strokeWidth={2}
                 dot={false}
+                isAnimationActive={false}
               />
             </LineChart>
           </ResponsiveContainer>

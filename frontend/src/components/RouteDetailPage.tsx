@@ -278,6 +278,7 @@ export const RouteDetailPage: React.FC<RouteDetailPageProps> = ({
                       name="Scheduled Trips / Hr"
                       fill="#cbd5e1"
                       radius={[3, 3, 0, 0]}
+                      isAnimationActive={false}
                     />
                     <Line
                       yAxisId="left"
@@ -288,6 +289,7 @@ export const RouteDetailPage: React.FC<RouteDetailPageProps> = ({
                       strokeWidth={2.4}
                       dot={false}
                       connectNulls={false}
+                      isAnimationActive={false}
                     />
                   </ComposedChart>
                 </ResponsiveContainer>
@@ -434,6 +436,7 @@ export const RouteDetailPage: React.FC<RouteDetailPageProps> = ({
                         name="Observed Ridership"
                         stroke="#0f172a"
                         strokeWidth={2.4}
+                        isAnimationActive={false}
                       />
                       <Line
                         type="monotone"
@@ -441,6 +444,7 @@ export const RouteDetailPage: React.FC<RouteDetailPageProps> = ({
                         name="Frozen Step 5 HGB Forecast"
                         stroke="#2563eb"
                         strokeWidth={2}
+                        isAnimationActive={false}
                       />
                       <Line
                         type="monotone"
@@ -449,6 +453,7 @@ export const RouteDetailPage: React.FC<RouteDetailPageProps> = ({
                         stroke="#d97706"
                         strokeDasharray="4 4"
                         strokeWidth={1.8}
+                        isAnimationActive={false}
                       />
                     </LineChart>
                   ) : (
@@ -467,6 +472,7 @@ export const RouteDetailPage: React.FC<RouteDetailPageProps> = ({
                         stroke="#0f172a"
                         strokeWidth={2}
                         dot={false}
+                        isAnimationActive={false}
                       />
                       <Line
                         type="monotone"
@@ -475,6 +481,7 @@ export const RouteDetailPage: React.FC<RouteDetailPageProps> = ({
                         stroke="#2563eb"
                         strokeWidth={1.8}
                         dot={false}
+                        isAnimationActive={false}
                       />
                       <Line
                         type="monotone"
@@ -484,6 +491,7 @@ export const RouteDetailPage: React.FC<RouteDetailPageProps> = ({
                         strokeDasharray="3 3"
                         strokeWidth={1.5}
                         dot={false}
+                        isAnimationActive={false}
                       />
                     </LineChart>
                   )}

@@ -94,6 +94,7 @@ class AppDataStore:
     route_groups_k_selection: pd.DataFrame
     route_groups_k2_vs_k3: pd.DataFrame
     route_groups_dbscan: pd.DataFrame
+    route_groups_pca_variance: pd.DataFrame
 
     @property
     def valid_routes(self) -> set[str]:
@@ -158,5 +159,6 @@ def load_app_data(data_dir: Path | None = None) -> AppDataStore:
         route_groups_k_selection=pd.read_csv(d / "route_groups_k_selection.csv"),
         route_groups_k2_vs_k3=pd.read_csv(d / "route_groups_k2_vs_k3.csv"),
         route_groups_dbscan=pd.read_csv(d / "route_groups_dbscan.csv"),
+        route_groups_pca_variance=pd.read_csv(d / "route_groups_pca_variance.csv"),
     )
 

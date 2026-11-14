@@ -13,10 +13,22 @@ router = APIRouter(prefix="/api", tags=["evaluation"])
 @router.get("/evaluation", response_model=EvaluationResponse)
 def get_evaluation(request: Request) -> EvaluationResponse:
     store = request.app.state.store
+    oct_df = store.october_forecast_summary
+    cutoff_rows = oct_df[oct_df["lag_mode"].astype(str).str.contains("Publish-Date Cutoff", na=False)]
+    base_row = cutoff_rows[cutoff_rows["model"].astype(str).str.contains("4-Week Average", na=False)].iloc[0]
+    frozen_row = cutoff_rows[cutoff_rows["model"].astype(str).str.contains("Frozen Step 5", na=False)].iloc[0]
+    prod_row = cutoff_rows[cutoff_rows["model"].astype(str).str.contains("Production", na=False)].iloc[0]
+
+    n_oct_active = int(base_row["n_active_eval"])
+    base_wape = float(base_row["wape_active_pct"])
+    frozen_wape = float(frozen_row["wape_active_pct"])
+    prod_wape = float(prod_row["wape_active_pct"])
+    frozen_bias = float(frozen_row["bias_active_pred_minus_actual"])
+    frozen_wins = int(frozen_row["routes_beating_4wk_of_41"])
 
     return EvaluationResponse(
         period="Validation: Jun–Jul 2026 | Test (single logged run): Aug–Sep 2026 | Operational Check: Oct 18–31, 2026",
-        source="app_data/validation_*.csv, test_*.csv & october_*.csv",
+        source="app_data/validation_*.csv, test_*.csv & october_*.csv (matching Milestone 3 report tables)",
         validation={
             "period": "2026-06-01 to 2026-07-31 (54,046 rows / 53,585 common lag rows)",
             "forecast_comparison": clean_records(store.val_forecast_comparison),
@@ -41,10 +53,11 @@ def get_evaluation(request: Request) -> EvaluationResponse:
             ],
         },
         october={
-            "period": "2026-10-18 to 2026-10-31 (14 unseen days; 12,270 active route-hours; timetable 2026-10-17)",
+            "period": f"2026-10-18 to 2026-10-31 (14 unseen days; {n_oct_active:,} active route-hours; timetable 2026-10-17)",
             "headline": (
                 "On unseen October data, the frozen Step 5 model did not beat the 4-week average baseline "
-                "overall under realistic publish-date lags (12.28% vs 11.70% WAPE; 20 of 41 routes beat baseline)."
+                f"overall under realistic publish-date lags ({frozen_wape:.2f}% vs {base_wape:.2f}% WAPE; "
+                f"{frozen_wins} of 41 routes beat baseline)."
             ),
             "forecast_summary": clean_records(store.october_forecast_summary),
             "forecast_by_day": clean_records(store.october_forecast_by_day),
@@ -52,8 +65,15 @@ def get_evaluation(request: Request) -> EvaluationResponse:
             "classification_summary": clean_records(store.october_classification_summary),
             "diagnostic_checks": clean_records(store.october_diagnostic_checks),
             "limitations": [
-                "Post-test retraining on Jan–Sep made October WAPE slightly worse (12.54% vs 12.28%), showing autumn level shift and unseen month=10 extrapolation remain challenging even with more training months.",
-                "Higher October observed ridership and negative forecast bias (-10.36 to -16 riders/hr in October weekday peaks) are consistent with each other, though 14 days is a short operational window.",
+                (
+                    f"Post-test retraining on Jan–Sep made October slightly worse ({prod_wape:.2f}% vs {frozen_wape:.2f}% WAPE): "
+                    "calendar month is not a model feature, so when autumn ridership shifts above earlier levels "
+                    "the model loses its edge while the 4-week average adjusts automatically."
+                ),
+                (
+                    f"Higher October observed ridership (+17.1% vs Jan–Jul) and negative forecast bias ({frozen_bias:.2f} cutoff "
+                    "to -16.41 rolling riders/hr) are consistent with each other, though 14 days is a short operational window."
+                ),
             ],
         },
         official_test_runs_logged=int(store.version["official_test_runs_logged"]),

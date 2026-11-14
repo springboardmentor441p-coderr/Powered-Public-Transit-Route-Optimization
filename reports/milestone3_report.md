@@ -138,6 +138,8 @@ On the remaining **40 routes**, candidate $k \in \{2, 3, 4, 5, 6\}$ were evaluat
 
 ![PCA Projection & Route Map of K=3 Groups + M35](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/reports/figures/m3_clustering_pca_and_map.png)
 
+- **40-Route PCA Variance Explained ([`m3_clustering_pca_variance.csv`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/reports/tables/m3_clustering_pca_variance.csv)):** Fitted on the **40 clustered routes (`M35` excluded)**, the first two principal components explain **`36.1%` (`PC1`, `0.3606`)** and **`23.1%` (`PC2`, `0.2306`)** — **`59.1%` (`0.5913`) cumulative variance** — with `M35` projected afterwards onto those 40-route axes (`PC1 = -0.2, PC2 = -3.1`).
+
 ### 5.2 Non-Fitting Exceptions & DBSCAN Cross-Check (`m3_cluster_group_profiles_unscaled.csv`, `m3_clustering_dbscan_summary.csv`)
 Because cluster boundaries are soft, several routes fall into a group due to secondary features despite differing on length or ridership:
 - **In Group 1 (Longer routes):** `M12` (`5.55 km`, `~1,097/day`), `M55` (`7.02 km`, `~1,306/day`), and `M20` (`10.13 km`, `~1,187/day`) carry far fewer riders than the `~7,018`-rider median (`M10` at `8.36 km` / `~2,899/day` and `M125` at `5.38 km` / `~4,294/day` are also shorter), placed in Group 1 due to high weekend retention (`0.616–1.007`) and night share (`11.2%–14.4%`).

@@ -160,8 +160,9 @@ def get_route_groups(request: Request) -> GroupsResponse:
     store = request.app.state.store
     return GroupsResponse(
         period="Jan–May 2026 Ridership Features + Spring 2026-04-09 GTFS Profiles",
-        source="app_data/route_groups.json, route_groups_*.csv & route_geometries.json",
+        source="app_data/route_groups.json, route_groups_*.csv (incl. route_groups_pca_variance.csv) & route_geometries.json",
         metadata=store.route_groups_meta,
+        pca_variance=clean_records(store.route_groups_pca_variance),
         routes=clean_records(store.route_groups_assigned),
         group_profiles=clean_records(store.route_groups_profiles),
         k_selection=clean_records(store.route_groups_k_selection),

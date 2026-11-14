@@ -593,13 +593,23 @@ def _export_groups_metadata() -> None:
     import joblib
 
     obj = joblib.load(CLUSTERING_JOBLIB)
-    pca = obj["pca_2d_40routes"]
+    pca_var_src = TAB_DIR / "m3_clustering_pca_variance.csv"
+    if pca_var_src.exists():
+        pca_df = pd.read_csv(pca_var_src)
+        pca_ratios = [round(float(x), 4) for x in pca_df["explained_variance_ratio"].tolist()]
+        pca_total = round(float(pca_df["cumulative_variance_ratio"].iloc[-1]), 4)
+        shutil.copy2(pca_var_src, APP_DATA_DIR / "route_groups_pca_variance.csv")
+    else:
+        pca = obj["pca_2d_40routes"]
+        pca_ratios = [round(float(x), 4) for x in pca.explained_variance_ratio_]
+        pca_total = round(float(pca.explained_variance_ratio_.sum()), 4)
+
     meta = {
         "outlier_route": obj["outlier_removed_before_clustering"],
         "selected_k_on_40_routes": int(obj["selected_k_on_40_routes"]),
         "selected_features": list(obj["selected_features"]),
-        "pca_explained_variance_ratio": [round(float(x), 4) for x in pca.explained_variance_ratio_],
-        "pca_total_variance_explained": round(float(pca.explained_variance_ratio_.sum()), 4),
+        "pca_explained_variance_ratio": pca_ratios,
+        "pca_total_variance_explained": pca_total,
         "group_metadata": _to_json_safe(obj["group_metadata"]),
         "overlap_note": (
             "Route groups reflect 9 route-level schedule/demand characteristics plus exclusive stop share "

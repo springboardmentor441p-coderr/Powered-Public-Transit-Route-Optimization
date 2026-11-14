@@ -159,27 +159,29 @@ python -m pytest tests/ -v
 - [`tests/test_milestone1_steps6_9.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_milestone1_steps6_9.py) (27 tests): GTFS integrity, DST night handling, Memorial Day Sunday equivalence, outage exclusions, service hours calculations.
 - [`tests/test_milestone2.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_milestone2.py) (10 tests): Generated figures/tables existence, route overlap ordering, stop coverage metrics, data split sizes, pipeline transformation, clustering correlations, baseline forecast hurdles, and `notebooks/routeranker.ipynb` integrity.
 - [`tests/test_evaluate.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_evaluate.py) (14 tests): Shared evaluation metrics, zero-demand WAPE handling, test-set isolation enforcement, canonical time-band labels, validation baseline hurdles, Step 2 forecasting checks (weekly bias/WAPE, 41-route gain, factual misses), and Step 3 classification checks.
-- [`backend/tests/test_api.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/backend/tests/test_api.py) (5 tests): All FastAPI endpoints, exact scenario arithmetic parity against `src/recommend_adjustments.py`, null-vs-zero missing-data handling, GTFS `.zip` integrity/non-Manhattan route status, and Zip Slip traversal rejection.
+- [`backend/tests/test_api.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/backend/tests/test_api.py) (29 parametrized tests): All 13 FastAPI endpoints, scenario `-50%..+50%` bounds and invalid route/day/time-band rejections, `-10%` stop-exclusivity cap & warning, null-vs-zero missing-data handling, GTFS Zip Slip / `300 MB` decompression-bomb / `50 MB` upload limits, real `2026-10-17` Manhattan GTFS check, and report-number parity (`11.69%` October baseline and `36.1% / 23.1%` 40-route PCA).
 - [`frontend/e2e/app.spec.ts`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/frontend/e2e/app.spec.ts): Playwright E2E walkthrough across all 7 UI screens including live GTFS upload.
 
 ## 🌐 Full-Stack Transit Dashboard & API (Weeks 7–8)
 
-1. **Export app-ready data snapshot (`app_data/`):**
-   ```bash
-   python -m src.export_app_data
-   ```
-   Copies finished tables into `app_data/` alongside `version.json`, compact hourly distributions, and route geometries without touching `test_features.parquet` or `reports/test_runs.log`.
+`app_data/` (~2.7 MB across 44 finished tables and summaries) is **committed directly in Git**, so a fresh clone starts immediately without downloading `data/` or rerunning the pipeline:
 
-2. **Start FastAPI Backend (`http://127.0.0.1:8000`):**
+1. **Start FastAPI Backend (`http://127.0.0.1:8000`):**
    ```bash
    python -m uvicorn backend.app.main:app --reload --port 8000
    ```
 
-3. **Start React + Vite Frontend (`http://127.0.0.1:5173`):**
+2. **Start React + Vite Frontend (`http://127.0.0.1:5173`):**
    ```bash
    cd frontend
    npm install
    npm run dev
    ```
+
+3. **Rebuild `app_data/` after rerunning the pipeline (~52s on cached data):**
+   ```bash
+   python -m src.export_app_data
+   ```
+   Copies finished tables into `app_data/` alongside `version.json`, compact hourly distributions, and route geometries without touching `test_features.parquet` or `reports/test_runs.log`.
 
 

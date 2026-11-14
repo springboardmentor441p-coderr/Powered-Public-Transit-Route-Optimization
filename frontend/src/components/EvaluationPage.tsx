@@ -171,6 +171,7 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
                       name="HGB (Retrained Jan–Jul)"
                       stroke="#1d4ed8"
                       strokeWidth={2.2}
+                      isAnimationActive={false}
                     />
                     <Line
                       type="monotone"
@@ -179,6 +180,7 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
                       stroke="#d97706"
                       strokeWidth={2}
                       strokeDasharray="4 4"
+                      isAnimationActive={false}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -321,8 +323,8 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
                     <YAxis tick={{ fontSize: 11 }} unit="%" />
                     <Tooltip formatter={(val: unknown) => fmtPct(val as number | null, 2)} />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Bar dataKey="wape_hgb" name="HGB WAPE %" fill="#1d4ed8" />
-                    <Bar dataKey="wape_4wk" name="4-Wk Avg WAPE %" fill="#d97706" />
+                    <Bar dataKey="wape_hgb" name="HGB WAPE %" fill="#1d4ed8" isAnimationActive={false} />
+                    <Bar dataKey="wape_4wk" name="4-Wk Avg WAPE %" fill="#d97706" isAnimationActive={false} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -419,6 +421,7 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
                       name="Frozen HGB (Cut)"
                       stroke="#1d4ed8"
                       strokeWidth={2}
+                      isAnimationActive={false}
                     />
                     <Line
                       type="monotone"
@@ -427,6 +430,7 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
                       stroke="#d97706"
                       strokeWidth={2}
                       strokeDasharray="4 4"
+                      isAnimationActive={false}
                     />
                   </LineChart>
                 </ResponsiveContainer>

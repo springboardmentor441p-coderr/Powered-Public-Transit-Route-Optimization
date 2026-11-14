@@ -680,6 +680,29 @@ def build_clustering_figures_and_map(
     print(f"Saved interactive cluster map to {html_path.relative_to(ROOT)}", flush=True)
 
 
+def build_pca_variance_table(
+    pca_40: PCA, n_routes: int = 40, excluded_outlier: str = "M35"
+) -> pd.DataFrame:
+    """Summarize 2D PCA explained variance ratio fitted on the 40 clustered routes."""
+    rows = []
+    cum = 0.0
+    for idx, ratio in enumerate(pca_40.explained_variance_ratio_, start=1):
+        r_val = float(ratio)
+        cum += r_val
+        rows.append(
+            {
+                "component": f"PC{idx}",
+                "explained_variance_ratio": round(r_val, 4),
+                "explained_variance_pct": round(r_val * 100.0, 1),
+                "cumulative_variance_ratio": round(cum, 4),
+                "cumulative_variance_pct": round(cum * 100.0, 1),
+                "n_routes": int(n_routes),
+                "excluded_outlier": excluded_outlier,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def run_step4_clustering() -> None:
     print("=" * 88, flush=True)
     print("MILESTONE 3 — STEP 4: ROUTE CLUSTERING (OUTLIER REMOVAL, KMEANS k=2..6, DBSCAN & PROFILES)", flush=True)
@@ -731,6 +754,12 @@ def run_step4_clustering() -> None:
     pca_40 = PCA(n_components=2, random_state=42)
     pca_40.fit(scaled_40_df[SELECTED_9_FEATURES].values)
     coords_40_proj = pca_40.transform(scaled_df[SELECTED_9_FEATURES].values)
+    pca_var_df = build_pca_variance_table(
+        pca_40=pca_40, n_routes=len(scaled_40_df), excluded_outlier="M35"
+    )
+    pca_var_path = TAB_DIR / "m3_clustering_pca_variance.csv"
+    pca_var_df.to_csv(pca_var_path, index=False)
+    print(f"Saved 40-route PCA variance table to {pca_var_path.relative_to(ROOT)}", flush=True)
 
     db_label_names = {}
     for c in sorted(set(db_labels_180)):

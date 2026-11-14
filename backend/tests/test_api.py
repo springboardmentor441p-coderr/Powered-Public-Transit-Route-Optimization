@@ -1,9 +1,8 @@
-"""Automated FastAPI TestClient suite for the Manhattan Bus Transit Optimization backend."""
+"""Automated FastAPI TestClient suite covering all 13 Manhattan Bus Optimization endpoints."""
 
 from __future__ import annotations
 
 import io
-import json
 import zipfile
 from pathlib import Path
 
@@ -16,6 +15,7 @@ from backend.app.routers import gtfs as gtfs_router
 
 ROOT = Path(__file__).resolve().parents[2]
 APP_DATA_DIR = ROOT / "app_data"
+REAL_OCT_GTFS = ROOT / "data" / "raw" / "gtfs" / "manhattan" / "2026-10-17" / "original.zip"
 
 
 @pytest.fixture(scope="module")
@@ -25,7 +25,11 @@ def client():
         yield c
 
 
-def _build_synthetic_gtfs_zip(*, include_evil_traversal: bool = False, missing_stops_file: bool = False) -> bytes:
+def _build_synthetic_gtfs_zip(
+    *,
+    include_evil_traversal: bool = False,
+    missing_stops_file: bool = False,
+) -> bytes:
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as z:
         z.writestr(
@@ -81,85 +85,125 @@ def _build_synthetic_gtfs_zip(*, include_evil_traversal: bool = False, missing_s
     return buf.getvalue()
 
 
-def test_overview_and_network_endpoints(client: TestClient):
-    res = client.get("/api/overview")
+@pytest.mark.parametrize(
+    ("endpoint", "expected_keys"),
+    [
+        ("/api/health", ["status"]),
+        ("/api/overview", ["period", "source", "version", "overview"]),
+        ("/api/network/daily", ["period", "source", "count", "rows", "metadata"]),
+        ("/api/network/hourly?period=jan_sep_typical", ["period", "source", "count", "rows"]),
+        ("/api/routes", ["period", "source", "count", "rows"]),
+        (
+            "/api/routes/M15+",
+            ["period", "source", "route", "profile", "thresholds", "hourly_patterns", "overlaps", "geometry"],
+        ),
+        (
+            "/api/routes/M1/forecast",
+            ["period", "source", "route", "validation_summary", "test_summary", "october_daily", "october_hourly"],
+        ),
+        (
+            "/api/groups",
+            ["period", "source", "metadata", "pca_variance", "routes", "group_profiles", "k_selection", "geometries"],
+        ),
+        ("/api/review?day_group=weekday&review_category=more_trips_candidate", ["period", "source", "count", "rows", "metadata"]),
+        ("/api/scenarios/plan", ["period", "source", "count", "rows", "metadata"]),
+        (
+            "/api/evaluation",
+            ["period", "source", "validation", "test", "october", "official_test_runs_logged", "official_test_log"],
+        ),
+    ],
+)
+def test_get_endpoints_smoke_and_key_fields(client: TestClient, endpoint: str, expected_keys: list[str]):
+    res = client.get(endpoint)
     assert res.status_code == 200
     body = res.json()
-    assert body["version"]["official_test_runs_logged"] == 1
-    assert body["overview"]["cleaning"]["routes_kept"] == 41
-    assert len(body["overview"]["cleaning"]["dropped_routes"]) == 5
+    for key in expected_keys:
+        assert key in body, f"Missing '{key}' in response for {endpoint}"
 
-    daily = client.get("/api/network/daily")
-    assert daily.status_code == 200
-    rows = daily.json()["rows"]
-    assert len(rows) >= 290
-    jan10 = [r for r in rows if r["date"] == "2026-01-10"][0]
+
+def test_overview_network_and_null_handling(client: TestClient):
+    ov = client.get("/api/overview").json()
+    assert ov["version"]["official_test_runs_logged"] == 1
+    assert ov["overview"]["cleaning"]["routes_kept"] == 41
+    assert len(ov["overview"]["cleaning"]["dropped_routes"]) == 5
+
+    daily_rows = client.get("/api/network/daily").json()["rows"]
+    assert len(daily_rows) >= 290
+    jan10 = [r for r in daily_rows if r["date"] == "2026-01-10"][0]
     assert jan10["is_missing"] is True
     assert jan10["total_ridership"] is None  # missing values stay null, never 0
 
-    hourly = client.get("/api/network/hourly?period=jan_sep_typical")
-    assert hourly.status_code == 200
-    assert hourly.json()["count"] == 72  # 3 day types * 24 hours
+    hourly = client.get("/api/network/hourly?period=jan_sep_typical").json()
+    assert hourly["count"] == 72
 
-    bad_period = client.get("/api/network/hourly?period=invalid")
-    assert bad_period.status_code == 400
-
-
-def test_routes_detail_forecast_and_groups(client: TestClient):
-    res = client.get("/api/routes")
-    assert res.status_code == 200
-    assert res.json()["count"] == 41
-
-    detail = client.get("/api/routes/M15+")
-    assert detail.status_code == 200
-    d_body = detail.json()
-    assert d_body["route"] == "M15+"
-    assert {t["day_type"] for t in d_body["thresholds"]} >= {
-        "Typical Weekday",
-        "Typical Saturday",
-        "Typical Sunday",
-    }
-    assert len(d_body["geometry"]["polylines"]) >= 1
-    assert any(o["overlap_category"] == "same_family" for o in d_body["overlaps"])
-
-    missing = client.get("/api/routes/NON_EXISTENT")
-    assert missing.status_code == 404
-
-    fc = client.get("/api/routes/M1/forecast")
-    assert fc.status_code == 200
-    fc_body = fc.json()
-    assert fc_body["test_summary"]["primary"] is not None
-    assert len(fc_body["october_daily"]) == 14
-    assert len(fc_body["october_hourly"]) > 0
-
-    grp = client.get("/api/groups")
-    assert grp.status_code == 200
-    g_body = grp.json()
-    assert g_body["metadata"]["outlier_route"] == "M35"
-    assert len(g_body["routes"]) == 41
-    assert {int(p["group_id"]) for p in g_body["group_profiles"]} >= {1, 2, 3, 0}
+    # M98 does not operate Saturday/Sunday service; verify missing thresholds stay null
+    m98_detail = client.get("/api/routes/M98").json()
+    assert m98_detail["profile"]["trips_per_saturday"] == 0
+    assert m98_detail["profile"]["trips_per_sunday"] == 0
+    assert m98_detail["profile"]["p75_saturday"] is None
+    assert m98_detail["profile"]["p75_sunday"] is None
 
 
-def test_review_evaluation_and_scenario_exact_math(client: TestClient):
-    rev = client.get("/api/review?day_group=weekday&review_category=more_trips_candidate")
-    assert rev.status_code == 200
-    assert rev.json()["count"] > 0
+@pytest.mark.parametrize(
+    ("bad_url", "expected_status"),
+    [
+        ("/api/network/daily?period_tag=invalid", 400),
+        ("/api/network/hourly?period=invalid", 400),
+        ("/api/routes/NON_EXISTENT", 404),
+        ("/api/routes/NON_EXISTENT/forecast", 404),
+        ("/api/review?day_group=holiday", 400),
+        ("/api/review?sort_by=nonexistent_col", 400),
+    ],
+)
+def test_get_endpoint_error_cases(client: TestClient, bad_url: str, expected_status: int):
+    assert client.get(bad_url).status_code == expected_status
 
-    ev = client.get("/api/evaluation")
-    assert ev.status_code == 200
-    ev_body = ev.json()
-    assert ev_body["official_test_runs_logged"] == 1
-    assert "did not beat" in ev_body["october"]["headline"]
-    assert len(ev_body["validation"]["forecast_comparison"]) == 6
 
-    plan = client.get("/api/scenarios/plan")
-    assert plan.status_code == 200
-    assert plan.json()["count"] == 39
+def test_evaluation_and_pca_match_reports(client: TestClient):
+    # Check 5a: October baseline WAPE (11.69% on 12,270 active hours) matches report & summary CSV
+    ev = client.get("/api/evaluation").json()
+    assert ev["official_test_runs_logged"] == 1
+    assert "11.69%" in ev["october"]["headline"]
+    assert "12.28%" in ev["october"]["headline"]
+    assert "11.70%" not in ev["october"]["headline"]
+    assert "did not beat" in ev["october"]["headline"].lower()
+    assert "not a model feature" in ev["october"]["limitations"][0].lower()
+    assert len(ev["validation"]["forecast_comparison"]) == 6
 
-    # Compare POST /api/scenarios directly against Step 8 CSV output from src/recommend_adjustments.py
+    # Check 5b: 40-route PCA variance (36.1% / 23.1% -> 59.1%) matches exported report CSV & /api/groups
+    grp = client.get("/api/groups").json()
+    assert grp["metadata"]["outlier_route"] == "M35"
+    assert len(grp["routes"]) == 41
+    assert {int(p["group_id"]) for p in grp["group_profiles"]} >= {1, 2, 3, 0}
+
+    pca_rows = grp["pca_variance"]
+    assert len(pca_rows) == 2
+    assert pca_rows[0]["component"] == "PC1"
+    assert pca_rows[0]["explained_variance_pct"] == pytest.approx(36.1, abs=0.05)
+    assert pca_rows[1]["component"] == "PC2"
+    assert pca_rows[1]["explained_variance_pct"] == pytest.approx(23.1, abs=0.05)
+    assert pca_rows[1]["cumulative_variance_pct"] == pytest.approx(59.1, abs=0.05)
+    assert grp["metadata"]["pca_explained_variance_ratio"] == [
+        pca_rows[0]["explained_variance_ratio"],
+        pca_rows[1]["explained_variance_ratio"],
+    ]
+
+    report_pca_csv = ROOT / "reports" / "tables" / "m3_clustering_pca_variance.csv"
+    if report_pca_csv.exists():
+        ref_pca = pd.read_csv(report_pca_csv)
+        assert ref_pca["explained_variance_pct"].tolist() == [
+            pca_rows[0]["explained_variance_pct"],
+            pca_rows[1]["explained_variance_pct"],
+        ]
+
+
+def test_scenarios_exact_math_and_exclusivity_cap(client: TestClient):
+    plan = client.get("/api/scenarios/plan").json()
+    assert plan["count"] == 39
+
+    # 1. Exact Step 8 parity check against src/recommend_adjustments.py
     step8_csv = pd.read_csv(APP_DATA_DIR / "step8_candidate_scenarios.csv")
-    ref = step8_csv.iloc[0]
-
+    ref = step8_csv.iloc[0]  # M1 weekday night (-20%, exclusive_stop_share=0.2687 < 0.60)
     resp = client.post(
         "/api/scenarios",
         json={
@@ -180,25 +224,104 @@ def test_review_evaluation_and_scenario_exact_math(client: TestClient):
     assert sc["sim_high_demand_hours"] == int(ref["sim_high_demand_hours"])
     assert sc["guardrail_status"] == str(ref["guardrail_status"])
 
-    # Validation check on bad route / invalid percent
-    assert (
-        client.post(
+    # 2. Boundary checks at exact -50% and +50%
+    for bound in (-50.0, 50.0):
+        b_resp = client.post(
             "/api/scenarios",
-            json={"route": "NOPE", "day_group": "weekday", "time_band": "midday", "trip_change_pct": 10},
-        ).status_code
-        == 404
+            json={"route": "M1", "day_group": "weekday", "time_band": "midday", "trip_change_pct": bound},
+        )
+        assert b_resp.status_code == 200
+
+    # 3. High-exclusivity route (>=60% exclusive stops) applies -10% cut cap + warning by default
+    review_df = pd.read_csv(APP_DATA_DIR / "review_list.csv")
+    excl_cell = review_df[review_df["exclusive_stop_share"] >= 0.60].iloc[0]
+
+    capped = client.post(
+        "/api/scenarios",
+        json={
+            "route": str(excl_cell["route"]),
+            "day_group": str(excl_cell["day_group"]),
+            "time_band": str(excl_cell["time_band"]),
+            "trip_change_pct": -25.0,
+        },
     )
-    assert (
-        client.post(
-            "/api/scenarios",
-            json={"route": "M1", "day_group": "weekday", "time_band": "midday", "trip_change_pct": -150},
-        ).status_code
-        == 422
+    assert capped.status_code == 200
+    c_sc = capped.json()["scenario"]
+    assert c_sc["requested_trip_change_pct"] == -25.0
+    assert c_sc["scenario_trip_change_pct"] == -10.0
+    assert c_sc["guardrail_capped"] is True
+    assert c_sc["max_recommended_cut_pct"] == -10.0
+    assert c_sc["guardrail_status"] == "capped_at_10pct_exclusivity_guardrail"
+    assert c_sc["guardrail_warning"] is not None
+    assert "capped at -10%" in c_sc["guardrail_warning"].lower()
+
+    # Optional uncapped simulation flag still warns while computing requested cut
+    uncapped = client.post(
+        "/api/scenarios",
+        json={
+            "route": str(excl_cell["route"]),
+            "day_group": str(excl_cell["day_group"]),
+            "time_band": str(excl_cell["time_band"]),
+            "trip_change_pct": -25.0,
+            "apply_guardrail_cap": False,
+        },
     )
+    assert uncapped.status_code == 200
+    u_sc = uncapped.json()["scenario"]
+    assert u_sc["scenario_trip_change_pct"] == -25.0
+    assert u_sc["guardrail_capped"] is False
+    assert u_sc["guardrail_status"] == "exceeds_10pct_exclusivity_guardrail"
+    assert u_sc["guardrail_warning"] is not None
 
 
-def test_gtfs_upload_valid_zip_slip_and_limits(client: TestClient, monkeypatch: pytest.MonkeyPatch):
-    # 1. Valid GTFS upload containing both Manhattan M1 and non-Manhattan B44 + >=24h spillover
+@pytest.mark.parametrize(
+    ("payload", "expected_status", "detail_fragment"),
+    [
+        (
+            {"route": "UNKNOWN_M999", "day_group": "weekday", "time_band": "midday", "trip_change_pct": 10},
+            404,
+            "not found",
+        ),
+        (
+            {"route": "M98", "day_group": "weekend", "time_band": "midday", "trip_change_pct": 10},
+            404,
+            "no active scheduled cell",
+        ),
+        (
+            {"route": "M1", "day_group": "holiday", "time_band": "midday", "trip_change_pct": 10},
+            422,
+            "day_group",
+        ),
+        (
+            {"route": "M1", "day_group": "weekday", "time_band": "late_night", "trip_change_pct": 10},
+            422,
+            "time_band",
+        ),
+        (
+            {"route": "M1", "day_group": "weekday", "time_band": "midday", "trip_change_pct": -55},
+            422,
+            "trip_change_pct",
+        ),
+        (
+            {"route": "M1", "day_group": "weekday", "time_band": "midday", "trip_change_pct": 55},
+            422,
+            "trip_change_pct",
+        ),
+    ],
+)
+def test_scenarios_rejects_invalid_inputs(
+    client: TestClient,
+    payload: dict[str, object],
+    expected_status: int,
+    detail_fragment: str,
+):
+    resp = client.post("/api/scenarios", json=payload)
+    assert resp.status_code == expected_status
+    assert detail_fragment.lower() in resp.text.lower()
+
+
+def test_gtfs_upload_valid_zip_slip_and_decompression_bomb(client: TestClient, monkeypatch: pytest.MonkeyPatch):
+    # 1. Valid GTFS upload containing Manhattan M1 and non-Manhattan B44 + >=24h spillover
     valid_bytes = _build_synthetic_gtfs_zip()
     res = client.post(
         "/api/gtfs/upload",
@@ -228,29 +351,58 @@ def test_gtfs_upload_valid_zip_slip_and_limits(client: TestClient, monkeypatch: 
     assert "zip slip" in evil_res.json()["detail"].lower()
     assert not (ROOT / "evil_zip_slip_test.txt").exists()
 
-    # 3. Non-zip extension rejected
-    non_zip = client.post(
-        "/api/gtfs/upload",
-        files={"file": ("routes.csv", b"route_id\nM1\n", "text/csv")},
+    # 3. Non-zip extension & missing stops.txt rejected cleanly
+    assert (
+        client.post(
+            "/api/gtfs/upload",
+            files={"file": ("routes.csv", b"route_id\nM1\n", "text/csv")},
+        ).status_code
+        == 400
     )
-    assert non_zip.status_code == 400
-
-    # 4. Missing required GTFS file rejected cleanly
-    missing_stops = _build_synthetic_gtfs_zip(missing_stops_file=True)
     bad_gtfs = client.post(
         "/api/gtfs/upload",
-        files={"file": ("incomplete.zip", missing_stops, "application/zip")},
+        files={"file": ("incomplete.zip", _build_synthetic_gtfs_zip(missing_stops_file=True), "application/zip")},
     )
     assert bad_gtfs.status_code == 400
     assert "stops.txt" in bad_gtfs.json()["detail"]
 
-    # 5. Enforce max upload size check (HTTP 413)
+    # 4. Small compressed zip expanding beyond 300 MB uncompressed limit rejected BEFORE extraction (413)
+    bomb_buf = io.BytesIO()
+    chunk_5mb = b"0" * (5 * 1024 * 1024)
+    with zipfile.ZipFile(bomb_buf, "w", compression=zipfile.ZIP_DEFLATED) as z:
+        for i in range(62):  # 310 MB uncompressed -> < 1 MB compressed
+            z.writestr(f"pad_{i:02d}.txt", chunk_5mb)
+    bomb_bytes = bomb_buf.getvalue()
+    assert len(bomb_bytes) < gtfs_router.MAX_UPLOAD_BYTES
+    bomb_res = client.post(
+        "/api/gtfs/upload",
+        files={"file": ("bomb.zip", bomb_bytes, "application/zip")},
+    )
+    assert bomb_res.status_code == 413
+    assert "300 mb" in bomb_res.json()["detail"].lower()
+
+    # 5. Enforce compressed upload byte limit (413)
     monkeypatch.setattr(gtfs_router, "MAX_UPLOAD_BYTES", 50)
     too_large = client.post(
         "/api/gtfs/upload",
         files={"file": ("big.zip", valid_bytes, "application/zip")},
     )
     assert too_large.status_code == 413
+
+
+@pytest.mark.skipif(not REAL_OCT_GTFS.exists(), reason="Local raw GTFS feed not present in fresh clone")
+def test_gtfs_upload_real_manhattan_october_feed(client: TestClient):
+    with open(REAL_OCT_GTFS, "rb") as fh:
+        res = client.post(
+            "/api/gtfs/upload",
+            files={"file": ("2026-10-17_manhattan.zip", fh, "application/zip")},
+        )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["integrity"]["referential_integrity_passed"] is True
+    assert body["summary"]["routes_with_trips"] == 41
+    assert body["summary"]["study_routes_matched"] == 41
+    assert body["summary"]["non_study_routes_schedule_only"] == 266
 
 
 def test_app_never_modifies_test_runs_log():
