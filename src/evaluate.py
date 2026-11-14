@@ -133,7 +133,8 @@ def load_dataset(split: str, final: bool = False, caller: str = "") -> pd.DataFr
         )
         with open(TEST_LOG_PATH, "a", encoding="utf-8") as f:
             f.write(log_entry)
-        print(f"[AUDIT] Test set accessed and logged to {TEST_LOG_PATH.relative_to(ROOT)} ({now_str})")
+        log_display = TEST_LOG_PATH.relative_to(ROOT) if TEST_LOG_PATH.is_relative_to(ROOT) else TEST_LOG_PATH
+        print(f"[AUDIT] Test set accessed and logged to {log_display} ({now_str})")
 
         return pd.read_parquet(TEST_PATH)
 

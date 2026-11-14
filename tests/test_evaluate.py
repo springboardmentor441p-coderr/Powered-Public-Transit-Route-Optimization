@@ -24,6 +24,10 @@ from src.eda_utils import TIME_BANDS, get_time_band_label
 
 ROOT = Path(__file__).resolve().parents[1]
 VAL_PATH = ROOT / "data" / "processed" / "val_features.parquet"
+REQUIRES_VAL_DATA = pytest.mark.skipif(
+    not VAL_PATH.exists(),
+    reason="Requires rebuilt data/processed/val_features.parquet (ignored in Git; see README).",
+)
 
 
 # ==============================================================================
@@ -147,10 +151,22 @@ def test_format_confusion_matrix():
 # 3. TEST SET ACCESS ENFORCEMENT & AUDIT TRAIL
 # ==============================================================================
 
-def test_load_dataset_test_isolation_enforcement():
+def test_load_dataset_test_isolation_enforcement(monkeypatch, tmp_path):
     """Verify that load_dataset('test') raises PermissionError without final=True,
-    and succeeds with an audit log when final=True.
+    and succeeds with an audit log in a temporary location when final=True,
+    without ever opening the real test_features.parquet or writing reports/test_runs.log.
     """
+    import src.evaluate as evaluate_mod
+
+    fake_test_path = tmp_path / "fake_test_features.parquet"
+    fake_log_path = tmp_path / "test_runs.log"
+    pd.DataFrame({"route": ["M15", "M42"], "ridership": [120, 240]}).to_parquet(
+        fake_test_path, index=False
+    )
+
+    monkeypatch.setattr(evaluate_mod, "TEST_PATH", fake_test_path)
+    monkeypatch.setattr(evaluate_mod, "TEST_LOG_PATH", fake_log_path)
+
     with pytest.raises(PermissionError) as exc_info:
         load_dataset("test")
     assert "Access to test_features.parquet is restricted" in str(exc_info.value)
@@ -158,27 +174,21 @@ def test_load_dataset_test_isolation_enforcement():
     with pytest.raises(PermissionError) as exc_info_flag:
         load_dataset("test", final=False)
     assert "Access to test_features.parquet is restricted" in str(exc_info_flag.value)
+    assert not fake_log_path.exists()
 
-    # Calling with final=True must succeed and append to test_runs.log
-    existed_before = TEST_LOG_PATH.exists()
-    prior_content = TEST_LOG_PATH.read_text(encoding="utf-8") if existed_before else ""
-    try:
-        test_df = load_dataset("test", final=True, caller="test_load_dataset_test_isolation_enforcement")
-        assert isinstance(test_df, pd.DataFrame)
-        assert len(test_df) == 53736
-        assert TEST_LOG_PATH.exists()
+    # Calling with final=True must succeed and append only to the temporary log
+    test_df = load_dataset("test", final=True, caller="test_load_dataset_test_isolation_enforcement")
+    assert isinstance(test_df, pd.DataFrame)
+    assert len(test_df) == 2
+    assert list(test_df["route"]) == ["M15", "M42"]
+    assert fake_log_path.exists()
 
-        with open(TEST_LOG_PATH, "r", encoding="utf-8") as f:
-            log_content = f.read()
-        assert "AUDIT TEST ACCESS" in log_content
-        assert "test_load_dataset_test_isolation_enforcement" in log_content
-    finally:
-        if existed_before:
-            TEST_LOG_PATH.write_text(prior_content, encoding="utf-8")
-        elif TEST_LOG_PATH.exists():
-            TEST_LOG_PATH.unlink()
+    log_content = fake_log_path.read_text(encoding="utf-8")
+    assert "AUDIT TEST ACCESS" in log_content
+    assert "test_load_dataset_test_isolation_enforcement" in log_content
 
 
+@REQUIRES_VAL_DATA
 def test_validation_no_storm_days_note():
     """Verify that when a split has 0 storm days (like validation), the duplicate
     'Without Storm Days' row is omitted and replaced with a storm_note annotation.
@@ -206,6 +216,7 @@ def test_validation_no_storm_days_note():
 # 4. VALIDATION SET REPRODUCTION & BASELINE HURDLES
 # ==============================================================================
 
+@REQUIRES_VAL_DATA
 def test_validation_4wk_baseline_hurdle():
     """Verify that 4-week average baseline evaluated on validation matches 14.08% WAPE."""
     val_df = load_dataset("val")
@@ -225,6 +236,7 @@ def test_validation_4wk_baseline_hurdle():
     assert m_4wk["wape_pct"] < m_lag7["wape_pct"]
 
 
+@REQUIRES_VAL_DATA
 def test_stronger_classification_baseline_hurdle():
     """Verify that the 4-week average heuristic classification rule outperforms lag_7d."""
     val_df = load_dataset("val")

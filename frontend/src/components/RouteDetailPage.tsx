@@ -18,6 +18,7 @@ import {
   fmtNum,
   fmtPct,
   fmtSharePct,
+  formatDbscanLabel,
   formatReviewCategory,
   formatTimeBandLabel,
   RouteDetailData,
@@ -224,7 +225,7 @@ export const RouteDetailPage: React.FC<RouteDetailPageProps> = ({
               <div className="text-[11px] text-slate-500">
                 {prof.is_outlier_removed_before_kmeans
                   ? "Outlier route (M35)"
-                  : `Group ${fmtInt(prof.group_id)} | ${prof.dbscan_eps180_label ?? "not available"}`}
+                  : `Group ${fmtInt(prof.group_id)} | ${formatDbscanLabel(prof.dbscan_eps180_label)}`}
               </div>
             </div>
           </div>

@@ -88,8 +88,24 @@ def test_service_hours_calculation_unit():
 
 # ---------- Real-data tests ----------
 
+GTFS_MANHATTAN_DIR = ROOT / "data" / "raw" / "gtfs" / "manhattan"
+PROCESSED_DIR = ROOT / "data" / "processed"
+HAS_ALL_GTFS = all((GTFS_MANHATTAN_DIR / s / "original.zip").exists() for s in USABLE_SNAPSHOTS)
+HAS_GTFS_2026_03_27 = (GTFS_MANHATTAN_DIR / "2026-03-27" / "original.zip").exists()
+SCHEDULE_PATH = PROCESSED_DIR / "schedule_hourly.parquet"
+MATCHED_PATH = PROCESSED_DIR / "matched_hourly.parquet"
+PROFILES_PATH = PROCESSED_DIR / "route_profiles.parquet"
+
+REQUIRES_ALL_GTFS = pytest.mark.skipif(
+    not HAS_ALL_GTFS,
+    reason="Requires raw GTFS snapshots in data/raw/gtfs/manhattan/ (ignored in Git; see README).",
+)
+
+
 @pytest.fixture(scope="module")
 def feeds():
+    if not HAS_ALL_GTFS:
+        pytest.skip("Requires raw GTFS snapshots in data/raw/gtfs/manhattan/ (ignored in Git; see README).")
     return {s: GTFSFeed(s) for s in USABLE_SNAPSHOTS}
 
 
@@ -98,12 +114,17 @@ def date_info(feeds):
     return select_snapshot_schedule(feeds, "2026-01-03", "2026-09-30")
 
 
+@pytest.mark.skipif(
+    not HAS_GTFS_2026_03_27,
+    reason="Requires raw 2026-03-27 GTFS zip in data/raw/gtfs/manhattan/ (ignored in Git; see README).",
+)
 def test_step_6_gtfs_referential_integrity():
     res = check_snapshot_integrity("2026-03-27")
     assert res["referential_integrity_passed"] is True
     assert res["times_ge_24h"] > 0, "Feed should contain after-midnight times >= 24:00"
 
 
+@REQUIRES_ALL_GTFS
 def test_step_7_memorial_day_drops_weekday_service(feeds):
     feed = feeds["2026-04-09"]
     normal = feed.get_active_services(datetime(2026, 5, 18))
@@ -116,6 +137,7 @@ def test_step_7_memorial_day_drops_weekday_service(feeds):
     assert feed.get_trip_count(datetime(2026, 5, 25)) == feed.get_trip_count(datetime(2026, 5, 24))
 
 
+@REQUIRES_ALL_GTFS
 @pytest.mark.parametrize("date,expected", [
     ("2026-03-26", "2025-12-30"),
     ("2026-03-27", "2026-03-27"),
@@ -134,6 +156,7 @@ def test_step_8_switchover_dates(date_info, date, expected):
     assert date_info[date]["full_service"]
 
 
+@REQUIRES_ALL_GTFS
 def test_step_8_every_date_assigned_and_only_3_jan_partial(date_info):
     assert len(date_info) == 271
     assert all(v["snapshot_id"] in USABLE_SNAPSHOTS for v in date_info.values())
@@ -141,8 +164,12 @@ def test_step_8_every_date_assigned_and_only_3_jan_partial(date_info):
     assert partial == ["2026-01-03"]
 
 
+@pytest.mark.skipif(
+    not SCHEDULE_PATH.exists(),
+    reason="Requires rebuilt data/processed/schedule_hourly.parquet (ignored in Git; see README).",
+)
 def test_step_9_schedule_hourly_output():
-    path = ROOT / "data" / "processed" / "schedule_hourly.parquet"
+    path = SCHEDULE_PATH
     df = pd.read_parquet(path)
     assert list(df.columns) == ["route", "date", "hour", "trips_starting", "trips_running", "service_hours", "snapshot_id"]
     assert len(df) == 41 * 24 * 271
@@ -154,8 +181,12 @@ def test_step_9_schedule_hourly_output():
     assert tue.trips_running.sum() > 0
 
 
+@pytest.mark.skipif(
+    not SCHEDULE_PATH.exists(),
+    reason="Requires rebuilt data/processed/schedule_hourly.parquet (ignored in Git; see README).",
+)
 def test_dst_night_8_march_hour_2_has_zero_trips():
-    path = ROOT / "data" / "processed" / "schedule_hourly.parquet"
+    path = SCHEDULE_PATH
     df = pd.read_parquet(path)
     dst_h2 = df[(df.date == "2026-03-08") & (df.hour == 2)]
     assert len(dst_h2) == 41
@@ -164,6 +195,7 @@ def test_dst_night_8_march_hour_2_has_zero_trips():
     assert (dst_h2.service_hours == 0).all(), "DST hour 2 must have 0 service hours"
 
 
+@REQUIRES_ALL_GTFS
 def test_memorial_day_exact_sunday_equivalence(feeds):
     feed = feeds["2026-04-09"]
     d_mem = datetime(2026, 5, 25)
@@ -177,6 +209,7 @@ def test_memorial_day_exact_sunday_equivalence(feeds):
     assert c_mem == c_sun24 == c_sun31 == 6231, "Memorial Day must match Sunday trip count exactly"
 
 
+@REQUIRES_ALL_GTFS
 def test_boundary_saturdays_audit(date_info):
     def latest_downloaded(d):
         return [s for s in USABLE_SNAPSHOTS if s <= d][-1]
@@ -216,8 +249,12 @@ def test_step_10_route_crosswalk():
     assert all("+" in c for c in sbs["route_code"])
 
 
+@pytest.mark.skipif(
+    not MATCHED_PATH.exists(),
+    reason="Requires rebuilt data/processed/matched_hourly.parquet (ignored in Git; see README).",
+)
 def test_step_11_12_matched_hourly_output():
-    path = ROOT / "data" / "processed" / "matched_hourly.parquet"
+    path = MATCHED_PATH
     df = pd.read_parquet(path)
     expected_cols = [
         "route", "date", "hour", "month", "day_of_week", "is_weekend",
@@ -262,8 +299,12 @@ def test_step_11_12_matched_hourly_output():
     assert set(df["time_band"].unique()) == expected_bands
 
 
+@pytest.mark.skipif(
+    not PROFILES_PATH.exists(),
+    reason="Requires rebuilt data/processed/route_profiles.parquet (ignored in Git; see README).",
+)
 def test_step_13_route_profiles_output():
-    path = ROOT / "data" / "processed" / "route_profiles.parquet"
+    path = PROFILES_PATH
     df = pd.read_parquet(path)
     assert len(df) == 41
     required_cols = [

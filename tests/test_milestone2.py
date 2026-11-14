@@ -21,6 +21,10 @@ FIG_DIR = ROOT / "reports" / "figures"
 TAB_DIR = ROOT / "reports" / "tables"
 
 
+@pytest.mark.skipif(
+    not MATCHED_PATH.exists(),
+    reason="Requires rebuilt data/processed/matched_hourly.parquet (ignored in Git; see README).",
+)
 def test_service_hours_and_matched_integrity():
     df = pd.read_parquet(MATCHED_PATH)
     assert "service_hours" in df.columns
@@ -110,6 +114,10 @@ def test_low_demand_screening_rules():
     assert (low["days_count"] >= 20).all()
 
 
+@pytest.mark.skipif(
+    not (TRAIN_PATH.exists() and VAL_PATH.exists() and TEST_PATH.exists()),
+    reason="Requires rebuilt train/val/test parquet splits in data/processed/ (ignored in Git; see README).",
+)
 def test_date_splits_and_modeling_features():
     train_df = pd.read_parquet(TRAIN_PATH)
     val_df = pd.read_parquet(VAL_PATH)
@@ -137,6 +145,10 @@ def test_date_splits_and_modeling_features():
         assert col in train_df.columns
 
 
+@pytest.mark.skipif(
+    not TRAIN_PATH.exists(),
+    reason="Requires rebuilt data/processed/train_features.parquet (ignored in Git; see README).",
+)
 def test_sklearn_pipeline_fitted():
     assert PREPROCESSOR_PATH.exists()
     preprocessor = joblib.load(PREPROCESSOR_PATH)
@@ -149,6 +161,10 @@ def test_sklearn_pipeline_fitted():
     assert transformed.shape[1] > 0
 
 
+@pytest.mark.skipif(
+    not CLUSTERING_PATH.exists(),
+    reason="Requires rebuilt data/processed/clustering_features.parquet (ignored in Git; see README).",
+)
 def test_clustering_table_features():
     cf = pd.read_parquet(CLUSTERING_PATH)
     assert len(cf) == 41

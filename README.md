@@ -62,15 +62,22 @@ git push origin your-name
 ---
 
 # AI-Powered Public Transit Route Optimization
-**Manhattan Bus Network Study (41 Routes, January 4 to September 30, 2026)**
+**Manhattan Bus Network Study (41 Routes · Jan–Sep 2026 Modeling + Oct 2026 Operational Evaluation & Web Dashboard)**
 
-This repository contains the end-to-end data pipeline, exploratory data analyses, route overlap evaluations, feature engineering, and baseline forecasts for optimizing bus transit operations across Manhattan.
+This repository contains the end-to-end transit analytics pipeline, exploratory analyses, machine learning models, unseen October operational check, budget-neutral schedule reallocation plan, and interactive dashboard for **41 Manhattan bus routes**.
+
+- **Core Study & Test Lock (`2026-01-04` to `2026-09-30`):** Chronological Train (`Jan–May`), Validation (`Jun–Jul`), and single-use Official Test (`Aug–Sep`, run once on `2026-11-13` and logged in [`reports/test_runs.log`](reports/test_runs.log)).
+- **Forecasting, Classification & Route Groups:** `HistGradientBoosting` hourly ridership forecasting and `Forecast ÷ Trips` high-demand-per-trip alerting, plus `KMeans` (`40` routes with `M35` reported separately) and `DBSCAN` route grouping.
+- **Unseen October Check (`2026-10-18` to `2026-10-31`) & Service Review (`Aug–Oct` 90 typical days):** Honest out-of-sample October comparison against the 4-week rolling baseline, config-driven route × day-group × time-band screening, shared-corridor overlap checks, and a budget-neutral trip reallocation plan.
+- **Web Dashboard & API:** FastAPI backend (`backend/`) + React/TypeScript frontend (`frontend/`) backed by committed CSV/JSON/Parquet summaries in [`app_data/`](app_data/), including live GTFS zip upload checks.
 
 ---
 
 ## 🛠️ Environment & Kernel Setup
 
-1. **Create and activate your Python environment (Python 3.10+):**
+**Tested Versions:** `Python 3.13.2` and `Node.js v22.19.0` (Python `3.10+` and Node `18+` supported; `requirements.txt` pins exact package versions used to save the `scikit-learn`/`joblib` models).
+
+1. **Create and activate your Python environment:**
    ```bash
    python -m venv .venv
    # Windows PowerShell:
@@ -79,51 +86,69 @@ This repository contains the end-to-end data pipeline, exploratory data analyses
    source .venv/bin/activate
    ```
 
-2. **Install required packages:**
+2. **Install pinned Python packages:**
    ```bash
    pip install -r requirements.txt
-   # Or install dependencies directly:
-   pip install pandas pyarrow numpy scipy scikit-learn matplotlib seaborn folium jupyter ipykernel joblib pytest
    ```
 
-3. **Install the `routeranker` Jupyter kernel:**
+3. **Install the `routeranker` Jupyter kernel (optional, for running the notebook):**
    ```bash
    python -m ipykernel install --user --name routeranker
    ```
    *When opening notebooks in VS Code or JupyterLab, select the `routeranker` kernel.*
 
+4. **Install Frontend & Playwright dependencies:**
+   ```bash
+   cd frontend
+   npm install
+   npx playwright install chromium
+   cd ..
+   ```
+
 ---
 
 ## 📁 Data Pipeline & Rebuilding Processed Data
 
-> **Note on Data Directory:**  
-> The `data/` directory is excluded from version control via `.gitignore` to keep the repository lightweight. To rebuild all clean datasets, route profiles, matched hourly tables, and modelling datasets from raw sources, execute the pipeline scripts in the following order:
+> **Note on `data/` Directory:**  
+> `data/` is excluded from Git via `.gitignore` to keep the repository lightweight. The web app (`app_data/`) and saved artifacts (`reports/`, `models/`) are committed and run immediately after cloning. To download raw sources and rebuild `data/` and tables from scratch, execute the scripts below in order:
 
 ```bash
-# Milestone 1: Ingestion, Schedule Aggregation, Crosswalk & Matched Dataset
-python src/ingest_ridership.py       # Ingests MTA hourly ridership, filters Manhattan routes, handles 10-15 Jan blackout
-python src/build_schedule.py         # Ingests GTFS feeds, handles DST/holidays, calculates trips and service_hours
-python src/build_crosswalk.py        # Maps MTA route codes to GTFS route IDs and normalizes SBS (+) nomenclature
-python src/build_matched_table.py    # Joins ridership and schedule, applies 20% relative outage rule, creates matched_hourly.parquet
-python src/build_route_profiles.py   # Computes route lengths, stop counts, scheduled speeds, and trip profiles
+# Milestone 1: Raw Data Download, Cleaning, GTFS Schedule Matching & Profiles
+python -m src.fetch_ridership          # Downloads MTA hourly ridership for Manhattan routes
+python -m src.fetch_gtfs               # Downloads Manhattan Bus GTFS feeds (mdb-513)
+python -m src.clean_ridership          # Validates & cleans ridership, handles 10–15 Jan blackout
+python -m src.check_gtfs_integrity     # Verifies GTFS referential integrity and >=24:00:00 spillover times
+python -m src.build_schedule           # Computes hourly trips_starting, trips_running, service_hours (DST & holidays)
+python -m src.build_route_crosswalk    # Maps MTA ridership route codes to GTFS IDs (41 matched routes)
+python -m src.build_matched_table      # Joins ridership + schedule, applies 20% relative outage rule -> matched_hourly.parquet
+python -m src.build_route_profiles     # Computes route lengths, stop counts, scheduled speeds & spans
+python -m src.build_source_register    # Writes reports/source_register.csv inventory
+python -m src.plot_mar28               # Optional: plots 28 Mar outage figure
 
-# Milestone 2: Modelling Preparation, Clustering Table & Baselines
-python src/build_features.py         # Computes exact calendar lags (7, 14, 21, 28d), splits Train/Val/Test, fits preprocessor
-python src/build_clustering_table.py # Builds 41-route clustering table with 9 non-collinear features (|r| < 0.85)
-python src/evaluate_baselines.py     # Scores lag-7d and 4-week average baseline forecasts on validation period
+# Milestone 2: EDA, Modeling Splits, Clustering Table & Baselines
+python -m src.eda_patterns             # Typical-day network patterns, heatmaps, demand variability (CV)
+python -m src.eda_route_overlap        # Route overlap pairs, exclusive stops, Folium map & initial review list
+python -m src.prepare_modeling_features  # Calendar lags (7/14/21/28d), Train/Val/Test splits & preprocessor (alias: src/build_features.py)
+python -m src.build_clustering_table   # Builds 41-route clustering table (9 features, |r| < 0.85)
+python -m src.evaluate_baselines       # Scores lag-7d and 4-week average validation baselines
 
-# Milestone 3: Shared Evaluation & Models
-python src/evaluate.py               # Runs shared forecasting & classification evaluation framework on validation baselines
-python src/train_forecasting.py      # Tunes Ridge, Ridge-Log, Random Forest & HistGradientBoosting forecasters on validation
-python src/train_classification.py   # Tunes Logistic Regression, Random Forest, HistGradientBoosting & Forecast/Trips classifiers
-python src/train_clustering.py       # Runs KMeans (k=2..6), 20-start & LOO stability checks, DBSCAN, group profiles & maps
+# Milestone 3: Evaluation, Model Tuning, Production Scoring & Optimization Plan
+python -m src.evaluate                 # Runs shared evaluation checks on validation baselines
+python -m src.train_forecasting        # Tunes Ridge, Ridge-Log, Random Forest & HistGradientBoosting forecasters on validation
+python -m src.train_classification     # Tunes Logistic Regression, Random Forest, HGB & Forecast/Trips on validation
+python -m src.train_clustering         # Runs KMeans (k=2..6, excl. M35), stability checks, DBSCAN & route maps
+# python -m src.run_final_test         # ALREADY RUN ONCE (2026-11-13, logged in reports/test_runs.log) — DO NOT RUN AGAIN
+python -m src.predict                  # Scores unseen 18–31 Oct 2026 data & diagnostic checks
+python -m src.build_review_list        # Screens Aug–Oct 2026 (90 typical days) with configs/optimization_thresholds.json
+python -m src.recommend_adjustments    # Builds ±10%/±20% scenarios, shared-corridor overlap checks & budget-neutral plan
+python -m src.export_app_data          # Exports finished summaries & geometries into committed app_data/ (~2.7 MB)
 ```
 
 ---
 
 ## 📓 Project Notebook (`notebooks/routeranker.ipynb`)
 
-All interactive exploration, visualizations, and empirical summaries are consolidated into a single notebook: [`notebooks/routeranker.ipynb`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/notebooks/routeranker.ipynb).
+All exploration, model results, and tables are summarized in [`notebooks/routeranker.ipynb`](notebooks/routeranker.ipynb):
 
 | Section | Content | Source |
 | :--- | :--- | :--- |
@@ -151,20 +176,33 @@ All interactive exploration, visualizations, and empirical summaries are consoli
 
 ## 🧪 Automated Testing
 
-The codebase includes comprehensive unit and referential integrity tests:
 ```bash
-# Run the complete test suite:
-python -m pytest tests/ -v
+# Run Python unit, artifact, and FastAPI backend tests:
+python -m pytest tests/ backend/tests/ -v
 ```
-- [`tests/test_milestone1_steps6_9.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_milestone1_steps6_9.py) (27 tests): GTFS integrity, DST night handling, Memorial Day Sunday equivalence, outage exclusions, service hours calculations.
-- [`tests/test_milestone2.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_milestone2.py) (10 tests): Generated figures/tables existence, route overlap ordering, stop coverage metrics, data split sizes, pipeline transformation, clustering correlations, baseline forecast hurdles, and `notebooks/routeranker.ipynb` integrity.
-- [`tests/test_evaluate.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/tests/test_evaluate.py) (14 tests): Shared evaluation metrics, zero-demand WAPE handling, test-set isolation enforcement, canonical time-band labels, validation baseline hurdles, Step 2 forecasting checks (weekly bias/WAPE, 41-route gain, factual misses), and Step 3 classification checks.
-- [`backend/tests/test_api.py`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/backend/tests/test_api.py) (29 parametrized tests): All 13 FastAPI endpoints, scenario `-50%..+50%` bounds and invalid route/day/time-band rejections, `-10%` stop-exclusivity cap & warning, null-vs-zero missing-data handling, GTFS Zip Slip / `300 MB` decompression-bomb / `50 MB` upload limits, real `2026-10-17` Manhattan GTFS check, and report-number parity (`11.69%` October baseline and `36.1% / 23.1%` 40-route PCA).
-- [`frontend/e2e/app.spec.ts`](file:///d:/Infosys%20Springboard/Powered-Public-Transit-Route-Optimization/frontend/e2e/app.spec.ts): Playwright E2E walkthrough across all 7 UI screens including live GTFS upload.
+
+**What runs in a fresh clone vs with rebuilt `data/`:**
+- **Runs in every fresh clone (no `data/` required):** All synthetic unit tests (`build_schedule` hour/DST/service-hour math, evaluation metrics, overlap classification), `test_load_dataset_test_isolation_enforcement` (uses temporary synthetic files via `monkeypatch`/`tmp_path`, never touching real `test_features.parquet` or `reports/test_runs.log`), all committed artifact/model/`routeranker.ipynb` verification checks (**29 passed** in `tests/`), and **28 of 29** FastAPI backend tests reading committed `app_data/`.
+- **Skipped automatically unless `data/` is present (`27` tests in `tests/`, `1` test in `backend/tests/test_api.py`):** Tests validating raw GTFS feeds (`data/raw/gtfs/manhattan/`) and rebuilt `.parquet` splits (`schedule_hourly`, `matched_hourly`, `route_profiles`, `train_features`, `val_features`, `test_features`, `clustering_features`), plus the optional `2026-10-17` Manhattan GTFS upload benchmark test.
+
+- [`tests/test_milestone1_steps6_9.py`](tests/test_milestone1_steps6_9.py) (27 tests): GTFS integrity, DST night handling, Memorial Day Sunday equivalence, outage exclusions, service-hours calculations.
+- [`tests/test_milestone2.py`](tests/test_milestone2.py) (10 tests): Generated figures/tables existence, route overlap ordering, stop coverage metrics, data split sizes, pipeline transformation, clustering correlations, baseline forecast hurdles, and `notebooks/routeranker.ipynb` integrity.
+- [`tests/test_evaluate.py`](tests/test_evaluate.py) (14 tests): Shared evaluation metrics, zero-demand WAPE handling, test-set isolation enforcement, canonical time-band labels, validation baseline hurdles, Step 2 forecasting checks, Step 3 classification checks, Step 4 clustering, Step 5 final outputs, Step 6 October evaluation, and Steps 7–9 review/reallocation checks.
+- [`backend/tests/test_api.py`](backend/tests/test_api.py) (29 parametrized tests): All 13 FastAPI endpoints, scenario `-50%..+50%` bounds and invalid route/day/time-band rejections, `-10%` stop-exclusivity cap & warning, null-vs-zero missing-data handling, GTFS Zip Slip / `300 MB` decompression-bomb / `50 MB` upload limits, real `2026-10-17` Manhattan GTFS check, and report-number parity (`11.69%` October baseline and `36.1% / 23.1%` 40-route PCA).
+- [`frontend/e2e/app.spec.ts`](frontend/e2e/app.spec.ts): Playwright E2E walkthrough across all 7 UI screens including live GTFS upload (uses Playwright's bundled Chromium after `npx playwright install chromium`; **requires an active internet connection** because interactive maps fetch tiles from OpenStreetMap).
+
+```bash
+# Build frontend & run Playwright E2E walkthrough (requires Chromium installed + internet for map tiles):
+cd frontend
+npm run build
+npm run test:e2e
+```
 
 ## 🌐 Full-Stack Transit Dashboard & API (Weeks 7–8)
 
 `app_data/` (~2.7 MB across 44 finished tables and summaries) is **committed directly in Git**, so a fresh clone starts immediately without downloading `data/` or rerunning the pipeline:
+
+> **Map Tiles & Offline Demo Screenshots:** Interactive route and group maps load basemap tiles from OpenStreetMap (`tile.openstreetmap.org`) and therefore require internet access. Offline reference screenshots of all screens are saved under [`reports/figures/app/`](reports/figures/app/) as a demo backup.
 
 1. **Start FastAPI Backend (`http://127.0.0.1:8000`):**
    ```bash

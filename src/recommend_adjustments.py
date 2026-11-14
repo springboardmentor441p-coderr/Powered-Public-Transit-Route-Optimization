@@ -269,26 +269,26 @@ def evaluate_shared_corridor_merges(
                 f"{base_comb_rpt:.1f} to {post_20cut_rpt:.1f} riders/trip. Stagger headways instead."
             )
         elif sm_excl >= 0.45 or unique_stops_sm >= 20:
-            verdict = "partial_segment_spacing_only_unique_branches"
+            verdict = "keep_separate_unique_stops"
             reason = (
-                f"Smaller route {r_sm} retains {unique_stops_sm} unshared stops "
-                f"({sm_excl*100:.1f}% stop exclusivity across network); shared trunk "
-                f"allows timed spacing, but full route merger would sever distinct branch service."
+                f"{r_sm} also serves {unique_stops_sm} stops that {r_lg} doesn't "
+                f"({sm_excl*100:.1f}% exclusive stops across the network). "
+                f"Merging would take this service away from those stops."
             )
         elif meets_40 and min(sm_riders_day, lg_riders_day) < 3500:
             verdict = "candidate_for_offpeak_consolidation_study"
             reason = (
                 f"High shared_corridor overlap ({ov_share*100:.1f}%) with lighter load on "
                 f"{r_sm} (~{sm_riders_day:,.0f} obs riders/day, {sm_high:.0f}% high-demand hrs, "
-                f"Group {sm_grp}); test off-peak/night schedule consolidation with {r_lg} "
-                f"(Group {lg_grp}), subject to field audit of the {unique_stops_sm} unshared stops."
+                f"Group {sm_grp}); {r_sm} also serves {unique_stops_sm} stops that {r_lg} doesn't. "
+                f"Check off-peak trip options on the shared section while keeping those stops served."
             )
         else:
             verdict = "monitor_shared_corridor_no_merge"
             reason = (
-                f"Moderate shared_corridor overlap ({ov_share*100:.1f}%) or distinct corridor "
-                f"role ({r_sm} ~{sm_riders_day:,.0f}/day vs {r_lg} ~{lg_riders_day:,.0f}/day); "
-                f"use selective trip trims rather than route merger."
+                f"{r_sm} also serves {unique_stops_sm} stops that {r_lg} doesn't "
+                f"({ov_share*100:.1f}% shared stops; {r_sm} ~{sm_riders_day:,.0f}/day vs "
+                f"{r_lg} ~{lg_riders_day:,.0f}/day). Selective trip changes fit better than merging."
             )
 
         rows.append(

@@ -5,6 +5,8 @@ import {
   fmtNum,
   fmtPct,
   fmtSharePct,
+  formatMergeVerdict,
+  formatReallocationRole,
   formatReviewCategory,
   formatTimeBandLabel,
   RouteSummary,
@@ -338,12 +340,12 @@ export const ScenariosPage: React.FC<ScenariosPageProps> = ({
                   <td className="py-2 pr-3">
                     <span
                       className={`rounded px-2 py-0.5 font-medium ${
-                        String(row.reallocation_role).includes("receiver")
+                        String(row.reallocation_role).includes("recipient")
                           ? "bg-emerald-50 text-emerald-700"
                           : "bg-blue-50 text-blue-700"
                       }`}
                     >
-                      {String(row.reallocation_role)}
+                      {formatReallocationRole(String(row.reallocation_role))}
                     </span>
                   </td>
                   <td className="py-2 pr-3 font-mono">{String(row.day_group)}</td>
@@ -398,8 +400,8 @@ export const ScenariosPage: React.FC<ScenariosPageProps> = ({
                   <td className="py-2 pr-3 text-right font-mono">
                     {fmtInt(m.unshared_stops_on_smaller_route as number)}
                   </td>
-                  <td className="py-2 pr-3 font-mono text-[11px] text-amber-800">
-                    {String(m.merge_feasibility_verdict)}
+                  <td className="py-2 pr-3 font-medium text-amber-800">
+                    {formatMergeVerdict(String(m.merge_feasibility_verdict))}
                   </td>
                   <td className="py-2 text-slate-600">{String(m.verdict_reason)}</td>
                 </tr>

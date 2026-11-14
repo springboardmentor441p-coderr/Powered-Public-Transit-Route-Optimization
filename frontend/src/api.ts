@@ -53,6 +53,29 @@ export function formatReviewCategory(cat: string): string {
   return map[cat] ?? cat;
 }
 
+export function formatReallocationRole(role: string): string {
+  if (role === "donor_trim") return "Fewer trips";
+  if (role === "recipient_add") return "More trips";
+  return role.replace(/_/g, " ");
+}
+
+export function formatMergeVerdict(verdict: string): string {
+  const map: Record<string, string> = {
+    keep_separate_unique_stops: "Keep separate (unique stops)",
+    partial_segment_spacing_only_unique_branches: "Keep separate (unique stops)",
+    do_not_merge_coordinate_headways_only: "Do not merge (high demand)",
+    candidate_for_offpeak_consolidation_study: "Study off-peak consolidation",
+    monitor_shared_corridor_no_merge: "Monitor overlap (no merge)",
+  };
+  return map[verdict] ?? verdict.replace(/_/g, " ");
+}
+
+export function formatDbscanLabel(label: string | null | undefined): string {
+  if (!label) return NOT_AVAILABLE;
+  if (label.startsWith("Noise")) return "DBSCAN: not in any group";
+  return label;
+}
+
 export interface ApiEnvelope<T = Record<string, unknown>> {
   period: string;
   source: string;
