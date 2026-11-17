@@ -1,0 +1,9 @@
+bus_route,test_records,selected_model,model_mae,model_rmse,model_wape_percent,model_r2,baseline_mae,baseline_rmse,baseline_wape_percent
+Q27,2121,Extra Trees,32.34,46.04,8.44,0.9649,47.26,71.05,12.34
+B6,2121,Extra Trees,35.89,51.97,6.54,0.9803,55.14,83.66,10.04
+BX12+,2121,Extra Trees,37.28,59.66,7.72,0.9815,61.09,104.87,12.66
+Q58,2121,Extra Trees,41.65,58.27,8.65,0.9575,58.54,83.67,12.15
+Q44+,2121,Extra Trees,42.01,61.51,6.98,0.9776,62.17,94.49,10.33
+M101,2121,Extra Trees,45.33,65.73,10.6,0.9482,64.32,95.25,15.04
+M15,2121,Extra Trees,50.87,71.35,10.07,0.9429,75.54,109.34,14.95
+M15+,2121,Extra Trees,59.62,95.22,7.11,0.9831,108.48,198.41,12.93

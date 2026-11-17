@@ -1,0 +1,4 @@
+model,mae,rmse,r2
+Random Forest,45.04,69.31,0.9751
+Extra Trees,43.82,66.05,0.9774
+Previous Week Baseline,69.47,121.53,

@@ -1,0 +1,3 @@
+model,mae,rmse,wape_percent,r2
+Extra Trees,43.76,65.27,7.71,0.9801
+Random Forest,44.95,68.25,7.92,0.9782

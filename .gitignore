@@ -1,1 +1,14 @@
+
+# Large raw bus speed dataset
 export.csv
+
+# Python temporary files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+
+# Logs
+*.log

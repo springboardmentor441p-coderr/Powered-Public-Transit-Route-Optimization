@@ -1,0 +1,9 @@
+timestamp,bus_route,total_passengers,anomaly_reason,review_status,automatically_removed
+2026-08-16T21:00:00.000,B6,2,Simultaneous near-zero passenger counts across all eight routes at the same timestamp; cause unverified.,Flagged for investigation,False
+2026-08-16T21:00:00.000,BX12+,0,Simultaneous near-zero passenger counts across all eight routes at the same timestamp; cause unverified.,Flagged for investigation,False
+2026-08-16T21:00:00.000,M101,2,Simultaneous near-zero passenger counts across all eight routes at the same timestamp; cause unverified.,Flagged for investigation,False
+2026-08-16T21:00:00.000,M15,1,Simultaneous near-zero passenger counts across all eight routes at the same timestamp; cause unverified.,Flagged for investigation,False
+2026-08-16T21:00:00.000,M15+,2,Simultaneous near-zero passenger counts across all eight routes at the same timestamp; cause unverified.,Flagged for investigation,False
+2026-08-16T21:00:00.000,Q27,2,Simultaneous near-zero passenger counts across all eight routes at the same timestamp; cause unverified.,Flagged for investigation,False
+2026-08-16T21:00:00.000,Q44+,0,Simultaneous near-zero passenger counts across all eight routes at the same timestamp; cause unverified.,Flagged for investigation,False
+2026-08-16T21:00:00.000,Q58,2,Simultaneous near-zero passenger counts across all eight routes at the same timestamp; cause unverified.,Flagged for investigation,False
