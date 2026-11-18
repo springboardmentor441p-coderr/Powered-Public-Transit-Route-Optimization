@@ -1,9 +1,9 @@
 # Stage 4b quality report: neural network models (an additional modelling experiment)
 
-Generated 2026-11-18T16:14:28+00:00 by `analytics/models/train_stage4b.py`. An additional modelling experiment on top of the mentor's reference work (Stage 4a): four small neural networks (MLP, LSTM, GRU, 1D CNN) that read the route's last 28 days, compared with the two baselines and the four Stage 4a models on identical rows.
+Generated 2026-11-18T16:23:33+00:00 by `analytics/models/train_stage4b.py`. An additional modelling experiment on top of the mentor's reference work (Stage 4a): four small neural networks (MLP, LSTM, GRU, 1D CNN) that read the route's last 28 days, compared with the two baselines and the four Stage 4a models on identical rows.
 
 - Data version: `cta_ref__r20261113__gtfs8__to20260731/features__delay1d`; feature rows sha256 `2c3e0eeeccf947d5`; raw ridership `CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113` (sha256 `d9675570e50a1b3d`)
-- Code version: git `8bb77e9+uncommitted`; artifact version `stage4b-1.0.0`; Stage 4a artifacts `stage4a-1.0.0` (frozen files checked by sha256, nothing refitted)
+- Code version: git `247a520`; artifact version `stage4b-1.0.0`; Stage 4a artifacts `stage4a-1.0.0` (frozen files checked by sha256, nothing refitted)
 - Settings fixed in `analytics/config/neural.json` before any network was trained: seed 42, Adam lr 0.001, batch 128, MSE on the scaled target, at most 200 epochs, early-stopping patience 20, CPU, deterministic algorithms, one thread
 - Scoring: the unchanged Stage 4a module (`analytics/models/scoring.py`)
 
@@ -61,10 +61,10 @@ All four use one recipe: same seed (reset before each), optimiser, batch size, l
 
 | network | parameters | epochs run | best epoch | best early-stopping loss (scaled MSE) | training seconds |
 |---|---|---|---|---|---|
-| mlp | 13,889 | 47 | 27 | 0.024 | 5.500 |
-| lstm | 9,761 | 66 | 46 | 0.025 | 30.300 |
-| gru | 8,609 | 66 | 46 | 0.025 | 42.600 |
-| cnn | 6,689 | 32 | 12 | 0.031 | 6.300 |
+| mlp | 13,889 | 47 | 27 | 0.024 | 5.600 |
+| lstm | 9,761 | 66 | 46 | 0.025 | 30.600 |
+| gru | 8,609 | 66 | 46 | 0.025 | 41.400 |
+| cnn | 6,689 | 32 | 12 | 0.031 | 5.900 |
 
 ## 3. Validation: all ten methods on the identical rows (selection)
 

@@ -1,7 +1,7 @@
 {
   "artifact_version": "stage4b-1.0.0",
-  "created_at": "2026-11-18T16:14:28+00:00",
-  "git_commit": "8bb77e9+uncommitted",
+  "created_at": "2026-11-18T16:23:33+00:00",
+  "git_commit": "247a520",
   "code": "analytics/models/train_stage4b.py",
   "description": "additional modelling experiment: neural networks",
   "data_version": "cta_ref__r20261113__gtfs8__to20260731/features__delay1d",
@@ -134,28 +134,28 @@
       "best_epoch": 27,
       "best_stop_loss": 0.024190464988350868,
       "parameters": 13889,
-      "train_seconds": 5.5
+      "train_seconds": 5.6
     },
     "lstm": {
       "epochs_run": 66,
       "best_epoch": 46,
       "best_stop_loss": 0.024859005585312843,
       "parameters": 9761,
-      "train_seconds": 30.3
+      "train_seconds": 30.6
     },
     "gru": {
       "epochs_run": 66,
       "best_epoch": 46,
       "best_stop_loss": 0.025067025795578957,
       "parameters": 8609,
-      "train_seconds": 42.6
+      "train_seconds": 41.4
     },
     "cnn": {
       "epochs_run": 32,
       "best_epoch": 12,
       "best_stop_loss": 0.031248854473233223,
       "parameters": 6689,
-      "train_seconds": 6.3
+      "train_seconds": 5.9
     }
   },
   "selected_lowest_validation_mae": "rf_demand",
@@ -488,8 +488,8 @@
     }
   ],
   "test_status": "reused holdout: June-July 2026 was examined while the method was developed (notebook); not an untouched final test",
-  "frozen_at": "2026-11-18T16:14:18+00:00",
-  "test_scored_at": "2026-11-18T16:14:26+00:00",
+  "frozen_at": "2026-11-18T16:23:22+00:00",
+  "test_scored_at": "2026-11-18T16:23:30+00:00",
   "runtime": {
     "python": "3.12.10",
     "torch": "2.15.0",
