@@ -82,10 +82,11 @@ def test_target_never_in_its_own_features():
     b = at(build(hist(rows)), "A", MON)
     feature_cols = [c for c in a.index if c not in ("rides",)]
     assert a[feature_cols].equals(b[feature_cols])
-    for cols in [DEMAND_FEATURES, SERVICE_FEATURES, predictor_columns(True, "option_2")]:
+    for cols in [DEMAND_FEATURES, SERVICE_FEATURES, predictor_columns(True), predictor_columns(False)]:
         assert not set(cols) & set(NEVER_PREDICTORS)
-    # the reported daytype is not a predictor; the calendar version replaces it
+    # the reported daytype is not a predictor; the schedule-based Sunday-like flag replaces it
     assert "is_sunday_holiday_daytype" in SPEC_DEMAND_FEATURES and "is_sunday_holiday_daytype" not in DEMAND_FEATURES
+    assert "is_sunday_like_day" in DEMAND_FEATURES
 
 
 # 9.10.4 / 9.19.1: a lag inside the reporting delay is not available at issue time
@@ -120,7 +121,7 @@ def test_splits_have_no_date_overlap():
 def frame(**lags):
     row = {"route": "A", "date": pd.Timestamp(MON), "daytype": "W", "rides": 50, "split": "train",
            "seasonal_lag_observations": 0, "past_four_same_weekdays_mean": pd.NA,
-           "scheduled_trips": 10, "scheduled_service_hours": 5.0}
+           "scheduled_trips": 10, "scheduled_service_hours": 5.0}  # export names; prepare() maps them
     for k in LAGS:
         row[f"lag_{k}d_boardings"] = lags.get(f"l{k}", pd.NA)
     df = pd.DataFrame([row])
@@ -133,22 +134,23 @@ def test_option_2_fills_only_28_day_lag_with_flag():
     df = frame(l1=10, l7=70, l14=140, l21=210)
     df["seasonal_lag_observations"] = 3
     p2 = prepare(df, "option_2", HOLIDAYS, with_schedule=False).iloc[0]
-    assert p2["rides_28_days_before"] == pytest.approx(140)  # (70 + 140 + 210) / 3
-    assert p2["rides_28_days_before_available"] == 0 and p2["eligible"]
-    assert p2["available_same_weekday_observations"] == 3  # counted BEFORE filling, unchanged
-    assert p2["rides_7_days_before"] == 70  # existing values preserved
+    assert p2["boardings_28d_filled"] == pytest.approx(140)  # (70 + 140 + 210) / 3
+    assert pd.isna(p2["boardings_28d_ago"])  # the raw value stays missing; the fill lives in its own column
+    assert p2["boardings_28d_available"] == 0 and p2["eligible"]
+    assert p2["seasonal_count"] == 3  # counted BEFORE filling, unchanged
+    assert p2["boardings_7d_ago"] == 70  # existing values preserved
     p1 = prepare(df, "option_1", HOLIDAYS, with_schedule=False).iloc[0]
-    assert not p1["eligible"] and p1["withheld_reason"] == "missing_rides_28_days_before"
-    assert pd.isna(p1["rides_28_days_before"])  # option 1 never fills
+    assert not p1["eligible"] and p1["withheld_reason"] == "missing_boardings_28d_ago"
+    assert pd.isna(p1["boardings_28d_filled"])  # option 1 never fills
 
 
 def test_option_2_keeps_original_28_day_value_and_withholds_missing_required_lag():
     p = prepare(frame(l1=1, l7=7, l14=14, l21=21, l28=28), "option_2", HOLIDAYS, False).iloc[0]
-    assert p["rides_28_days_before"] == 28 and p["rides_28_days_before_available"] == 1 and p["eligible"]
+    assert p["boardings_28d_filled"] == 28 and p["boardings_28d_available"] == 1 and p["eligible"]
     q = prepare(frame(l1=1, l14=14, l21=21), "option_2", HOLIDAYS, False).iloc[0]  # 7-day missing
-    assert not q["eligible"] and "missing_rides_7_days_before" in q["withheld_reason"]
+    assert not q["eligible"] and "missing_boardings_7d_ago" in q["withheld_reason"]
     r = prepare(frame(l1=1), "option_2", HOLIDAYS, False).iloc[0]  # no donor at all
-    assert "no_donor_for_rides_28_days_before" in r["withheld_reason"]
+    assert "no_donor_for_boardings_28d" in r["withheld_reason"]
     assert r["rides"] == 50  # the target is never changed
 
 
@@ -166,7 +168,7 @@ def test_holiday_predictor_uses_calendar_not_reported_daytype():
     df = frame(l1=1, l7=7, l14=14, l21=21, l28=28)
     df["daytype"] = "U"  # the reported category says Sunday/holiday on an ordinary Monday
     p = prepare(df, "option_2", HOLIDAYS, False).iloc[0]
-    assert p["is_sunday_holiday_service_day"] == 0  # the issue-time predictor ignores the target row
+    assert p["is_sunday_holiday_service_day"] == 0  # the audit calendar flag ignores the target row
 
 
 def test_us_federal_observed_holiday_rule():

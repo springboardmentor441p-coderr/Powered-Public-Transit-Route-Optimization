@@ -1,11 +1,11 @@
 # Stage 3 quality report: feature contracts
 
-Generated 2026-11-13T04:51:00+00:00 by `analytics/features/build_stage3.py` (spec v3.8, sections 9.9, 9.10.2-9.10.4, 9.14.3). No model is trained in this stage.
+Generated 2026-11-18T14:31:59+00:00 by `analytics/features/build_stage3.py` (spec v3.8, sections 9.9, 9.10.2-9.10.4, 9.14.3). No model is trained in this stage.
 
 - Data version: `cta_ref__r20261113__gtfs8__to20260731/features__delay1d` (built on Stage 2 version `cta_ref__r20261113__gtfs8__to20260731`)
-- Code version: git `91c305b`; feature schema version 1.0.0
+- Code version: git `3a89127+uncommitted`; feature schema version 1.1.0
 - Issue time: start of the target service day (00:00 local); **assumed reporting delay: 1 day(s)** (configurable in `analytics/config/features.json`; an assumption for the retrospective replay, not a verified feed capability)
-- Reference comparisons: **42 MATCH, 0 MISMATCH**
+- Reference comparisons: **50 MATCH, 0 MISMATCH**
 
 > Reference counts are compared, never forced (spec 9.22.2). Absent lag dates stay missing; recorded zeros stay zero; targets are never filled.
 
@@ -55,6 +55,14 @@ Generated 2026-11-13T04:51:00+00:00 by `analytics/features/build_stage3.py` (spe
 | 9.9.2 | matched: service_date equals date | True | True | **MATCH** |  |
 | 9.14.3 | matched: descriptive archive unusable for forecasting exactly on boundary dates | True | True | **MATCH** |  |
 | 9.14.3 | forecast inputs: every archive captured strictly before target date | True | True | **MATCH** |  |
+| notebook | notebook feature rows: train target rows | 14,430 | 14,430 | **MATCH** | +0 |
+| notebook | notebook feature rows: train eligible rows | 13,379 | 13,379 | **MATCH** | +0 |
+| notebook | notebook feature rows: validation target rows | 6,864 | 6,864 | **MATCH** | +0 |
+| notebook | notebook feature rows: validation eligible rows | 6,560 | 6,560 | **MATCH** | +0 |
+| notebook | notebook feature rows: test target rows | 7,018 | 7,018 | **MATCH** | +0 |
+| notebook | notebook feature rows: test eligible rows | 6,542 | 6,542 | **MATCH** | +0 |
+| 9.14.3 | feature rows: forecast archive captured strictly before every target date | True | True | **MATCH** |  |
+| notebook | Sunday-like trip totals equal the forecast schedule's trips on every date | True | True | **MATCH** |  |
 
 ## 2. Policy coverage before model fitting (Option 2 selected, Option 1 comparison)
 
@@ -85,38 +93,38 @@ Withheld reasons (a row can have several):
 
 | table | policy | reason | rows |
 |---|---|---|---|
-| demand | option_1 | missing_rides_1_day_before | 4,279 |
-| demand | option_1 | missing_rides_28_days_before | 841 |
-| demand | option_1 | missing_rides_21_days_before | 775 |
-| demand | option_1 | missing_rides_14_days_before | 721 |
-| demand | option_1 | missing_rides_7_days_before | 596 |
-| demand | option_2 | missing_rides_1_day_before | 4,279 |
-| demand | option_2 | missing_rides_21_days_before | 775 |
-| demand | option_2 | missing_rides_14_days_before | 721 |
-| demand | option_2 | missing_rides_7_days_before | 596 |
-| demand | option_2 | no_donor_for_rides_28_days_before | 101 |
-| matched | option_1 | missing_rides_1_day_before | 1,453 |
-| matched | option_1 | missing_rides_21_days_before | 201 |
-| matched | option_1 | missing_rides_14_days_before | 191 |
-| matched | option_1 | missing_rides_28_days_before | 182 |
-| matched | option_1 | missing_rides_7_days_before | 155 |
-| matched_forecast_schedule | option_1 | missing_rides_1_day_before | 1,453 |
-| matched_forecast_schedule | option_1 | missing_rides_21_days_before | 201 |
-| matched_forecast_schedule | option_1 | missing_rides_14_days_before | 191 |
-| matched_forecast_schedule | option_1 | missing_rides_28_days_before | 182 |
-| matched_forecast_schedule | option_1 | missing_rides_7_days_before | 155 |
+| demand | option_1 | missing_boardings_1d_ago | 4,279 |
+| demand | option_1 | missing_boardings_28d_ago | 841 |
+| demand | option_1 | missing_boardings_21d_ago | 775 |
+| demand | option_1 | missing_boardings_14d_ago | 721 |
+| demand | option_1 | missing_boardings_7d_ago | 596 |
+| demand | option_2 | missing_boardings_1d_ago | 4,279 |
+| demand | option_2 | missing_boardings_21d_ago | 775 |
+| demand | option_2 | missing_boardings_14d_ago | 721 |
+| demand | option_2 | missing_boardings_7d_ago | 596 |
+| demand | option_2 | no_donor_for_boardings_28d | 101 |
+| matched | option_1 | missing_boardings_1d_ago | 1,453 |
+| matched | option_1 | missing_boardings_21d_ago | 201 |
+| matched | option_1 | missing_boardings_14d_ago | 191 |
+| matched | option_1 | missing_boardings_28d_ago | 182 |
+| matched | option_1 | missing_boardings_7d_ago | 155 |
+| matched_forecast_schedule | option_1 | missing_boardings_1d_ago | 1,453 |
+| matched_forecast_schedule | option_1 | missing_boardings_21d_ago | 201 |
+| matched_forecast_schedule | option_1 | missing_boardings_14d_ago | 191 |
+| matched_forecast_schedule | option_1 | missing_boardings_28d_ago | 182 |
+| matched_forecast_schedule | option_1 | missing_boardings_7d_ago | 155 |
 | matched_forecast_schedule | option_1 | missing_schedule | 86 |
-| matched | option_2 | missing_rides_1_day_before | 1,453 |
-| matched | option_2 | missing_rides_21_days_before | 201 |
-| matched | option_2 | missing_rides_14_days_before | 191 |
-| matched | option_2 | missing_rides_7_days_before | 155 |
-| matched | option_2 | no_donor_for_rides_28_days_before | 2 |
-| matched_forecast_schedule | option_2 | missing_rides_1_day_before | 1,453 |
-| matched_forecast_schedule | option_2 | missing_rides_21_days_before | 201 |
-| matched_forecast_schedule | option_2 | missing_rides_14_days_before | 191 |
-| matched_forecast_schedule | option_2 | missing_rides_7_days_before | 155 |
+| matched | option_2 | missing_boardings_1d_ago | 1,453 |
+| matched | option_2 | missing_boardings_21d_ago | 201 |
+| matched | option_2 | missing_boardings_14d_ago | 191 |
+| matched | option_2 | missing_boardings_7d_ago | 155 |
+| matched | option_2 | no_donor_for_boardings_28d | 2 |
+| matched_forecast_schedule | option_2 | missing_boardings_1d_ago | 1,453 |
+| matched_forecast_schedule | option_2 | missing_boardings_21d_ago | 201 |
+| matched_forecast_schedule | option_2 | missing_boardings_14d_ago | 191 |
+| matched_forecast_schedule | option_2 | missing_boardings_7d_ago | 155 |
 | matched_forecast_schedule | option_2 | missing_schedule | 86 |
-| matched_forecast_schedule | option_2 | no_donor_for_rides_28_days_before | 2 |
+| matched_forecast_schedule | option_2 | no_donor_for_boardings_28d | 2 |
 
 Routes 10 and 130 (absent from schedule-augmented training; reported separately, spec 9.10.2):
 
@@ -177,6 +185,64 @@ Matched rows whose forecast-input schedule differs from the descriptive one: 86.
 
 (none)
 
+## 6. Notebook-convention feature rows (Stage 4a alignment)
+
+`feature_rows.csv` is built by `analytics/features/model_features.py::build_features`, the only place model inputs are built. Its target rows are every route/day in the **forecast-time** schedule (latest archive captured strictly before the date); recorded boardings are attached afterwards. One required-field list applies to every method: `boardings_1d_ago`, `boardings_7d_ago`, `boardings_14d_ago`, `boardings_21d_ago`, `boardings_28d_filled`, `scheduled_trips`, `scheduled_hours`.
+
+| split | target rows | eligible | withheld | of which no recorded boardings | forecastable (history + schedule rules) |
+|---|---|---|---|---|---|
+| train | 14,430 | 13,379 | 1,051 | 3 | 13,382 |
+| validation | 6,864 | 6,560 | 304 | 1 | 6,561 |
+| test | 7,018 | 6,542 | 476 | 0 | 6,542 |
+
+Withheld reasons (comma-joined missing required fields):
+
+| split | excluded_reason | rows |
+|---|---|---|
+| test | boardings_1d_ago | 237 |
+| test | boardings_21d_ago | 49 |
+| test | boardings_14d_ago | 39 |
+| test | boardings_7d_ago | 38 |
+| test | boardings_1d_ago, boardings_21d_ago | 37 |
+| test | boardings_1d_ago, boardings_14d_ago | 36 |
+| test | boardings_1d_ago, boardings_7d_ago | 36 |
+| test | boardings_7d_ago, boardings_21d_ago | 2 |
+| test | boardings_14d_ago, boardings_21d_ago | 1 |
+| test | boardings_7d_ago, boardings_14d_ago | 1 |
+| train | boardings_1d_ago | 813 |
+| train | boardings_21d_ago | 74 |
+| train | boardings_7d_ago | 39 |
+| train | boardings_7d_ago, boardings_14d_ago | 39 |
+| train | boardings_14d_ago, boardings_21d_ago | 38 |
+| train | boardings_14d_ago | 37 |
+| train | boardings_7d_ago, boardings_14d_ago, boardings_21d_ago, boardings_28d_filled | 5 |
+| train | no recorded boardings | 3 |
+| train | boardings_7d_ago, boardings_14d_ago, boardings_21d_ago | 2 |
+| train | boardings_7d_ago, boardings_21d_ago | 1 |
+| validation | boardings_1d_ago | 293 |
+| validation | boardings_14d_ago, boardings_21d_ago | 2 |
+| validation | boardings_14d_ago | 1 |
+| validation | boardings_1d_ago, boardings_14d_ago | 1 |
+| validation | boardings_1d_ago, boardings_7d_ago | 1 |
+| validation | boardings_21d_ago | 1 |
+| validation | boardings_7d_ago | 1 |
+| validation | boardings_7d_ago, boardings_14d_ago | 1 |
+| validation | boardings_7d_ago, boardings_14d_ago, boardings_21d_ago, boardings_28d_filled | 1 |
+| validation | boardings_7d_ago, boardings_21d_ago | 1 |
+| validation | no recorded boardings | 1 |
+
+### Sunday-like flag (schedule-based) vs calendar flag vs reported daytype
+
+Sunday-like dates: **40** of 250 dates with a forecast schedule. Non-Sunday Sunday-like dates: 2025-11-27, 2025-12-25, 2026-01-01, 2026-05-25, 2026-07-03. Non-Sunday reported-U dates: 2025-11-27, 2025-12-25, 2026-01-01, 2026-05-25, 2026-07-03. The daytype is used here only as a check, never as an input.
+
+| group | comparable_rows | reported_U | schedule_flag_1 | calendar_flag_1 | schedule_vs_U_disagreements | calendar_vs_U_disagreements |
+|---|---|---|---|---|---|---|
+| non-Sunday U date | 433 | 433 | 433 | 433 | 0 | 0 |
+| ordinary Sunday | 3,018 | 3,018 | 3,018 | 3,018 | 0 | 0 |
+| other day | 24,837 | 0 | 0 | 0 | 0 | 0 |
+
+Bus services with no calendar.txt row (cannot be classified as Sunday-only): none.
+
 ## Outputs
 
 | file | rows | columns | sha256 (first 16) |
@@ -184,7 +250,9 @@ Matched rows whose forecast-input schedule differs from the descriptive one: 86.
 | `daily_forecasting_features.csv` | 83,997 | 16 | `53de2b7c949ddb4b` |
 | `expanded_demand_service_features.csv` | 28,374 | 22 | `eae71f200e280083` |
 | `forecast_schedule_inputs.csv` | 28,374 | 10 | `a5f6f0f0eb281a55` |
-| `policy_eligibility_demand.csv` | 83,997 | 9 | `914ee38891be99c5` |
-| `policy_eligibility_matched.csv` | 28,374 | 11 | `05ebe074fb3b5ace` |
+| `policy_eligibility_demand.csv` | 83,997 | 9 | `3ab0b4239c02becb` |
+| `policy_eligibility_matched.csv` | 28,374 | 11 | `8465a891bd4ff536` |
 | `lag_absence_by_route_split.csv` | 753 | 10 | `74603383df9eb307` |
+| `feature_rows.csv` | 28,312 | 25 | `2c3e0eeeccf947d5` |
+| `sunday_like_days.csv` | 250 | 5 | `7e27b7337c710fff` |
 | `feature_schema.json` | | | |

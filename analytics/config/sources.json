@@ -93,5 +93,13 @@
     "option_2_withheld_by_split": {"train": 1036, "validation": 299, "test": 472},
     "option_1_withheld_total": 1895,
     "option_2_extra_eligible_test_rows": 51
+  },
+  "notebook_reference": {
+    "_comment": "Mentor reference notebook row counts (feature rows on the forecast-time schedule population), supplied by the project owner. Compared, never forced.",
+    "split_rows": {
+      "train": {"target": 14430, "eligible": 13379},
+      "validation": {"target": 6864, "eligible": 6560},
+      "test": {"target": 7018, "eligible": 6542}
+    }
   }
 }

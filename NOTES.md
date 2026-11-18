@@ -270,3 +270,120 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
 - **Results:** Stage 3 rebuilt: 42 MATCH, 0 MISMATCH. Daytype disagreements: **0 rows on 0 dates** (before the rule: 182 rows on 2 dates, 2026-07-03 and 07-04). The exported CSVs are unchanged; the predictor lives in the shared preprocessing. 42 tests pass.
 - **Caveat:** in this window the only weekend holiday is 2026-07-04, so the rule is confirmed on one case. That agreement is evidence, not proof that CTA always follows it.
 - **Interview Q:** *"Isn't changing the holiday rule after seeing a mismatch also fitting to the data?"* The difference is whether the new input could have been known in advance and is defined independently of the outcome. The federal observed-date rule is both, and it's documented with its source. A hand-picked date list matching the data would be neither.
+
+---
+
+# Stage 4a: baselines, Ridge and Random Forest (notebook conventions; no neural networks)
+
+> The mentor's reference notebook overrides the spec wherever the two differ (your rule for this stage).
+
+## Step 28: Comparison of our Stage 3 features with the notebook's `build_features`
+- **Built:** a 13-row comparison table: target population, rows without rides, 2025-11-23, Sunday-like flag, required fields, reason format, 28-day column, names, feature order, split edges, route case, trip-hours validity, dtypes. It is reproduced in `reports/stage4a_quality_report.md`.
+- **Why:** before training, both pipelines must agree on *which rows* and *which inputs*. Otherwise any difference in scores could come from different data, not different models.
+- **Key concept:** *same exam, same questions*. Two students can only be compared if they sat the same paper. Our Stage 3 table and the notebook's table were "different papers": the notebook's target rows are every route/day in the **forecast-time schedule**, while ours were matched rides on the descriptive schedule.
+- **Results:** our eligible counts already equalled the notebook's (13,379 / 6,560 / 6,542). Only the target population differed: −86 rows on 2025-11-23 (no archive saved before it) and +15/+5/+4 scheduled days with no rides (withheld, never zero). 14,501 − 86 + 15 = **14,430**.
+- **Interview Q:** *"Your counts differed from the reference. How did you find out why?"* I decomposed the difference into named populations (rows dropped for a reason, rows added for a reason) until the arithmetic closed exactly, instead of adjusting code until the numbers matched.
+
+## Step 29: Aligning the pipeline with the notebook
+- **Built:**
+  - `naming.py` now uses the notebook's names (`boardings_7d_ago`, `seasonal_mean`, `boardings_28d_filled`, `scheduled_hours`, ...), with a `NOTEBOOK_TO_SPEC` map. `REQUIRED`, `DEMAND_FEATURES` and `SERVICE_FEATURES` are in the notebook's order.
+  - New `sunday_like.py` holds the schedule-based flag.
+  - New `model_features.py` (`issue_schedule`, `build_features`, `attach_actuals`) is **the only place model inputs are built**.
+  - `build_stage3.py` (schema 1.1.0) writes `feature_rows.csv` + `sunday_like_days.csv`.
+  - `preprocess.prepare()` is kept only as the spec Option 1/2 audit.
+- **Why, change by change:**
+  1. *Population = forecast-time schedule.* A forecast for day D is issued before D, so the rows it can serve are the route/days the timetable known before D lists.
+  2. *Days without rides stay as rows* with reason `no recorded boardings`, so coverage shows them instead of hiding them.
+  3. *Sunday-like flag from the schedule* (more than half of the day's bus trips belong to Sunday-only services) replaces our holiday list, as in the notebook. Both are known at issue time, and both disagree with the reported `U` daytype on **0** rows.
+  4. *One required list for every method*, so the demand-only and demand+schedule models are scored on **identical rows** (spec 9.10.1 controlled comparison).
+  5. *The raw 28-day value is kept*, with the fill in its own column, so you can always audit what was observed and what was estimated.
+  6. *Feature order matches the notebook*, because a Random Forest breaks ties by column order.
+- **Key concept:** *one recipe, one kitchen*. If training and the replay each had their own copy of the feature rules, a small difference would mean the model is served inputs it never trained on. `build_features` is the single recipe.
+- **Decisions:**
+  - The exported spec CSVs keep their names, so the 42 spec checks still run unchanged.
+  - The notebook's row counts live in `sources.json` → `notebook_reference`, next to the other references (not in `models.json`, so Stage 3 doesn't need to read model settings).
+  - Two differences have 0 effect and are only reported: route upper-casing (no lower-case routes exist) and the 1e-6 rounding of hours.
+- **Results:** Stage 3 rebuilt with **50 MATCH, 0 MISMATCH** (42 spec checks + 6 notebook counts + 2 consistency checks):
+  - train 14,430 / 13,379, validation 6,864 / 6,560, test 7,018 / 6,542, all exactly.
+  - Sunday-like dates: 40 of 250, 5 of them non-Sunday holidays (including 2026-07-03).
+  - Withheld-reason breakdown identical. No exception-only bus services.
+  - 48 tests pass (42 existing + 6 new).
+- **Interview Q:** *"Why not use the reported daytype U as the holiday flag? It's perfect."* It arrives with the rides, after the day. A flag derived from the timetable published *before* the day gives the same answer here and is legitimately available at forecast time.
+
+## Step 30: Dependencies
+- **Built:** `scikit-learn==1.9.1` and `joblib==1.6.0`, plus their transitive packages, all pinned: `scipy==1.18.1`, `threadpoolctl==3.8.0`, `narwhals==2.29.0`, `cloudpickle==3.1.3`. `pip check` is clean.
+- **Why:** scikit-learn is in the fixed stack (Ridge, Random Forest, encoders). joblib saves fitted pipelines, as the notebook does.
+- **Key concept:** *transitive dependencies*. Installing one package brings in the packages it needs, like buying a printer that needs its own cable. They're pinned too, so a future install can't silently swap them.
+- **Decisions:** `narwhals` and `cloudpickle` were not in the plan list. They're automatic requirements of scikit-learn and joblib, not tools we chose. No matplotlib, XGBoost or PyTorch.
+- **Interview Q:** *"Your library versions differ from the notebook's (sklearn 1.6.1). Does that matter?"* Ridge and the baselines are deterministic arithmetic and should match closely. A Random Forest's tree-building internals can change between versions, so small RF differences are expected and must be reported, not hidden.
+
+## Step 31: Scoring function (`analytics/models/scoring.py`)
+- **Built:** `score()` returns MAE, RMSE, WAPE %, the absolute-error sum and the actual sum. `evaluate()` adds target/scored/withheld counts, coverage and withheld counts by reason.
+- **Why:** spec 9.10.3 asks for errors *and* how many rows got a forecast. An accurate model that forecasts only half the rows isn't comparable to one that forecasts all of them.
+- **Key concept:** *WAPE needs a positive denominator*. WAPE = total error / total actual boardings. If the actual total is 0, the ratio has no meaning, so it is **unavailable** (None), never 0% and never infinite.
+- **Decisions:**
+  - `evaluate` calls the predictor with **eligible rows only**, so a withheld row can never be scored, even as 0.
+  - An eligible row with no forecast raises an error instead of being silently dropped, because that would quietly change the scored population.
+- **Interview Q:** *"Why report RMSE as well as MAE?"* MAE is the typical miss in boardings. RMSE squares the misses, so it grows when a few days are badly wrong. Comparing the two shows whether the error is spread evenly or driven by a few large misses.
+
+## Step 32: Baselines (`analytics/models/baselines.py`)
+- **Built:** `last_week` returns `boardings_7d_ago`. `seasonal_mean` returns the mean of the available 7/14/21/28-day values.
+- **Why:** spec 9.10.1 steps 1-2. A model is only worth serving if it beats these simple rules.
+- **Key concept:** *a baseline is the "do nothing clever" answer*. Like predicting tomorrow's weather as "same as today": if your fancy model can't beat that, it isn't adding anything.
+- **Interview Q:** *"Can a baseline be the serving method?"* Yes. If it wins on validation, it is served. The bundle then has no pipeline file, only the rule.
+
+## Step 33: Ridge and Random Forest pipelines (`analytics/models/regressors.py`)
+- **Built:** `make_regressor()` builds one Pipeline: OneHotEncoder (route, `handle_unknown="ignore"`) + StandardScaler (numeric columns) + Ridge(alpha=100) or RandomForest(100 trees, depth 16, leaf 10, seed 42). `fit_candidates()` fits the 4 candidates on **eligible training rows only**. `make_predictor()` floors predictions at 0.
+- **Why:** the encoder and scaler are *learned* state. If they saw validation or test rows, the validation score would be quietly helped by the answers.
+- **Key concept:** *one pipeline = one sealed box*. Encoder, scaler and model are saved together, so the backend can't accidentally use a scaler fitted on different data.
+- **Results:** 8 unit tests pass:
+  - encoder and scaler learn from training rows only;
+  - an unseen route still predicts;
+  - withheld rows are never seen by the predictor (a 1e9 sentinel actual has no effect);
+  - WAPE is unavailable for a zero total;
+  - a real 0 actual is scored, a missing actual can't be;
+  - the floor turns real negative Ridge outputs into exactly 0;
+  - compressed models reload to **exactly** equal predictions.
+- **Interview Q:** *"Why does `handle_unknown='ignore'` not 'solve' new routes?"* It only prevents a crash. The new route gets no route-specific adjustment. Its forecast comes purely from its own lags and schedule, so its error should be reported separately (routes 10 and 130).
+
+## Step 34: Training orchestrator (`analytics/models/train_stage4a.py`)
+- **Built:** one command that runs these steps in a fixed order:
+  1. verify the `feature_rows.csv` hash;
+  2. fit 4 pipelines on eligible training rows;
+  3. score all 6 methods on the identical validation rows and select the lowest MAE;
+  4. **freeze**: save `artifacts/stage4a/models/*.joblib` (compress=3), `serving_bundle.joblib`, `feature_contract.json` and `validation_predictions.csv`, check sizes, reload and compare;
+  5. **only then** score the test period once.
+
+  The outputs go to `model_manifest.json`, `reports/stage4a_*`.
+- **Why:** the order *is* the safeguard. Once the files are frozen and hashed, nothing the test period shows can change a choice.
+- **Key concept:** *seal the envelope before opening the exam results*. Selection happens on validation. The test is opened once, after the choice is locked.
+- **Decisions:**
+  - **Your addition:** every `.joblib` is saved with `compress=3`. Both sizes are recorded (uncompressed = the same object dumped into memory), plus the sha256 of the saved file. The 20 MB check (20,000,000 bytes) applies to the saved file.
+  - **A finding at the freeze step:** the first run **stopped before any test scoring**, because the reloaded Random Forests didn't reproduce their predictions exactly. The cause wasn't compression. With `n_jobs=2`, sklearn adds the 100 tree predictions in whichever order the threads finish, so even the *same in-memory model* gave answers 3.6e-12 boardings apart on two calls. `n_jobs=1` builds the same trees (each tree's seed is fixed in advance) and predicts exactly repeatably. It was changed in `models.json`, with a note, before any test number existed. A test guards it.
+- **Results:** sizes (uncompressed → saved):
+  - `rf_demand` 9.56 MB → **3.18 MB**; `rf_service` 9.54 MB → **3.18 MB**;
+  - the Ridge models ~5 KB → ~3 KB; the bundle 1 KB.
+
+  All are under 20 MB, and all 4 reloaded pipelines reproduce the validation predictions **exactly**.
+- **Interview Q:** *"Why would a model give slightly different answers on the same input?"* Floating-point addition isn't associative: (a+b)+c can differ from a+(b+c) in the last bits. Parallel threads that add results in varying order make the sum vary. For an auditable system you want bit-identical replays, so you remove that source of noise.
+
+## Step 35: Results and the Stage 4a quality report (`reports/stage4a_quality_report.md`)
+- **Row counts vs the notebook: 6 MATCH, 0 MISMATCH.** Train 14,430 / 13,379, validation 6,864 / 6,560, test 7,018 / 6,542. The difference from the spec's 14,501 / 6,859 / 7,014 is explained exactly: −86 rows on 2025-11-23 (no earlier archive) and +15/+5/+4 scheduled days with no record. Key sets were checked too, not just totals.
+- **Validation (selection, identical 6,560 rows):**
+
+  | method | MAE | WAPE |
+  |---|---:|---:|
+  | rf_demand | **345.47** | 6.40% |
+  | rf_service | 354.08 | 6.56% |
+  | seasonal_mean | 360.36 | 6.67% |
+  | last_week | 375.18 | 6.95% |
+  | ridge_demand | 400.56 | 7.42% |
+  | ridge_service | 437.14 | 8.09% |
+
+  **Selected: `rf_demand`.**
+- **Honest losses:** both Ridge models **lose to the seasonal-mean baseline** on validation and on the test. Adding schedule inputs did **not** help either model family on these identical rows (rf_service is worse than rf_demand).
+- **Test (reused holdout, scored once):** rf_demand MAE 398.01 / WAPE 7.67% vs seasonal mean 421.15 / 8.12%.
+  - By day type, rf_demand has the lowest WAPE on W (7.00%) and A (8.67%). On U, rf_service is lower (11.35% vs 11.75%). Test numbers are reported, not used to switch methods.
+  - Routes 10 / 130 (unseen in training; 5 and 6 rows withheld for a missing 21-day lag): rf_demand WAPE 26.6% / 18.9%. On route 10, `last_week` (25.8%) does slightly better than the served model.
+- **Tests:** 62 pass (14 new unit + 5 new integration tests). Mutation check: no floor, scaler fitted on all rows, withheld scored as 0, and WAPE 0 for a zero total were **each caught**.
+- **Interview Q:** *"Your Random Forest beat the baseline by about 4% MAE. Is that a real improvement?"* On validation it's consistent across day types, and on identical rows. But the test period is a reused holdout and the margin is modest, so I'd call it evidence, not proof, and keep the seasonal mean as the comparison in every report.

@@ -29,12 +29,16 @@ from datetime import date, datetime, timedelta, timezone  # noqa: E402
 
 import pandas as pd  # noqa: E402
 
+import numpy as np  # noqa: E402
+
 from analytics.features import forecast_schedule as fs  # noqa: E402
+from analytics.features import model_features as mfeat  # noqa: E402
 from analytics.features.lags import (add_calendar, add_exact_lags, add_seasonal, observed_holidays,  # noqa: E402
                                      sunday_holiday_service_day, to_history)
 from analytics.features.naming import LAG_EXPORT  # noqa: E402
 from analytics.features.preprocess import prepare, withheld_counts  # noqa: E402
-from analytics.features.schema import D, M, build_schema, classify_missing_lag, export_columns, lag_absence_table  # noqa: E402
+from analytics.features.schema import D, F, M, build_schema, classify_missing_lag, export_columns, lag_absence_table  # noqa: E402
+from analytics.features.sunday_like import sunday_like_days  # noqa: E402
 from analytics.features.splits import SPLITS, assign_split, date_overlap, parse_ranges  # noqa: E402
 from analytics.reconstruction.build_stage2 import git_commit, sha256  # noqa: E402
 from analytics.reconstruction.gtfs_tables import bus_crosswalk, open_snapshot  # noqa: E402
@@ -157,6 +161,50 @@ def main() -> None:
             "status": ", ".join(f"{k} {v}" for k, v in g["forecast_schedule_status"].value_counts().items())})
     boundary_table = pd.DataFrame(boundary_rows)
 
+    # ---------------------------------------------------------------- Stage 4a alignment: notebook feature rows
+    print("building notebook-convention feature rows (forecast-time schedule population) ...", flush=True)
+    issue = mfeat.issue_schedule(pairs, sched, boundary_service)
+    sl_days, exception_only = sunday_like_days(pairs, extracted)
+    trips_per_date = issue.groupby("date")["scheduled_trips"].sum()
+    sl_trips = sl_days.assign(date=pd.to_datetime(sl_days["date"]).astype("datetime64[ns]")).set_index("date")["scheduled_bus_trips"]
+    trips_consistent = bool(set(trips_per_date.index) == set(sl_trips.index) and np.array_equal(
+        trips_per_date.sort_index().to_numpy(), sl_trips.sort_index().to_numpy(dtype=float)))
+    target_rows = mfeat.add_sunday_like(issue, sl_days)
+    frows = mfeat.attach_actuals(mfeat.build_features(target_rows, hist, delay, fcfg["seasonal_min_observations"]), hist)
+    frows["split"] = assign_split(frows["date"], matched_ranges)
+    frows = frows[mfeat.FEATURE_ROW_COLUMNS].sort_values(KEY).reset_index(drop=True)
+    issue_archive_ok = bool((pd.to_datetime(frows["schedule_saved"].map(captured)) < frows["date"]).all())
+
+    def notebook_counts():
+        rows = []
+        for sp in SPLITS:
+            g = frows[frows["split"] == sp]
+            rows.append({"split": sp, "target rows": len(g), "eligible": int(g["eligible"].sum()),
+                         "withheld": int((~g["eligible"]).sum()),
+                         "of which no recorded boardings": int((g["excluded_reason"] == "no recorded boardings").sum()),
+                         "forecastable (history + schedule rules)": int(g["forecastable"].sum())})
+        return pd.DataFrame(rows)
+    nb_counts = notebook_counts()
+    nb_reasons = (frows.loc[~frows["eligible"]].groupby(["split", "excluded_reason"]).size().rename("rows")
+                  .reset_index().sort_values(["split", "rows"], ascending=[True, False]))
+
+    # Sunday-like flag diagnostic (notebook step 18b): the reported daytype is used ONLY to check the flags
+    dg = frows[frows["rides"].notna()].copy()
+    dg["calendar_flag"] = sunday_holiday_service_day(dg["date"], set(holidays)).to_numpy()
+    dg["reported_U"] = (dg["daytype"] == "U").astype("int64")
+    dg["group"] = np.select([dg["date"].dt.day_of_week.eq(6), dg["reported_U"].eq(1)],
+                            ["ordinary Sunday", "non-Sunday U date"], default="other day")
+    dg["schedule_disagrees"] = dg["is_sunday_like_day"] != dg["reported_U"]
+    dg["calendar_disagrees"] = dg["calendar_flag"] != dg["reported_U"]
+    sunday_check = dg.groupby("group").agg(
+        comparable_rows=("reported_U", "size"), reported_U=("reported_U", "sum"),
+        schedule_flag_1=("is_sunday_like_day", "sum"), calendar_flag_1=("calendar_flag", "sum"),
+        schedule_vs_U_disagreements=("schedule_disagrees", "sum"),
+        calendar_vs_U_disagreements=("calendar_disagrees", "sum")).reset_index()
+    sl_dates = sl_days[sl_days["sunday_like_day"] == 1]["date"]
+    non_sunday_sl = sorted(d.isoformat() for d in sl_dates if d.weekday() != 6)
+    non_sunday_u = sorted(dg.loc[dg["group"] == "non-Sunday U date", "date"].dt.strftime("%Y-%m-%d").unique())
+
     # ---------------------------------------------------------------- missing-history classification (matched)
     print("classifying missing history ...", flush=True)
     crosswalks = {}
@@ -194,8 +242,8 @@ def main() -> None:
         out = pd.DataFrame({"route": o1["route"], "date": o1["date"], "split": o1["split"],
                             "eligible_option_1": o1["eligible"], "withheld_reason_option_1": o1["withheld_reason"],
                             "eligible_option_2": o2["eligible"], "withheld_reason_option_2": o2["withheld_reason"],
-                            "rides_28_days_before_option_2": o2["rides_28_days_before"].round(6),
-                            "rides_28_days_before_available": o2["rides_28_days_before_available"]})
+                            "boardings_28d_filled_option_2": o2["boardings_28d_filled"].round(6),
+                            "boardings_28d_available": o2["boardings_28d_available"]})
         if t == "matched":
             fo = prep[("matched_forecast_schedule", "option_2")]
             out["eligible_option_2_forecast_schedule"] = fo["eligible"].values
@@ -210,8 +258,7 @@ def main() -> None:
             special.append({"route": route, "policy": p, "matched rows": len(g),
                             "splits": ", ".join(sorted(g["split"].unique())),
                             "eligible": int(g["eligible"].sum()), "withheld": int((~g["eligible"]).sum()),
-                            "missing 28-day lag": int(g["rides_28_days_before"].isna().sum()) if p == "option_1"
-                            else int((g["rides_28_days_before_available"] == 0).sum())})
+                            "missing 28-day lag": int((g["boardings_28d_available"] == 0).sum())})
 
     # ---------------------------------------------------------------- holiday predictor vs reported daytype
     dd = daily.assign(calendar_value=sunday_holiday_service_day(daily["date"], set(holidays)))
@@ -275,6 +322,17 @@ def main() -> None:
     fa = finputs[finputs["forecast_snapshot"].notna()]
     C.append(compare("forecast inputs: every archive captured strictly before target date", True,
                      bool((pd.to_datetime(fa["forecast_snapshot"].map(captured)) < pd.to_datetime(fa["date"])).all()), "9.14.3"))
+    nref = cfg["notebook_reference"]
+    for sp in SPLITS:
+        g = nb_counts.set_index("split").loc[sp]
+        C.append(compare(f"notebook feature rows: {sp} target rows", nref["split_rows"][sp]["target"],
+                         int(g["target rows"]), "notebook"))
+        C.append(compare(f"notebook feature rows: {sp} eligible rows", nref["split_rows"][sp]["eligible"],
+                         int(g["eligible"]), "notebook"))
+    C.append(compare("feature rows: forecast archive captured strictly before every target date", True,
+                     issue_archive_ok, "9.14.3"))
+    C.append(compare("Sunday-like trip totals equal the forecast schedule's trips on every date", True,
+                     trips_consistent, "notebook"))
     n_mis = sum(c["result"] == "MISMATCH" for c in C)
 
     # ---------------------------------------------------------------- write outputs
@@ -288,6 +346,8 @@ def main() -> None:
     write_csv(elig_matched, vdir / "policy_eligibility_matched.csv", outputs)
     absence = pd.concat([lag_absence_table("demand_only", daily), lag_absence_table("matched", matched)], ignore_index=True)
     write_csv(absence, vdir / "lag_absence_by_route_split.csv", outputs)
+    write_csv(frows, vdir / F, outputs)
+    write_csv(sl_days, vdir / "sunday_like_days.csv", outputs)
 
     settings = {k: fcfg[k] for k in ["timezone", "issue_time", "reporting_delay_days", "archive_availability_policy",
                                      "lags_days", "seasonal_lags_days", "seasonal_min_observations", "target_window",
@@ -307,7 +367,11 @@ def main() -> None:
                 "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 "code": "analytics/features/build_stage3.py", "git_commit": commit, "spec_version": "3.8",
                 "schema_version": fcfg["schema_version"], "settings": settings, "input_fingerprints": fingerprints,
-                "outputs": outputs, "withheld": withheld, "missing_history": classes}
+                "outputs": outputs, "withheld": withheld, "missing_history": classes,
+                "notebook_alignment": {"feature_rows": F, "counts": nb_counts.to_dict("records"),
+                                       "sunday_like_days": int(sl_days["sunday_like_day"].sum()),
+                                       "dates_with_forecast_schedule": len(sl_days),
+                                       "bus_services_without_calendar_row": {k: v for k, v in exception_only.items() if v}}}
     (vdir / "features_manifest.json").write_text(json.dumps(manifest, indent=2, default=str), encoding="utf-8")
 
     # ---------------------------------------------------------------- report
@@ -375,6 +439,19 @@ def main() -> None:
           f"Rows where it differs from the reported `is_sunday_holiday_daytype`: **{row_disagree:,}** of {len(dd):,}. "
           f"Dates with any disagreement: **{len(disagree_table)}**:", "",
           *(_table(disagree_table) if len(disagree_table) else ["(none)"]), "",
+          "## 6. Notebook-convention feature rows (Stage 4a alignment)", "",
+          f"`{F}` is built by `analytics/features/model_features.py::build_features`, the only place model inputs "
+          "are built. Its target rows are every route/day in the **forecast-time** schedule (latest archive captured "
+          "strictly before the date); recorded boardings are attached afterwards. One required-field list applies to "
+          "every method: " + ", ".join(f"`{c}`" for c in mfeat.REQUIRED) + ".", "",
+          *_table(nb_counts), "", "Withheld reasons (comma-joined missing required fields):", "", *_table(nb_reasons), "",
+          "### Sunday-like flag (schedule-based) vs calendar flag vs reported daytype", "",
+          f"Sunday-like dates: **{int(sl_days['sunday_like_day'].sum())}** of {len(sl_days)} dates with a forecast "
+          f"schedule. Non-Sunday Sunday-like dates: {', '.join(non_sunday_sl) or 'none'}. Non-Sunday reported-U "
+          f"dates: {', '.join(non_sunday_u) or 'none'}. The daytype is used here only as a check, never as an input.", "",
+          *_table(sunday_check), "",
+          "Bus services with no calendar.txt row (cannot be classified as Sunday-only): " +
+          (", ".join(f"{k}: {v}" for k, v in exception_only.items() if v) or "none") + ".", "",
           "## Outputs", "", "| file | rows | columns | sha256 (first 16) |", "|---|---:|---:|---|"]
     for name, o in outputs.items():
         L.append(f"| `{name}` | {o['rows']:,} | {o['columns']} | `{o['sha256'][:16]}` |")
@@ -387,7 +464,10 @@ def main() -> None:
     (args.out / "stage3_quality_checks.json").write_text(json.dumps(
         {"data_version": manifest["data_version"], "comparisons": C, "withheld": withheld, "missing_history": classes,
          "boundary_dates": boundary_rows, "holiday_disagreements": disagree_table.to_dict("records"),
-         "holiday_row_disagreements": row_disagree, "special_routes": special}, indent=2, default=str), encoding="utf-8")
+         "holiday_row_disagreements": row_disagree, "special_routes": special,
+         "notebook_feature_rows": nb_counts.to_dict("records"), "notebook_withheld_reasons": nb_reasons.to_dict("records"),
+         "sunday_like_check": sunday_check.to_dict("records"),
+         "bus_services_without_calendar_row": exception_only}, indent=2, default=str), encoding="utf-8")
     print(f"done: {len(C) - n_mis} MATCH, {n_mis} MISMATCH -> {args.out / 'stage3_quality_report.md'}")
     for c in C:
         if c["result"] == "MISMATCH":

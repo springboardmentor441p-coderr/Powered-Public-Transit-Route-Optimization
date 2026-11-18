@@ -14,3 +14,11 @@ iniconfig==2.3.1
 packaging==26.3
 pluggy==1.7.0
 Pygments==2.21.0
+# Stage 4a (Baselines, Ridge, Random Forest): spec 9.10.1, scikit-learn; joblib saves the fitted pipelines
+scikit-learn==1.9.1
+joblib==1.6.0
+# Transitive (pulled in by scikit-learn / joblib)
+scipy==1.18.1
+threadpoolctl==3.8.0
+narwhals==2.29.0
+cloudpickle==3.1.3

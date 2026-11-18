@@ -1,0 +1,540 @@
+split,route,excluded_reason,rows
+test,1,boardings_14d_ago,1
+test,1,boardings_1d_ago,6
+test,1,"boardings_1d_ago, boardings_14d_ago",1
+test,1,"boardings_1d_ago, boardings_21d_ago",1
+test,1,"boardings_1d_ago, boardings_7d_ago",1
+test,1,boardings_21d_ago,1
+test,1,boardings_7d_ago,1
+test,10,boardings_21d_ago,5
+test,100,boardings_14d_ago,1
+test,100,boardings_1d_ago,6
+test,100,"boardings_1d_ago, boardings_14d_ago",1
+test,100,"boardings_1d_ago, boardings_21d_ago",1
+test,100,"boardings_1d_ago, boardings_7d_ago",1
+test,100,boardings_21d_ago,1
+test,100,boardings_7d_ago,1
+test,108,boardings_14d_ago,1
+test,108,boardings_1d_ago,6
+test,108,"boardings_1d_ago, boardings_14d_ago",1
+test,108,"boardings_1d_ago, boardings_21d_ago",1
+test,108,"boardings_1d_ago, boardings_7d_ago",1
+test,108,boardings_21d_ago,1
+test,108,boardings_7d_ago,1
+test,120,boardings_14d_ago,1
+test,120,boardings_1d_ago,6
+test,120,"boardings_1d_ago, boardings_14d_ago",1
+test,120,"boardings_1d_ago, boardings_21d_ago",1
+test,120,"boardings_1d_ago, boardings_7d_ago",1
+test,120,boardings_21d_ago,1
+test,120,boardings_7d_ago,1
+test,121,boardings_14d_ago,1
+test,121,boardings_1d_ago,6
+test,121,"boardings_1d_ago, boardings_14d_ago",1
+test,121,"boardings_1d_ago, boardings_21d_ago",1
+test,121,"boardings_1d_ago, boardings_7d_ago",1
+test,121,boardings_21d_ago,1
+test,121,boardings_7d_ago,1
+test,125,boardings_14d_ago,1
+test,125,boardings_1d_ago,6
+test,125,"boardings_1d_ago, boardings_14d_ago",1
+test,125,"boardings_1d_ago, boardings_21d_ago",1
+test,125,"boardings_1d_ago, boardings_7d_ago",1
+test,125,boardings_21d_ago,1
+test,125,boardings_7d_ago,1
+test,130,boardings_21d_ago,6
+test,134,boardings_14d_ago,1
+test,134,boardings_1d_ago,6
+test,134,"boardings_1d_ago, boardings_14d_ago",1
+test,134,"boardings_1d_ago, boardings_21d_ago",1
+test,134,"boardings_1d_ago, boardings_7d_ago",1
+test,134,boardings_21d_ago,1
+test,134,boardings_7d_ago,1
+test,135,boardings_14d_ago,1
+test,135,boardings_1d_ago,6
+test,135,"boardings_1d_ago, boardings_14d_ago",1
+test,135,"boardings_1d_ago, boardings_21d_ago",1
+test,135,"boardings_1d_ago, boardings_7d_ago",1
+test,135,boardings_21d_ago,1
+test,135,boardings_7d_ago,1
+test,136,boardings_14d_ago,1
+test,136,boardings_1d_ago,6
+test,136,"boardings_1d_ago, boardings_14d_ago",1
+test,136,"boardings_1d_ago, boardings_21d_ago",1
+test,136,"boardings_1d_ago, boardings_7d_ago",1
+test,136,boardings_21d_ago,1
+test,136,boardings_7d_ago,1
+test,143,boardings_14d_ago,1
+test,143,boardings_1d_ago,6
+test,143,"boardings_1d_ago, boardings_14d_ago",1
+test,143,"boardings_1d_ago, boardings_21d_ago",1
+test,143,"boardings_1d_ago, boardings_7d_ago",1
+test,143,boardings_21d_ago,1
+test,143,boardings_7d_ago,1
+test,148,boardings_14d_ago,1
+test,148,boardings_1d_ago,6
+test,148,"boardings_1d_ago, boardings_14d_ago",1
+test,148,"boardings_1d_ago, boardings_21d_ago",1
+test,148,"boardings_1d_ago, boardings_7d_ago",1
+test,148,boardings_21d_ago,1
+test,148,boardings_7d_ago,1
+test,156,boardings_14d_ago,1
+test,156,boardings_1d_ago,6
+test,156,"boardings_1d_ago, boardings_14d_ago",1
+test,156,"boardings_1d_ago, boardings_21d_ago",1
+test,156,"boardings_1d_ago, boardings_7d_ago",1
+test,156,boardings_21d_ago,1
+test,156,boardings_7d_ago,1
+test,157,boardings_14d_ago,1
+test,157,boardings_1d_ago,6
+test,157,"boardings_1d_ago, boardings_14d_ago",1
+test,157,"boardings_1d_ago, boardings_21d_ago",1
+test,157,"boardings_1d_ago, boardings_7d_ago",1
+test,157,boardings_21d_ago,1
+test,157,boardings_7d_ago,1
+test,165,boardings_14d_ago,1
+test,165,boardings_1d_ago,6
+test,165,"boardings_1d_ago, boardings_14d_ago",1
+test,165,"boardings_1d_ago, boardings_21d_ago",1
+test,165,"boardings_1d_ago, boardings_7d_ago",1
+test,165,boardings_21d_ago,1
+test,165,boardings_7d_ago,1
+test,169,boardings_14d_ago,2
+test,169,"boardings_14d_ago, boardings_21d_ago",1
+test,169,boardings_1d_ago,8
+test,169,"boardings_1d_ago, boardings_21d_ago",1
+test,169,boardings_21d_ago,1
+test,169,boardings_7d_ago,1
+test,169,"boardings_7d_ago, boardings_14d_ago",1
+test,169,"boardings_7d_ago, boardings_21d_ago",2
+test,171,boardings_14d_ago,1
+test,171,boardings_1d_ago,6
+test,171,"boardings_1d_ago, boardings_14d_ago",1
+test,171,"boardings_1d_ago, boardings_21d_ago",1
+test,171,"boardings_1d_ago, boardings_7d_ago",1
+test,171,boardings_21d_ago,1
+test,171,boardings_7d_ago,1
+test,172,boardings_14d_ago,1
+test,172,boardings_1d_ago,8
+test,172,boardings_21d_ago,1
+test,172,boardings_7d_ago,1
+test,192,boardings_14d_ago,1
+test,192,boardings_1d_ago,6
+test,192,"boardings_1d_ago, boardings_14d_ago",1
+test,192,"boardings_1d_ago, boardings_21d_ago",1
+test,192,"boardings_1d_ago, boardings_7d_ago",1
+test,192,boardings_21d_ago,1
+test,192,boardings_7d_ago,1
+test,2,boardings_14d_ago,1
+test,2,boardings_1d_ago,6
+test,2,"boardings_1d_ago, boardings_14d_ago",1
+test,2,"boardings_1d_ago, boardings_21d_ago",1
+test,2,"boardings_1d_ago, boardings_7d_ago",1
+test,2,boardings_21d_ago,1
+test,2,boardings_7d_ago,1
+test,201,boardings_14d_ago,1
+test,201,boardings_1d_ago,7
+test,201,"boardings_1d_ago, boardings_14d_ago",1
+test,201,"boardings_1d_ago, boardings_21d_ago",1
+test,201,"boardings_1d_ago, boardings_7d_ago",1
+test,201,boardings_21d_ago,1
+test,201,boardings_7d_ago,1
+test,206,boardings_14d_ago,1
+test,206,boardings_1d_ago,6
+test,206,"boardings_1d_ago, boardings_14d_ago",1
+test,206,"boardings_1d_ago, boardings_21d_ago",1
+test,206,"boardings_1d_ago, boardings_7d_ago",1
+test,206,boardings_21d_ago,1
+test,206,boardings_7d_ago,1
+test,24,boardings_14d_ago,1
+test,24,boardings_1d_ago,6
+test,24,"boardings_1d_ago, boardings_14d_ago",1
+test,24,"boardings_1d_ago, boardings_21d_ago",1
+test,24,"boardings_1d_ago, boardings_7d_ago",1
+test,24,boardings_21d_ago,1
+test,24,boardings_7d_ago,1
+test,26,boardings_14d_ago,1
+test,26,boardings_1d_ago,6
+test,26,"boardings_1d_ago, boardings_14d_ago",1
+test,26,"boardings_1d_ago, boardings_21d_ago",1
+test,26,"boardings_1d_ago, boardings_7d_ago",1
+test,26,boardings_21d_ago,1
+test,26,boardings_7d_ago,1
+test,31,boardings_14d_ago,1
+test,31,boardings_1d_ago,6
+test,31,"boardings_1d_ago, boardings_14d_ago",1
+test,31,"boardings_1d_ago, boardings_21d_ago",1
+test,31,"boardings_1d_ago, boardings_7d_ago",1
+test,31,boardings_21d_ago,1
+test,31,boardings_7d_ago,1
+test,37,boardings_14d_ago,1
+test,37,boardings_1d_ago,6
+test,37,"boardings_1d_ago, boardings_14d_ago",1
+test,37,"boardings_1d_ago, boardings_21d_ago",1
+test,37,"boardings_1d_ago, boardings_7d_ago",1
+test,37,boardings_21d_ago,1
+test,37,boardings_7d_ago,1
+test,48,boardings_14d_ago,1
+test,48,boardings_1d_ago,6
+test,48,"boardings_1d_ago, boardings_14d_ago",1
+test,48,"boardings_1d_ago, boardings_21d_ago",1
+test,48,"boardings_1d_ago, boardings_7d_ago",1
+test,48,boardings_21d_ago,1
+test,48,boardings_7d_ago,1
+test,54A,boardings_14d_ago,1
+test,54A,boardings_1d_ago,6
+test,54A,"boardings_1d_ago, boardings_14d_ago",1
+test,54A,"boardings_1d_ago, boardings_21d_ago",1
+test,54A,"boardings_1d_ago, boardings_7d_ago",1
+test,54A,boardings_21d_ago,1
+test,54A,boardings_7d_ago,1
+test,55A,boardings_14d_ago,1
+test,55A,boardings_1d_ago,6
+test,55A,"boardings_1d_ago, boardings_14d_ago",1
+test,55A,"boardings_1d_ago, boardings_21d_ago",1
+test,55A,"boardings_1d_ago, boardings_7d_ago",1
+test,55A,boardings_21d_ago,1
+test,55A,boardings_7d_ago,1
+test,55N,boardings_14d_ago,1
+test,55N,boardings_1d_ago,7
+test,55N,"boardings_1d_ago, boardings_14d_ago",1
+test,55N,"boardings_1d_ago, boardings_21d_ago",1
+test,55N,"boardings_1d_ago, boardings_7d_ago",1
+test,55N,boardings_21d_ago,1
+test,55N,boardings_7d_ago,1
+test,59,boardings_14d_ago,1
+test,59,boardings_1d_ago,7
+test,59,"boardings_1d_ago, boardings_14d_ago",1
+test,59,"boardings_1d_ago, boardings_21d_ago",1
+test,59,"boardings_1d_ago, boardings_7d_ago",1
+test,59,boardings_21d_ago,1
+test,59,boardings_7d_ago,1
+test,62H,boardings_14d_ago,1
+test,62H,boardings_1d_ago,7
+test,62H,"boardings_1d_ago, boardings_14d_ago",1
+test,62H,"boardings_1d_ago, boardings_21d_ago",1
+test,62H,"boardings_1d_ago, boardings_7d_ago",1
+test,62H,boardings_21d_ago,1
+test,62H,boardings_7d_ago,1
+test,7,boardings_14d_ago,1
+test,7,boardings_1d_ago,6
+test,7,"boardings_1d_ago, boardings_14d_ago",1
+test,7,"boardings_1d_ago, boardings_21d_ago",1
+test,7,"boardings_1d_ago, boardings_7d_ago",1
+test,7,boardings_21d_ago,1
+test,7,boardings_7d_ago,1
+test,85A,boardings_14d_ago,1
+test,85A,boardings_1d_ago,7
+test,85A,"boardings_1d_ago, boardings_14d_ago",1
+test,85A,"boardings_1d_ago, boardings_21d_ago",1
+test,85A,"boardings_1d_ago, boardings_7d_ago",1
+test,85A,boardings_21d_ago,1
+test,85A,boardings_7d_ago,1
+test,86,boardings_14d_ago,1
+test,86,boardings_1d_ago,6
+test,86,"boardings_1d_ago, boardings_14d_ago",1
+test,86,"boardings_1d_ago, boardings_21d_ago",1
+test,86,"boardings_1d_ago, boardings_7d_ago",1
+test,86,boardings_21d_ago,1
+test,86,boardings_7d_ago,1
+test,96,boardings_14d_ago,1
+test,96,boardings_1d_ago,6
+test,96,"boardings_1d_ago, boardings_14d_ago",1
+test,96,"boardings_1d_ago, boardings_21d_ago",1
+test,96,"boardings_1d_ago, boardings_7d_ago",1
+test,96,boardings_21d_ago,1
+test,96,boardings_7d_ago,1
+test,X4,boardings_14d_ago,1
+test,X4,boardings_1d_ago,6
+test,X4,"boardings_1d_ago, boardings_14d_ago",1
+test,X4,"boardings_1d_ago, boardings_21d_ago",1
+test,X4,"boardings_1d_ago, boardings_7d_ago",1
+test,X4,boardings_21d_ago,1
+test,X4,boardings_7d_ago,1
+test,X49,boardings_14d_ago,1
+test,X49,boardings_1d_ago,6
+test,X49,"boardings_1d_ago, boardings_14d_ago",1
+test,X49,"boardings_1d_ago, boardings_21d_ago",1
+test,X49,"boardings_1d_ago, boardings_7d_ago",1
+test,X49,boardings_21d_ago,1
+test,X49,boardings_7d_ago,1
+test,X9,boardings_14d_ago,1
+test,X9,boardings_1d_ago,6
+test,X9,"boardings_1d_ago, boardings_14d_ago",1
+test,X9,"boardings_1d_ago, boardings_21d_ago",1
+test,X9,"boardings_1d_ago, boardings_7d_ago",1
+test,X9,boardings_21d_ago,1
+test,X9,boardings_7d_ago,1
+train,1,boardings_14d_ago,1
+train,1,"boardings_14d_ago, boardings_21d_ago",1
+train,1,boardings_1d_ago,22
+train,1,boardings_21d_ago,2
+train,1,boardings_7d_ago,1
+train,1,"boardings_7d_ago, boardings_14d_ago",1
+train,100,boardings_14d_ago,1
+train,100,"boardings_14d_ago, boardings_21d_ago",1
+train,100,boardings_1d_ago,22
+train,100,boardings_21d_ago,2
+train,100,boardings_7d_ago,1
+train,100,"boardings_7d_ago, boardings_14d_ago",1
+train,108,boardings_14d_ago,1
+train,108,"boardings_14d_ago, boardings_21d_ago",1
+train,108,boardings_1d_ago,22
+train,108,boardings_21d_ago,2
+train,108,boardings_7d_ago,1
+train,108,"boardings_7d_ago, boardings_14d_ago",1
+train,120,boardings_14d_ago,1
+train,120,"boardings_14d_ago, boardings_21d_ago",1
+train,120,boardings_1d_ago,22
+train,120,boardings_21d_ago,2
+train,120,boardings_7d_ago,1
+train,120,"boardings_7d_ago, boardings_14d_ago",1
+train,121,boardings_14d_ago,1
+train,121,"boardings_14d_ago, boardings_21d_ago",1
+train,121,boardings_1d_ago,22
+train,121,boardings_21d_ago,2
+train,121,boardings_7d_ago,1
+train,121,"boardings_7d_ago, boardings_14d_ago",1
+train,125,boardings_14d_ago,1
+train,125,"boardings_14d_ago, boardings_21d_ago",1
+train,125,boardings_1d_ago,22
+train,125,boardings_21d_ago,2
+train,125,boardings_7d_ago,1
+train,125,"boardings_7d_ago, boardings_14d_ago",1
+train,134,boardings_14d_ago,1
+train,134,"boardings_14d_ago, boardings_21d_ago",1
+train,134,boardings_1d_ago,22
+train,134,boardings_21d_ago,2
+train,134,boardings_7d_ago,1
+train,134,"boardings_7d_ago, boardings_14d_ago",1
+train,135,boardings_14d_ago,1
+train,135,"boardings_14d_ago, boardings_21d_ago",1
+train,135,boardings_1d_ago,22
+train,135,boardings_21d_ago,2
+train,135,boardings_7d_ago,1
+train,135,"boardings_7d_ago, boardings_14d_ago",1
+train,136,boardings_14d_ago,1
+train,136,"boardings_14d_ago, boardings_21d_ago",1
+train,136,boardings_1d_ago,22
+train,136,boardings_21d_ago,2
+train,136,boardings_7d_ago,1
+train,136,"boardings_7d_ago, boardings_14d_ago",1
+train,143,boardings_14d_ago,1
+train,143,"boardings_14d_ago, boardings_21d_ago",1
+train,143,boardings_1d_ago,22
+train,143,boardings_21d_ago,2
+train,143,boardings_7d_ago,1
+train,143,"boardings_7d_ago, boardings_14d_ago",1
+train,148,boardings_14d_ago,1
+train,148,"boardings_14d_ago, boardings_21d_ago",1
+train,148,boardings_1d_ago,22
+train,148,boardings_21d_ago,2
+train,148,boardings_7d_ago,1
+train,148,"boardings_7d_ago, boardings_14d_ago",1
+train,156,boardings_14d_ago,1
+train,156,"boardings_14d_ago, boardings_21d_ago",1
+train,156,boardings_1d_ago,22
+train,156,boardings_21d_ago,2
+train,156,boardings_7d_ago,1
+train,156,"boardings_7d_ago, boardings_14d_ago",1
+train,157,boardings_14d_ago,1
+train,157,"boardings_14d_ago, boardings_21d_ago",1
+train,157,boardings_1d_ago,22
+train,157,boardings_21d_ago,2
+train,157,boardings_7d_ago,1
+train,157,"boardings_7d_ago, boardings_14d_ago",1
+train,165,boardings_14d_ago,1
+train,165,"boardings_14d_ago, boardings_21d_ago",1
+train,165,boardings_1d_ago,22
+train,165,boardings_21d_ago,2
+train,165,boardings_7d_ago,1
+train,165,"boardings_7d_ago, boardings_14d_ago",1
+train,169,boardings_14d_ago,1
+train,169,"boardings_14d_ago, boardings_21d_ago",2
+train,169,boardings_1d_ago,22
+train,169,boardings_21d_ago,2
+train,169,boardings_7d_ago,3
+train,169,"boardings_7d_ago, boardings_14d_ago",3
+train,169,"boardings_7d_ago, boardings_14d_ago, boardings_21d_ago",2
+train,169,"boardings_7d_ago, boardings_14d_ago, boardings_21d_ago, boardings_28d_filled",5
+train,169,"boardings_7d_ago, boardings_21d_ago",1
+train,169,no recorded boardings,3
+train,171,boardings_14d_ago,1
+train,171,"boardings_14d_ago, boardings_21d_ago",1
+train,171,boardings_1d_ago,22
+train,171,boardings_21d_ago,2
+train,171,boardings_7d_ago,1
+train,171,"boardings_7d_ago, boardings_14d_ago",1
+train,192,boardings_14d_ago,1
+train,192,"boardings_14d_ago, boardings_21d_ago",1
+train,192,boardings_1d_ago,22
+train,192,boardings_21d_ago,2
+train,192,boardings_7d_ago,1
+train,192,"boardings_7d_ago, boardings_14d_ago",1
+train,2,boardings_14d_ago,1
+train,2,"boardings_14d_ago, boardings_21d_ago",1
+train,2,boardings_1d_ago,22
+train,2,boardings_21d_ago,2
+train,2,boardings_7d_ago,1
+train,2,"boardings_7d_ago, boardings_14d_ago",1
+train,201,boardings_14d_ago,1
+train,201,"boardings_14d_ago, boardings_21d_ago",1
+train,201,boardings_1d_ago,22
+train,201,boardings_21d_ago,2
+train,201,boardings_7d_ago,1
+train,201,"boardings_7d_ago, boardings_14d_ago",1
+train,206,boardings_14d_ago,1
+train,206,"boardings_14d_ago, boardings_21d_ago",1
+train,206,boardings_1d_ago,22
+train,206,boardings_21d_ago,2
+train,206,boardings_7d_ago,1
+train,206,"boardings_7d_ago, boardings_14d_ago",1
+train,24,boardings_14d_ago,1
+train,24,"boardings_14d_ago, boardings_21d_ago",1
+train,24,boardings_1d_ago,22
+train,24,boardings_21d_ago,2
+train,24,boardings_7d_ago,1
+train,24,"boardings_7d_ago, boardings_14d_ago",1
+train,26,boardings_14d_ago,1
+train,26,"boardings_14d_ago, boardings_21d_ago",1
+train,26,boardings_1d_ago,22
+train,26,boardings_21d_ago,2
+train,26,boardings_7d_ago,1
+train,26,"boardings_7d_ago, boardings_14d_ago",1
+train,31,boardings_14d_ago,1
+train,31,"boardings_14d_ago, boardings_21d_ago",1
+train,31,boardings_1d_ago,22
+train,31,boardings_21d_ago,2
+train,31,boardings_7d_ago,1
+train,31,"boardings_7d_ago, boardings_14d_ago",1
+train,37,boardings_14d_ago,1
+train,37,"boardings_14d_ago, boardings_21d_ago",1
+train,37,boardings_1d_ago,22
+train,37,boardings_21d_ago,2
+train,37,boardings_7d_ago,1
+train,37,"boardings_7d_ago, boardings_14d_ago",1
+train,48,boardings_14d_ago,1
+train,48,"boardings_14d_ago, boardings_21d_ago",1
+train,48,boardings_1d_ago,22
+train,48,boardings_21d_ago,2
+train,48,boardings_7d_ago,1
+train,48,"boardings_7d_ago, boardings_14d_ago",1
+train,54A,boardings_14d_ago,1
+train,54A,"boardings_14d_ago, boardings_21d_ago",1
+train,54A,boardings_1d_ago,22
+train,54A,boardings_21d_ago,2
+train,54A,boardings_7d_ago,1
+train,54A,"boardings_7d_ago, boardings_14d_ago",1
+train,55A,boardings_14d_ago,1
+train,55A,"boardings_14d_ago, boardings_21d_ago",1
+train,55A,boardings_1d_ago,22
+train,55A,boardings_21d_ago,2
+train,55A,boardings_7d_ago,1
+train,55A,"boardings_7d_ago, boardings_14d_ago",1
+train,55N,boardings_14d_ago,1
+train,55N,"boardings_14d_ago, boardings_21d_ago",1
+train,55N,boardings_1d_ago,22
+train,55N,boardings_21d_ago,2
+train,55N,boardings_7d_ago,1
+train,55N,"boardings_7d_ago, boardings_14d_ago",1
+train,59,boardings_14d_ago,1
+train,59,"boardings_14d_ago, boardings_21d_ago",1
+train,59,boardings_1d_ago,22
+train,59,boardings_21d_ago,2
+train,59,boardings_7d_ago,1
+train,59,"boardings_7d_ago, boardings_14d_ago",1
+train,62H,boardings_14d_ago,1
+train,62H,"boardings_14d_ago, boardings_21d_ago",1
+train,62H,boardings_1d_ago,22
+train,62H,boardings_21d_ago,2
+train,62H,boardings_7d_ago,1
+train,62H,"boardings_7d_ago, boardings_14d_ago",1
+train,7,boardings_14d_ago,1
+train,7,"boardings_14d_ago, boardings_21d_ago",1
+train,7,boardings_1d_ago,21
+train,7,boardings_21d_ago,2
+train,7,boardings_7d_ago,1
+train,7,"boardings_7d_ago, boardings_14d_ago",1
+train,85A,boardings_14d_ago,1
+train,85A,"boardings_14d_ago, boardings_21d_ago",1
+train,85A,boardings_1d_ago,22
+train,85A,boardings_21d_ago,2
+train,85A,boardings_7d_ago,1
+train,85A,"boardings_7d_ago, boardings_14d_ago",1
+train,86,boardings_14d_ago,1
+train,86,"boardings_14d_ago, boardings_21d_ago",1
+train,86,boardings_1d_ago,22
+train,86,boardings_21d_ago,2
+train,86,boardings_7d_ago,1
+train,86,"boardings_7d_ago, boardings_14d_ago",1
+train,96,boardings_14d_ago,1
+train,96,"boardings_14d_ago, boardings_21d_ago",1
+train,96,boardings_1d_ago,22
+train,96,boardings_21d_ago,2
+train,96,boardings_7d_ago,1
+train,96,"boardings_7d_ago, boardings_14d_ago",1
+train,X4,boardings_14d_ago,1
+train,X4,"boardings_14d_ago, boardings_21d_ago",1
+train,X4,boardings_1d_ago,22
+train,X4,boardings_21d_ago,2
+train,X4,boardings_7d_ago,1
+train,X4,"boardings_7d_ago, boardings_14d_ago",1
+train,X49,boardings_14d_ago,1
+train,X49,"boardings_14d_ago, boardings_21d_ago",1
+train,X49,boardings_1d_ago,22
+train,X49,boardings_21d_ago,2
+train,X49,boardings_7d_ago,1
+train,X49,"boardings_7d_ago, boardings_14d_ago",1
+train,X9,boardings_14d_ago,1
+train,X9,"boardings_14d_ago, boardings_21d_ago",1
+train,X9,boardings_1d_ago,22
+train,X9,boardings_21d_ago,2
+train,X9,boardings_7d_ago,1
+train,X9,"boardings_7d_ago, boardings_14d_ago",1
+validation,1,boardings_1d_ago,8
+validation,100,boardings_1d_ago,8
+validation,108,boardings_1d_ago,8
+validation,120,boardings_1d_ago,8
+validation,121,boardings_1d_ago,8
+validation,125,boardings_1d_ago,8
+validation,134,boardings_1d_ago,8
+validation,135,boardings_1d_ago,8
+validation,136,boardings_1d_ago,8
+validation,143,boardings_1d_ago,8
+validation,148,boardings_1d_ago,8
+validation,156,boardings_1d_ago,8
+validation,157,boardings_1d_ago,8
+validation,165,boardings_1d_ago,8
+validation,169,boardings_14d_ago,1
+validation,169,"boardings_14d_ago, boardings_21d_ago",2
+validation,169,boardings_1d_ago,7
+validation,169,"boardings_1d_ago, boardings_14d_ago",1
+validation,169,"boardings_1d_ago, boardings_7d_ago",1
+validation,169,boardings_21d_ago,1
+validation,169,boardings_7d_ago,1
+validation,169,"boardings_7d_ago, boardings_14d_ago",1
+validation,169,"boardings_7d_ago, boardings_14d_ago, boardings_21d_ago, boardings_28d_filled",1
+validation,169,"boardings_7d_ago, boardings_21d_ago",1
+validation,169,no recorded boardings,1
+validation,171,boardings_1d_ago,8
+validation,192,boardings_1d_ago,8
+validation,2,boardings_1d_ago,8
+validation,201,boardings_1d_ago,8
+validation,206,boardings_1d_ago,8
+validation,24,boardings_1d_ago,8
+validation,26,boardings_1d_ago,8
+validation,31,boardings_1d_ago,8
+validation,37,boardings_1d_ago,8
+validation,48,boardings_1d_ago,8
+validation,54A,boardings_1d_ago,8
+validation,55A,boardings_1d_ago,8
+validation,55N,boardings_1d_ago,8
+validation,59,boardings_1d_ago,6
+validation,62H,boardings_1d_ago,8
+validation,7,boardings_1d_ago,8
+validation,85A,boardings_1d_ago,8
+validation,86,boardings_1d_ago,8
+validation,96,boardings_1d_ago,8
+validation,X4,boardings_1d_ago,8
+validation,X49,boardings_1d_ago,8
+validation,X9,boardings_1d_ago,8

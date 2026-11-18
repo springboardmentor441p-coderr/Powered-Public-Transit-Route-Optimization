@@ -1,6 +1,6 @@
 {
   "_comment": "Stage 3 feature-contract settings (spec 9.9, 9.10.2-9.10.4, 9.14.3). Changing any value requires rebuilding the features into a new folder.",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "timezone": "America/Chicago",
   "issue_time": "start of the target service day (00:00 local)",
   "reporting_delay_days": 1,

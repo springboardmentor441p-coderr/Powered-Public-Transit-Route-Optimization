@@ -1,0 +1,18 @@
+{
+  "_comment": "Stage 4a model settings, fixed BEFORE any result is read (notebook cells 3, 63). Changing a value means a new evaluated pipeline; never change them after looking at test results.",
+  "artifact_version": "stage4a-1.0.0",
+  "seed": 42,
+  "periods": {"train_end": "2026-03-31", "validation_end": "2026-05-31",
+              "test_status": "reused holdout: June-July 2026 was examined while the method was developed (notebook); not an untouched final test"},
+  "ridge": {"alpha": 100},
+  "random_forest": {"n_estimators": 100, "max_depth": 16, "min_samples_leaf": 10, "n_jobs": 1},
+  "_n_jobs_note": "The notebook uses n_jobs=2. With 2 threads sklearn adds the 100 tree predictions in thread-finishing order, so repeated predict() calls differed by up to 3.6e-12 boardings and a reloaded model could not reproduce stored predictions exactly. n_jobs=1 gives the same trees (per-tree seeds are fixed in advance) and exactly repeatable predictions. Decided at the freeze step, before any test scoring.",
+  "prediction_floor": 0,
+  "selection_metric": "MAE",
+  "selection_split": "validation",
+  "joblib_compress": 3,
+  "max_model_file_bytes": 20000000,
+  "_max_model_file_note": "20 MB = 20,000,000 bytes, checked on the saved (compressed) file",
+  "special_routes": ["10", "130"],
+  "missing_history_policy": "Option 2: fill missing 28-day boardings from the 7/14/21-day mean, keep availability flag"
+}

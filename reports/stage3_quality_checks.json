@@ -336,6 +336,70 @@
       "ours": true,
       "result": "MATCH",
       "difference": ""
+    },
+    {
+      "section": "notebook",
+      "metric": "notebook feature rows: train target rows",
+      "spec": 14430,
+      "ours": 14430,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "notebook",
+      "metric": "notebook feature rows: train eligible rows",
+      "spec": 13379,
+      "ours": 13379,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "notebook",
+      "metric": "notebook feature rows: validation target rows",
+      "spec": 6864,
+      "ours": 6864,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "notebook",
+      "metric": "notebook feature rows: validation eligible rows",
+      "spec": 6560,
+      "ours": 6560,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "notebook",
+      "metric": "notebook feature rows: test target rows",
+      "spec": 7018,
+      "ours": 7018,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "notebook",
+      "metric": "notebook feature rows: test eligible rows",
+      "spec": 6542,
+      "ours": 6542,
+      "result": "MATCH",
+      "difference": "+0"
+    },
+    {
+      "section": "9.14.3",
+      "metric": "feature rows: forecast archive captured strictly before every target date",
+      "spec": true,
+      "ours": true,
+      "result": "MATCH",
+      "difference": ""
+    },
+    {
+      "section": "notebook",
+      "metric": "Sunday-like trip totals equal the forecast schedule's trips on every date",
+      "spec": true,
+      "ours": true,
+      "result": "MATCH",
+      "difference": ""
     }
   ],
   "withheld": {
@@ -600,5 +664,227 @@
       "withheld": 6,
       "missing 28-day lag": 13
     }
-  ]
+  ],
+  "notebook_feature_rows": [
+    {
+      "split": "train",
+      "target rows": 14430,
+      "eligible": 13379,
+      "withheld": 1051,
+      "of which no recorded boardings": 3,
+      "forecastable (history + schedule rules)": 13382
+    },
+    {
+      "split": "validation",
+      "target rows": 6864,
+      "eligible": 6560,
+      "withheld": 304,
+      "of which no recorded boardings": 1,
+      "forecastable (history + schedule rules)": 6561
+    },
+    {
+      "split": "test",
+      "target rows": 7018,
+      "eligible": 6542,
+      "withheld": 476,
+      "of which no recorded boardings": 0,
+      "forecastable (history + schedule rules)": 6542
+    }
+  ],
+  "notebook_withheld_reasons": [
+    {
+      "split": "test",
+      "excluded_reason": "boardings_1d_ago",
+      "rows": 237
+    },
+    {
+      "split": "test",
+      "excluded_reason": "boardings_21d_ago",
+      "rows": 49
+    },
+    {
+      "split": "test",
+      "excluded_reason": "boardings_14d_ago",
+      "rows": 39
+    },
+    {
+      "split": "test",
+      "excluded_reason": "boardings_7d_ago",
+      "rows": 38
+    },
+    {
+      "split": "test",
+      "excluded_reason": "boardings_1d_ago, boardings_21d_ago",
+      "rows": 37
+    },
+    {
+      "split": "test",
+      "excluded_reason": "boardings_1d_ago, boardings_14d_ago",
+      "rows": 36
+    },
+    {
+      "split": "test",
+      "excluded_reason": "boardings_1d_ago, boardings_7d_ago",
+      "rows": 36
+    },
+    {
+      "split": "test",
+      "excluded_reason": "boardings_7d_ago, boardings_21d_ago",
+      "rows": 2
+    },
+    {
+      "split": "test",
+      "excluded_reason": "boardings_14d_ago, boardings_21d_ago",
+      "rows": 1
+    },
+    {
+      "split": "test",
+      "excluded_reason": "boardings_7d_ago, boardings_14d_ago",
+      "rows": 1
+    },
+    {
+      "split": "train",
+      "excluded_reason": "boardings_1d_ago",
+      "rows": 813
+    },
+    {
+      "split": "train",
+      "excluded_reason": "boardings_21d_ago",
+      "rows": 74
+    },
+    {
+      "split": "train",
+      "excluded_reason": "boardings_7d_ago",
+      "rows": 39
+    },
+    {
+      "split": "train",
+      "excluded_reason": "boardings_7d_ago, boardings_14d_ago",
+      "rows": 39
+    },
+    {
+      "split": "train",
+      "excluded_reason": "boardings_14d_ago, boardings_21d_ago",
+      "rows": 38
+    },
+    {
+      "split": "train",
+      "excluded_reason": "boardings_14d_ago",
+      "rows": 37
+    },
+    {
+      "split": "train",
+      "excluded_reason": "boardings_7d_ago, boardings_14d_ago, boardings_21d_ago, boardings_28d_filled",
+      "rows": 5
+    },
+    {
+      "split": "train",
+      "excluded_reason": "no recorded boardings",
+      "rows": 3
+    },
+    {
+      "split": "train",
+      "excluded_reason": "boardings_7d_ago, boardings_14d_ago, boardings_21d_ago",
+      "rows": 2
+    },
+    {
+      "split": "train",
+      "excluded_reason": "boardings_7d_ago, boardings_21d_ago",
+      "rows": 1
+    },
+    {
+      "split": "validation",
+      "excluded_reason": "boardings_1d_ago",
+      "rows": 293
+    },
+    {
+      "split": "validation",
+      "excluded_reason": "boardings_14d_ago, boardings_21d_ago",
+      "rows": 2
+    },
+    {
+      "split": "validation",
+      "excluded_reason": "boardings_14d_ago",
+      "rows": 1
+    },
+    {
+      "split": "validation",
+      "excluded_reason": "boardings_1d_ago, boardings_14d_ago",
+      "rows": 1
+    },
+    {
+      "split": "validation",
+      "excluded_reason": "boardings_1d_ago, boardings_7d_ago",
+      "rows": 1
+    },
+    {
+      "split": "validation",
+      "excluded_reason": "boardings_21d_ago",
+      "rows": 1
+    },
+    {
+      "split": "validation",
+      "excluded_reason": "boardings_7d_ago",
+      "rows": 1
+    },
+    {
+      "split": "validation",
+      "excluded_reason": "boardings_7d_ago, boardings_14d_ago",
+      "rows": 1
+    },
+    {
+      "split": "validation",
+      "excluded_reason": "boardings_7d_ago, boardings_14d_ago, boardings_21d_ago, boardings_28d_filled",
+      "rows": 1
+    },
+    {
+      "split": "validation",
+      "excluded_reason": "boardings_7d_ago, boardings_21d_ago",
+      "rows": 1
+    },
+    {
+      "split": "validation",
+      "excluded_reason": "no recorded boardings",
+      "rows": 1
+    }
+  ],
+  "sunday_like_check": [
+    {
+      "group": "non-Sunday U date",
+      "comparable_rows": 433,
+      "reported_U": 433,
+      "schedule_flag_1": 433,
+      "calendar_flag_1": 433,
+      "schedule_vs_U_disagreements": 0,
+      "calendar_vs_U_disagreements": 0
+    },
+    {
+      "group": "ordinary Sunday",
+      "comparable_rows": 3018,
+      "reported_U": 3018,
+      "schedule_flag_1": 3018,
+      "calendar_flag_1": 3018,
+      "schedule_vs_U_disagreements": 0,
+      "calendar_vs_U_disagreements": 0
+    },
+    {
+      "group": "other day",
+      "comparable_rows": 24837,
+      "reported_U": 0,
+      "schedule_flag_1": 0,
+      "calendar_flag_1": 0,
+      "schedule_vs_U_disagreements": 0,
+      "calendar_vs_U_disagreements": 0
+    }
+  ],
+  "bus_services_without_calendar_row": {
+    "mdb-389-202511230128": [],
+    "mdb-389-202512190112": [],
+    "mdb-389-202601080131": [],
+    "mdb-389-202602100132": [],
+    "mdb-389-202603260020": [],
+    "mdb-389-202604240144": [],
+    "mdb-389-202605300003": [],
+    "mdb-389-202607110020": []
+  }
 }

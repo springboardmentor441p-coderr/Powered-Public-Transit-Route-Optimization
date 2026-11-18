@@ -1,17 +1,20 @@
-"""Step 23: the shared preprocessing (spec 9.10.2). Used unchanged by training, evaluation and the backend.
+"""Step 23: spec Option 1 / Option 2 REFERENCE AUDIT (spec 9.10.2). Not a model-input path.
+
+Since the Stage 4a alignment, model inputs are built ONLY by `analytics.features.model_features.build_features`
+(the notebook's rules). This module is kept so the Stage 3 report can still reproduce the spec's 9.10.2 coverage
+references on the spec's matched population (Option 1 vs Option 2). It uses the same names as the model.
 
 Order (each step only reads what earlier steps produced):
-  1. descriptive-name mapping (naming.EXPORT_TO_MODEL)
-  2. issue-time calendar predictor (Sundays + fixed holiday list), never the target row's daytype
+  1. name mapping (naming.EXPORT_TO_MODEL)
+  2. audit calendar flag (Sundays + observed holiday list); never the target row's daytype
   3. availability counts / seasonal summary are taken AS EXPORTED, i.e. computed before any filling
   4. history policy:
      option_1 (comparison): all five lags 1/7/14/21/28 required
-     option_2 (selected):   keep existing values; if rides_28_days_before is missing, fill it with the mean of the
-                            available 7/14/21-day counts and set rides_28_days_before_available = 0 (original = 1);
+     option_2 (selected):   keep boardings_28d_ago; boardings_28d_filled = it, or the mean of the available
+                            7/14/21-day counts when it is missing (boardings_28d_available = 0, original = 1);
                             withhold if no donor exists or any of the 1/7/14/21-day counts is missing
   5. schedule-augmented model only: valid target-date schedule inputs are required (never filled)
-Targets are never filled or changed. The policy uses no statistics learned from other rows, so it cannot leak
-validation/test information. Withholding is a status of the row, not a third model.
+Targets are never filled or changed. No statistics are learned from other rows.
 """
 from __future__ import annotations
 
@@ -28,7 +31,7 @@ OPTION_2_REQUIRED = [1, 7, 14, 21]
 
 
 def prepare(features: pd.DataFrame, policy: str, holidays: set[date], with_schedule: bool,
-            schedule_cols: tuple[str, str] = ("scheduled_trips", "scheduled_service_hours")) -> pd.DataFrame:
+            schedule_cols: tuple[str, str] = ("scheduled_trips", "scheduled_hours")) -> pd.DataFrame:
     """Return model-named rows with `eligible` and `withheld_reason` (empty when eligible)."""
     if policy not in POLICIES:
         raise ValueError(f"unknown policy {policy}")
@@ -36,17 +39,17 @@ def prepare(features: pd.DataFrame, policy: str, holidays: set[date], with_sched
     df[CALENDAR_HOLIDAY_PREDICTOR] = sunday_holiday_service_day(df["date"], holidays)
     lag = {k: df[c].astype("Float64") for k, c in LAG_MODEL.items()}
     reasons = pd.DataFrame(index=df.index)
+    original = lag[28].notna()
+    df["boardings_28d_available"] = original.astype("int64")
 
     if policy == "option_1":
+        df["boardings_28d_filled"] = lag[28]  # option 1 never fills
         for k, s in lag.items():
             reasons[f"missing_{LAG_MODEL[k]}"] = s.isna()
     else:
-        donors = pd.concat([lag[k] for k in FILL_DONORS], axis=1)
-        fill = donors.mean(axis=1, skipna=True)  # mean of AVAILABLE 7/14/21-day counts
-        original = lag[28].notna()
-        df["rides_28_days_before_available"] = original.astype("int64")
-        df[LAG_MODEL[28]] = lag[28].where(original, fill)
-        reasons["no_donor_for_rides_28_days_before"] = ~original & fill.isna()
+        fill = pd.concat([lag[k] for k in FILL_DONORS], axis=1).mean(axis=1, skipna=True)  # AVAILABLE donors
+        df["boardings_28d_filled"] = lag[28].where(original, fill)
+        reasons["no_donor_for_boardings_28d"] = ~original & fill.isna()
         for k in OPTION_2_REQUIRED:
             reasons[f"missing_{LAG_MODEL[k]}"] = lag[k].isna()
 

@@ -1,0 +1,504 @@
+{
+  "artifact_version": "stage4a-1.0.0",
+  "created_at": "2026-11-18T14:43:21+00:00",
+  "git_commit": "3a89127+uncommitted",
+  "code": "analytics/models/train_stage4a.py",
+  "data_version": "cta_ref__r20261113__gtfs8__to20260731/features__delay1d",
+  "input_fingerprints": {
+    "feature_rows.csv": "2c3e0eeeccf947d50c8cae911a54ad0f92b428e0d80c71a132631c1415695696",
+    "features_manifest.json outputs": {
+      "daily_forecasting_features.csv": "53de2b7c949ddb4bc28c7e475051b99bc64fff62297b7c418693b0adef4eb631",
+      "expanded_demand_service_features.csv": "eae71f200e280083d3673b3a43da7c26e9c3d16e2d9b80a4eb7998b8fb292394",
+      "forecast_schedule_inputs.csv": "a5f6f0f0eb281a55c9c3b7265515f009f92be1e0b61e00169f2e42d2e95ecfec",
+      "policy_eligibility_demand.csv": "3ab0b4239c02becb3b90f8ca43f968408f1c9bc361d2e1897119a8ace9b9cbc7",
+      "policy_eligibility_matched.csv": "8465a891bd4ff5366bf17189e175512d25770a2e43c8f0d78d1ecbc0b15ebd75",
+      "lag_absence_by_route_split.csv": "74603383df9eb30710ccd104a97320bcf9a5bf64baf5956281c4bc8471368cc7",
+      "feature_rows.csv": "2c3e0eeeccf947d50c8cae911a54ad0f92b428e0d80c71a132631c1415695696",
+      "sunday_like_days.csv": "7e27b7337c710fff166ebd0a852e8b5a499b5c4315e291d61a67870cd424f25f"
+    }
+  },
+  "settings": {
+    "_comment": "Stage 4a model settings, fixed BEFORE any result is read (notebook cells 3, 63). Changing a value means a new evaluated pipeline; never change them after looking at test results.",
+    "artifact_version": "stage4a-1.0.0",
+    "seed": 42,
+    "periods": {
+      "train_end": "2026-03-31",
+      "validation_end": "2026-05-31",
+      "test_status": "reused holdout: June-July 2026 was examined while the method was developed (notebook); not an untouched final test"
+    },
+    "ridge": {
+      "alpha": 100
+    },
+    "random_forest": {
+      "n_estimators": 100,
+      "max_depth": 16,
+      "min_samples_leaf": 10,
+      "n_jobs": 1
+    },
+    "_n_jobs_note": "The notebook uses n_jobs=2. With 2 threads sklearn adds the 100 tree predictions in thread-finishing order, so repeated predict() calls differed by up to 3.6e-12 boardings and a reloaded model could not reproduce stored predictions exactly. n_jobs=1 gives the same trees (per-tree seeds are fixed in advance) and exactly repeatable predictions. Decided at the freeze step, before any test scoring.",
+    "prediction_floor": 0,
+    "selection_metric": "MAE",
+    "selection_split": "validation",
+    "joblib_compress": 3,
+    "max_model_file_bytes": 20000000,
+    "_max_model_file_note": "20 MB = 20,000,000 bytes, checked on the saved (compressed) file",
+    "special_routes": [
+      "10",
+      "130"
+    ],
+    "missing_history_policy": "Option 2: fill missing 28-day boardings from the 7/14/21-day mean, keep availability flag"
+  },
+  "periods": {
+    "train": [
+      "2025-11-24",
+      "2026-03-31"
+    ],
+    "validation": [
+      "2026-04-01",
+      "2026-05-31"
+    ],
+    "test": [
+      "2026-06-01",
+      "2026-07-31"
+    ]
+  },
+  "training_rows": 13379,
+  "training_routes": 123,
+  "selected_method": "rf_demand",
+  "selected_kind": "rf",
+  "serving_bundle": {
+    "selected_method": "rf_demand",
+    "pipeline_file": "models/rf_demand.joblib",
+    "baseline_rule": null,
+    "feature_columns": [
+      "route",
+      "day_of_week",
+      "month",
+      "is_weekend",
+      "is_sunday_like_day",
+      "boardings_1d_ago",
+      "boardings_7d_ago",
+      "boardings_14d_ago",
+      "boardings_21d_ago",
+      "boardings_28d_filled",
+      "boardings_28d_available",
+      "seasonal_count",
+      "seasonal_mean"
+    ],
+    "required_fields": [
+      "boardings_1d_ago",
+      "boardings_7d_ago",
+      "boardings_14d_ago",
+      "boardings_21d_ago",
+      "boardings_28d_filled",
+      "scheduled_trips",
+      "scheduled_hours"
+    ],
+    "missing_history_policy": "Option 2: fill missing 28-day boardings from the 7/14/21-day mean, keep availability flag",
+    "status_values": [
+      "forecast",
+      "withheld: <missing required fields>",
+      "withheld: no recorded boardings"
+    ],
+    "training_end": "2026-03-31",
+    "reporting_delay_days": 1,
+    "unknown_route_handling": "one-hot encoder ignores unseen routes; history rules still apply",
+    "prediction_floor": 0,
+    "schedule_inputs_required": true,
+    "sklearn_version": "1.9.1",
+    "artifact_version": "stage4a-1.0.0",
+    "data_version": "cta_ref__r20261113__gtfs8__to20260731/features__delay1d",
+    "feature_rows_sha256": "2c3e0eeeccf947d50c8cae911a54ad0f92b428e0d80c71a132631c1415695696"
+  },
+  "files": {
+    "models/ridge_demand.joblib": {
+      "file": "artifacts/stage4a/models/ridge_demand.joblib",
+      "uncompressed_bytes": 5377,
+      "compressed_bytes": 3234,
+      "compress": 3,
+      "sha256": "2b79935078235d685adb9cb836960c229960b515b87a398ba2dfe3ccc1561f47",
+      "under_limit": true
+    },
+    "models/rf_demand.joblib": {
+      "file": "artifacts/stage4a/models/rf_demand.joblib",
+      "uncompressed_bytes": 9558154,
+      "compressed_bytes": 3175906,
+      "compress": 3,
+      "sha256": "7ca6be08810472a2b99e9a9e6b53616a2c465633669da1dc57712434ffae4963",
+      "under_limit": true
+    },
+    "models/ridge_service.joblib": {
+      "file": "artifacts/stage4a/models/ridge_service.joblib",
+      "uncompressed_bytes": 5553,
+      "compressed_bytes": 3315,
+      "compress": 3,
+      "sha256": "2eba581a75390da174935bb54a81c14e719e1933b07c64c3f98b6226e61b495d",
+      "under_limit": true
+    },
+    "models/rf_service.joblib": {
+      "file": "artifacts/stage4a/models/rf_service.joblib",
+      "uncompressed_bytes": 9537146,
+      "compressed_bytes": 3182790,
+      "compress": 3,
+      "sha256": "39fd6ec8f26a18cb47782217a18b993f491e7d64238b9b3cd0bea057ae9e9d57",
+      "under_limit": true
+    },
+    "models/serving_bundle.joblib": {
+      "file": "artifacts/stage4a/models/serving_bundle.joblib",
+      "uncompressed_bytes": 1056,
+      "compressed_bytes": 657,
+      "compress": 3,
+      "sha256": "90c795ccb861d0bafad5e29dfd4f618892acb6c064851c40021f15586c661de2",
+      "under_limit": true
+    }
+  },
+  "feature_contract": {
+    "file": "feature_contract.json",
+    "sha256": "f010f5dd0e479fca1ed1fbca1a9417a37af4c9313e205bb07469e187110c300e"
+  },
+  "validation_predictions_sha256": "8543ff146a8fb767ebc2a3f16284878ba3035ab38c748fc013a4a1119c922b22",
+  "reload_reproduces_validation_predictions": {
+    "ridge_demand": true,
+    "rf_demand": true,
+    "ridge_service": true,
+    "rf_service": true
+  },
+  "validation_metrics": [
+    {
+      "method": "rf_demand",
+      "kind": "rf",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "withheld_by_reason": {
+        "boardings_1d_ago": 293,
+        "boardings_14d_ago, boardings_21d_ago": 2,
+        "boardings_7d_ago, boardings_14d_ago, boardings_21d_ago, boardings_28d_filled": 1,
+        "boardings_21d_ago": 1,
+        "no recorded boardings": 1,
+        "boardings_7d_ago": 1,
+        "boardings_14d_ago": 1,
+        "boardings_7d_ago, boardings_21d_ago": 1,
+        "boardings_1d_ago, boardings_7d_ago": 1,
+        "boardings_7d_ago, boardings_14d_ago": 1,
+        "boardings_1d_ago, boardings_14d_ago": 1
+      },
+      "rows": 6560,
+      "MAE": 345.4727204323,
+      "RMSE": 582.0689458637,
+      "WAPE_percent": 6.3956807911,
+      "abs_error_sum": 2266301.046035841,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "rf_service",
+      "kind": "rf",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "withheld_by_reason": {
+        "boardings_1d_ago": 293,
+        "boardings_14d_ago, boardings_21d_ago": 2,
+        "boardings_7d_ago, boardings_14d_ago, boardings_21d_ago, boardings_28d_filled": 1,
+        "boardings_21d_ago": 1,
+        "no recorded boardings": 1,
+        "boardings_7d_ago": 1,
+        "boardings_14d_ago": 1,
+        "boardings_7d_ago, boardings_21d_ago": 1,
+        "boardings_1d_ago, boardings_7d_ago": 1,
+        "boardings_7d_ago, boardings_14d_ago": 1,
+        "boardings_1d_ago, boardings_14d_ago": 1
+      },
+      "rows": 6560,
+      "MAE": 354.0841698206,
+      "RMSE": 593.6158989843,
+      "WAPE_percent": 6.5551031657,
+      "abs_error_sum": 2322792.154023446,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "seasonal_mean",
+      "kind": "baseline",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "withheld_by_reason": {
+        "boardings_1d_ago": 293,
+        "boardings_14d_ago, boardings_21d_ago": 2,
+        "boardings_7d_ago, boardings_14d_ago, boardings_21d_ago, boardings_28d_filled": 1,
+        "boardings_21d_ago": 1,
+        "no recorded boardings": 1,
+        "boardings_7d_ago": 1,
+        "boardings_14d_ago": 1,
+        "boardings_7d_ago, boardings_21d_ago": 1,
+        "boardings_1d_ago, boardings_7d_ago": 1,
+        "boardings_7d_ago, boardings_14d_ago": 1,
+        "boardings_1d_ago, boardings_14d_ago": 1
+      },
+      "rows": 6560,
+      "MAE": 360.3591463415,
+      "RMSE": 605.8281937348,
+      "WAPE_percent": 6.6712707946,
+      "abs_error_sum": 2363956.0,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "last_week",
+      "kind": "baseline",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "withheld_by_reason": {
+        "boardings_1d_ago": 293,
+        "boardings_14d_ago, boardings_21d_ago": 2,
+        "boardings_7d_ago, boardings_14d_ago, boardings_21d_ago, boardings_28d_filled": 1,
+        "boardings_21d_ago": 1,
+        "no recorded boardings": 1,
+        "boardings_7d_ago": 1,
+        "boardings_14d_ago": 1,
+        "boardings_7d_ago, boardings_21d_ago": 1,
+        "boardings_1d_ago, boardings_7d_ago": 1,
+        "boardings_7d_ago, boardings_14d_ago": 1,
+        "boardings_1d_ago, boardings_14d_ago": 1
+      },
+      "rows": 6560,
+      "MAE": 375.1821646341,
+      "RMSE": 632.0380474664,
+      "WAPE_percent": 6.9456869432,
+      "abs_error_sum": 2461195.0,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "ridge_demand",
+      "kind": "ridge",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "withheld_by_reason": {
+        "boardings_1d_ago": 293,
+        "boardings_14d_ago, boardings_21d_ago": 2,
+        "boardings_7d_ago, boardings_14d_ago, boardings_21d_ago, boardings_28d_filled": 1,
+        "boardings_21d_ago": 1,
+        "no recorded boardings": 1,
+        "boardings_7d_ago": 1,
+        "boardings_14d_ago": 1,
+        "boardings_7d_ago, boardings_21d_ago": 1,
+        "boardings_1d_ago, boardings_7d_ago": 1,
+        "boardings_7d_ago, boardings_14d_ago": 1,
+        "boardings_1d_ago, boardings_14d_ago": 1
+      },
+      "rows": 6560,
+      "MAE": 400.5603333378,
+      "RMSE": 599.7914689633,
+      "WAPE_percent": 7.41550889,
+      "abs_error_sum": 2627675.7866958706,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "ridge_service",
+      "kind": "ridge",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "withheld_by_reason": {
+        "boardings_1d_ago": 293,
+        "boardings_14d_ago, boardings_21d_ago": 2,
+        "boardings_7d_ago, boardings_14d_ago, boardings_21d_ago, boardings_28d_filled": 1,
+        "boardings_21d_ago": 1,
+        "no recorded boardings": 1,
+        "boardings_7d_ago": 1,
+        "boardings_14d_ago": 1,
+        "boardings_7d_ago, boardings_21d_ago": 1,
+        "boardings_1d_ago, boardings_7d_ago": 1,
+        "boardings_7d_ago, boardings_14d_ago": 1,
+        "boardings_1d_ago, boardings_14d_ago": 1
+      },
+      "rows": 6560,
+      "MAE": 437.1359873507,
+      "RMSE": 645.9978424106,
+      "WAPE_percent": 8.0926280776,
+      "abs_error_sum": 2867612.077020497,
+      "actual_sum": 35434868.0
+    }
+  ],
+  "test_metrics_reused_holdout": [
+    {
+      "method": "last_week",
+      "kind": "baseline",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "withheld_by_reason": {
+        "boardings_1d_ago": 237,
+        "boardings_21d_ago": 49,
+        "boardings_14d_ago": 39,
+        "boardings_7d_ago": 38,
+        "boardings_1d_ago, boardings_21d_ago": 37,
+        "boardings_1d_ago, boardings_7d_ago": 36,
+        "boardings_1d_ago, boardings_14d_ago": 36,
+        "boardings_7d_ago, boardings_21d_ago": 2,
+        "boardings_7d_ago, boardings_14d_ago": 1,
+        "boardings_14d_ago, boardings_21d_ago": 1
+      },
+      "rows": 6542,
+      "MAE": 517.0998165699,
+      "RMSE": 877.1929529844,
+      "WAPE_percent": 9.9643182087,
+      "abs_error_sum": 3382867.0,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "seasonal_mean",
+      "kind": "baseline",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "withheld_by_reason": {
+        "boardings_1d_ago": 237,
+        "boardings_21d_ago": 49,
+        "boardings_14d_ago": 39,
+        "boardings_7d_ago": 38,
+        "boardings_1d_ago, boardings_21d_ago": 37,
+        "boardings_1d_ago, boardings_7d_ago": 36,
+        "boardings_1d_ago, boardings_14d_ago": 36,
+        "boardings_7d_ago, boardings_21d_ago": 2,
+        "boardings_7d_ago, boardings_14d_ago": 1,
+        "boardings_14d_ago, boardings_21d_ago": 1
+      },
+      "rows": 6542,
+      "MAE": 421.1545908489,
+      "RMSE": 718.5153847718,
+      "WAPE_percent": 8.1154899379,
+      "abs_error_sum": 2755193.333333333,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "ridge_demand",
+      "kind": "ridge",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "withheld_by_reason": {
+        "boardings_1d_ago": 237,
+        "boardings_21d_ago": 49,
+        "boardings_14d_ago": 39,
+        "boardings_7d_ago": 38,
+        "boardings_1d_ago, boardings_21d_ago": 37,
+        "boardings_1d_ago, boardings_7d_ago": 36,
+        "boardings_1d_ago, boardings_14d_ago": 36,
+        "boardings_7d_ago, boardings_21d_ago": 2,
+        "boardings_7d_ago, boardings_14d_ago": 1,
+        "boardings_14d_ago, boardings_21d_ago": 1
+      },
+      "rows": 6542,
+      "MAE": 450.5581856295,
+      "RMSE": 694.6648477224,
+      "WAPE_percent": 8.6820861065,
+      "abs_error_sum": 2947551.650388462,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "rf_demand",
+      "kind": "rf",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "withheld_by_reason": {
+        "boardings_1d_ago": 237,
+        "boardings_21d_ago": 49,
+        "boardings_14d_ago": 39,
+        "boardings_7d_ago": 38,
+        "boardings_1d_ago, boardings_21d_ago": 37,
+        "boardings_1d_ago, boardings_7d_ago": 36,
+        "boardings_1d_ago, boardings_14d_ago": 36,
+        "boardings_7d_ago, boardings_21d_ago": 2,
+        "boardings_7d_ago, boardings_14d_ago": 1,
+        "boardings_14d_ago, boardings_21d_ago": 1
+      },
+      "rows": 6542,
+      "MAE": 398.0115485453,
+      "RMSE": 659.4017097683,
+      "WAPE_percent": 7.6695322515,
+      "abs_error_sum": 2603791.550583086,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "ridge_service",
+      "kind": "ridge",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "withheld_by_reason": {
+        "boardings_1d_ago": 237,
+        "boardings_21d_ago": 49,
+        "boardings_14d_ago": 39,
+        "boardings_7d_ago": 38,
+        "boardings_1d_ago, boardings_21d_ago": 37,
+        "boardings_1d_ago, boardings_7d_ago": 36,
+        "boardings_1d_ago, boardings_14d_ago": 36,
+        "boardings_7d_ago, boardings_21d_ago": 2,
+        "boardings_7d_ago, boardings_14d_ago": 1,
+        "boardings_14d_ago, boardings_21d_ago": 1
+      },
+      "rows": 6542,
+      "MAE": 466.6294764259,
+      "RMSE": 692.093897295,
+      "WAPE_percent": 8.9917738117,
+      "abs_error_sum": 3052690.034778513,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "rf_service",
+      "kind": "rf",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "withheld_by_reason": {
+        "boardings_1d_ago": 237,
+        "boardings_21d_ago": 49,
+        "boardings_14d_ago": 39,
+        "boardings_7d_ago": 38,
+        "boardings_1d_ago, boardings_21d_ago": 37,
+        "boardings_1d_ago, boardings_7d_ago": 36,
+        "boardings_1d_ago, boardings_14d_ago": 36,
+        "boardings_7d_ago, boardings_21d_ago": 2,
+        "boardings_7d_ago, boardings_14d_ago": 1,
+        "boardings_14d_ago, boardings_21d_ago": 1
+      },
+      "rows": 6542,
+      "MAE": 407.6192149651,
+      "RMSE": 681.6215457304,
+      "WAPE_percent": 7.8546683556,
+      "abs_error_sum": 2666644.9043016806,
+      "actual_sum": 33949809.0
+    }
+  ],
+  "test_status": "reused holdout: June-July 2026 was examined while the method was developed (notebook); not an untouched final test",
+  "frozen_at": "2026-11-18T14:43:19+00:00",
+  "test_scored_at": "2026-11-18T14:43:19+00:00",
+  "runtime": {
+    "python": "3.12.10",
+    "pandas": "3.1.1",
+    "numpy": "2.5.4",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.18.1",
+    "joblib": "1.6.0",
+    "duckdb": "2.0.0"
+  },
+  "key_columns": [
+    "route",
+    "date"
+  ]
+}

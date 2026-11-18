@@ -1,0 +1,103 @@
+{
+  "artifact_version": "stage4a-1.0.0",
+  "data_version": "cta_ref__r20261113__gtfs8__to20260731/features__delay1d",
+  "built_by": "analytics/features/model_features.py::build_features",
+  "build_features_rules": [
+    "target rows: every route/day in the forecast-time schedule (latest GTFS archive captured strictly before the target date)",
+    "day_of_week (Monday = 0), month, is_weekend from the target date",
+    "boardings_Nd_ago = boardings on the same route exactly N days earlier, N in 1, 7, 14, 21, 28 (exact-date lookup; missing stays missing, a recorded 0 stays 0)",
+    "seasonal_count = number of available 7/14/21/28-day values (counted before filling)",
+    "seasonal_mean = mean of the available 7/14/21/28-day values, only when at least two exist",
+    "boardings_28d_available = 1 when the 28-day value exists, else 0",
+    "boardings_28d_filled = 28-day value, or the mean of 7/14/21-day values when it is missing (Option 2)",
+    "is_sunday_like_day = 1 when more than half of the day's scheduled bus trips belong to Sunday-only services (calendar.txt sunday=1, Monday-Friday=0) in the forecast-time archive",
+    "scheduled_trips, scheduled_hours from the schedule saved before the target day (hours missing if any trip duration is invalid)"
+  ],
+  "eligibility": {
+    "required_fields": [
+      "boardings_1d_ago",
+      "boardings_7d_ago",
+      "boardings_14d_ago",
+      "boardings_21d_ago",
+      "boardings_28d_filled",
+      "scheduled_trips",
+      "scheduled_hours"
+    ],
+    "excluded_reasons": "comma-joined names of missing required fields, or 'no recorded boardings'"
+  },
+  "never_used_as_predictors": [
+    "rides",
+    "daytype",
+    "is_sunday_holiday_daytype",
+    "is_sunday_holiday_service_day",
+    "date",
+    "service_date",
+    "split",
+    "source_snapshot",
+    "schedule_saved",
+    "archive_available_from",
+    "duration_complete",
+    "boardings_28d_ago",
+    "sunday_like_day",
+    "eligible",
+    "forecastable",
+    "excluded_reason"
+  ],
+  "demand_features": [
+    "route",
+    "day_of_week",
+    "month",
+    "is_weekend",
+    "is_sunday_like_day",
+    "boardings_1d_ago",
+    "boardings_7d_ago",
+    "boardings_14d_ago",
+    "boardings_21d_ago",
+    "boardings_28d_filled",
+    "boardings_28d_available",
+    "seasonal_count",
+    "seasonal_mean"
+  ],
+  "service_features": [
+    "route",
+    "day_of_week",
+    "month",
+    "is_weekend",
+    "is_sunday_like_day",
+    "boardings_1d_ago",
+    "boardings_7d_ago",
+    "boardings_14d_ago",
+    "boardings_21d_ago",
+    "boardings_28d_filled",
+    "boardings_28d_available",
+    "seasonal_count",
+    "seasonal_mean",
+    "scheduled_trips",
+    "scheduled_hours"
+  ],
+  "notebook_to_spec_names": {
+    "route": "route",
+    "day_of_week": "day_of_week",
+    "month": "month",
+    "is_weekend": "is_weekend",
+    "is_sunday_like_day": "is_sunday_holiday_daytype (the notebook replaces it with a schedule-based flag)",
+    "boardings_1d_ago": "rides_1_day_before",
+    "boardings_7d_ago": "rides_7_days_before",
+    "boardings_14d_ago": "rides_14_days_before",
+    "boardings_21d_ago": "rides_21_days_before",
+    "boardings_28d_filled": "rides_28_days_before (filled, Option 2)",
+    "boardings_28d_available": "rides_28_days_before_available",
+    "seasonal_count": "available_same_weekday_observations",
+    "seasonal_mean": "past_four_same_weekdays_mean",
+    "scheduled_trips": "scheduled_trips",
+    "scheduled_hours": "scheduled_service_hours"
+  },
+  "route_encoding": "OneHotEncoder(handle_unknown='ignore') fitted on eligible training rows; unseen routes get an all-zero encoding",
+  "numeric_scaling": "StandardScaler fitted on eligible training rows",
+  "prediction_floor": 0,
+  "availability": {
+    "issue_time": "start of target day",
+    "reporting_delay_days": 1,
+    "forecast_schedule_rule": "most recent schedule saved before the target day"
+  }
+}
