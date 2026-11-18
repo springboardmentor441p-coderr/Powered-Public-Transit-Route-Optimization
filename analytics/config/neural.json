@@ -1,0 +1,49 @@
+{
+  "_comment": "Stage 4b settings (an additional modelling experiment: neural networks). Fixed BEFORE any network is trained or any result is read. Changing a value means a new evaluated experiment; never change them after looking at validation or test results.",
+  "artifact_version": "stage4b-1.0.0",
+  "seed": 42,
+  "device": "cpu",
+  "deterministic": {"use_deterministic_algorithms": true, "num_threads": 1, "num_interop_threads": 1, "dtype": "float32"},
+  "periods": {
+    "train_end": "2026-03-31",
+    "validation_end": "2026-05-31",
+    "early_stopping": {"start": "2026-03-10", "end": "2026-03-31"},
+    "_early_stopping_note": "The early-stopping set is the eligible TRAINING rows dated 2026-03-10..2026-03-31. Networks, the route encoder and all scalers are fitted on eligible training rows before 2026-03-10 only. Validation (2026-04-01..2026-05-31) is never used in training or stopping: it is used only for selection, exactly as for the Random Forest. The networks therefore train on fewer rows than the Stage 4a models.",
+    "test_status": "reused holdout: June-July 2026 was examined while the method was developed (notebook); not an untouched final test"
+  },
+  "sequence": {
+    "length_days": 28,
+    "window": "exact calendar dates D-28 .. D-1 for the same route",
+    "channels": ["value", "observed"],
+    "missing_placeholder_scaled": 0.0,
+    "_missing_note": "A day with no record gets value 0 in SCALED units (= the training-mean boardings, never 0 boardings) and observed = 0. A recorded 0 has observed = 1 and its own scaled value."
+  },
+  "static_inputs": {
+    "route": "OneHotEncoder(handle_unknown='ignore')",
+    "calendar_scaled": ["day_of_week", "month", "is_weekend", "is_sunday_like_day"]
+  },
+  "boardings_scaler": "mean and std of the fit-part training targets; applied to sequence values and the target",
+  "architectures": {
+    "mlp":  {"hidden": [64, 32]},
+    "lstm": {"hidden_size": 32, "num_layers": 1, "head_hidden": 32},
+    "gru":  {"hidden_size": 32, "num_layers": 1, "head_hidden": 32},
+    "cnn":  {"channels": 16, "kernel_size": 7, "conv_layers": 2, "pooling": "global_average", "head_hidden": 32}
+  },
+  "training": {
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "batch_size": 128,
+    "loss": "MSE on the scaled target",
+    "max_epochs": 200,
+    "early_stopping_patience": 20,
+    "restore_best_weights": true,
+    "reset_seed_before_each_model": true
+  },
+  "prediction_floor": 0,
+  "selection_metric": "MAE",
+  "selection_split": "validation",
+  "serving_change_policy": "Stage 4b does not change the Stage 4a serving bundle. If a network wins on validation, it is reported and the user is asked before any serving change.",
+  "joblib_compress": 3,
+  "max_model_file_bytes": 20000000,
+  "special_routes": ["10", "130"]
+}

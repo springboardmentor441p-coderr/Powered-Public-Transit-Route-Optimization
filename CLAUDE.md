@@ -23,7 +23,7 @@
 - Data: pandas, NumPy, DuckDB (DuckDB for large stop-time processing)
 - ML: scikit-learn (Linear Regression, Random Forest, KMeans)
 - XGBoost **only** if justified after Random Forest (spec 9.10.1 step 5)
-- PyTorch LSTM/GRU/CNN only as **documented extras** for my Deep Learning module
+- PyTorch LSTM/GRU/CNN only as **documented extras**
 - Pin all versions (`==` in requirements.txt, exact versions in package.json).
 - **If anything else seems needed, stop and ask me first.**
 - Add dependencies only when the stage that needs them begins.

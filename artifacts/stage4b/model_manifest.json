@@ -1,0 +1,501 @@
+{
+  "artifact_version": "stage4b-1.0.0",
+  "created_at": "2026-11-18T16:14:28+00:00",
+  "git_commit": "8bb77e9+uncommitted",
+  "code": "analytics/models/train_stage4b.py",
+  "description": "additional modelling experiment: neural networks",
+  "data_version": "cta_ref__r20261113__gtfs8__to20260731/features__delay1d",
+  "input_fingerprints": {
+    "feature_rows.csv": "2c3e0eeeccf947d50c8cae911a54ad0f92b428e0d80c71a132631c1415695696",
+    "ridership": {
+      "snapshot_id": "CTA_-_Ridership_-_Bus_Routes_-_Daily_Totals_by_Route_20261113",
+      "sha256": "d9675570e50a1b3d1fe7142ea9b10ba76099c1312ab0c227745ac57205eb5c04"
+    },
+    "stage4a_model_manifest_artifact_version": "stage4a-1.0.0"
+  },
+  "settings": {
+    "_comment": "Stage 4b settings (an additional modelling experiment: neural networks). Fixed BEFORE any network is trained or any result is read. Changing a value means a new evaluated experiment; never change them after looking at validation or test results.",
+    "artifact_version": "stage4b-1.0.0",
+    "seed": 42,
+    "device": "cpu",
+    "deterministic": {
+      "use_deterministic_algorithms": true,
+      "num_threads": 1,
+      "num_interop_threads": 1,
+      "dtype": "float32"
+    },
+    "periods": {
+      "train_end": "2026-03-31",
+      "validation_end": "2026-05-31",
+      "early_stopping": {
+        "start": "2026-03-10",
+        "end": "2026-03-31"
+      },
+      "_early_stopping_note": "The early-stopping set is the eligible TRAINING rows dated 2026-03-10..2026-03-31. Networks, the route encoder and all scalers are fitted on eligible training rows before 2026-03-10 only. Validation (2026-04-01..2026-05-31) is never used in training or stopping: it is used only for selection, exactly as for the Random Forest. The networks therefore train on fewer rows than the Stage 4a models.",
+      "test_status": "reused holdout: June-July 2026 was examined while the method was developed (notebook); not an untouched final test"
+    },
+    "sequence": {
+      "length_days": 28,
+      "window": "exact calendar dates D-28 .. D-1 for the same route",
+      "channels": [
+        "value",
+        "observed"
+      ],
+      "missing_placeholder_scaled": 0.0,
+      "_missing_note": "A day with no record gets value 0 in SCALED units (= the training-mean boardings, never 0 boardings) and observed = 0. A recorded 0 has observed = 1 and its own scaled value."
+    },
+    "static_inputs": {
+      "route": "OneHotEncoder(handle_unknown='ignore')",
+      "calendar_scaled": [
+        "day_of_week",
+        "month",
+        "is_weekend",
+        "is_sunday_like_day"
+      ]
+    },
+    "boardings_scaler": "mean and std of the fit-part training targets; applied to sequence values and the target",
+    "architectures": {
+      "mlp": {
+        "hidden": [
+          64,
+          32
+        ]
+      },
+      "lstm": {
+        "hidden_size": 32,
+        "num_layers": 1,
+        "head_hidden": 32
+      },
+      "gru": {
+        "hidden_size": 32,
+        "num_layers": 1,
+        "head_hidden": 32
+      },
+      "cnn": {
+        "channels": 16,
+        "kernel_size": 7,
+        "conv_layers": 2,
+        "pooling": "global_average",
+        "head_hidden": 32
+      }
+    },
+    "training": {
+      "optimizer": "Adam",
+      "learning_rate": 0.001,
+      "batch_size": 128,
+      "loss": "MSE on the scaled target",
+      "max_epochs": 200,
+      "early_stopping_patience": 20,
+      "restore_best_weights": true,
+      "reset_seed_before_each_model": true
+    },
+    "prediction_floor": 0,
+    "selection_metric": "MAE",
+    "selection_split": "validation",
+    "serving_change_policy": "Stage 4b does not change the Stage 4a serving bundle. If a network wins on validation, it is reported and the user is asked before any serving change.",
+    "joblib_compress": 3,
+    "max_model_file_bytes": 20000000,
+    "special_routes": [
+      "10",
+      "130"
+    ]
+  },
+  "parts": [
+    {
+      "part": "fit (networks, encoder, scalers)",
+      "dates": "2025-11-24..2026-03-09",
+      "eligible rows": 10988
+    },
+    {
+      "part": "early stopping",
+      "dates": "2026-03-10..2026-03-31",
+      "eligible rows": 2391
+    },
+    {
+      "part": "validation (selection only)",
+      "dates": "2026-04-01..2026-05-31",
+      "eligible rows": 6560
+    },
+    {
+      "part": "test (reused holdout, scored once)",
+      "dates": "2026-06-01..2026-07-31",
+      "eligible rows": 6542
+    }
+  ],
+  "preprocessor": {
+    "fitted_rows": 10988,
+    "routes": 123,
+    "boardings_mean": 4699.122497269749,
+    "boardings_std": 4279.804189062427
+  },
+  "networks": {
+    "mlp": {
+      "epochs_run": 47,
+      "best_epoch": 27,
+      "best_stop_loss": 0.024190464988350868,
+      "parameters": 13889,
+      "train_seconds": 5.5
+    },
+    "lstm": {
+      "epochs_run": 66,
+      "best_epoch": 46,
+      "best_stop_loss": 0.024859005585312843,
+      "parameters": 9761,
+      "train_seconds": 30.3
+    },
+    "gru": {
+      "epochs_run": 66,
+      "best_epoch": 46,
+      "best_stop_loss": 0.025067025795578957,
+      "parameters": 8609,
+      "train_seconds": 42.6
+    },
+    "cnn": {
+      "epochs_run": 32,
+      "best_epoch": 12,
+      "best_stop_loss": 0.031248854473233223,
+      "parameters": 6689,
+      "train_seconds": 6.3
+    }
+  },
+  "selected_lowest_validation_mae": "rf_demand",
+  "best_network": "gru",
+  "serving": "unchanged: Stage 4a serving bundle (rf_demand)",
+  "files": {
+    "models/mlp.joblib": {
+      "file": "artifacts/stage4b/models/mlp.joblib",
+      "uncompressed_bytes": 58893,
+      "compressed_bytes": 53697,
+      "compress": 3,
+      "sha256": "6fb9bac2eaf7ae7c7b37059e3185cbfbd0d989b1ab38cc792da5ddcf28bf4350",
+      "under_limit": true
+    },
+    "models/lstm.joblib": {
+      "file": "artifacts/stage4b/models/lstm.joblib",
+      "uncompressed_bytes": 42525,
+      "compressed_bytes": 38478,
+      "compress": 3,
+      "sha256": "7095bfe6879ef7d3a771023f18f4d6ed9edceef1fe5975424efcbe97c6cece12",
+      "under_limit": true
+    },
+    "models/gru.joblib": {
+      "file": "artifacts/stage4b/models/gru.joblib",
+      "uncompressed_bytes": 37917,
+      "compressed_bytes": 34130,
+      "compress": 3,
+      "sha256": "63a0c0300fead4a0fa369e82dce3596dbe7cb0e30a50fb96286185bf43e57943",
+      "under_limit": true
+    },
+    "models/cnn.joblib": {
+      "file": "artifacts/stage4b/models/cnn.joblib",
+      "uncompressed_bytes": 30269,
+      "compressed_bytes": 27037,
+      "compress": 3,
+      "sha256": "6baccfb983df06a573fe0e2fea49b376a8825475791be18b4df02e292f131d20",
+      "under_limit": true
+    }
+  },
+  "reload_reproduces_validation_predictions": {
+    "mlp": true,
+    "lstm": true,
+    "gru": true,
+    "cnn": true
+  },
+  "validation_predictions_sha256": "0a245ee5e7643aa03da6521918720f498f12189b2da2a900d00f5de1a0df7100",
+  "training_history_sha256": "3b4c28eed53c3aff1bb33761aac195a814c0bbc0e630d185f88f3c7621b868d2",
+  "validation_metrics": [
+    {
+      "method": "rf_demand",
+      "kind": "rf",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "rows": 6560,
+      "MAE": 345.4727204323,
+      "RMSE": 582.0689458637,
+      "WAPE_percent": 6.3956807911,
+      "abs_error_sum": 2266301.046035841,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "rf_service",
+      "kind": "rf",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "rows": 6560,
+      "MAE": 354.0841698206,
+      "RMSE": 593.6158989843,
+      "WAPE_percent": 6.5551031657,
+      "abs_error_sum": 2322792.154023446,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "seasonal_mean",
+      "kind": "baseline",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "rows": 6560,
+      "MAE": 360.3591463415,
+      "RMSE": 605.8281937348,
+      "WAPE_percent": 6.6712707946,
+      "abs_error_sum": 2363956.0,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "gru",
+      "kind": "neural",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "rows": 6560,
+      "MAE": 364.8623069111,
+      "RMSE": 630.2978882809,
+      "WAPE_percent": 6.7546370805,
+      "abs_error_sum": 2393496.733336663,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "last_week",
+      "kind": "baseline",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "rows": 6560,
+      "MAE": 375.1821646341,
+      "RMSE": 632.0380474664,
+      "WAPE_percent": 6.9456869432,
+      "abs_error_sum": 2461195.0,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "lstm",
+      "kind": "neural",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "rows": 6560,
+      "MAE": 385.656231696,
+      "RMSE": 649.9130141001,
+      "WAPE_percent": 7.1395916585,
+      "abs_error_sum": 2529904.879925657,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "ridge_demand",
+      "kind": "ridge",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "rows": 6560,
+      "MAE": 400.5603333378,
+      "RMSE": 599.7914689633,
+      "WAPE_percent": 7.41550889,
+      "abs_error_sum": 2627675.7866958706,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "mlp",
+      "kind": "neural",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "rows": 6560,
+      "MAE": 416.8244200406,
+      "RMSE": 616.8645222729,
+      "WAPE_percent": 7.7166033057,
+      "abs_error_sum": 2734368.1954660546,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "ridge_service",
+      "kind": "ridge",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "rows": 6560,
+      "MAE": 437.1359873507,
+      "RMSE": 645.9978424106,
+      "WAPE_percent": 8.0926280776,
+      "abs_error_sum": 2867612.077020497,
+      "actual_sum": 35434868.0
+    },
+    {
+      "method": "cnn",
+      "kind": "neural",
+      "target_rows": 6864,
+      "scored_rows": 6560,
+      "withheld_rows": 304,
+      "coverage": 0.9557109557,
+      "rows": 6560,
+      "MAE": 559.8510227507,
+      "RMSE": 847.3272071259,
+      "WAPE_percent": 10.3644317491,
+      "abs_error_sum": 3672622.709244265,
+      "actual_sum": 35434868.0
+    }
+  ],
+  "test_metrics_reused_holdout": [
+    {
+      "method": "rf_demand",
+      "kind": "rf",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "rows": 6542,
+      "MAE": 398.0115485453,
+      "RMSE": 659.4017097683,
+      "WAPE_percent": 7.6695322515,
+      "abs_error_sum": 2603791.550583086,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "rf_service",
+      "kind": "rf",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "rows": 6542,
+      "MAE": 407.6192149651,
+      "RMSE": 681.6215457304,
+      "WAPE_percent": 7.8546683556,
+      "abs_error_sum": 2666644.9043016806,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "seasonal_mean",
+      "kind": "baseline",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "rows": 6542,
+      "MAE": 421.1545908489,
+      "RMSE": 718.5153847718,
+      "WAPE_percent": 8.1154899379,
+      "abs_error_sum": 2755193.333333333,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "ridge_demand",
+      "kind": "ridge",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "rows": 6542,
+      "MAE": 450.5581856295,
+      "RMSE": 694.6648477224,
+      "WAPE_percent": 8.6820861065,
+      "abs_error_sum": 2947551.650388462,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "gru",
+      "kind": "neural",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "rows": 6542,
+      "MAE": 461.9803948151,
+      "RMSE": 746.6414884228,
+      "WAPE_percent": 8.9021877645,
+      "abs_error_sum": 3022275.7428801674,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "ridge_service",
+      "kind": "ridge",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "rows": 6542,
+      "MAE": 466.6294764259,
+      "RMSE": 692.093897295,
+      "WAPE_percent": 8.9917738117,
+      "abs_error_sum": 3052690.034778513,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "mlp",
+      "kind": "neural",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "rows": 6542,
+      "MAE": 467.3598608846,
+      "RMSE": 711.748465498,
+      "WAPE_percent": 9.0058480444,
+      "abs_error_sum": 3057468.2099072486,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "lstm",
+      "kind": "neural",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "rows": 6542,
+      "MAE": 484.9713863291,
+      "RMSE": 776.6718044327,
+      "WAPE_percent": 9.3452154896,
+      "abs_error_sum": 3172682.8093652404,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "last_week",
+      "kind": "baseline",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "rows": 6542,
+      "MAE": 517.0998165699,
+      "RMSE": 877.1929529844,
+      "WAPE_percent": 9.9643182087,
+      "abs_error_sum": 3382867.0,
+      "actual_sum": 33949809.0
+    },
+    {
+      "method": "cnn",
+      "kind": "neural",
+      "target_rows": 7018,
+      "scored_rows": 6542,
+      "withheld_rows": 476,
+      "coverage": 0.9321744087,
+      "rows": 6542,
+      "MAE": 557.5729112135,
+      "RMSE": 882.7191346496,
+      "WAPE_percent": 10.7442194598,
+      "abs_error_sum": 3647641.9851587317,
+      "actual_sum": 33949809.0
+    }
+  ],
+  "test_status": "reused holdout: June-July 2026 was examined while the method was developed (notebook); not an untouched final test",
+  "frozen_at": "2026-11-18T16:14:18+00:00",
+  "test_scored_at": "2026-11-18T16:14:26+00:00",
+  "runtime": {
+    "python": "3.12.10",
+    "torch": "2.15.0",
+    "pandas": "3.1.1",
+    "numpy": "2.5.4",
+    "scikit-learn": "1.9.1",
+    "joblib": "1.6.0"
+  }
+}

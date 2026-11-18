@@ -387,3 +387,165 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - Routes 10 / 130 (unseen in training; 5 and 6 rows withheld for a missing 21-day lag): rf_demand WAPE 26.6% / 18.9%. On route 10, `last_week` (25.8%) does slightly better than the served model.
 - **Tests:** 62 pass (14 new unit + 5 new integration tests). Mutation check: no floor, scaler fitted on all rows, withheld scored as 0, and WAPE 0 for a zero total were **each caught**.
 - **Interview Q:** *"Your Random Forest beat the baseline by about 4% MAE. Is that a real improvement?"* On validation it's consistent across day types, and on identical rows. But the test period is a reused holdout and the margin is modest, so I'd call it evidence, not proof, and keep the seasonal mean as the comparison in every report.
+
+---
+
+# Stage 4b: neural network models (an additional modelling experiment)
+
+## Step 36: PyTorch dependency
+- **Built:** `torch==2.15.0` (CPU build, `2.15.0+cpu`) plus its 9 transitive packages, all pinned in `requirements.txt`: `filelock`, `fsspec`, `Jinja2`, `MarkupSafe`, `mpmath`, `networkx`, `setuptools`, `sympy`, `typing_extensions`. `pip check` is clean.
+- **Why:** the MLP, LSTM, GRU and 1D CNN need a neural network library. PyTorch is the library the project rules allow for this experiment.
+- **Key concept:** *CPU vs GPU builds*. The same PyTorch version comes in a CPU build and in CUDA (GPU) builds. A GPU build is much larger and can give slightly different floating-point results. We confirmed `torch.version.cuda is None`, so every run uses the same CPU arithmetic.
+- **Decisions:** none of the transitive packages were chosen by us. They are what torch needs, and they're pinned so a future install can't swap them. No other new tools.
+- **Results:** installed; `torch.cuda.is_available()` is `False`.
+- **Interview Q:** *"Why pin `sympy` when you never import it?"* torch imports it internally. If it isn't pinned, a later install could pick up a newer sympy that changes or breaks torch's behaviour, and the build would no longer be reproducible.
+
+## Step 37: Settings fixed before training (`analytics/config/neural.json`)
+- **Built:** one config holding every Stage 4b setting:
+  - seed 42, CPU, deterministic algorithms, 1 thread;
+  - the sequence rule: 28 exact calendar days, with a `value` channel and an `observed` channel;
+  - the static inputs: route one-hot and 4 calendar fields;
+  - the four small architectures;
+  - one training recipe for all four: Adam, lr 0.001, batch 128, MSE, at most 200 epochs, patience 20;
+  - the early-stopping range, the 20 MB limit and compression level 3.
+- **Why:** every choice must exist *before* any result does. If a setting could be changed after seeing scores, a good score might come from tuning to that period rather than from a better model.
+- **Key concept:** *a three-way split of time*. The fit part (training rows before 2026-03-10) is where the network learns. The early-stopping part (2026-03-10 to 2026-03-31) is where it is told when to stop. Validation (April to May) is where methods are compared. Each period answers one question only. Like a student who studies from the textbook, checks progress on practice papers, and is graded on a mock exam they've never seen.
+- **Decisions:**
+  - **Your change:** early stopping uses the last three weeks of training, not validation. Validation stays untouched for selection only, exactly as for the Random Forest, so the comparison is fair. The cost is fewer rows for the networks to learn from, and the report will say so.
+  - Missing days are a placeholder (the training mean, in scaled units) plus `observed = 0`, never "0 boardings".
+  - Stage 4b never changes the Stage 4a serving bundle without asking.
+- **Results:** the file parses; no training has run.
+- **Interview Q:** *"Why not just use the validation set for early stopping? Everyone does."* Then validation would help choose the network's stopping epoch, and the same validation score would be used to compare it with the Random Forest, which never saw validation at all. The network would get a small hidden advantage. A separate stopping set keeps the comparison fair.
+
+## Step 38: 28-day sequences (`analytics/models/sequences.py`)
+- **Built:** `build_sequences()` returns two arrays of shape (rows, 28). One holds the raw boardings for D-28 … D-1, with NaN for no record. The other is the `observed` flag (1 or 0). `check_against_lags()` is the guard.
+- **Why:** a sequence model (LSTM, GRU, CNN) can look at the whole last four weeks, not just the five lags the Random Forest gets. That only helps if every position really means "this route, exactly k days earlier".
+- **Key concept:** *a diary opened at exact pages*. Each position is looked up by date (route, D − k). A blank page stays blank and is marked `observed = 0`. Nothing is copied from the nearest written page. A recorded 0 is a written page that says 0, so it is `observed = 1`.
+- **Decisions:**
+  - Positions run oldest to newest (position 0 = D-28, position 27 = D-1), so recurrent networks read forwards in time.
+  - The history is the raw ridership loaded with the same `load_ridership` → `to_history` as Stage 3, after checking its fingerprint. `feature_rows.csv` starts on 2025-11-24, too late for 28-day windows in November.
+  - Scaling and the placeholder for missing days come later, from the preprocessor fitted on the fit part only.
+- **Results (dry run, nothing trained):**
+  - all 28,312 feature rows; the guard reports D-1/7/14/21/28 **equal** to the Stage 3 lags;
+  - missing days in eligible windows: train 18,239 of 374,612 (4.9%), validation 9,500 of 183,680 (5.2%), test 10,044 of 183,176 (5.5%).
+- **Interview Q:** *"How do you know your 28-day window isn't off by one day?"* It was built by a second, independent lookup, and five of its positions must equal the lag columns that Stage 3 built and tested. If the window were shifted by one day, those positions would disagree on thousands of rows and the build would stop.
+
+## Step 39: Networks, preprocessing and training loop (`analytics/models/neural.py`)
+- **Built:**
+  - `training_parts()` splits the eligible training rows into a fit part and a stop part, and refuses any other row;
+  - `NeuralPreprocessor`: route one-hot, calendar scaler and boardings mean/std, all fitted on the fit part only;
+  - the four networks, with parameter counts MLP 13,889, LSTM 9,761, GRU 8,609, CNN 6,689;
+  - `set_deterministic()`;
+  - `train_network()`: Adam, seeded shuffling, early stopping on the stop part, best weights restored;
+  - `make_nn_predictor()`;
+  - `network_payload()` / `load_network()`.
+- **Why:** the four networks share one recipe and one preprocessor, so any difference in their scores comes from the architecture, not from different data handling.
+- **Key concept:** *how each network reads four weeks*.
+  - The MLP sees all 56 numbers at once, like a spreadsheet row.
+  - The LSTM and GRU read the days in order and carry a memory forward, like reading a diary page by page.
+  - The CNN slides a 7-day window along the sequence looking for weekly patterns, like a stencil moved along a ruler.
+
+  All four then combine what they found with the route and the calendar.
+- **Decisions:**
+  - **A finding before any training:** a float32 network's answer for a row depended slightly on how many rows were predicted together (at most about 0.001 boardings). The library adds numbers in a different grouping for different batch sizes. It's the same problem as `n_jobs=2` in Stage 4a. The predictor now runs one row at a time, so one day's replay and a full-period run give bit-identical forecasts. This costs a few seconds and leaves training unchanged.
+  - The loss is read with `loss.detach().item()` to avoid a PyTorch warning; the value is the same.
+  - Weights are saved as numpy arrays, not pickled torch objects.
+- **Results (smoke check, no real training):**
+  - fit part 10,988 rows (2025-11-24 to 2026-03-09) plus stop part 2,391 (2026-03-10 to 03-31) = 13,379, exactly the eligible training rows;
+  - 123 routes in the fit part;
+  - training twice on synthetic data gives bit-identical weights for all four networks;
+  - single-row, subset and reversed-order predictions all equal the full batch.
+- **Interview Q:** *"Your network gives a different answer for the same row depending on the batch. Isn't that a bug?"* It's float32 arithmetic. The library sums in blocks whose size depends on the batch, and (a+b)+c is not always a+(b+c). The model isn't wrong, but it isn't exactly repeatable either. Predicting row by row makes the result independent of how rows are grouped, which an auditable replay needs.
+
+## Step 40: Unit tests (`analytics/tests/test_neural.py`)
+- **Built:** 11 test functions (20 cases, because four run once per architecture) on tiny synthetic histories:
+  - a gap gives `observed = 0`, not the previous day;
+  - a recorded 0 is `observed = 1` and differs from the placeholder;
+  - the target day and later days never change the window;
+  - the guard catches a one-day shift;
+  - the fit and stop parts are correct, and validation rows are refused;
+  - the preprocessor learns from the fit part only;
+  - training twice gives bit-identical weights;
+  - a saved and reloaded network (compress=3) reproduces predictions exactly, including an unseen route;
+  - the floor at 0 works;
+  - predictions don't depend on how rows are grouped;
+  - early stopping stops and restores the best epoch.
+- **Why:** each rule needs its own proof. A good overall score could hide a leak or a shift that happens to help.
+- **Key concept:** *test the rule, not the result*. The leak test sets every boarding count on and after the target day to 10⁹. If the window changed at all, the network could be seeing the future. Like checking an exam room for hidden notes, not just looking at the grades.
+- **Decisions:** the tests read the real `neural.json`, overriding only epochs and patience to keep them fast, so they test the configured settings and not a copy.
+- **Results:** 20 passed in 8.3 s. The mutation check (deliberately breaking rules) is in the final step.
+- **Interview Q:** *"How do you test that early stopping really restored the best weights?"* Recompute the stop-part loss with the returned model and compare it with the best loss recorded during training. If the model kept the last epoch's weights instead, the two numbers would differ.
+
+## Step 41: Orchestrator, report and the training run (`train_stage4b.py`, `report4b.py`)
+- **Built:** one command that runs these steps in a fixed order:
+  1. verify the hashes of the feature rows, the raw ridership and every frozen Stage 4a file;
+  2. build the 28-day windows and run the guard;
+  3. train the 4 networks on the fit part (early stopping on 2026-03-10..03-31);
+  4. score all ten methods on the identical validation rows with the unchanged Stage 4a scoring, and require the Stage 4a methods to reproduce their stored predictions exactly;
+  5. select;
+  6. **freeze**: save the 4 files, check sizes, reload exactly;
+  7. **only then** score the test once, using Stage 4a's own `score_test_once`;
+  8. write `reports/stage4b_quality_report.md`, `stage4b_quality_checks.json`, `stage4b_per_route_evaluation.csv` and `artifacts/stage4b/model_manifest.json`.
+- **Why:** the same "seal the envelope before opening the results" order as Stage 4a. Reusing Stage 4a's scoring and test functions unchanged means the ten methods can't be scored by different rules.
+- **Key concept:** *reuse proves comparability*. If Stage 4b had its own copy of the scoring code, a 0.1% difference could come from the copy, not the model. Calling the same function on the same rows removes that doubt.
+- **Decisions:**
+  - The report's "likely reasons" were written before any result. After the run, one claim was checked against the data and corrected: "a few hundred to over 20,000" became the computed fit-part route averages, 133 (route 169) to 15,267 (route 9), median 2,740.
+  - Three test-period patterns were added, computed from the results and labelled "reported, not used for any choice".
+  - The run command also needs `--register data\raw\source_register.csv`, to find the raw ridership the same way Stage 3 does.
+- **Results:**
+  - training times: MLP 47 epochs (best 27) in ~6 s; LSTM and GRU 66 (best 46) in 30–60 s; CNN 32 (best 12) in ~6 s;
+  - saved files 27–54 KB, all under 20 MB;
+  - all 4 reloads are exact, and the Stage 4a methods reproduce their stored predictions exactly.
+- **Interview Q:** *"Why did you check your own 'likely reasons' text after the run?"* Because it was written before the numbers existed, it was a hypothesis. One sentence turned out to mix route averages with single-day peaks. Checking it against the data and correcting it is cheaper than defending a wrong number later.
+
+## Step 42: Reproducible model files (clock time out of the payload)
+- **Built:** `network_payload()` no longer stores `train_seconds`. The training time stays in the manifest and the report.
+- **Why:** a rerun gave byte-identical predictions and training history, but **different model-file hashes**. The cause: each file included the training time, which changes on every run (5.5 s vs 5.4 s).
+- **Key concept:** *a fingerprint should change only when the content changes*. A file that holds the clock time is like a recipe card stamped with the minute you copied it: two identical recipes look different.
+- **Decisions:**
+  - Every value in a saved file was audited: constants, weights, summary, preprocessor attributes, encoder and scaler state. `train_seconds` was the only run-varying value. There are no timestamps, absolute paths or random IDs. Library versions would change only after an upgrade, which correctly gives a different fingerprint.
+  - **Stage 4a checked, not assumed:** `rf_demand`, `rf_service` and `ridge_demand` refitted twice in memory gave byte-identical files that equal the frozen Stage 4a sha256. Stage 4a stores times only in its JSON manifest, so it never had this problem.
+- **Results:** two full runs after the fix:
+
+  | file | run A | run B |
+  |---|---|---|
+  | `mlp.joblib` | `6fb9bac2eaf7ae7c` | `6fb9bac2eaf7ae7c` |
+  | `lstm.joblib` | `7095bfe6879ef7d3` | `7095bfe6879ef7d3` |
+  | `gru.joblib` | `63a0c0300fead4a0` | `63a0c0300fead4a0` |
+  | `cnn.joblib` | `6baccfb983df06a5` | `6baccfb983df06a5` |
+  | `validation_predictions.csv` | `0a245ee5e7643aa0` | `0a245ee5e7643aa0` |
+  | `training_history.csv` | `3b4c28eed53c3aff` | `3b4c28eed53c3aff` |
+
+  The predictions and history are also identical to the two runs before the fix.
+- **Interview Q:** *"Your predictions were identical but the file hashes weren't. Which one do you trust?"* Both told the truth about different things: the model was reproducible, the file format wasn't. The fix keeps run metadata (time) separate from the artifact (weights and settings), so the file hash becomes a reliable check.
+
+## Step 43: Results, integration test and mutation check
+- **Validation (selection, identical 6,560 rows):**
+
+  | method | MAE | WAPE |
+  |---|---:|---:|
+  | rf_demand | **345.47** | 6.40% |
+  | rf_service | 354.08 | 6.56% |
+  | seasonal_mean | 360.36 | 6.67% |
+  | gru | 364.86 | 6.75% |
+  | last_week | 375.18 | 6.95% |
+  | lstm | 385.66 | 7.14% |
+  | ridge_demand | 400.56 | 7.42% |
+  | mlp | 416.82 | 7.72% |
+  | ridge_service | 437.14 | 8.09% |
+  | cnn | 559.85 | 10.36% |
+
+- **Honest result:** every network **loses** to the Random Forest and to the seasonal-mean baseline. The best network, the GRU, is 4.5 boardings worse than the baseline on MAE. The serving method stays `rf_demand`, and the Stage 4a serving bundle is unchanged.
+- **Test (reused holdout, scored once):** rf_demand 398.01, seasonal_mean 421.15, gru 461.98, mlp 467.36, lstm 484.97, cnn 557.57. Observed, not used for any choice:
+  - **Unseen routes 10 and 130:** LSTM WAPE 118.5% / 103.8% vs rf_demand 26.6% / 18.9%.
+  - **Weekdays are close, Saturdays are poor:** GRU 7.21% vs RF 7.00% on weekdays, but 16.57% vs 8.67% on Saturdays.
+  - **Sundays/holidays:** the MLP has the lowest WAPE of all ten methods (10.73%), on one slice.
+- **Likely reasons for the loss** (not proven):
+  - fewer rows (10,988 vs 13,379, about 89 days per route);
+  - a 115-fold range of route sizes under one shared scale;
+  - the RF already gets the useful summaries (same-weekday lags, seasonal mean);
+  - MSE loss vs MAE ranking;
+  - untuned settings, fixed in advance on purpose.
+- **Integration test** (`test_neural_integration.py`, 5 tests): the files are under 20 MB, compressed and unchanged; they hold no run-varying values; the reloaded networks reproduce all 6,560 stored validation predictions exactly; they were fitted on the fit part only; the Stage 4a serving bundle is unchanged.
+- **Mutation check (your instruction: the new guard only):** two bugs were planted in `check_against_lags`, in scratch copies only. A silent guard that never raises, and an off-by-one guard that compares the wrong day, were **each caught** by `test_guard_catches_a_window_shifted_by_one_day`; the other 19 tests still passed. The scaler and previous-row bugs were already covered in Stages 3 and 4a.
+- **Interview Q:** *"Your neural networks lost to a four-week average. Was the experiment a failure?"* No. It answered its question: on this data size, with fair rules, sequence networks don't beat a well-fed Random Forest or even a strong baseline. A result that's reported honestly and reproduced exactly is more useful than a tuned-up win. The test slices also point to what to try next: better handling of unseen routes, and a per-route scale.
