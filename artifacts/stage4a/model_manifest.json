@@ -1,7 +1,7 @@
 {
   "artifact_version": "stage4a-1.0.0",
-  "created_at": "2026-11-18T14:43:21+00:00",
-  "git_commit": "3a89127+uncommitted",
+  "created_at": "2026-11-18T14:57:52+00:00",
+  "git_commit": "49998dd",
   "code": "analytics/models/train_stage4a.py",
   "data_version": "cta_ref__r20261113__gtfs8__to20260731/features__delay1d",
   "input_fingerprints": {
@@ -486,8 +486,8 @@
     }
   ],
   "test_status": "reused holdout: June-July 2026 was examined while the method was developed (notebook); not an untouched final test",
-  "frozen_at": "2026-11-18T14:43:19+00:00",
-  "test_scored_at": "2026-11-18T14:43:19+00:00",
+  "frozen_at": "2026-11-18T14:57:50+00:00",
+  "test_scored_at": "2026-11-18T14:57:50+00:00",
   "runtime": {
     "python": "3.12.10",
     "pandas": "3.1.1",

@@ -1,9 +1,9 @@
 # Stage 4a quality report: baselines, Ridge and Random Forest
 
-Generated 2026-11-18T14:43:21+00:00 by `analytics/models/train_stage4a.py`. Conventions follow the mentor's reference notebook where it differs from spec v3.8. No neural networks in this stage.
+Generated 2026-11-18T14:57:52+00:00 by `analytics/models/train_stage4a.py`. Conventions follow the mentor's reference notebook where it differs from spec v3.8. No neural networks in this stage.
 
 - Data version: `cta_ref__r20261113__gtfs8__to20260731/features__delay1d`; feature rows sha256 `2c3e0eeeccf947d5`
-- Code version: git `3a89127+uncommitted`; artifact version `stage4a-1.0.0`
+- Code version: git `49998dd`; artifact version `stage4a-1.0.0`
 - Periods: train 2025-11-24..2026-03-31, validation 2026-04-01..2026-05-31, test 2026-06-01..2026-07-31 (reused holdout: June-July 2026 was examined while the method was developed (notebook); not an untouched final test)
 - Settings (fixed in `analytics/config/models.json` before the run): Ridge alpha 100; Random Forest 100 trees, max_depth 16, min_samples_leaf 10, seed 42; route one-hot (unknown routes ignored); numeric inputs standardized on training rows only; predictions floored at 0
 - Row counts vs the notebook: **6 MATCH, 0 MISMATCH**
@@ -126,13 +126,13 @@ Every `.joblib` file is saved with `joblib.dump(..., compress=3)`; compression c
 
 Reloaded compressed pipelines reproduce the in-memory validation predictions exactly: `ridge_demand` True, `rf_demand` True, `ridge_service` True, `rf_service` True.
 
-`feature_contract.json` sha256 `f010f5dd0e479fca`; frozen at 2026-11-18T14:43:19+00:00.
+`feature_contract.json` sha256 `f010f5dd0e479fca`; frozen at 2026-11-18T14:57:50+00:00.
 
 ## 5. Test period (scored once)
 
 **Reused holdout.** June-July 2026 was already examined while the method was developed (mentor notebook), so these are reused-holdout results, not an untouched test. The serving method and every setting were fixed on validation before this scoring ran; nothing was tuned on these numbers.
 
-Scored at 2026-11-18T14:43:19+00:00, after freezing at 2026-11-18T14:43:19+00:00.
+Scored at 2026-11-18T14:57:50+00:00, after freezing at 2026-11-18T14:57:50+00:00.
 
 | method | kind | target_rows | scored_rows | withheld_rows | coverage | MAE | RMSE | WAPE_percent |
 |---|---|---|---|---|---|---|---|---|
