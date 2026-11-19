@@ -1,0 +1,44 @@
+﻿# Python virtual environments & cache
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment variables & local secrets
+.env
+.env.*
+!.env.example
+
+# Frontend / Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Raw & processed datasets, GTFS snapshots, and model artifacts
+data/
+analytics/data/
+analytics/artifacts/
+artifacts/
+*.duckdb
+*.duckdb.wal
+*.pkl
+*.joblib
+*.csv
+*.parquet
+*.zip
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
