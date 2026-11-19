@@ -1,0 +1,216 @@
+{
+  "generated_at": "2026-11-19T10:03:56+00:00",
+  "artifact_version": "stage5-1.0.0",
+  "k": 2,
+  "k_table": [
+    {
+      "k": 2,
+      "group_sizes": [
+        67,
+        56
+      ],
+      "smallest_group": 56,
+      "passes_size_gate": true,
+      "silhouette": 0.3810511046,
+      "stability_ari_mean": 1.0,
+      "stability_ari_min": 1.0,
+      "period_halves_ari": 0.8731164257,
+      "period_halves_routes": 123
+    },
+    {
+      "k": 3,
+      "group_sizes": [
+        62,
+        20,
+        41
+      ],
+      "smallest_group": 20,
+      "passes_size_gate": true,
+      "silhouette": 0.3827253798,
+      "stability_ari_mean": 0.9863075011,
+      "stability_ari_min": 0.9771791686,
+      "period_halves_ari": 0.7547909897,
+      "period_halves_routes": 123
+    },
+    {
+      "k": 4,
+      "group_sizes": [
+        17,
+        50,
+        21,
+        35
+      ],
+      "smallest_group": 17,
+      "passes_size_gate": true,
+      "silhouette": 0.3271482337,
+      "stability_ari_mean": 0.8923356077,
+      "stability_ari_min": 0.8021738281,
+      "period_halves_ari": 0.6857242708,
+      "period_halves_routes": 123
+    },
+    {
+      "k": 5,
+      "group_sizes": [
+        32,
+        19,
+        12,
+        12,
+        48
+      ],
+      "smallest_group": 12,
+      "passes_size_gate": true,
+      "silhouette": 0.3365848599,
+      "stability_ari_mean": 0.9782103773,
+      "stability_ari_min": 0.9669718391,
+      "period_halves_ari": 0.8748745979,
+      "period_halves_routes": 123
+    },
+    {
+      "k": 6,
+      "group_sizes": [
+        38,
+        18,
+        12,
+        12,
+        14,
+        29
+      ],
+      "smallest_group": 12,
+      "passes_size_gate": true,
+      "silhouette": 0.297572337,
+      "stability_ari_mean": 0.9125859312,
+      "stability_ari_min": 0.8302349038,
+      "period_halves_ari": 0.7795497377,
+      "period_halves_routes": 123
+    }
+  ],
+  "features": [
+    "mean_weekday_rides",
+    "weekday_rides_cv",
+    "sunday_holiday_to_weekday_rides_ratio",
+    "weekday_rides_per_scheduled_hour",
+    "mean_weekday_trip_duration_minutes"
+  ],
+  "rank_identities": {
+    "full_matched_window": {
+      "rides": true,
+      "trips": true,
+      "days": true,
+      "three day types per route": true,
+      "no rank on an ineligible row": true
+    },
+    "development": {
+      "rides": true,
+      "trips": true,
+      "days": true,
+      "three day types per route": true,
+      "no rank on an ineligible row": true
+    }
+  },
+  "reload_exact": true,
+  "names_match_frozen_memberships": true,
+  "overlap_combined_checks": {
+    "every stop exclusive or shared within its version, never both": true,
+    "jaccard within [0, 1]": true,
+    "shared <= smaller route's count": true,
+    "one row per unordered pair per version": true,
+    "coverage counts equal served rows, per version": true
+  },
+  "overlap_per_version": [
+    {
+      "geometry_version": "mdb-389-202511230128",
+      "applied_dates": "2025-11-23..2025-12-18",
+      "routes": 123,
+      "served stops": 10684,
+      "sharing pairs": 692,
+      "median exclusive share": 0.6610169492,
+      "identities hold": true
+    },
+    {
+      "geometry_version": "mdb-389-202512190112",
+      "applied_dates": "2025-12-19..2026-01-07",
+      "routes": 123,
+      "served stops": 10727,
+      "sharing pairs": 710,
+      "median exclusive share": 0.6527777778,
+      "identities hold": true
+    },
+    {
+      "geometry_version": "mdb-389-202601080131",
+      "applied_dates": "2026-01-08..2026-02-09",
+      "routes": 123,
+      "served stops": 10675,
+      "sharing pairs": 699,
+      "median exclusive share": 0.652892562,
+      "identities hold": true
+    },
+    {
+      "geometry_version": "mdb-389-202602100132",
+      "applied_dates": "2026-02-10..2026-03-25",
+      "routes": 123,
+      "served stops": 10675,
+      "sharing pairs": 699,
+      "median exclusive share": 0.652892562,
+      "identities hold": true
+    },
+    {
+      "geometry_version": "mdb-389-202603260020",
+      "applied_dates": "2026-03-26..2026-04-23",
+      "routes": 123,
+      "served stops": 10729,
+      "sharing pairs": 703,
+      "median exclusive share": 0.6527777778,
+      "identities hold": true
+    },
+    {
+      "geometry_version": "mdb-389-202604240144",
+      "applied_dates": "2026-04-24..2026-05-29",
+      "routes": 123,
+      "served stops": 10709,
+      "sharing pairs": 695,
+      "median exclusive share": 0.6610169492,
+      "identities hold": true
+    },
+    {
+      "geometry_version": "mdb-389-202605300003",
+      "applied_dates": "2026-05-30..2026-07-10",
+      "routes": 125,
+      "served stops": 10722,
+      "sharing pairs": 748,
+      "median exclusive share": 0.65625,
+      "identities hold": true
+    },
+    {
+      "geometry_version": "mdb-389-202607110020",
+      "applied_dates": "2026-07-11..2026-07-31",
+      "routes": 125,
+      "served stops": 10670,
+      "sharing pairs": 774,
+      "median exclusive share": 0.6610169492,
+      "identities hold": true
+    }
+  ],
+  "notebook_profiles": {
+    "notebook valid profiles (recomputed)": 86,
+    "notebook valid profiles (stated)": 86,
+    "ours base-eligible": 123,
+    "in ours, not in notebook": 37,
+    "in notebook, not in ours": 0,
+    "notebook exclusion reasons": {
+      "fewer than 8 Saturdays or 8 Sundays/holidays in training": 37
+    }
+  },
+  "notebook_groups": {
+    "notebook k": 2,
+    "our k": 2,
+    "membership agreement": {
+      "routes_grouped_by_both": 86,
+      "adjusted_rand": 0.5757410251616821
+    }
+  },
+  "membership_counts": {
+    "grouped": 123,
+    "no matched schedule in the ridership window (ridership-only identifier)": 3,
+    "no matched days in the development profile period": 2
+  }
+}

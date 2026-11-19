@@ -12,6 +12,7 @@ named ranking indicators, historical replay and service scenarios. The work foll
 | 3. Feature contracts | exact-date lags, forecast-time schedule, Sunday-like flag, splits, eligibility | complete: 50 MATCH, 0 MISMATCH | `reports/stage3_quality_report.md` |
 | 4a. Baselines, Ridge, Random Forest | 6 methods on identical rows; selected `rf_demand` (validation MAE 345.47 vs seasonal mean 360.36) | complete | `reports/stage4a_quality_report.md` |
 | 4b. Neural networks (an additional modelling experiment) | MLP, LSTM, GRU, 1D CNN on 28-day sequences, early stopping on the last three training weeks; all ten methods on the identical rows | complete: every network loses to `rf_demand` and to the seasonal-mean baseline (best network `gru`, 364.86); serving unchanged | `reports/stage4b_quality_report.md` |
+| 5. Route groups and ranking | development-period route profiles, KMeans groups, three named rankings (demand, rides per trip, rides per hour) and route stop overlap | complete: 2 named groups (67 + 56 routes; silhouette 0.38, moderate separation); rankings for the full matched window and the development period, ties preserved, unranked rows kept with reasons; overlap for 8 timetable versions (corridor review only) | `reports/stage5_quality_report.md` |
 
 The step-by-step log of decisions is in `NOTES.md`. The test period (June-July 2026) is a reused holdout, not an untouched test.
 
@@ -53,6 +54,12 @@ python -I analytics\models\train_stage4a.py --features data\processed\cta_ref__r
 ```
 python -I analytics\models\train_stage4b.py --features data\processed\cta_ref__r20261113__gtfs8__to20260731\features__delay1d --neural analytics\config\neural.json --models analytics\config\models.json --sources analytics\config\sources.json --register data\raw\source_register.csv --stage4a artifacts\stage4a --artifacts artifacts\stage4b --out reports
 ```
+
+**Stage 5: route groups and ranking (needs Stages 2-3; group names in `analytics\config\group_names.json`)**
+```
+python -I analytics\groups\build_stage5.py --features data\processed\cta_ref__r20261113__gtfs8__to20260731\features__delay1d --groups analytics\config\groups.json --names analytics\config\group_names.json --sources analytics\config\sources.json --register data\raw\source_register.csv --artifacts artifacts\stage5 --out reports
+```
+The build stops if the frozen groups differ from the named memberships. The full-window ranking includes June-July 2026, so it is a historical-analysis table, not a replay view.
 
 **Tests**
 ```

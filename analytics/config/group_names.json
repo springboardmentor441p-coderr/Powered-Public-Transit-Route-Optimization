@@ -1,0 +1,25 @@
+{
+  "_comment": "Descriptive names for the Stage 5 route groups, chosen by the user AFTER inspecting the development-period summaries (spec 9.11.3: names are interpretations to verify, not predefined labels). The build applies a name only if the frozen pipeline reproduces exactly these memberships; otherwise it stops.",
+  "artifact_version": "stage5-1.0.0",
+  "profile_period": ["2025-11-23", "2026-03-31"],
+  "k": 2,
+  "named_on": "2026-11-19",
+  "groups": {
+    "0": {
+      "name": "Higher-demand, seven-day routes",
+      "basis": "median 7,044 weekday rides; weekday CV median 0.146; 63 of 67 have Saturday and Sunday/holiday service; median trip 53.6 min; median 37.8 rides per scheduled hour",
+      "routes": ["119", "12", "126", "146", "147", "15", "151", "152", "155", "157", "18", "20", "21", "22", "26", "28", "29", "3", "34", "35", "36", "4", "47", "49", "49B", "50", "52", "52A", "53", "54", "55", "56", "6", "60", "62", "63", "65", "66", "67", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "8", "80", "81", "82", "85", "87", "8A", "9", "90", "91", "92", "93", "94", "95", "97", "J14", "X49", "X9"]
+    },
+    "1": {
+      "name": "Lower-demand routes, often with limited or no weekend service",
+      "basis": "median 1,040 weekday rides; weekday CV median 0.224; 26 of 56 have no Saturday and 32 of 56 no Sunday/holiday service; median trip 29.7 min; median 26.5 rides per scheduled hour",
+      "routes": ["1", "100", "103", "106", "108", "11", "111", "111A", "112", "115", "120", "121", "124", "125", "134", "135", "136", "143", "148", "156", "165", "169", "171", "172", "192", "2", "201", "206", "24", "30", "31", "37", "39", "43", "44", "48", "51", "53A", "54A", "54B", "55A", "55N", "57", "59", "62H", "63W", "68", "7", "81W", "84", "85A", "86", "88", "96", "N5", "X4"]
+    }
+  },
+  "caveats": [
+    "Names describe each group's typical member; ranges overlap (group 1's busiest route, 4,095 weekday rides, is busier than group 0's quietest, 1,925; rides per scheduled hour overlap 13-60 vs 24-51).",
+    "A group is not a performance grade; group numbers are not an order of efficiency. A lower-demand route may serve coverage obligations.",
+    "Separation is moderate (silhouette 0.38; k = 2 chosen by the fixed rule, a near tie with k = 3 at 0.383).",
+    "Fitted on the development period only; later observations do not change memberships or names."
+  ]
+}

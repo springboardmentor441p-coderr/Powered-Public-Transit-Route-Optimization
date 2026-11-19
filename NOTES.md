@@ -549,3 +549,203 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
 - **Integration test** (`test_neural_integration.py`, 5 tests): the files are under 20 MB, compressed and unchanged; they hold no run-varying values; the reloaded networks reproduce all 6,560 stored validation predictions exactly; they were fitted on the fit part only; the Stage 4a serving bundle is unchanged.
 - **Mutation check (your instruction: the new guard only):** two bugs were planted in `check_against_lags`, in scratch copies only. A silent guard that never raises, and an off-by-one guard that compares the wrong day, were **each caught** by `test_guard_catches_a_window_shifted_by_one_day`; the other 19 tests still passed. The scaler and previous-row bugs were already covered in Stages 3 and 4a.
 - **Interview Q:** *"Your neural networks lost to a four-week average. Was the experiment a failure?"* No. It answered its question: on this data size, with fair rules, sequence networks don't beat a well-fed Random Forest or even a strong baseline. A result that's reported honestly and reproduced exactly is more useful than a tuned-up win. The test slices also point to what to try next: better handling of unseen routes, and a per-route scale.
+
+---
+
+# Stage 5: Route groups and ranking (spec 9.7, 9.11, 9.12; stage table 9.18)
+
+> The spec wins where it differs from the mentor's notebook (your decision for this stage). The notebook's rules are recomputed and reported beside ours.
+
+## Step 44: Settings fixed before any result (`analytics/config/groups.json`)
+- **Built:** one config for Stage 5:
+  - periods, with the clustering period separate from the ranking periods;
+  - the spec 9.7.2 gates (20 / 20 / 8);
+  - three named rankings (demand, rides per trip, rides per hour);
+  - the clustering candidates in priority order and the feature-selection rule (≥ 90% availability, |Spearman| < 0.8);
+  - the KMeans settings (k = 2–6, 10 initialisations, seeds 1–5 for stability, minimum group of 5, silhouette tolerance 0.02);
+  - the overlap scope and the notebook's comparison settings.
+- **Why:** each threshold must be chosen before its effect is visible. Otherwise a cutoff could be nudged until the output "looks right".
+- **Key concept:** *two different periods for two different questions*. Groups describe what a route is *like*, learned once from the development period and then frozen, like a school photo taken on one day. Rankings describe how routes compare *over the period you are looking at*, like a league table that can cover any season you pick. Spec 9.7.2 keeps their counts separate.
+- **Decisions:**
+  - **Your catch:** the development period has only **18 Saturdays**, so with the 20-day ranking gate **no** route could ever have a Saturday ranking (0 of 123). The spec doesn't tie rankings to the development period: 9.7.2 applies ranking counts to "the displayed ranking period", 9.12 says "store the chosen period", and 9.14.4 lets replay rankings update with revealed history. So the **reference ranking period is the full matched window** (2025-11-23 to 2026-07-31: 35 Saturdays, and 92 routes reach 20 Saturdays). The development-period ranking is kept, with Saturdays shown **unranked (18 days)**.
+  - The full-window ranking includes June–July, so it is a *historical-analysis* table. The replay (Stage 7) must recompute rankings from revealed history only.
+  - **The gate stays at 20.** Lowering it to make Saturdays rankable would mean choosing a threshold for its output. A sensitivity table (gates 8, 12, 16, 20) shows the effect instead.
+  - The day type is the *reported* W/A/U: these profiles describe the past, so the label is legitimately known (unlike in forecasting).
+- **Results:** the config parses. Day counts: development W 89, A 18, U 22; full window W 175, A 35, U 41.
+- **Interview Q:** *"Why not just lower the Saturday threshold to 15 so you get a Saturday ranking?"* That picks a rule because of the answer it gives. The honest options are to keep the rule and show the group as unranked with its count, or to rank over a period that actually has enough Saturdays. The spec allows both, so I did both, and I report how the rankings would change at other gate values.
+
+## Step 45: Utilization profiles and the three named rankings (`analytics/groups/profiles.py`)
+- **Built:**
+  - `utilization_profiles()`: one row per route × day type (W/A/U) × period, with observed days, sums of rides, trips and hours over the same dates, mean daily rides, and the two ratios;
+  - three rankings (`observed_daily_demand_rank`, `rides_per_trip_rank`, `service_productivity_metric_rank`), each with its own eligibility flag and reason;
+  - `all_ranking_periods()` and `gate_sensitivity()`.
+  - Tests: `analytics/tests/test_profiles.py`.
+- **Why:** spec 9.12 asks for separate named rankings rather than one hidden score, and 9.7.2 says how eligibility works.
+- **Key concept:** *ratio of sums, not mean of ratios* (the example from the test):
+  - 10 days at 100 rides / 10 trips (10 per trip);
+  - 10 days at 300 rides / 10 trips (30 per trip);
+  - 5 days at 10 rides / 1 trip (10 per trip).
+
+  The **mean of the daily ratios** is (10×10 + 10×30 + 5×10) ÷ 25 = **18**. The **ratio of sums** is 4,050 rides ÷ 205 trips = **19.76**. The mean of ratios lets a day with 1 trip count as much as a day with 10 trips. Adding first and dividing once weights each day by how much service actually ran, which is what spec 9.7.1 asks for.
+- **Decisions:**
+  - **Your fix:** every route in the period gets W, A and U rows. A day type with no matched days has `observed_days = 0` (a real count), missing sums (no observations, never 0), and the reason "no matched days of this day type". Spec 9.7.2 says a failed gate is *displayed* as unranked with its count, not hidden.
+  - Ties share the lowest rank (two routes tied for 2nd are both 2nd; the next is 4th).
+  - Incomplete durations remove only the hours ranking; the trips ranking survives.
+  - **Your fix:** the reason reads "on 1 day" / "on 3 days".
+- **Results:**
+  - 9 unit tests pass, including the spec 9.19.1 case: 10 Saturdays pass the clustering weekend gate (8) but are **not** rankable (gate 20).
+  - One test first failed because my test data put weekdays and Saturdays on the same dates. The duplicate-key guard refused it, which was correct; the test data was fixed.
+  - **Dry run on real data:** full window 125 routes, ranked W 125 / A 92 / U 86. Development 123 routes, ranked W 123 / **A 0** / U 86. Every matched row is counted exactly once (rides, trips and days equal the matched table).
+- **Interview Q:** *"A route never runs on Saturdays. Why give it a Saturday row at all?"* An absent row and "zero days, not ranked" mean different things to a reader. An absent row looks like a data error or a filter bug. An explicit row with 0 days and a reason states a fact about the route, and keeps "no observations" separate from "observed zero rides".
+
+## Step 46: "No weekend service" is a fact, not a missing value (`groups.json`, `profiles.py`)
+- **Built:**
+  - a weekend service status per route and day type, from the descriptive schedule: `no_scheduled_service`, `insufficient_observations` or `available`;
+  - a `scheduled_service_days` column in the ranking table;
+  - a clearer ranking reason, "no scheduled service of this day type";
+  - one new test.
+- **Why (your catch):** in the development period, **30** of 123 routes run no Saturday buses and **36** run no Sunday/holiday buses. Under the first rules, both weekend ratios would have been dropped (74.8% and 69.9% available, below the 90% bar), or else filled with the median, which would make a weekday-only route look like a typical weekend route.
+- **Key concept:** *evidence of absence vs absence of evidence*. "We have no record for Saturday" (missing) is different from "the timetable shows zero buses every Saturday" (known). The spec's "missing observations never become measured zeros" (9.7.2) protects the first case. In the second case the zero comes from the schedule, so nothing is being made up. Like a shop that is closed on Sundays: its Sunday sales are zero because it never opens, not because the till roll is lost.
+- **Decisions:**
+  - No scheduled service → the weekend ratio is a **structural zero** for clustering.
+  - Service scheduled but fewer than 8 matched days → **unavailable**, filled with the median of routes that *have* that service, and listed in the report. Only **route 169** (Saturday 6 of 18 matched; Sunday/holiday 0 of 3, which are single-trip holidays).
+  - The 90% availability rule now counts only truly unavailable values, so both ratios are 122 of 123 (99.2%) and kept.
+  - **No separate has-service indicator (your decision):** a ratio of 0 already says "no service". An extra 0/1 column would count the same fact twice in KMeans distances.
+  - The ranking table keeps those rows unranked. Only the reason became more exact, so a planner can tell "doesn't run Saturdays" (66 rows) from "ran, but no ridership record" (1 row, route 169 U, development period).
+- **Results:** 10 ranking tests pass. The other five clustering candidates are available for 123 of 123 routes.
+- **Interview Q:** *"Isn't putting 0 in for routes with no Saturday service exactly the 'missing becomes zero' mistake?"* No. The mistake is inventing a measurement you don't have. Here the schedule is a measurement: it shows zero trips on every Saturday, so zero Saturday rides is what happened. The one route where Saturday service existed but the ridership data is thin (169) is treated as genuinely missing, and it's flagged.
+
+## Step 47: Clustering profiles and feature selection (`profiles.py`: `route_profiles`, `select_features`)
+- **Built:**
+  - one clustering profile per route over the development period (spec 9.11.2): coverage counts, weekend statuses, and the 7 candidate features;
+  - the base gate (fewer than 20 matched weekdays → ungrouped, with a reason);
+  - `select_features()`, which applies the fixed rules (≥ 90% availability, then |Spearman| < 0.8 in priority order) and records why each candidate was kept or dropped.
+  - 7 tests in `analytics/tests/test_clustering.py`.
+- **Why:** the spec lists *candidates* and asks for "a compact, interpretable set" chosen by inspecting correlation. Two features that say almost the same thing would count that thing twice in KMeans distances.
+- **Key concept:** *correlated features are double votes*. Weekday rides and weekday trips correlate at 0.906: busy routes get more buses. Keeping both would let route size decide the groups twice over. Spearman is used because it measures "do they rise and fall together" without assuming a straight line.
+- **Decisions:**
+  - **Selected:** weekday rides, weekday variability (CV), Sunday/holiday ratio, rides per scheduled hour, trip duration.
+  - **Dropped:** weekday trips (|ρ| 0.906 with rides) and the Saturday ratio (|ρ| 0.812 with CV).
+  - **A knife-edge result, kept and disclosed:** the Saturday and Sunday ratios correlate at 0.951. Saturday was dropped at 0.812 against CV; Sunday stayed at 0.798, just under the bar. Weekend shape is still represented, through Sunday. The rule was fixed before seeing the data, so it isn't changed afterwards.
+  - Part of the CV↔weekend correlation likely comes from the 30–36 structural zeros (weekday-only routes tend to be peak-heavy and more variable).
+- **Results:** 123 of 123 routes pass the base gate. Saturday: 92 available / 30 no service / 1 insufficient (169). Sunday/holiday: 86 / 36 / 1 (169). 17 tests pass.
+- **Interview Q:** *"Your Saturday feature was dropped by 0.012 over a threshold. Isn't that arbitrary?"* Any threshold is arbitrary at its edge. What matters is that it was set before the data was seen and is applied the same way everywhere. Here the dropped feature correlates 0.951 with one that was kept, so the clustering still sees weekend shape. Changing the rule after seeing which way it fell would be the real problem.
+
+## Step 48: KMeans with the service-aware imputer (`analytics/groups/clustering.py`)
+- **Built:**
+  - `ServiceAwareMedianImputer`: a weekend ratio's median comes **only from routes that have that service** (status `available`). Structural zeros are never filled and never enter the median.
+  - A pipeline that is saved as one object: imputer → StandardScaler → KMeans (`n_init` 10, seed 42).
+  - `evaluate_k` (k = 2–6: sizes, silhouette, stability across seeds 1–5, agreement between the two half-periods), `choose_k`, `membership`, `group_summary`, `centroids_original_units`, `assign_group`.
+  - 6 new tests.
+- **Why:** a plain median imputer would mix the 36 "no Sunday service" zeros into the median used to fill route 169's missing value. And KMeans must be repeatable to the last bit for an auditable artifact.
+- **Key concept:** *silhouette*. For each route it compares "how close am I to my own group" with "how close am I to the nearest other group", giving a score from −1 to 1. Near 1 means tight, well-separated groups; near 0 means groups that blur into each other. **0.38 means moderate separation**: real structure, but with routes near the boundaries. Like sorting students into "mostly sciences" and "mostly arts" when many take a bit of both.
+- **Decisions:**
+  - **One thread** (`threadpool_limits(limits=1)`) for every fit and predict. KMeans's parallel loop adds partial sums in thread-finishing order, the same kind of problem as `n_jobs=2` in Stage 4a.
+  - **k = 2 was chosen by the fixed rule:** the best silhouette is 0.383 at k = 3, and k = 2 (0.381) is within the 0.02 tolerance, so the smallest such k wins.
+  - **It is a near tie:** k = 2 vs k = 3 is **0.381 vs 0.383**. Two things favour k = 2: identical groups for all 5 seeds (adjusted Rand 1.000), and 0.873 agreement between the two half-periods, against k = 3's 0.755.
+  - **Three bugs fixed before any result was frozen:**
+    - an all-missing reason column was stored as numbers, so writing a text reason crashed (`assign_group` would have failed on the real data, where all 123 routes pass the base gate);
+    - the half-period check matched routes by row number instead of route name (it would have mis-paired routes if the halves differed; the input is now keyed by route);
+    - two test-helper mistakes (writing past a table's end silently adds a row; a column had the wrong type).
+- **Results:**
+  - The imputer's Sunday/holiday median is 0.5111, equal to the median of the 86 routes with Sunday service; a naive median including zeros would be 0.4296. Only route 169 is filled.
+  - **k table (123 routes):**
+
+    | k | sizes | silhouette | seed ARI mean | halves ARI |
+    |---:|---|---:|---:|---:|
+    | **2** | 67, 56 | 0.381 | 1.000 | 0.873 |
+    | 3 | 62, 20, 41 | 0.383 | 0.986 | 0.755 |
+    | 4 | 17, 50, 21, 35 | 0.327 | 0.892 | 0.686 |
+    | 5 | 32, 19, 12, 12, 48 | 0.337 | 0.978 | 0.875 |
+    | 6 | 38, 18, 12, 12, 14, 29 | 0.298 | 0.913 | 0.780 |
+
+  - 23 Stage 5 tests pass. Nothing is frozen yet; names come after you inspect the summaries.
+- **Interview Q:** *"k = 3 had the higher silhouette. Why did you go with 2?"* The rule, fixed in advance, takes the simplest grouping within 0.02 of the best, because a 0.002 difference in silhouette is noise, not evidence of a third group. The stability checks agree: k = 2 gives the same groups for every seed and is more consistent across the two halves of the period. I report k = 3's numbers too, so a reader can see how close it was.
+
+## Step 49: Route stop coverage and overlap (`analytics/groups/overlap.py`)
+- **Built:**
+  - `served_stops()`: per GTFS archive (geometry version), the distinct stop_ids of each **bus** route's trips whose service is active on at least one of the archive's applied dates;
+  - `coverage()`: served stops, exclusive stops and the exclusive share per route;
+  - `overlap()`: per route pair sharing at least one stop, the shared stops, Jaccard, smaller-route overlap and a review rank with ties preserved;
+  - `verify()`: identities that stop the build if broken.
+  - 7 tests in `analytics/tests/test_overlap.py`.
+- **Why:** spec 9.12's "route overlap review" names corridors worth examining, and 9.8 defines `route_stop_coverage.csv` and `route_stop_overlap.csv`.
+- **Key concept:** *two ways to measure overlap*. Think of two playlists.
+  - **Jaccard** = songs on both ÷ all distinct songs on either.
+  - **Smaller-route overlap** = songs on both ÷ the shorter playlist's length.
+
+  X49 (the 49 express) has 71 stops, and all 71 are also 49 stops. Its Jaccard is only 0.433, because 49 has 164 stops, but its smaller-route overlap is **1.000**: the express sits entirely inside the local route. Each measure catches what the other misses.
+- **Decisions:**
+  - **Your fix:** every count, exclusivity test and identity is keyed by **(geometry_version, route)** or **(geometry_version, stop_id)**. With stop-only keys, a table holding two versions would silently mix timetables.
+  - The new test passes two versions together and checks they give exactly the same tables as each version run separately. My first expectation in that test was wrong (stop `a` really is exclusive in v2), and that case is now part of it: `a` is shared in v1 but exclusive in v2.
+  - Inactive services and rail trips are excluded. IDs stay strings (`007` is not `7`).
+  - **Interpretation, on every row:** corridor review only. Shared stop IDs are not merge/split evidence (no direction, walking access, transfers or journeys).
+- **Results (dry run, all 8 archives, 11 s):**
+  - every archive's applied dates equal `sources.json`;
+  - every identity holds per version **and for all 8 combined**;
+  - 123 routes per archive (125 from 2026-05-30, when routes 10 and 130 appear); about 10,700 stops; 692–774 sharing pairs; median exclusive share 0.65–0.66;
+  - the January and February archives give identical numbers, as Stage 2 found;
+  - top pairs in the default version (2026-03-26): 120 & 121 (Jaccard 0.810), 108 & 8A (0.500), 49 & X49 (0.433; smaller-route overlap 1.000).
+  - 30 Stage 5 unit tests pass.
+- **Interview Q:** *"Routes 120 and 121 share 17 of their stops. Should CTA merge them?"* This table can't say. Shared stop IDs don't show direction, time of day, where riders actually go, or whether the two routes serve different trips through the same street. It flags a corridor worth a planner's look; it is not a recommendation.
+
+## Step 50: The mentor notebook's rules, recomputed for comparison (`analytics/groups/notebook_compare.py`)
+- **Built:** the notebook's steps 36–44, re-implemented as stated, on its own population (forecast-time feature rows with rides, training split, from 2025-11-24):
+  - `notebook_profiles` (≥ 20 weekdays **and** ≥ 8 Saturdays **and** ≥ 8 Sundays/holidays; its fixed 5 features);
+  - `notebook_groups` (its k rule);
+  - `notebook_ranking` (rides per scheduled hour, sequential ranks);
+  - `compare()`, which sets those results beside ours.
+  - 3 tests in `analytics/tests/test_notebook_compare.py`.
+- **Why:** the spec wins for Stage 5 (your decision), so every place we differ from the mentor's reference must be visible and explained, not silent.
+- **Key concept:** *a comparison that can't change the answer*. The notebook's rules live in their own module and only *read* our profiles, labels and ranking. A test hands `compare()` our tables and checks they come back byte-for-byte identical. On the real data, row hashes before and after also match. Like a second examiner marking a copy of the exam, never the original.
+- **Results (dry run on real data):**
+  - **Profiles:** the notebook rule gives **86**, matching its stated **86**. Ours keeps **123**. The 37 extra routes are all the notebook's weekend exclusion: **30** with no scheduled Saturday or Sunday/holiday service, **6** with Saturday service but none on Sundays/holidays, and **1** (route 169) where service ran but there are too few observations. The whole gap is the Step 46 "no weekend service is a fact" decision.
+  - **Population:** the notebook has 14,415 rows from 2025-11-24, ours 14,501 from 2025-11-23. The difference is exactly the 86 rows of 2025-11-23 (no archive saved before it, as in Stage 4a).
+  - **Features:** three of five shared (weekday demand, CV, Sunday/holiday ratio). The notebook also has the Saturday ratio and weekday trips; our rule dropped those as correlated (|ρ| 0.812 and 0.906) and kept rides per scheduled hour and trip duration.
+  - **Groups:** both choose **k = 2**, with **adjusted Rand 0.576** on the 86 routes both group (moderate agreement). The notebook's own best silhouette (0.428 at k = 3) fails its size gate with a 3-route group.
+  - **Ranking:** **Spearman 1.0** on weekdays (123 routes) and Sundays/holidays (86). The orderings are identical, and there are no tied values here, so the tie rules give the same ranks. Saturdays: **0 ranked in both** (18 < 20), as predicted.
+- **Interview Q:** *"Your grouping agrees with your mentor's at only 0.58. Which one is right?"* Neither is "right": clustering has no answer key. Both find two groups. They disagree on some routes because they use different features and different route sets. The notebook drops 37 weekday-only and limited-weekend routes; we keep them. I can explain every difference by a named rule, and the spec tells me which rule to follow.
+
+## Step 51: Group names, orchestrator, report and the first full run (`group_names.json`, `build_stage5.py`, `report5.py`)
+- **Built:**
+  - **`analytics/config/group_names.json`:** names you chose after inspecting the summaries.
+    - group 0 (67 routes): **"Higher-demand, seven-day routes"**;
+    - group 1 (56 routes): **"Lower-demand routes, often with limited or no weekend service"**.
+
+    It also holds the exact route lists you inspected and four caveats.
+  - **`build_stage5.py`**, one command in a fixed order: verify inputs → rankings → clustering profiles → k table → fit → **freeze** → names → memberships → overlap (8 archives) → notebook comparison → write.
+  - **`report5.py`:** `reports/stage5_quality_report.md`, `stage5_quality_checks.json`, `stage5_group_summary.csv` and `stage5_rankings.csv`.
+- **Why:** spec 9.18's completion evidence for Stage 5 is "group explanations and an eligible ranking table". The report holds both, with every number computed by the build rather than typed in.
+- **Key concept:** *a name is bolted to a membership, not to a number*. KMeans numbers groups arbitrarily, so "group 0" means nothing by itself. The names file stores the route lists you inspected, and the build attaches a name only if the frozen groups contain **exactly** those routes; otherwise it stops. Like a name tag that only fits the person it was made for.
+- **Decisions:**
+  - Inputs are verified as in Stage 2: the Stage 2 tables against the Stage 3 manifest, and each GTFS ZIP's sha256 against the register, after which the extracted files are read. **Answer to your question:** Stage 2 does exactly this (`build_stage2.py` lines 95–99 hash the ZIP; line 124 opens `extracted/`). The extracted `.txt` files are not re-hashed in either stage, which is listed in the report's limitations. Stage 2 is unchanged.
+  - The report adds a **computed** knife-edge sentence (Saturday dropped at 0.812, Sunday kept at 0.798, the two correlate 0.951) and states the k = 2 / k = 3 near tie, both in the summary and in section 4.
+  - After the connection dropped, a fresh fit confirmed that `group_names.json` matches the inspected 67 + 56 routes exactly.
+  - **Three report bugs were fixed before the report was accepted** (none affected any result):
+    - numeric column headers in the gate-sensitivity pivot;
+    - list cells (group sizes) breaking the table helper;
+    - gate counts printed as decimals, and weekday rides shown in unlabelled log1p units (8.058 ≈ 3,158 rides/day).
+- **Results:**
+  - **Groups:** 123 routes grouped (67 + 56); 5 of 128 in the ridership window ungrouped, each with a reason (10, 130: no development-period days; 1001, 128, 19: ridership-only identifiers).
+  - **Rankings:** reference period ranks W 125 / A 92 / U 86; the development period ranks W 123 / **A 0** / U 86; identities all hold.
+  - **Artifact:** `route_groups.joblib` is 1,237 bytes; the reload is exact.
+  - **Overlap:** the default version's top pairs include express routes nested in their local routes (49/X49, 4/X4, 9/X9).
+  - **Integration test** (`test_stage5_integration.py`, 7 tests) passes. It covers artifact size and sha, data-product hashes, exact reload, names equal to memberships, one membership row per route, ranking identities, and an unchanged Stage 4a bundle.
+- **Interview Q:** *"Why not just store 'group 0 = Higher-demand routes' in the code?"* Because group numbers aren't stable facts. A new library version or data fix could swap them, and the label would then describe the wrong routes without any error. Tying the name to the exact membership turns that silent mistake into a stopped build.
+
+## Step 52: Reproducibility and the mutation check
+- **Built:** a second full run, compared hash by hash with the first, and three planted bugs in scratch copies of `analytics/` (never in the project files).
+- **Why:** "the code looks right" isn't evidence. Identical reruns show the outputs depend only on the inputs and settings, and a test that still passes with its rule broken isn't protecting that rule.
+- **Key concept:** *a test is only as good as the bug it catches*. Bug 2 below shows why that matters: a whole set of tests can pass while missing a real mistake.
+- **Results:**
+  - **Reproducibility:** `route_groups.joblib`, all 5 data CSVs and both committed summary CSVs are **byte-identical** across the two runs (artifact `33d2d42a9b77cbe4`).
+  - **Mutation check (your three bugs):**
+
+    | planted bug | caught by | still passing |
+    |---|---|---|
+    | 1. the imputer median includes structural zeros | `test_structural_zeros_do_not_affect_the_filled_median`, `test_structural_zeros_stay_zero_and_only_missing_values_are_filled` | 31 |
+    | 2. overlap counts ignore `geometry_version` | `test_two_versions_together_give_the_same_results_as_each_version_separately` | 32 |
+    | 3. zero-day day-type rows dropped from the ranking | `test_weekday_only_route_gets_saturday_and_sunday_rows_with_zero_days_and_missing_sums`, `test_zero_day_reason_separates_no_scheduled_service_from_no_ridership_record` | 31 |
+
+  - **Bug 2 was caught only by your two-version test.** Every single-version overlap test still passed, because with one version, keying by stop alone happens to give the right answer. Without the test you asked for in Step 49, this bug would have gone unnoticed, and a future run combining versions would have mixed timetables.
+- **Interview Q:** *"All your tests passed. How do you know they're good tests?"* I broke the code on purpose in three specific ways and checked that the intended test failed each time. One bug slipped past every test except one that was written specifically for it, which shows that "all tests pass" says nothing about cases no test covers.

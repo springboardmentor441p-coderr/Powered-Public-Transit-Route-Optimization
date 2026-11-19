@@ -1,0 +1,217 @@
+{
+  "artifact_version": "stage5-1.0.0",
+  "created_at": "2026-11-19T10:03:56+00:00",
+  "git_commit": "c673f04+uncommitted",
+  "code": "analytics/groups/build_stage5.py",
+  "settings": {
+    "_comment": "Stage 5 settings: route groups and ranking (spec 9.7, 9.11, 9.12, 9.18). Fixed BEFORE any profile, cluster or ranking result is read. The spec wins where it differs from the mentor's notebook; the notebook's rules are recomputed for comparison only. Changing a value means a new evaluated version.",
+    "artifact_version": "stage5-1.0.0",
+    "seed": 42,
+    "input": {
+      "table": "expanded_matched_utilization.csv",
+      "daytypes": [
+        "W",
+        "A",
+        "U"
+      ],
+      "_daytype_note": "Reported W/A/U daytype: profiles and rankings describe the past, so the reported label is allowed here (unlike forecasting)."
+    },
+    "periods": {
+      "development": [
+        "2025-11-23",
+        "2026-03-31"
+      ],
+      "_development_note": "Clustering profile period (spec 9.11): the matched training period. Groups are fitted and named on this period only.",
+      "sensitivity_halves": [
+        [
+          "2025-11-23",
+          "2026-01-26"
+        ],
+        [
+          "2026-01-27",
+          "2026-03-31"
+        ]
+      ],
+      "ranking_periods": {
+        "full_matched_window": [
+          "2025-11-23",
+          "2026-07-31"
+        ],
+        "development": [
+          "2025-11-23",
+          "2026-03-31"
+        ]
+      },
+      "reference_ranking_period": "full_matched_window",
+      "_ranking_note": "Spec 9.7.2: ranking counts apply to the displayed ranking period, separate from the development profile period. The full matched window has 35 Saturdays (the development period has 18, so no Saturday can pass the 20-day gate there). It contains the June-July replay period, so it is a historical-analysis-mode table: replay mode must recompute rankings from revealed history only (Stage 7)."
+    },
+    "gates": {
+      "ranking_min_observed_days": 20,
+      "cluster_min_weekday_days": 20,
+      "cluster_min_weekend_days": 8,
+      "_gates_note": "Spec 9.7.2 CTA reference/trial values, not validated sample sizes. Distinct matched service dates within the period. Ranking and clustering gates are applied independently."
+    },
+    "rankings": {
+      "views": {
+        "observed_daily_demand_rank": {
+          "value": "mean_daily_rides",
+          "meaning": "larger observed daily demand"
+        },
+        "rides_per_trip_rank": {
+          "value": "rides_per_scheduled_trip",
+          "meaning": "more turnover relative to planned trips"
+        },
+        "service_productivity_metric_rank": {
+          "value": "rides_per_scheduled_hour",
+          "meaning": "higher planned-service productivity under this measure"
+        }
+      },
+      "direction": "descending within a day type",
+      "ties": "preserved (equal values share the lowest rank)",
+      "ratio_rule": "ratio of sums over the same matched dates; positive denominator required; hours ratio unavailable if any included day has incomplete durations",
+      "gate_sensitivity_values": [
+        8,
+        12,
+        16,
+        20
+      ],
+      "not_built_yet": {
+        "forecast_demand_service_review": "needs served forecasts from the replay (Stage 7)"
+      }
+    },
+    "clustering": {
+      "candidates_in_priority_order": [
+        "mean_weekday_rides",
+        "weekday_rides_cv",
+        "saturday_to_weekday_rides_ratio",
+        "sunday_holiday_to_weekday_rides_ratio",
+        "mean_weekday_scheduled_trips",
+        "weekday_rides_per_scheduled_hour",
+        "mean_weekday_trip_duration_minutes"
+      ],
+      "log1p_features": [
+        "mean_weekday_rides",
+        "mean_weekday_scheduled_trips"
+      ],
+      "min_feature_availability": 0.9,
+      "max_abs_spearman": 0.8,
+      "_selection_note": "Rule: drop a candidate available for fewer than 90% of base-eligible routes; then for each pair with |Spearman rho| >= 0.8 drop the one later in the priority list.",
+      "weekend_service_status": {
+        "source": "descriptive schedule (expanded_scheduled_route_day_service.csv), development period; day type from the reported date-level daytype",
+        "no_scheduled_service": "0 scheduled trips on every date of that day type -> ratio is a structural zero (no buses ran; not a missing observation)",
+        "insufficient_observations": "service scheduled but fewer than cluster_min_weekend_days matched days -> ratio unavailable -> median of routes with that service",
+        "available": "at least cluster_min_weekend_days matched days -> measured ratio"
+      },
+      "_availability_note": "min_feature_availability counts only truly unavailable values; structural zeros are known values.",
+      "imputation": "median of development profiles that have that service (fitted on development profiles only)",
+      "scaler": "StandardScaler",
+      "kmeans": {
+        "n_init": 10,
+        "k_range": [
+          2,
+          6
+        ],
+        "stability_seeds": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "min_group_routes": 5,
+      "silhouette_tolerance": 0.02,
+      "_k_rule": "Among k whose smallest group has >= 5 routes, choose the smallest k within 0.02 of the best silhouette; if none passes, routes stay ungrouped.",
+      "group_names": "added only after inspection and your approval (analytics/config/group_names.json); group numbers are not an order of efficiency"
+    },
+    "overlap": {
+      "geometry_version": "GTFS archive (snapshot_id)",
+      "trip_scope": "bus trips whose service is active on at least one of the archive's applied (selected) dates",
+      "stop_key": "stop_id as a string, scoped to its archive",
+      "default_review_version": "archive applied on the development period's last day",
+      "interpretation": "corridor review only: shared stop IDs are not merge/split evidence (no direction, walking access, transfers or journeys)"
+    },
+    "notebook_comparison": {
+      "population": "forecast-time feature rows with recorded rides, 2025-11-24..2026-03-31",
+      "min_weekdays": 20,
+      "min_saturdays": 8,
+      "min_sundays": 8,
+      "min_cluster_routes": 5,
+      "min_rank_dates": 20,
+      "reported_valid_profiles": 86,
+      "reported_training_routes": 123
+    }
+  },
+  "group_names": {
+    "0": "Higher-demand, seven-day routes",
+    "1": "Lower-demand routes, often with limited or no weekend service"
+  },
+  "features": [
+    "mean_weekday_rides",
+    "weekday_rides_cv",
+    "sunday_holiday_to_weekday_rides_ratio",
+    "weekday_rides_per_scheduled_hour",
+    "mean_weekday_trip_duration_minutes"
+  ],
+  "k": 2,
+  "file": {
+    "file": "artifacts/stage5/route_groups.joblib",
+    "uncompressed_bytes": 2149,
+    "compressed_bytes": 1237,
+    "compress": 3,
+    "sha256": "33d2d42a9b77cbe4b1ef79bb860890fb5928ed708def486abd1697991c48c478",
+    "under_limit": true
+  },
+  "reload_exact": true,
+  "data_products": {
+    "data_version": "cta_ref__r20261113__gtfs8__to20260731/groups__dev20251123_20260331",
+    "settings_sha256": "7c945470be0f480a4cb79b1012d019512eba47a352bd1a86699848b710a70b1b",
+    "names_sha256": "7104d7cde764d02b56a409a2b3fedadf7b3b32e87ee42cc13251a5b617e77a93",
+    "outputs": {
+      "expanded_utilization_profiles.csv": {
+        "rows": 744,
+        "columns": 24,
+        "sha256": "d4d394cd43bcbcbe6316587ed5800e4376d0663260dd20d98359a8c70416daed"
+      },
+      "route_profiles.csv": {
+        "rows": 123,
+        "columns": 20,
+        "sha256": "df1811b76218135d564bc06ec7a00a433c760d5ad243ad38681a700ba736e2b9"
+      },
+      "route_group_membership.csv": {
+        "rows": 128,
+        "columns": 4,
+        "sha256": "a12881ca41ff8917853cc9c2d5c5c30d995498d19593491a6b9eaaeb68bebef2"
+      },
+      "route_stop_coverage.csv": {
+        "rows": 988,
+        "columns": 7,
+        "sha256": "5588822fe671820a2991660460d5e8273b1c2ff01b62900ade283a3366af4984"
+      },
+      "route_stop_overlap.csv": {
+        "rows": 5720,
+        "columns": 11,
+        "sha256": "7688353b4e74f3264e056203250aa0a29b764d4f95b031a9d74b9dab767a65bd"
+      }
+    },
+    "inputs": {
+      "expanded_matched_utilization.csv": "7270dba7ff36073e2d1b7a56d84e7f6a6dd71fac565dba3a62df0ceaf91994fb",
+      "expanded_scheduled_route_day_service.csv": "5c8790f794e6c95bdb765c75b9d0e5ed39b6ade3ac88635cf193599882518a60",
+      "expanded_ridership_without_schedule.csv": "c582421d1f2335924b24efa03efac1fbe6edfbed0ac0f26c35282fce8ddfaa8d"
+    }
+  },
+  "default_overlap_version": "mdb-389-202603260020",
+  "profile_period": [
+    "2025-11-23",
+    "2026-03-31"
+  ],
+  "runtime": {
+    "python": "3.12.10",
+    "pandas": "3.1.1",
+    "numpy": "2.5.4",
+    "scikit-learn": "1.9.1",
+    "joblib": "1.6.0",
+    "duckdb": "2.0.0",
+    "threadpoolctl": "3.8.0"
+  }
+}
