@@ -1,0 +1,191 @@
+{
+  "model_version": "v3.8-prototype",
+  "missing_history_policy": "Option 2 (Impute missing 28d lag from 7/14/21d mean + availability indicator)",
+  "demand_only": {
+    "counts": {
+      "total_eligible": 3036,
+      "withheld_incomplete_history": 0,
+      "train": 1694,
+      "validation": 671,
+      "test": 671
+    },
+    "baselines": {
+      "last_week_d7": {
+        "validation": {
+          "rows": 671,
+          "mae": 998.45,
+          "rmse": 1350.73,
+          "wape_pct": 7.8
+        },
+        "test": {
+          "rows": 671,
+          "mae": 946.6,
+          "rmse": 1287.2,
+          "wape_pct": 7.74
+        }
+      },
+      "seasonal_4w_mean": {
+        "validation": {
+          "rows": 671,
+          "mae": 807.94,
+          "rmse": 1079.21,
+          "wape_pct": 6.32
+        },
+        "test": {
+          "rows": 671,
+          "mae": 788.92,
+          "rmse": 1068.15,
+          "wape_pct": 6.45
+        }
+      }
+    },
+    "models": {
+      "ridge": {
+        "artifact_path": "C:\\Users\\priya\\Downloads\\RouteRanker-Complete-Project\\route-ranker\\artifacts\\demand_only_ridge.joblib",
+        "validation": {
+          "rows": 671,
+          "mae": 818.29,
+          "rmse": 1063.34,
+          "wape_pct": 6.4
+        },
+        "test": {
+          "rows": 671,
+          "mae": 819.57,
+          "rmse": 1073.17,
+          "wape_pct": 6.7
+        }
+      },
+      "random_forest": {
+        "artifact_path": "C:\\Users\\priya\\Downloads\\RouteRanker-Complete-Project\\route-ranker\\artifacts\\demand_only_random_forest.joblib",
+        "validation": {
+          "rows": 671,
+          "mae": 816.53,
+          "rmse": 1101.52,
+          "wape_pct": 6.38
+        },
+        "test": {
+          "rows": 671,
+          "mae": 825.62,
+          "rmse": 1111.2,
+          "wape_pct": 6.75
+        }
+      },
+      "xgboost": {
+        "artifact_path": "C:\\Users\\priya\\Downloads\\RouteRanker-Complete-Project\\route-ranker\\artifacts\\demand_only_xgboost.joblib",
+        "validation": {
+          "rows": 671,
+          "mae": 816.08,
+          "rmse": 1103.46,
+          "wape_pct": 6.38
+        },
+        "test": {
+          "rows": 671,
+          "mae": 819.36,
+          "rmse": 1111.91,
+          "wape_pct": 6.7
+        }
+      }
+    },
+    "selected_serving_model": "xgboost"
+  },
+  "matched_service": {
+    "counts": {
+      "total_eligible": 2510,
+      "withheld_incomplete_history": 0,
+      "train": 1290,
+      "validation": 610,
+      "test": 610
+    },
+    "baselines": {
+      "last_week_d7": {
+        "validation": {
+          "rows": 610,
+          "mae": 1094.82,
+          "rmse": 1416.59,
+          "wape_pct": 7.8
+        },
+        "test": {
+          "rows": 610,
+          "mae": 1038.33,
+          "rmse": 1349.98,
+          "wape_pct": 7.74
+        }
+      },
+      "seasonal_4w_mean": {
+        "validation": {
+          "rows": 610,
+          "mae": 886.17,
+          "rmse": 1131.84,
+          "wape_pct": 6.31
+        },
+        "test": {
+          "rows": 610,
+          "mae": 865.36,
+          "rmse": 1120.23,
+          "wape_pct": 6.45
+        }
+      }
+    },
+    "models": {
+      "ridge": {
+        "artifact_path": "C:\\Users\\priya\\Downloads\\RouteRanker-Complete-Project\\route-ranker\\artifacts\\matched_service_ridge.joblib",
+        "validation": {
+          "rows": 610,
+          "mae": 856.27,
+          "rmse": 1085.99,
+          "wape_pct": 6.1
+        },
+        "test": {
+          "rows": 610,
+          "mae": 820.59,
+          "rmse": 1055.52,
+          "wape_pct": 6.11
+        }
+      },
+      "random_forest": {
+        "artifact_path": "C:\\Users\\priya\\Downloads\\RouteRanker-Complete-Project\\route-ranker\\artifacts\\matched_service_random_forest.joblib",
+        "validation": {
+          "rows": 610,
+          "mae": 893.89,
+          "rmse": 1160.27,
+          "wape_pct": 6.37
+        },
+        "test": {
+          "rows": 610,
+          "mae": 916.8,
+          "rmse": 1178.02,
+          "wape_pct": 6.83
+        }
+      },
+      "xgboost": {
+        "artifact_path": "C:\\Users\\priya\\Downloads\\RouteRanker-Complete-Project\\route-ranker\\artifacts\\matched_service_xgboost.joblib",
+        "validation": {
+          "rows": 610,
+          "mae": 898.11,
+          "rmse": 1172.57,
+          "wape_pct": 6.4
+        },
+        "test": {
+          "rows": 610,
+          "mae": 940.55,
+          "rmse": 1204.36,
+          "wape_pct": 7.01
+        }
+      }
+    },
+    "selected_serving_model": "ridge"
+  },
+  "clustering": {
+    "k": 3,
+    "clustered_routes": 10,
+    "silhouette_score": 0.2935,
+    "features": [
+      "mean_weekday_rides",
+      "weekday_rides_cv",
+      "sat_to_weekday_ratio",
+      "sun_to_weekday_ratio",
+      "mean_weekday_trips",
+      "weekday_rides_per_hour"
+    ]
+  }
+}

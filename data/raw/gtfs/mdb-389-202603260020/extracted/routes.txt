@@ -1,0 +1,12 @@
+route_id,route_short_name,route_long_name,route_type
+R_22,22,Clark,3
+R_8,8,Halsted,3
+R_79,79,79th,3
+R_66,66,Chicago,3
+R_49,49,Western,3
+R_9,9,Ashland,3
+R_151,151,Sheridan,3
+R_36,36,Broadway,3
+R_146,146,Inner Lake Shore/Michigan Exp,3
+R_20,20,Madison,3
+R_169,169,69th-UPS Express,3

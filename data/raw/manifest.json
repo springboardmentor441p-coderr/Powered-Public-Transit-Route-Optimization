@@ -1,0 +1,29 @@
+[
+  {
+    "dataset_id": "cta_daily_ridership",
+    "snapshot_id": "2026-07-31-sample",
+    "source_url": "https://data.cityofchicago.org/Transportation/CTA-Ridership-Bus-Routes-Daily-Totals-by-Route/jyb9-n7fm",
+    "catalog_retrieved_date": "2026-07-31",
+    "file_path": "data/raw\\ridership\\CTA_Ridership_Bus_Routes_Daily_Sample.csv",
+    "sha256": "7c18fa9ebd1bf7fff20ca2fecad3d1a29cd23e3129c99fa6fa7e6c49df993430",
+    "byte_size": 85428
+  },
+  {
+    "dataset_id": "cta_gtfs_schedule",
+    "snapshot_id": "mdb-389-202511230128",
+    "source_url": "https://files.mobilitydatabase.org/mdb-389/mdb-389-202511230128/mdb-389-202511230128.zip",
+    "catalog_retrieved_date": "2025-11-23",
+    "file_path": "data/raw\\gtfs\\mdb-389-202511230128\\original.zip",
+    "sha256": "3132343a0a494cfd2da3b8039a8a4b34aa7e8945b481bb1dd01e12b8e9e4edf0",
+    "byte_size": 40329
+  },
+  {
+    "dataset_id": "cta_gtfs_schedule",
+    "snapshot_id": "mdb-389-202603260020",
+    "source_url": "https://files.mobilitydatabase.org/mdb-389/mdb-389-202603260020/mdb-389-202603260020.zip",
+    "catalog_retrieved_date": "2026-03-26",
+    "file_path": "data/raw\\gtfs\\mdb-389-202603260020\\original.zip",
+    "sha256": "4351d5032e8060b8103fa8d365fe4b6cfd5d1c46e8a1c7db5d9ef331cb92b9e7",
+    "byte_size": 42321
+  }
+]

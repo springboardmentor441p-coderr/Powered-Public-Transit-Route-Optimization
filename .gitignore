@@ -1,0 +1,33 @@
+# Python Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache & compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Node / Frontend dependencies & build
+frontend/node_modules/
+node_modules/
+frontend/dist/
+dist/
+build/
+.npm
+
+# Logs and environment variables
+*.log
+.env
+
+# Editor & IDE files
+.vscode/
+.idea/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

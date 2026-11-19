@@ -1,0 +1,35 @@
+{
+  "demand_features": [
+    "route",
+    "day_of_week",
+    "month",
+    "is_weekend",
+    "is_sunday_holiday_daytype",
+    "rides_1_day_before",
+    "rides_7_days_before",
+    "rides_14_days_before",
+    "rides_21_days_before",
+    "rides_28_days_before",
+    "rides_28_days_before_available",
+    "available_same_weekday_observations",
+    "past_four_same_weekdays_mean"
+  ],
+  "service_features": [
+    "route",
+    "day_of_week",
+    "month",
+    "is_weekend",
+    "is_sunday_holiday_daytype",
+    "rides_1_day_before",
+    "rides_7_days_before",
+    "rides_14_days_before",
+    "rides_21_days_before",
+    "rides_28_days_before",
+    "rides_28_days_before_available",
+    "available_same_weekday_observations",
+    "past_four_same_weekdays_mean",
+    "scheduled_trips",
+    "scheduled_service_hours"
+  ],
+  "target": "rides"
+}
