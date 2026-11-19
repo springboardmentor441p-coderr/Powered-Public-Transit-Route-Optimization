@@ -15,11 +15,13 @@ import { EvaluationData, fmtInt, fmtNum, fmtPct } from "../api";
 import { PageHeader } from "./PageHeader";
 
 interface EvaluationPageProps {
+  topSlot?: React.ReactNode;
   evaluation: EvaluationData;
   onSelectRoute: (route: string) => void;
 }
 
 export const EvaluationPage: React.FC<EvaluationPageProps> = ({
+  topSlot,
   evaluation,
   onSelectRoute,
 }) => {
@@ -72,6 +74,8 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
           </div>
         }
       />
+
+      {topSlot}
 
       {/* Explicit October Limitation Banner (Always visible for transparency) */}
       <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-950">

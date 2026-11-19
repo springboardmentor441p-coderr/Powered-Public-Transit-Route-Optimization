@@ -9,19 +9,22 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.data import load_app_data
-from backend.app.routers import evaluation, gtfs, overview, review, routes, scenarios
+from backend.app.routers import evaluation, gtfs, history, overview, replay, review, routes, scenarios
+from backend.app.runtime_store import RuntimeStore
 
 
-def create_app(app_data_dir: Path | None = None) -> FastAPI:
+def create_app(app_data_dir: Path | None = None, runtime_dir: Path | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         app.state.store = load_app_data(app_data_dir)
+        app.state.runtime = RuntimeStore(runtime_dir)
         yield
+        app.state.runtime.close()
 
     app = FastAPI(
         title="Manhattan Bus Transit Optimization API",
         version="1.0.0",
-        description="Read-only analytics, scenario calculation, and safe GTFS upload inspection API backed exclusively by app_data/.",
+        description="Analytics, historical replay, scenario calculation and safe GTFS upload inspection. Reads app_data/ and the frozen model; writes only replay sessions and saved scenarios to backend/runtime/.",
         lifespan=lifespan,
     )
 
@@ -46,6 +49,8 @@ def create_app(app_data_dir: Path | None = None) -> FastAPI:
     app.include_router(scenarios.router)
     app.include_router(evaluation.router)
     app.include_router(gtfs.router)
+    app.include_router(history.router)
+    app.include_router(replay.router)
 
     @app.get("/api/health")
     def health():

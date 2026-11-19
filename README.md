@@ -75,7 +75,7 @@ This repository contains the end-to-end transit analytics pipeline, exploratory 
 
 ## 🛠️ Environment & Kernel Setup
 
-**Tested Versions:** `Python 3.13.2` and `Node.js v22.19.0` (Python `3.10+` and Node `18+` supported; `requirements.txt` pins exact package versions used to save the `scikit-learn`/`joblib` models).
+**Tested Versions:** `Python 3.13.2` and `Node.js v22.19.0` (Python `3.12+` and Node `18+` supported, because `scipy==1.18.1` needs Python 3.12; `requirements.txt` pins exact package versions used to save the `scikit-learn`/`joblib` models).
 
 1. **Create and activate your Python environment:**
    ```bash
@@ -182,14 +182,15 @@ python -m pytest tests/ backend/tests/ -v
 ```
 
 **What runs in a fresh clone vs with rebuilt `data/`:**
-- **Runs in every fresh clone (no `data/` required):** All synthetic unit tests (`build_schedule` hour/DST/service-hour math, evaluation metrics, overlap classification), `test_load_dataset_test_isolation_enforcement` (uses temporary synthetic files via `monkeypatch`/`tmp_path`, never touching real `test_features.parquet` or `reports/test_runs.log`), all committed artifact/model/`routeranker.ipynb` verification checks (**29 passed** in `tests/`), and **28 of 29** FastAPI backend tests reading committed `app_data/`.
+- **Runs in every fresh clone (no `data/` required):** All synthetic unit tests (`build_schedule` hour/DST/service-hour math, evaluation metrics, overlap classification), `test_load_dataset_test_isolation_enforcement` (uses temporary synthetic files via `monkeypatch`/`tmp_path`, never touching real `test_features.parquet` or `reports/test_runs.log`), all committed artifact/model/`routeranker.ipynb` verification checks (**29 passed** in `tests/`), and **40 of 41** FastAPI backend tests reading committed `app_data/` and the committed frozen model.
 - **Skipped automatically unless `data/` is present (`27` tests in `tests/`, `1` test in `backend/tests/test_api.py`):** Tests validating raw GTFS feeds (`data/raw/gtfs/manhattan/`) and rebuilt `.parquet` splits (`schedule_hourly`, `matched_hourly`, `route_profiles`, `train_features`, `val_features`, `test_features`, `clustering_features`), plus the optional `2026-10-17` Manhattan GTFS upload benchmark test.
 
 - [`tests/test_milestone1_steps6_9.py`](tests/test_milestone1_steps6_9.py) (27 tests): GTFS integrity, DST night handling, Memorial Day Sunday equivalence, outage exclusions, service-hours calculations.
 - [`tests/test_milestone2.py`](tests/test_milestone2.py) (10 tests): Generated figures/tables existence, route overlap ordering, stop coverage metrics, data split sizes, pipeline transformation, clustering correlations, baseline forecast hurdles, and `notebooks/routeranker.ipynb` integrity.
 - [`tests/test_evaluate.py`](tests/test_evaluate.py) (14 tests): Shared evaluation metrics, zero-demand WAPE handling, test-set isolation enforcement, canonical time-band labels, validation baseline hurdles, Step 2 forecasting checks, Step 3 classification checks, Step 4 clustering, Step 5 final outputs, Step 6 October evaluation, and Steps 7–9 review/reallocation checks.
 - [`backend/tests/test_api.py`](backend/tests/test_api.py) (29 parametrized tests): All 13 FastAPI endpoints, scenario `-50%..+50%` bounds and invalid route/day/time-band rejections, `-10%` stop-exclusivity cap & warning, null-vs-zero missing-data handling, GTFS Zip Slip / `300 MB` decompression-bomb / `50 MB` upload limits, real `2026-10-17` Manhattan GTFS check, and report-number parity (`11.69%` October baseline and `36.1% / 23.1%` 40-route PCA).
-- [`frontend/e2e/app.spec.ts`](frontend/e2e/app.spec.ts): Playwright E2E walkthrough across all 7 UI screens including live GTFS upload (uses Playwright's bundled Chromium after `npx playwright install chromium`; **requires an active internet connection** because interactive maps fetch tiles from OpenStreetMap).
+- [`backend/tests/test_replay_and_history.py`](backend/tests/test_replay_and_history.py) (12 tests): the replay gives the same forecasts as the saved October check, a longer reporting delay hides recent lags, recorded boardings stay hidden until the delay has passed, saved forecasts are never duplicated or overwritten, the replay stops on 31 October and reset keeps the old session, the Aug–Sep test period cannot be replayed, ranking eligibility and ties, route comparison ratios, and single-day scenarios (fixed riders, demand stress, saving).
+- [`frontend/e2e/app.spec.ts`](frontend/e2e/app.spec.ts): Playwright E2E walkthrough across all 9 UI screens, including compare routes, ranking, a replay that advances two days, saving a scenario, and live GTFS upload (uses Playwright's bundled Chromium after `npx playwright install chromium`). Map tiles need internet to show, but missing tiles no longer fail the test.
 
 ```bash
 # Build frontend & run Playwright E2E walkthrough (requires Chromium installed + internet for map tiles):
@@ -221,5 +222,35 @@ npm run test:e2e
    python -m src.export_app_data
    ```
    Copies finished tables into `app_data/` alongside `version.json`, compact hourly distributions, and route geometries without touching `test_features.parquet` or `reports/test_runs.log`.
+
+### Screens
+
+| Tab | What it shows |
+| --- | --- |
+| Overview & Network | Data coverage, splits, cleaning, daily and hourly patterns, and a network map with the selected route highlighted |
+| Route Detail | Daily boardings for the chosen dates and day type, route profile, map, hourly pattern, forecast diagnostics |
+| Compare Routes | 2 to 4 routes side by side: profile, period ratios, time-of-day boardings per service hour, hourly and daily boardings, shared stops, map |
+| Review & Ranking | Named ranking with measure, order, day type, minimum observed days and peer group, a sensitivity table for the minimum-days rule, then the Step 7 review list |
+| Route Groups | K-Means groups, PCA view, stability checks, group map |
+| Forecasts & Evaluation | In replay mode, a dated forecast card for the selected route (predicted daily boardings, scheduled departures, recorded boardings once released, history used through) that can be sent to a scenario; then validation, the single logged test run, and the October check |
+| Replay | Virtual clock over 18–31 October 2026 with start, pause, advance one day, reset, start date, speed and reporting delay |
+| Scenarios | Single-day scenario (baseline date, published or predicted demand, trip change, demand stress, baseline vs scenario with the change, save) plus the time-band calculator and budget-neutral plan |
+| GTFS Upload | Safe inspection of an uploaded GTFS zip |
+
+A bar under the navigation sets the mode (historical observations or historical replay), route, from and through dates, and day type for the route detail, comparison and ranking screens. In replay mode a banner shows the virtual date on every screen, and observed boardings after the replay's reveal date are hidden by the backend. A legend at the bottom labels each kind of value: published boardings, scheduled service, predicted boardings (experimental) and scenario assumptions.
+
+### Replay information policy
+
+- **Issue time:** 00:00 on the virtual date, before the first scheduled trip.
+- **Horizon:** the same service day, one forecast per scheduled route-hour.
+- **Reporting delay:** chosen per session (1, 7, 14 or 21 days). On virtual day D, only boardings dated D minus the delay or earlier can feed the model's lags. The model's lags are 7, 14, 21 and 28 days, so any delay up to 7 days gives the same inputs as the saved October check. The real MTA hourly file was about 19 days behind when it was downloaded, so the 1-day default is a demo assumption; 21 days is the closer setting.
+- **Schedule:** GTFS archive captured 2026-10-17, which is before every replay issue date.
+- **Model:** `models/final_forecaster.joblib` (trained 2026-01-04 to 2026-07-31), opened read-only and never refitted.
+- **Saving:** each forecast row is saved once with its issue time, model version, schedule snapshot, latest boardings date used and status, keyed by session, date, route and hour. Recorded boardings for a date are returned only after the clock has passed that date by the delay.
+- **Window:** only 18–31 October 2026 can be replayed. The Aug–Sep test period is not replayed, so the test set is not scored again.
+
+Replay sessions and saved scenarios are stored in a small SQLite file in `backend/runtime/` (gitignored). Deleting that folder clears them. Ranking settings (measures, minimum observed days, trip rule) are in `app_data/ranking_config.json`.
+
+New endpoints: `GET /api/routes/{route}/daily`, `GET /api/compare`, `GET /api/rankings`, `GET|POST /api/replays`, `GET /api/replays/{id}`, `GET /api/replays/{id}/forecasts`, `POST /api/replays/{id}/control`, `POST /api/scenarios/day`, `GET /api/scenarios/saved`. History endpoints accept `replay_id` to apply the replay's reveal date.
 
 

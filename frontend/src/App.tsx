@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   api,
+  HistoryQuery,
+  ReplayState,
   EvaluationData,
   GroupsData,
   NetworkDailyRow,
@@ -9,7 +11,21 @@ import {
   ReviewCell,
   RouteSummary,
 } from "./api";
+import { ComparePage } from "./components/ComparePage";
+import {
+  ContextBar,
+  DEFAULT_CONTEXT,
+  ProvenanceLegend,
+  ReplayBanner,
+  ViewContext,
+} from "./components/ContextBar";
+import { DayScenarioPanel } from "./components/DayScenarioPanel";
 import { EvaluationPage } from "./components/EvaluationPage";
+import { ForecastIssuePanel } from "./components/ForecastIssuePanel";
+import { NetworkMapPanel } from "./components/NetworkMapPanel";
+import { RankingSection } from "./components/RankingSection";
+import { ReplayPage } from "./components/ReplayPage";
+import { RouteDailyPanel } from "./components/RouteDailyPanel";
 import { GtfsUploadPage } from "./components/GtfsUploadPage";
 import { OverviewPage } from "./components/OverviewPage";
 import { ReviewListPage } from "./components/ReviewListPage";
@@ -20,25 +36,67 @@ import { ScenariosPage } from "./components/ScenariosPage";
 type TabId =
   | "overview"
   | "route"
+  | "compare"
+  | "review"
   | "groups"
   | "evaluation"
-  | "review"
+  | "replay"
   | "scenarios"
   | "gtfs";
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: "overview", label: "Overview & Network" },
   { id: "route", label: "Route Detail" },
+  { id: "compare", label: "Compare Routes" },
+  { id: "review", label: "Review & Ranking" },
   { id: "groups", label: "Route Groups" },
-  { id: "evaluation", label: "Model Evaluation" },
-  { id: "review", label: "Review List" },
+  { id: "evaluation", label: "Forecasts & Evaluation" },
+  { id: "replay", label: "Replay" },
   { id: "scenarios", label: "Scenarios" },
   { id: "gtfs", label: "GTFS Upload" },
 ];
 
+const REPLAY_KEY = "routeranker.replaySession";
+
+function readStoredReplay(): string | null {
+  try {
+    return window.localStorage.getItem(REPLAY_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function storeReplay(id: string): void {
+  try {
+    window.localStorage.setItem(REPLAY_KEY, id);
+  } catch {
+    // storage blocked; the session still works until the page reloads
+  }
+}
+
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
-  const [selectedRoute, setSelectedRoute] = useState<string>("M15+");
+  const [ctx, setCtx] = useState<ViewContext>(DEFAULT_CONTEXT);
+  const selectedRoute = ctx.route;
+  const setSelectedRoute = useCallback(
+    (route: string) => setCtx((c) => ({ ...c, route })),
+    []
+  );
+
+  const [dayScenarioInit, setDayScenarioInit] = useState<{
+    date: string;
+    source: "observed" | "forecast";
+  }>({ date: "2026-10-20", source: "observed" });
+  const openDayScenario = (route: string, date: string, source: "observed" | "forecast") => {
+    setCtx((c) => ({ ...c, route }));
+    setDayScenarioInit({ date, source });
+    setActiveTab("scenarios");
+  };
+
+  const [replayId, setReplayId] = useState<string | null>(null);
+  const [replayState, setReplayState] = useState<ReplayState | null>(null);
+  const [replayBusy, setReplayBusy] = useState(false);
+  const [replayError, setReplayError] = useState<string | null>(null);
   const [scenarioInit, setScenarioInit] = useState({
     route: "M15+",
     dayGroup: "weekday",
@@ -110,6 +168,111 @@ export const App: React.FC = () => {
     setActiveTab("scenarios");
   };
 
+  // Opening the Replay tab turns on replay mode.
+  useEffect(() => {
+    if (activeTab === "replay" && ctx.mode !== "replay") {
+      setCtx((c) => ({ ...c, mode: "replay" }));
+    }
+  }, [activeTab, ctx.mode]);
+
+  // Find or create a replay session the first time replay mode is used.
+  useEffect(() => {
+    if (ctx.mode !== "replay" || replayId) return;
+    let cancelled = false;
+    const pick = async (): Promise<ReplayState> => {
+      const stored = readStoredReplay();
+      if (stored) {
+        try {
+          return await api.getReplay(stored, ctx.route);
+        } catch {
+          // stored session is gone; fall through
+        }
+      }
+      const list = await api.listReplays();
+      const latest = list.rows.find((r) => !r.replaced_by);
+      if (latest) return api.getReplay(latest.session_id, ctx.route);
+      return api.createReplay({ start_date: "2026-10-18", delay_days: 1, speed_seconds: 5 });
+    };
+    pick()
+      .then((st) => {
+        if (cancelled) return;
+        setReplayId(st.session.session_id);
+        storeReplay(st.session.session_id);
+        setReplayState(st);
+        setReplayError(null);
+      })
+      .catch((e) => !cancelled && setReplayError(e instanceof Error ? e.message : "Could not start a replay."));
+    return () => {
+      cancelled = true;
+    };
+  }, [ctx.mode, replayId, ctx.route]);
+
+  // Refresh replay state: once when the route changes, and every second while playing.
+  const playing = replayState?.session.status === "playing";
+  useEffect(() => {
+    if (ctx.mode !== "replay" || !replayId) return;
+    let cancelled = false;
+    const load = () =>
+      api
+        .getReplay(replayId, ctx.route)
+        .then((st) => !cancelled && setReplayState(st))
+        .catch((e) => !cancelled && setReplayError(e instanceof Error ? e.message : "Replay update failed."));
+    load();
+    if (!playing) return () => {
+      cancelled = true;
+    };
+    const t = window.setInterval(load, 1000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(t);
+    };
+  }, [ctx.mode, replayId, ctx.route, playing]);
+
+  const controlReplay = (body: {
+    action: string;
+    speed_seconds?: number;
+    start_date?: string;
+    delay_days?: number;
+  }) => {
+    if (!replayId) return;
+    setReplayBusy(true);
+    api
+      .controlReplay(replayId, body, ctx.route)
+      .then((st) => {
+        setReplayState(st);
+        setReplayError(null);
+        if (st.session.session_id !== replayId) {
+          setReplayId(st.session.session_id);
+          storeReplay(st.session.session_id);
+        }
+      })
+      .catch((e) => setReplayError(e instanceof Error ? e.message : "Replay control failed."))
+      .finally(() => setReplayBusy(false));
+  };
+
+  const inReplay = ctx.mode === "replay";
+  const revealedThrough = inReplay ? replayState?.information_policy.latest_revealed_date ?? null : null;
+  const historyQuery: HistoryQuery = useMemo(
+    () => ({
+      start: ctx.start,
+      end: ctx.end,
+      dayType: ctx.dayType,
+      replayId: inReplay ? replayId : null,
+      revealedThrough,
+    }),
+    [ctx.start, ctx.end, ctx.dayType, inReplay, replayId, revealedThrough]
+  );
+
+  const groupOptions = useMemo(() => {
+    const seen = new Map<number, string>();
+    routes.forEach((r) => {
+      if (r.group_id !== null && r.group_label) seen.set(r.group_id, r.group_label.split(":")[0]);
+    });
+    return Array.from(seen.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([id, label]) => ({ id, label }));
+  }, [routes]);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -145,7 +308,17 @@ export const App: React.FC = () => {
             ))}
           </nav>
         </div>
+        {inReplay ? (
+          <ReplayBanner
+            state={replayState}
+            busy={replayBusy}
+            error={replayError}
+            onControl={(action) => controlReplay({ action })}
+            onOpen={() => setActiveTab("replay")}
+          />
+        ) : null}
       </header>
+      {!loading && !error ? <ContextBar ctx={ctx} routes={routes} onChange={setCtx} /> : null}
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         {loading ? (
@@ -166,6 +339,17 @@ export const App: React.FC = () => {
                 hourlyJanSep={hourlyJanSep}
                 hourlyAugOct={hourlyAugOct}
                 onSelectRoute={handleSelectRoute}
+                topSlot={
+                  groups ? (
+                    <NetworkMapPanel
+                      geometries={groups.geometries}
+                      routes={routes}
+                      selectedRoute={selectedRoute}
+                      onPickRoute={setSelectedRoute}
+                      onOpenRoute={handleSelectRoute}
+                    />
+                  ) : null
+                }
               />
             ) : null}
 
@@ -175,6 +359,22 @@ export const App: React.FC = () => {
                 selectedRoute={selectedRoute}
                 onSelectRoute={setSelectedRoute}
                 onOpenScenario={handleOpenScenario}
+                topSlot={
+                  <RouteDailyPanel
+                    route={selectedRoute}
+                    query={historyQuery}
+                    geometryVersion={groups?.geometries.source_snapshot ?? null}
+                  />
+                }
+              />
+            ) : null}
+
+            {activeTab === "compare" ? (
+              <ComparePage
+                routes={routes}
+                primaryRoute={selectedRoute}
+                query={historyQuery}
+                onSelectRoute={handleSelectRoute}
               />
             ) : null}
 
@@ -186,6 +386,15 @@ export const App: React.FC = () => {
               <EvaluationPage
                 evaluation={evaluation}
                 onSelectRoute={handleSelectRoute}
+                topSlot={
+                  <ForecastIssuePanel
+                    inReplay={inReplay}
+                    state={replayState}
+                    route={selectedRoute}
+                    onStartReplay={() => setCtx((c) => ({ ...c, mode: "replay" }))}
+                    onUseInScenario={(route, date) => openDayScenario(route, date, "forecast")}
+                  />
+                }
               />
             ) : null}
 
@@ -196,6 +405,25 @@ export const App: React.FC = () => {
                 source={reviewMeta.source}
                 onSelectRoute={handleSelectRoute}
                 onOpenScenario={handleOpenScenario}
+                topSlot={
+                  <RankingSection
+                    query={historyQuery}
+                    groupOptions={groupOptions}
+                    onSelectRoute={handleSelectRoute}
+                  />
+                }
+              />
+            ) : null}
+
+            {activeTab === "replay" ? (
+              <ReplayPage
+                state={replayState}
+                busy={replayBusy}
+                error={replayError}
+                route={selectedRoute}
+                onControl={controlReplay}
+                onCompare={() => setActiveTab("compare")}
+                onScenario={(date) => openDayScenario(selectedRoute, date, "forecast")}
               />
             ) : null}
 
@@ -205,6 +433,14 @@ export const App: React.FC = () => {
                 initialRoute={scenarioInit.route}
                 initialDayGroup={scenarioInit.dayGroup}
                 initialTimeBand={scenarioInit.timeBand}
+                topSlot={
+                  <DayScenarioPanel
+                    routes={routes}
+                    initialRoute={selectedRoute}
+                    initialDate={dayScenarioInit.date}
+                    initialSource={dayScenarioInit.source}
+                  />
+                }
               />
             ) : null}
 
@@ -212,6 +448,7 @@ export const App: React.FC = () => {
           </>
         )}
       </main>
+      <ProvenanceLegend />
     </div>
   );
 };

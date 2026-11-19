@@ -28,6 +28,7 @@ import {
 import { PageHeader } from "./PageHeader";
 
 interface RouteDetailPageProps {
+  topSlot?: React.ReactNode;
   routes: RouteSummary[];
   selectedRoute: string;
   onSelectRoute: (route: string) => void;
@@ -35,6 +36,7 @@ interface RouteDetailPageProps {
 }
 
 export const RouteDetailPage: React.FC<RouteDetailPageProps> = ({
+  topSlot,
   routes,
   selectedRoute,
   onSelectRoute,
@@ -143,6 +145,8 @@ export const RouteDetailPage: React.FC<RouteDetailPageProps> = ({
           </div>
         }
       />
+
+      {topSlot}
 
       {error ? (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">

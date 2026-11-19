@@ -787,6 +787,20 @@ def _export_overview_and_version(net_meta: dict) -> None:
     )
 
 
+def _export_model_route_features() -> None:
+    """Static route inputs the frozen forecaster needs, so the replay can run it from app_data/.
+
+    Uses the same definition as training (src.predict._load_route_metadata):
+    is_sbs = route ends with '+', is_24h = route has trips at hour 3 in matched_hourly.
+    """
+    from src.predict import _load_route_metadata
+
+    meta = _load_route_metadata().sort_values("route")
+    meta[["route", "route_length_km", "stop_count", "is_sbs", "is_24h"]].to_csv(
+        APP_DATA_DIR / "model_route_features.csv", index=False
+    )
+
+
 def export_all() -> None:
     APP_DATA_DIR.mkdir(parents=True, exist_ok=True)
     matched_df = pd.read_parquet(DATA_PROC / "matched_hourly.parquet")
@@ -797,6 +811,7 @@ def export_all() -> None:
     geom_meta = _export_route_geometries(kept_routes)
     _export_route_tables(matched_df, oct_df)
     _export_october_hourly_forecast(oct_df)
+    _export_model_route_features()
     _export_groups_metadata()
     _export_evaluation_and_review_tables()
     _export_overview_and_version(net_meta)

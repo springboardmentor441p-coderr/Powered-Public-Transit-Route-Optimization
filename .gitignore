@@ -11,3 +11,6 @@ frontend/playwright-report/
 frontend/test-results/
 
 
+
+# Replay sessions and saved scenarios created while the app runs
+backend/runtime/

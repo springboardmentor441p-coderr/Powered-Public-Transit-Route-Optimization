@@ -1,7 +1,9 @@
 """Startup data loader for the FastAPI backend.
 
 Reads ONLY from app_data/ so the running app never touches raw data/,
-reports/, or test_features.parquet.
+reports/, or test_features.parquet. The one other file the backend opens is
+the frozen model (models/final_forecaster.joblib), read-only, for the replay
+(see backend/app/forecasting.py).
 """
 
 from __future__ import annotations
@@ -95,6 +97,9 @@ class AppDataStore:
     route_groups_k2_vs_k3: pd.DataFrame
     route_groups_dbscan: pd.DataFrame
     route_groups_pca_variance: pd.DataFrame
+    # Replay and ranking inputs
+    model_route_features: pd.DataFrame
+    ranking_config: dict[str, Any]
 
     @property
     def valid_routes(self) -> set[str]:
@@ -160,5 +165,7 @@ def load_app_data(data_dir: Path | None = None) -> AppDataStore:
         route_groups_k2_vs_k3=pd.read_csv(d / "route_groups_k2_vs_k3.csv"),
         route_groups_dbscan=pd.read_csv(d / "route_groups_dbscan.csv"),
         route_groups_pca_variance=pd.read_csv(d / "route_groups_pca_variance.csv"),
+        model_route_features=pd.read_csv(d / "model_route_features.csv"),
+        ranking_config=_read_json(d / "ranking_config.json"),
     )
 

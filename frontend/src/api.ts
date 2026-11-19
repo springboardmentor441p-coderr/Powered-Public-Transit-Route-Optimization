@@ -579,5 +579,380 @@ export const api = {
       body: form,
     });
   },
+
+  // ---- Observed history, comparison and rankings -------------------------
+  getRouteDaily: (route: string, ctx: HistoryQuery) =>
+    fetchJson<RouteDailyData>(
+      `/api/routes/${encodeURIComponent(route)}/daily?${historyQs(ctx)}`
+    ),
+  compareRoutes: (routes: string[], ctx: HistoryQuery) =>
+    fetchJson<CompareData>(
+      `/api/compare?routes=${routes.map(encodeURIComponent).join(",")}&${historyQs(ctx)}`
+    ),
+  getRankings: (params: {
+    indicator: string;
+    direction: "asc" | "desc";
+    day_type: string;
+    min_days?: number;
+    group_id?: number | null;
+    ctx: HistoryQuery;
+  }) => {
+    const q = new URLSearchParams({
+      indicator: params.indicator,
+      direction: params.direction,
+      day_type: params.day_type,
+    });
+    if (params.min_days) q.set("min_days", String(params.min_days));
+    if (params.group_id !== null && params.group_id !== undefined) q.set("group_id", String(params.group_id));
+    return fetchJson<RankingData>(`/api/rankings?${q.toString()}&${historyQs({ ...params.ctx, dayType: "all" })}`);
+  },
+
+  // ---- Replay -------------------------------------------------------------
+  listReplays: () => fetchJson<{ rows: ReplaySession[]; count: number }>("/api/replays?limit=5"),
+  createReplay: (payload: { start_date: string; delay_days: number; speed_seconds: number }) =>
+    fetchJson<ReplayState>("/api/replays", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }),
+  getReplay: (id: string, route?: string) =>
+    fetchJson<ReplayState>(
+      `/api/replays/${encodeURIComponent(id)}${route ? `?route=${encodeURIComponent(route)}` : ""}`
+    ),
+  controlReplay: (
+    id: string,
+    body: { action: string; speed_seconds?: number; start_date?: string; delay_days?: number },
+    route?: string
+  ) =>
+    fetchJson<ReplayState>(
+      `/api/replays/${encodeURIComponent(id)}/control${route ? `?route=${encodeURIComponent(route)}` : ""}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }
+    ),
+  getReplayForecasts: (id: string, route: string, targetDate: string) =>
+    fetchJson<{ count: number; rows: ReplayForecastRecord[]; provenance: string }>(
+      `/api/replays/${encodeURIComponent(id)}/forecasts?route=${encodeURIComponent(route)}&target_date=${targetDate}`
+    ),
+
+  // ---- Single-day scenarios ----------------------------------------------
+  runDayScenario: (payload: DayScenarioRequest) =>
+    fetchJson<DayScenarioResponse>("/api/scenarios/day", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }),
+  getSavedScenarios: () =>
+    fetchJson<{ count: number; rows: SavedScenario[]; source: string }>("/api/scenarios/saved"),
 };
+
+// ---------------------------------------------------------------------------
+// Shared view context (mode, route, dates, day type) used by several screens.
+// ---------------------------------------------------------------------------
+
+export const OBS_START = "2026-08-01";
+export const OBS_END = "2026-10-31";
+export const REPLAY_START = "2026-10-18";
+export const REPLAY_END = "2026-10-31";
+export const DAY_TYPES = ["Typical Weekday", "Typical Saturday", "Typical Sunday"] as const;
+
+export interface HistoryQuery {
+  start: string;
+  end: string;
+  dayType: string; // "all" or one of DAY_TYPES
+  replayId?: string | null;
+  revealedThrough?: string | null; // not sent; lets screens refetch when the replay reveals more days
+}
+
+function historyQs(ctx: HistoryQuery): string {
+  const q = new URLSearchParams({ start: ctx.start, end: ctx.end });
+  if (ctx.dayType && ctx.dayType !== "all") q.set("day_type", ctx.dayType);
+  if (ctx.replayId) q.set("replay_id", ctx.replayId);
+  return q.toString();
+}
+
+export interface ExcludedDate {
+  date: string;
+  reason: string;
+}
+
+export interface PeriodMetrics {
+  observed_days: number;
+  observed_hours: number;
+  total_boardings: number | null;
+  total_service_hours: number | null;
+  total_trips_running: number | null;
+  mean_daily_boardings: number | null;
+  riders_per_service_hour: number | null;
+  riders_per_trip: number | null;
+  share_hours_above_p75: number | null;
+  avg_trips_running_per_day: number | null;
+}
+
+export interface ReplayCap {
+  replay_id: string;
+  latest_revealed_date: string;
+}
+
+export interface RouteDailyData {
+  route: string;
+  period: string;
+  source: string;
+  provenance: string;
+  replay: ReplayCap | null;
+  excluded_dates: ExcludedDate[];
+  summary: PeriodMetrics | null;
+  rows: Array<{
+    date: string;
+    day_type: string;
+    boardings: number;
+    service_hours: number;
+    trips_running: number;
+    active_hours: number;
+    riders_per_service_hour: number | null;
+  }>;
+}
+
+export interface CompareRoute {
+  route: string;
+  profile: Record<string, string | number | null> | null;
+  metrics: PeriodMetrics | null;
+  time_bands: Array<PeriodMetrics & { time_band: string }>;
+  hourly: Array<{ hour: number; mean_boardings: number }>;
+  daily: Array<{ date: string; boardings: number }>;
+  geometry: RouteGeometry | null;
+}
+
+export interface CompareData {
+  period: string;
+  source: string;
+  provenance: string;
+  geometry_version: string | null;
+  replay: ReplayCap | null;
+  excluded_dates: ExcludedDate[];
+  routes: CompareRoute[];
+  shared_stops: Array<{
+    route_1: string;
+    route_2: string;
+    shared_stops_count: number;
+    overlap_share: number;
+    jaccard_similarity: number;
+    overlap_category: string;
+  }>;
+}
+
+export interface IndicatorDefinition {
+  label: string;
+  numerator: string;
+  denominator: string;
+  default_direction: "asc" | "desc";
+  meaning: string;
+}
+
+export interface RankingRow extends PeriodMetrics {
+  route: string;
+  route_long_name: string | null;
+  group_id: number | null;
+  group_label: string | null;
+  eligible: boolean;
+  ineligible_reason: string | null;
+  rank: number | null;
+}
+
+export interface RankingData {
+  period: string;
+  source: string;
+  provenance: string;
+  replay: ReplayCap | null;
+  excluded_dates: ExcludedDate[];
+  resolved_config: {
+    config_version: string;
+    indicator: string;
+    indicator_definition: IndicatorDefinition;
+    direction: string;
+    day_type: string;
+    min_observed_days: number;
+    min_observed_days_reason: string;
+    min_avg_trips_running_per_day: number;
+    group_id: number | null;
+    ties: string;
+  };
+  indicators: Record<string, IndicatorDefinition>;
+  count: number;
+  eligible_count: number;
+  rows: RankingRow[];
+  sensitivity: Array<{ min_days: number; eligible_routes: number; top_5: string[] }>;
+}
+
+export interface ReplaySession {
+  session_id: string;
+  created_at: string;
+  start_date: string;
+  end_date: string;
+  clock_date: string;
+  delay_days: number;
+  speed_seconds: number;
+  status: "paused" | "playing" | "completed";
+  status_label?: string;
+  model_version: string;
+  schedule_snapshot: string;
+  data_version: string;
+  replaced_by: string | null;
+}
+
+export interface ReplayDailyRow {
+  date: string;
+  forecast_boardings: number;
+  baseline_boardings: number | null;
+  actual_boardings: number | null;
+  revealed: boolean;
+  hours: number;
+  scheduled_departures: number | null;
+}
+
+export interface ReplayScores {
+  revealed_days: number;
+  scored_hours: number;
+  model_wape_pct: number | null;
+  baseline_wape_pct: number | null;
+  unscored_hours_missing_baseline?: number;
+}
+
+export interface ReplayState {
+  mode: string;
+  session: ReplaySession;
+  virtual_date: string;
+  completed: boolean;
+  supported_range: { start: string; end: string };
+  allowed_delays: number[];
+  information_policy: {
+    issue_time: string;
+    horizon: string;
+    delay_days: number;
+    latest_ridership_date_used: string;
+    latest_revealed_date: string;
+    schedule_snapshot: string;
+    model_version: string;
+    note: string;
+  };
+  network_daily: ReplayDailyRow[];
+  network_scores: ReplayScores;
+  forecast_record_count: number;
+  route_detail: {
+    route: string;
+    daily: ReplayDailyRow[];
+    scores: ReplayScores;
+    current_day: string;
+    current_day_hourly: Array<{
+      hour: number;
+      pred_boardings: number;
+      baseline_boardings: number | null;
+      trips_running: number;
+      trips_starting: number | null;
+      service_hours: number;
+      lags_available_count: number;
+      status: string;
+      issued_at: string;
+      latest_ridership_date_used: string;
+    }>;
+    last_revealed_date: string | null;
+    last_revealed_hourly: Array<{
+      hour: number;
+      pred_boardings: number;
+      baseline_boardings: number | null;
+      actual_ridership: number | null;
+      trips_running: number;
+    }>;
+  } | null;
+  source: string;
+}
+
+export interface ReplayForecastRecord {
+  session_id: string;
+  target_date: string;
+  route: string;
+  hour: number;
+  issued_at: string;
+  saved_at_wall: string;
+  latest_ridership_date_used: string;
+  delay_days: number;
+  model_version: string;
+  schedule_snapshot: string;
+  trips_running: number;
+  service_hours: number;
+  lags_available_count: number;
+  pred_boardings: number;
+  baseline_boardings: number | null;
+  status: string;
+}
+
+export interface DayScenarioRequest {
+  route: string;
+  date: string;
+  demand_source: "observed" | "forecast";
+  trip_change_pct: number;
+  demand_multiplier: number;
+  apply_guardrail_cap: boolean;
+  save: boolean;
+  label?: string;
+}
+
+export interface DayMetrics {
+  boardings: number;
+  trips_running: number;
+  service_hours: number;
+  riders_per_service_hour: number | null;
+  riders_per_trip: number | null;
+  hours_above_p75: number;
+  active_hours: number;
+  max_hour_riders_per_trip: number | null;
+  scheduled_departures: number | null;
+}
+
+export interface DayScenarioResponse {
+  provenance: string;
+  demand_label: string;
+  baseline_version: { demand: string; schedule: string };
+  inputs: {
+    route: string;
+    date: string;
+    day_type: string;
+    demand_source: string;
+    trip_change_pct_requested: number;
+    trip_change_pct_applied: number;
+    demand_multiplier: number;
+    apply_guardrail_cap: boolean;
+  };
+  changed_parameters: string[];
+  assumptions: string[];
+  result: {
+    baseline: DayMetrics;
+    stress_only: DayMetrics;
+    scenario: DayMetrics;
+    guardrail_capped: boolean;
+    warnings: string[];
+  };
+  hourly: Array<{
+    hour: number;
+    baseline_trips: number;
+    scenario_trips: number;
+    baseline_boardings: number;
+    scenario_boardings: number;
+    baseline_riders_per_trip: number | null;
+    scenario_riders_per_trip: number | null;
+    threshold_p75: number;
+  }>;
+  scenario_id: string | null;
+  saved_at: string | null;
+}
+
+export interface SavedScenario {
+  scenario_id: string;
+  created_at: string;
+  label: string | null;
+  inputs: DayScenarioResponse["inputs"] & { demand_label: string; changed_parameters: string[] };
+  result: DayScenarioResponse["result"];
+}
 

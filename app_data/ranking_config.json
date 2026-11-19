@@ -1,0 +1,43 @@
+{
+  "config_version": "ranking-v1 (2026-11-18)",
+  "period_supported": {
+    "start_date": "2026-08-01",
+    "end_date": "2026-10-31",
+    "note": "Observed typical days only. Labor Day (2026-09-07) and Columbus Day (2026-10-12) are not in this table."
+  },
+  "day_types": ["Typical Weekday", "Typical Saturday", "Typical Sunday"],
+  "default_min_observed_days": 10,
+  "min_observed_days_reason": "The full window has 63 typical weekdays, 14 Saturdays and 13 Sundays. A gate of 10 lets weekend day types be ranked while still asking for most of the weekend days in the window. The Step 7 review list uses 20 for weekday and weekend groups combined. Use the sensitivity table on the ranking screen to see how many routes change when this value moves.",
+  "min_avg_trips_running_per_day": 2.0,
+  "sensitivity_min_days_values": [5, 10, 15, 20, 30],
+  "indicators": {
+    "riders_per_service_hour": {
+      "label": "Boardings per scheduled service hour",
+      "numerator": "sum of recorded boardings",
+      "denominator": "sum of scheduled service hours (GTFS)",
+      "default_direction": "desc",
+      "meaning": "Higher means more boardings for each hour of bus service the schedule plans. Long, slow routes and short, fast routes are not directly alike."
+    },
+    "riders_per_trip": {
+      "label": "Boardings per scheduled trip running",
+      "numerator": "sum of recorded boardings",
+      "denominator": "sum of trips running in each hour (GTFS). A trip that spans two clock hours counts in both.",
+      "default_direction": "desc",
+      "meaning": "Higher means more boardings for each bus on the road. It counts boardings and does not show how full buses are."
+    },
+    "share_hours_above_p75": {
+      "label": "Share of hours above the high riders-per-trip line",
+      "numerator": "hours where boardings / trips running is above the route's fixed Jan-May 75th percentile",
+      "denominator": "hours with at least one scheduled trip",
+      "default_direction": "desc",
+      "meaning": "Higher means the route more often runs above its own usual level. It compares the route with itself, not with other routes."
+    },
+    "mean_daily_boardings": {
+      "label": "Average daily boardings",
+      "numerator": "sum of recorded boardings",
+      "denominator": "number of observed days",
+      "default_direction": "desc",
+      "meaning": "Higher means more people board this route on an average day of this type."
+    }
+  }
+}

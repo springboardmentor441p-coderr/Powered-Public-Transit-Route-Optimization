@@ -19,8 +19,8 @@ REAL_OCT_GTFS = ROOT / "data" / "raw" / "gtfs" / "manhattan" / "2026-10-17" / "o
 
 
 @pytest.fixture(scope="module")
-def client():
-    app = create_app(APP_DATA_DIR)
+def client(tmp_path_factory):
+    app = create_app(APP_DATA_DIR, runtime_dir=tmp_path_factory.mktemp("runtime"))
     with TestClient(app) as c:
         yield c
 

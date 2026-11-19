@@ -10,6 +10,7 @@ import {
 import { PageHeader } from "./PageHeader";
 
 interface ReviewListPageProps {
+  topSlot?: React.ReactNode;
   cells: ReviewCell[];
   period: string;
   source: string;
@@ -18,6 +19,7 @@ interface ReviewListPageProps {
 }
 
 export const ReviewListPage: React.FC<ReviewListPageProps> = ({
+  topSlot,
   cells,
   period,
   source,
@@ -70,6 +72,8 @@ export const ReviewListPage: React.FC<ReviewListPageProps> = ({
         period={period}
         source={source}
       />
+
+      {topSlot}
 
       {/* Category Summary Chips */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

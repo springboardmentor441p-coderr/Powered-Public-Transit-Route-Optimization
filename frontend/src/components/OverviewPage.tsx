@@ -22,6 +22,7 @@ import {
 import { PageHeader } from "./PageHeader";
 
 interface OverviewPageProps {
+  topSlot?: React.ReactNode;
   overview: OverviewData;
   dailyRows: NetworkDailyRow[];
   hourlyJanSep: NetworkHourlyRow[];
@@ -30,6 +31,7 @@ interface OverviewPageProps {
 }
 
 export const OverviewPage: React.FC<OverviewPageProps> = ({
+  topSlot,
   overview,
   dailyRows,
   hourlyJanSep,
@@ -88,6 +90,8 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           </div>
         }
       />
+
+      {topSlot}
 
       {/* Top KPI Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

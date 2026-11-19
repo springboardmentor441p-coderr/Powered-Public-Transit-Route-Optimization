@@ -15,6 +15,7 @@ import {
 import { PageHeader } from "./PageHeader";
 
 interface ScenariosPageProps {
+  topSlot?: React.ReactNode;
   routes: RouteSummary[];
   initialRoute: string;
   initialDayGroup: string;
@@ -22,6 +23,7 @@ interface ScenariosPageProps {
 }
 
 export const ScenariosPage: React.FC<ScenariosPageProps> = ({
+  topSlot,
   routes,
   initialRoute,
   initialDayGroup,
@@ -90,6 +92,8 @@ export const ScenariosPage: React.FC<ScenariosPageProps> = ({
         period={result?.period ?? "Aug–Oct 2026 Observed Typical Days (90 days: 63 weekday + 27 weekend)"}
         source={result?.source ?? "POST /api/scenarios -> src/recommend_adjustments.py"}
       />
+
+      {topSlot}
 
       {/* Explicit Constant Ridership Assumption */}
       <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-xs text-blue-950">
