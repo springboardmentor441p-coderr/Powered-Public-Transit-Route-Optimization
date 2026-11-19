@@ -1,7 +1,7 @@
 {
   "artifact_version": "stage5-1.0.0",
-  "created_at": "2026-11-19T10:03:56+00:00",
-  "git_commit": "c673f04+uncommitted",
+  "created_at": "2026-11-19T10:11:18+00:00",
+  "git_commit": "3cae46f",
   "code": "analytics/groups/build_stage5.py",
   "settings": {
     "_comment": "Stage 5 settings: route groups and ranking (spec 9.7, 9.11, 9.12, 9.18). Fixed BEFORE any profile, cluster or ranking result is read. The spec wins where it differs from the mentor's notebook; the notebook's rules are recomputed for comparison only. Changing a value means a new evaluated version.",

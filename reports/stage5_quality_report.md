@@ -1,9 +1,9 @@
 # Stage 5 quality report: route groups and ranking
 
-Generated 2026-11-19T10:03:56+00:00 by `analytics/groups/build_stage5.py` (spec 9.7, 9.11, 9.12; stage table 9.18). The spec wins where it differs from the mentor's notebook; the notebook's rules are recomputed in section 7.
+Generated 2026-11-19T10:11:18+00:00 by `analytics/groups/build_stage5.py` (spec 9.7, 9.11, 9.12; stage table 9.18). The spec wins where it differs from the mentor's notebook; the notebook's rules are recomputed in section 7.
 
 - Data products: `cta_ref__r20261113__gtfs8__to20260731/groups__dev20251123_20260331`; settings `groups.json` sha256 `7c945470be0f480a`; names `group_names.json` sha256 `7104d7cde764d02b`
-- Code version: git `c673f04+uncommitted`; artifact version `stage5-1.0.0`
+- Code version: git `3cae46f`; artifact version `stage5-1.0.0`
 - Development profile period (groups): 2025-11-23..2026-03-31. Reference ranking period: `full_matched_window` (2025-11-23..2026-07-31), a historical-analysis table: it includes the June-July replay period, so replay mode must recompute rankings from revealed history only (Stage 7).
 - Gates (spec 9.7.2 trial values, applied independently): ranking 20 observed days; clustering base 20 weekdays; weekend ratio 8 days
 
