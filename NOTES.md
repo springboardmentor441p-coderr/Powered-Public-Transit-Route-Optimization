@@ -749,3 +749,124 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
 
   - **Bug 2 was caught only by your two-version test.** Every single-version overlap test still passed, because with one version, keying by stop alone happens to give the right answer. Without the test you asked for in Step 49, this bug would have gone unnoticed, and a future run combining versions would have mixed timetables.
 - **Interview Q:** *"All your tests passed. How do you know they're good tests?"* I broke the code on purpose in three specific ways and checked that the intended test failed each time. One bug slipped past every test except one that was written specifically for it, which shows that "all tests pass" says nothing about cases no test covers.
+
+# Stage 6: Application foundation (spec 9.17, 9.16, 9.19.2; stage table 9.18)
+
+> Split into 6a (database and import), 6b (FastAPI endpoints) and 6c (React screens). Historical-analysis mode only: forecasts and replay are Stage 7, scenarios Stage 8. History, rankings and compare all take a backend-enforced `cutoff`, so Stage 7 can reuse them unchanged.
+
+## Step 53: PostgreSQL driver (`requirements.txt`)
+- **Built:** `psycopg==3.3.9` with its precompiled part `psycopg-binary==3.3.9`. Its own dependencies (`typing_extensions`, `tzdata`) were already pinned. `pip check` is clean.
+- **Why:** Python needs a driver to talk to PostgreSQL (spec 9.17.1). It is added now, the first time a stage needs a database, following the "add dependencies when their stage begins" rule.
+- **Key concept:** *a driver is a translator*. PostgreSQL speaks its own network protocol and Python doesn't. psycopg turns `cur.execute("SELECT ...")` into that protocol and turns the replies back into Python values, like an interpreter at a meeting.
+- **Decisions:**
+  - **Plain SQL, no ORM (your choice).** An ORM such as SQLAlchemy writes the SQL for you. Here every query stays visible, which matters when a query has to enforce a rule such as "no rows after the cutoff".
+  - `[binary]` ships a prebuilt library, so no C compiler or local PostgreSQL headers are needed on Windows.
+- **Results:** installed and importable; no conflicts.
+- **Interview Q:** *"Why not use an ORM?"* For a small, read-heavy analysis API, plain SQL keeps every filter explicit and easy to review. The important rules, the replay cutoff above all, live in one visible `WHERE` clause rather than inside generated queries. An ORM pays off with many entities and lots of write logic, which this prototype doesn't have.
+
+## Step 54: Database role and the two databases (you ran the setup; `backend/.env.example`)
+- **Built:** a login role `routeranker` (not a superuser; cannot create databases or roles) that owns two databases: `routeranker` (the app) and `routeranker_test` (tests only). `PUBLIC` connect rights were revoked on both. The connection URLs live in `backend/.env` (gitignored, confirmed with `git check-ignore`); `backend/.env.example` is the committed template with `CHANGE_ME` placeholders.
+- **Why:** the app should run with only the rights it needs (spec 9.17.1 puts persistent data in PostgreSQL). A separate test database means tests can create and drop tables freely without ever touching the real import.
+- **Key concept:** *least privilege*. The `postgres` superuser is a master key that opens every database on the server. `routeranker` is a key cut for two doors only. If the app's password ever leaked, the damage would stop at those two databases.
+- **Decisions:**
+  - **Your rule:** `routeranker` has its own new password, never the superuser's. You typed it into `\password` yourself, so it never appeared in a command I ran, in the chat or in a commit.
+  - The connection check reads `backend/.env` but prints only the user, database, server version, superuser flag, owner and public access. If a connection fails, it prints the error type, never the message, because a psycopg error message can contain the URL.
+- **Results:** both URLs connect as `routeranker` to PostgreSQL 17.10; `superuser=False`; each database is owned by `routeranker`; `PUBLIC` cannot connect. (My first check failed on a quoting mistake in the query, not in the connection; it was rerun from a script file.)
+- **Interview Q:** *"Why not just connect as `postgres` during development?"* Habits made in development become production settings. With a limited role from day one, a bug or a leaked `.env` can't drop other databases or create users, and the test database keeps experiments away from the real data.
+
+## Step 55: Database schema (`backend/db/schema.sql`)
+- **Built:** 17 tables for the Stage 6 entities of spec 9.17.2:
+  - versions and sources: `dataset_versions`, `source_files`, `gtfs_snapshots`;
+  - routes and geometry: `routes`, `route_shapes`;
+  - observations and schedule: `daily_ridership`, `daily_schedule`, `matched_utilization`, `ridership_without_schedule`, `schedule_without_ridership`;
+  - Stage 5: `group_versions`, `utilization_profiles`, `route_profiles`, `group_memberships`, `route_stop_coverage`, `route_stop_overlap`;
+  - `model_versions` (metadata only, for Stage 7).
+
+  Every key includes its version (`data_version`, or `group_version` for Stage 5 products).
+- **Why:** the database must hold several versions side by side and refuse rows that break the rules earlier stages proved. Then the API can trust what it reads.
+- **Key concept:** *the database as a second checker*. Foreign keys and CHECKs turn earlier findings into rules the database enforces on every insert. A matched row must exist in both ridership and schedule (the Stage 2 identity). "Eligible ⇔ ranked ⇔ no reason" holds for each named ranking. Like a bouncer with a list: whatever the importer's code does, a row that breaks a rule doesn't get in.
+- **Decisions:**
+  - `service_date` instead of `date`: it is the GTFS service date (a 25:10 trip stays on its day), and `date` is also an SQL type name.
+  - **No foreign key from the daily tables to `routes`:** ridership-only identifiers (1001, 128, 19, 5) are in no archive and must still be importable.
+  - Stop IDs are `text[]` arrays, so a query can ask which routes serve a stop.
+  - Not stored: the Stage 3 feature tables (Stage 7 needs them), and the always-empty `rides` column of `schedule_without_ridership`.
+  - **Your three additions:**
+    1. `daily_schedule`: `duration_complete = (scheduled_service_hours IS NOT NULL)`, a two-way rule, so a partial hours sum can never be stored. It replaces my one-way draft rule.
+    2. `matched_utilization`: `(rides_per_scheduled_hour IS NULL) = (scheduled_service_hours IS NULL)`.
+    3. An empty stop-ID cell becomes `{}`, never `{''}`. The importer will do this, and I also added a CHECK that no array holds an empty string, so the database enforces it too.
+- **Results:**
+  - **Real-data check before writing:** additions 1 and 2 hold for **all 28,398** schedule rows and **all 28,374** matched rows. *Caveat:* every duration in these feeds is complete, so no real row has NULL hours. The NULL side of both rules is exercised only by made-up rows.
+  - Addition 3 applies to **68** real cells (empty `exclusive_stop_ids`).
+  - **Probe on `routeranker_test`:** the schema applies (17 tables). Bad rows are **rejected**: complete-but-NULL hours, incomplete-but-present hours, hours without a per-hour ratio, a per-hour ratio without hours, and `{''}` stop IDs. The matching valid rows are **accepted**. The test database was emptied afterwards.
+- **Interview Q:** *"Your importer already checks the data. Why repeat the rules as CHECK constraints?"* Code has bugs and gets bypassed: a later script, a manual fix, a new importer version. A constraint lives with the data and applies to every writer, every time. One of these rules also covers a case the real data never contains (incomplete durations), so the database guards against it before it ever happens.
+
+## Step 56: Route geometry, "most common path per direction" (`analytics/geometry/`)
+> **Corrected in Step 57:** "most common" counted *trips*. It now counts *trip-days*. The results below are from the first build, which has been deleted and rebuilt.
+- **Built:**
+  - `route_shapes.py`: `active_bus_trips`, `choose_shapes`, `shape_lines`, `version_shapes`, `verify`.
+  - `build_geometry.py`: writes `data/processed/<ver>/geometry/route_shapes.csv` and `geometry_manifest.json`.
+  - 8 tests in `analytics/tests/test_route_shapes.py`.
+  - `route_shapes` in the schema gained `direction_label`, `tied_top_shapes`, `point_count` and a CHECK that the GeoJSON point count equals `point_count` (your approval).
+- **Why:** the map screens need a line per route, and spec 9.19.2 says every map identifies its geometry version.
+- **Key concept:** *a representative, not the whole truth*. A route can run several paths (short turns, garage trips, detours). We draw the one used by the most trips active on the archive's applied dates, and say so on the map: **"Most common path per direction"**. Like a school photo with one student per class standing in for everyone.
+- **Decisions (your four confirmations):**
+  1. **Fixed tie-breaker:** most trips, then the lowest `shape_id` as text. The number of tied shapes is stored on every row.
+  2. **`[lon, lat]`** (GeoJSON). Nobody flips by hand: react-leaflet's `<GeoJSON>` hands the data to Leaflet, which converts it itself. A Chicago bounding box rejects swapped coordinates; a test proves it.
+  3. **Only bus trips active on the applied dates**, from the same pieces as the overlap step (`bus_crosswalk`, `active_service_dates`). The build also stops unless the routes per version equal Stage 5's `route_stop_coverage.csv`.
+  4. **Label** `PATH_LABEL = "Most common path per direction"`, defined once, written into the manifest and passed on to the map.
+  - `shapes.txt` is read with Stage 2's `_csv_view`, so it gets the same parsing as every other GTFS file. No Stage 2 code changed.
+  - `geometry/` is a new folder beside the existing products. A second build is **refused** (checked: exit code 1).
+- **Results:**
+  - **Tests:** 8 new pass; the full suite passes (135).
+  - **Build (all 8 archives):** every identity holds; 123 routes / 246 lines per version, and 125 / 250 from 2026-05-30 (routes 10 and 130); about 266k–276k points per version; `route_shapes.csv` is 1,976 rows, 45 MB (gitignored).
+  - **Ties:** 1 per version normally, but **60, 68 and 191** in the archives whose applied dates span two timetable editions (shape prefixes 676→677, 677→678, 678→679). The same trips exist under both editions' shape IDs with equal counts.
+  - **Checked by real geometry, not by `shape_dist_traveled`:** that field changed between editions without the path changing (route 171: "54% longer" by the field, 0 m apart in reality). Of **324** tied route-directions, **305 are the same path (≤ 25 m apart)** and **19 are different paths**. Notable cases:
+    - **Route 48:** about 0.65 mi and 800 m apart. The 677 edition (January–March) runs a shorter path.
+    - **Route 94:** 377 m (May).
+    - **Routes 157 and 192:** about 250 m (December).
+    - **Route 125, northbound:** two variants with 13 trips each in every version, 112 m apart. A permanent tie *inside* one edition.
+  - Provenance: this run recorded `git_commit 908dc63+uncommitted`, because the code isn't committed yet.
+- **Interview Q:** *"Two shapes have the same trip count. Isn't picking the lower ID arbitrary?"* Yes, and openly so. With equal counts, "most common" really is undecided, so any rule is a choice. Choosing by text order hides no judgement about which path is "better". The tie count is stored, and every tie was checked against the real geometry: 305 of 324 are the same path under two IDs, and the 19 genuine differences are listed by route.
+
+## Step 57: Correction, "most common path" means used most in the period (trip-days, not trips)
+- **Built:**
+  - `active_bus_trips` now returns, per trip, `active_days`: how many of the archive's applied dates its service runs on.
+  - `choose_shapes` ranks shapes by **trip-days** (the sum of `active_days` over the shape's trips). Exact ties still go to the lowest `shape_id` as text.
+  - New columns `trip_days_using_shape` and `active_trip_days`, in the CSV and the schema. Trips are still stored, for reference.
+  - `tie_label()` and `TIE_LABEL = "tied with {n} other path(s) this version"` (in the manifest too), which the map will show when `tied_top_shapes > 1`. The alternative shapes are not stored (your decision).
+  - 2 new tests.
+- **Why:** this is a **correction of what "most common" means, not a tweak to the result** (your ruling). A geometry version covers a period: its applied dates. The path "most common" in that period is the one buses actually drove most often there. Counting trips asks "how many timetable entries use this path", which is a different question. Each trip has to be weighted by the number of days it ran.
+- **Key concept:** *count the thing you mean*. Counting trips is like ranking shops by how many items are on their menu instead of how many meals they served. A weekend timetable with its own trip IDs looks "big" while running on only a few days.
+- **Example, route 48 in the December archive (applied 2025-12-19 → 2026-01-07):** the old and new editions' weekday shapes have the same trips (27 southbound, 26 northbound), so the trip-count rule tied and the tie-breaker took the **old** edition's path. By trip-days the old edition ran **1 day** (Fri 2025-12-19) and the new one **11** (the weekdays from Dec 22 to Jan 7): 27 vs 297 trip-days southbound, 26 vs 286 northbound. The new edition's path is chosen, about 800 m from the old one. *(Checked in the data: your figure of 2 vs 18 days was the right idea, but the real counts are 1 vs 11, because the window's weekends and holidays use other shapes.)*
+- **Decisions:**
+  - The lowest-`shape_id` tie-breaker stays, for exact trip-day ties only.
+  - **New test:** two editions with 2 trips each; the old one (lower `shape_id`) runs Monday, the new one Tuesday–Friday. Trip-days 2 vs 8 picks the new path. **Mutation check:** with the old trip-count rule put back in a scratch copy of `analytics/`, this test fails and the other 9 still pass, so the test really guards the rule.
+  - The old `geometry/` folder (gitignored, two files written by Step 56) was checked, then deleted and rebuilt with your approval. The new output has 1,976 rows, 13 columns, sha `90e93481…`.
+- **Results:**
+  - **Tests:** 10 geometry tests pass; the full suite passes (137). The schema with the new columns applies on `routeranker_test`.
+  - **Ties, before → after:** 1 / 60 / 1 / 1 / 68 / 1 / 191 / 1 → **1 in every version**. The edition-overlap ties are gone.
+  - **The one remaining tie is genuinely a different path:** **route 125 northbound**, two variants (shapes …2863 and …6369), about 3.09 vs 3.00 mi and 112 m apart, with equal trip-days in all 8 versions (234 to 416). It will carry the label "tied with 1 other path(s) this version".
+  - **The correction changed more than ties:** compared with the trip-count rule, 53 lines now show a different path and 338 show the same path under a new ID. The non-tied changes (routes 126, 28, 53A, 81W, 78) come from **weekend timetables**. Weekend trips have their own trip IDs, so they outnumbered weekday trips while running on far fewer days. Route 81W (Nov archive): weekend path 63 trips, 245 trip-days; weekday path 44 trips, 792 trip-days. The old rule drew the weekend path.
+  - Provenance still reads `908dc63+uncommitted`. A clean rebuild follows the 6a commit, as in earlier stages.
+- **Interview Q:** *"Why does it matter whether you count trips or trip-days? It's just a line on a map."* Because the line is labelled "most common path", and the label must be true. Counting trips drew the weekend path for 81W, which runs 3–5 days in the period, instead of the weekday path, which runs 18. A planner trusting the map would study the wrong street. Fixing the definition removed 323 of the 324 ties and replaced 53 lines whose drawn path was wrong.
+
+## Step 58: The importer and its tests (`backend/importer/import_data.py`, `backend/tests/`)
+- **Built:**
+  - `collect()` verifies **22 inputs** (sha256 and row counts against their own manifests) and builds every table's rows in memory **without opening a database connection**.
+  - `write()` loads all 17 tables with `COPY` in **one transaction**, refuses a `data_version` that already exists, re-checks **9 identities in SQL** after loading, and stores the import report in `dataset_versions`.
+  - `create_schema()` works only on an empty database.
+  - `write_markdown()` writes `reports/stage6_import_report.md`.
+  - 14 tests in `backend/tests/`; `pytest.ini` now also finds `backend/tests`.
+- **Why:** spec 9.19.2 starts with "the reviewer can import data". The database is only trustworthy if every row in it is provably the row the earlier stages wrote.
+- **Key concept:** *all or nothing*. A transaction is like a bank transfer: the money leaves one account and arrives in the other, or neither happens. Here either all 17 tables and the report are saved together, or the database stays exactly as it was. Two tests prove it: a bad value in the **last** table, and a wrong ride count caught only by an identity check, each leave **0 rows in every table**.
+- **Decisions:**
+  - **Exact CSV text goes to the database.** An empty cell becomes NULL, and PostgreSQL parses each value once. A probe confirmed `0.01470588235` round-trips exactly and `12.5` is refused for an integer column.
+  - **Your fix:** `route_group_membership.csv` has `group = "ungrouped"` for 5 routes, which COPY would have rejected for the smallint `group_id`. `"ungrouped"` now becomes NULL, the reason stays in its own column, and any other non-numeric value (`x`, `1.0`, `-1`, `" 1"`, `Ungrouped`) is refused.
+  - Ridership is parsed by Stage 2's own `load_ridership`, then cut at the data version's `ridership_cutoff`; routes come from Stage 2's `bus_crosswalk`.
+  - Error messages never print the database URL.
+  - **Your rule:** nothing is imported into the real `routeranker` database until the 6a code is committed, so `dataset_versions.import_git_commit` records a real commit.
+- **Results:**
+  - `collect()` on real data: daily_ridership **1,120,604** kept (2001-01-01 → 2026-07-31, 188 identifiers, 36 recorded zeros); **3,566** excluded (2026-08-01 → 08-31); memberships 123 grouped (0/1) + 5 ungrouped (10, 1001, 128, 130, 19) with NULL `group_id`; every row count equals its manifest.
+  - **Tests: 151 pass** (137 earlier + 14 new) in 6 min 4 s. Both databases are empty afterwards.
+  - **Where the time goes** (profiled on the test database): one load takes about 117 s, of which **COPY of daily_ridership is 85 s** and the profile identity query 12 s. Everything else takes seconds. Not optimised yet; correctness first.
+- **Interview Q:** *"Your importer verifies hashes, row counts, CHECK constraints and SQL identities. Isn't that overkill?"* Each layer catches a different mistake. Hashes catch a changed file. Row counts catch a truncated read. CHECKs catch a single bad value. Identities catch values that are each valid but inconsistent with each other: the +1-ride test passes every CHECK and is caught only by the identity. Without that layer, the error would have been imported silently.
