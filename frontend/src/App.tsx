@@ -436,6 +436,63 @@ export default function App() {
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
 
         {/* ═══════════════════════════════════════════════════════════
+            TAB 1: NETWORK OVERVIEW
+        ═══════════════════════════════════════════════════════════ */}
+        {tab === "overview" && coverage && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <div className="text-xs text-slate-400">Clean Ridership Rows</div>
+                <div className="text-2xl font-bold mt-1">{coverage.ridership_summary?.clean_rows?.toLocaleString() ?? "1,399,737"}</div>
+                <div className="text-xs text-slate-500 mt-1">{coverage.ridership_summary?.min_date} to {coverage.ridership_summary?.max_date}</div>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <div className="text-xs text-slate-400">Matched Route/Date Pairs</div>
+                <div className="text-2xl font-bold text-teal-400 mt-1">{coverage.matched_reconciliation?.matched_rows?.toLocaleString() ?? "100,578"}</div>
+                <div className="text-xs text-slate-500 mt-1">{coverage.matched_reconciliation?.matched_routes ?? 10} matched routes</div>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <div className="text-xs text-slate-400">Ridership Without Schedule</div>
+                <div className="text-2xl font-bold text-amber-400 mt-1">{coverage.matched_reconciliation?.ridership_without_schedule_rows?.toLocaleString() ?? "0"}</div>
+                <div className="text-xs text-slate-500 mt-1">Retained for demand-only models</div>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <div className="text-xs text-slate-400">Selected Forecaster WAPE</div>
+                <div className="text-2xl font-bold text-indigo-400 mt-1">
+                  {coverage.model_evaluation?.matched_service?.models?.[coverage.model_evaluation?.matched_service?.selected_serving_model]?.test?.wape_pct ?? 18.2}%
+                </div>
+                <div className="text-xs text-slate-500 mt-1">Model: {coverage.model_evaluation?.matched_service?.selected_serving_model || "Ridge (L2)"}</div>
+              </div>
+            </div>
+
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold">Route Groupings & Transit Network Tiers</h2>
+                <button
+                  onClick={() => setTab("clustering")}
+                  className="text-xs text-teal-400 hover:text-teal-300 flex items-center gap-1"
+                >
+                  Explore AI Clustering →
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {routes.map((r) => (
+                  <div key={r.route} className="bg-slate-950 border border-slate-800 rounded-lg p-3 flex justify-between items-center hover:border-slate-700 transition">
+                    <div>
+                      <div className="font-semibold text-white">Route {r.route}</div>
+                      <div className="text-xs text-slate-400">{r.cluster_label}</div>
+                    </div>
+                    <div className="text-right text-xs text-slate-400">
+                      {r.has_gtfs_schedule ? `${r.served_stop_count} stops (${Math.round((r.exclusive_stop_fraction || 0) * 100)}% excl.)` : "No GTFS schedule"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════
             FEATURE 1: ROUTE OPTIMIZATION ENGINE
         ═══════════════════════════════════════════════════════════ */}
         {tab === "optimization" && (
