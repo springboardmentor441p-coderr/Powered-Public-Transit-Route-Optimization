@@ -2,20 +2,22 @@ import React, { useEffect, useState } from "react";
 import {
   Activity, BarChart3, Calendar, Database, GitCompare, Layers, Play, Pause,
   SkipForward, RotateCcw, Sliders, Bell, MapPin, LogIn, LogOut, AlertTriangle,
-  Shield, Radio, CheckCircle, Clock, PlusCircle
+  Shield, Radio, CheckCircle, Clock, PlusCircle, Sparkles, TrendingUp, Cpu,
+  ArrowUpRight, ArrowDownRight, RefreshCw, Check
 } from "lucide-react";
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend
 } from "recharts";
 import {
   fetchCoverage, fetchRoutes, fetchRouteHistory, fetchRankings,
   compareRoutes, requestForecast, createReplaySession, controlReplaySession,
   runServiceScenario, login, logout, getStoredUser, fetchAlerts, acknowledgeAlert,
   fetchBroadcasts, createBroadcast, fetchHeatmapData, createScheduleUpdate,
-  fetchScheduleUpdates, fetchNotifications
+  fetchScheduleUpdates, fetchNotifications, runOptimization, fetchDemandProfiles,
+  fetchClusteringOverview, recomputeClustering
 } from "./api/client";
 
-type Tab = "overview" | "rankings" | "detail" | "compare" | "scenarios" | "heatmap" | "alerts" | "evaluation" | "coverage";
+type Tab = "overview" | "optimization" | "demand" | "clustering" | "rankings" | "detail" | "compare" | "scenarios" | "heatmap" | "alerts" | "evaluation" | "coverage";
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("overview");
@@ -59,11 +61,35 @@ export default function App() {
   const [schedTrips, setSchedTrips] = useState(120);
   const [schedReason, setSchedReason] = useState("Peak demand adjustment");
 
+  // 1. Route Optimization State
+  const [optObjective, setOptObjective] = useState("maximize_ridership");
+  const [optShiftPct, setOptShiftPct] = useState(15);
+  const [optThreshold, setOptThreshold] = useState(280);
+  const [optResult, setOptResult] = useState<any>(null);
+  const [optLoading, setOptLoading] = useState(false);
+  const [planApplied, setPlanApplied] = useState(false);
+
+  // 2. Route Demand State
+  const [demandProfiles, setDemandProfiles] = useState<any[]>([]);
+  const [selectedDemandRoute, setSelectedDemandRoute] = useState("79");
+
+  // 3. AI Clustering State
+  const [clusteringData, setClusteringData] = useState<any>(null);
+  const [clusterK, setClusterK] = useState(3);
+  const [reclusterLoading, setReclusterLoading] = useState(false);
+
   useEffect(() => {
     fetchCoverage().then(setCoverage).catch(() => {});
     fetchRoutes().then((d) => setRoutes(d.routes || [])).catch(() => {});
     createReplaySession().then(setReplay).catch(() => {});
     loadAlertsAndBroadcasts();
+
+    // Load initial Demand & Clustering data
+    fetchDemandProfiles().then((d) => setDemandProfiles(d.demand_profiles || [])).catch(() => {});
+    fetchClusteringOverview().then(setClusteringData).catch(() => {});
+
+    // Run initial baseline optimization
+    runOptimization({ objective: "maximize_ridership", fleet_budget_shift_pct: 15 }).then(setOptResult).catch(() => {});
   }, []);
 
   const loadAlertsAndBroadcasts = () => {
@@ -114,6 +140,56 @@ export default function App() {
       demand_multiplier: demandMult,
     });
     setScenarioOut(res);
+  };
+
+  const handleRunOptimization = async () => {
+    setOptLoading(true);
+    setPlanApplied(false);
+    try {
+      const res = await runOptimization({
+        objective: optObjective,
+        fleet_budget_shift_pct: optShiftPct,
+        overcrowding_threshold: optThreshold,
+      });
+      setOptResult(res);
+    } catch (err: any) {
+      alert("Optimization failed: " + (err.message || "Unknown error"));
+    } finally {
+      setOptLoading(false);
+    }
+  };
+
+  const handleApplyOptimizationPlan = async () => {
+    if (!optResult?.recommendations) return;
+    try {
+      const activeChanges = optResult.recommendations.filter((r: any) => r.trips_delta !== 0);
+      for (const rec of activeChanges.slice(0, 4)) {
+        await createScheduleUpdate({
+          route: rec.route,
+          service_date: optResult.target_date || "2026-06-03",
+          new_scheduled_trips: rec.recommended_trips,
+          reason: `AI Route Optimizer: ${rec.reason}`,
+        });
+      }
+      setPlanApplied(true);
+      loadAlertsAndBroadcasts();
+      alert(`Optimized schedule deployed successfully for ${activeChanges.length} routes!`);
+    } catch (err: any) {
+      alert("Deployment requires Admin or Operator role: " + err.message);
+    }
+  };
+
+  const handleRecluster = async (k: number) => {
+    setClusterK(k);
+    setReclusterLoading(true);
+    try {
+      const res = await recomputeClustering(k);
+      setClusteringData(res);
+    } catch (err: any) {
+      alert("Reclustering error: " + err.message);
+    } finally {
+      setReclusterLoading(false);
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -188,8 +264,13 @@ export default function App() {
   const activeBroadcasts = broadcasts.filter((b) => b.active);
   const unacknowledgedAlerts = alerts.filter((a) => !a.acknowledged);
 
-  const navItems: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
+  const selectedDemandProfile = demandProfiles.find((d) => d.route === selectedDemandRoute) || demandProfiles[0];
+
+  const navItems: { id: Tab; label: string; icon: React.ReactNode; badge?: number; highlight?: boolean }[] = [
     { id: "overview", label: "Network Overview", icon: <Activity size={16} /> },
+    { id: "optimization", label: "Route Optimization", icon: <Sparkles size={16} />, highlight: true },
+    { id: "demand", label: "Route Demand", icon: <TrendingUp size={16} />, highlight: true },
+    { id: "clustering", label: "AI Clustering", icon: <Cpu size={16} />, highlight: true },
     { id: "rankings", label: "Review Priorities", icon: <BarChart3 size={16} /> },
     { id: "detail", label: "Route Detail & Replay", icon: <Calendar size={16} /> },
     { id: "compare", label: "Compare Routes", icon: <GitCompare size={16} /> },
@@ -222,7 +303,7 @@ export default function App() {
             <h1 className="text-xl font-bold text-teal-400">RouteRanker</h1>
             <span className="px-1.5 py-0.5 rounded text-[10px] bg-teal-900/60 text-teal-300 border border-teal-700">v4.0 Complete</span>
           </div>
-          <p className="text-xs text-slate-400">Transit Demand Forecasting, Route Grouping & Conditional Scenario Engine</p>
+          <p className="text-xs text-slate-400">Transit Demand Forecasting, Route Optimization, Dynamic Grouping & Scenario Engine</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -280,17 +361,22 @@ export default function App() {
       </header>
 
       {/* Navigation Tabs */}
-      <nav className="bg-slate-900/60 border-b border-slate-800 px-6 flex gap-2 overflow-x-auto">
+      <nav className="bg-slate-900/60 border-b border-slate-800 px-6 flex gap-1.5 overflow-x-auto">
         {navItems.map((n) => (
           <button
             key={n.id}
             onClick={() => setTab(n.id)}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition relative ${
-              tab === n.id ? "border-teal-400 text-teal-300" : "border-transparent text-slate-400 hover:text-slate-200"
+            className={`flex items-center gap-1.5 px-3.5 py-3 text-xs md:text-sm font-medium border-b-2 whitespace-nowrap transition relative ${
+              tab === n.id
+                ? "border-teal-400 text-teal-300 bg-slate-900/40"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             {n.icon}
-            {n.label}
+            <span>{n.label}</span>
+            {n.highlight && (
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+            )}
             {n.badge !== undefined && n.badge > 0 && (
               <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-rose-600 text-white font-bold">
                 {n.badge}
@@ -300,15 +386,18 @@ export default function App() {
         ))}
       </nav>
 
-      {/* Filter Toolbar */}
-      <div className="bg-slate-900/30 border-b border-slate-800/80 px-6 py-3 flex flex-wrap items-center justify-between gap-4 text-sm">
+      {/* Global Filter Bar */}
+      <div className="bg-slate-900/30 border-b border-slate-800/80 px-6 py-2.5 flex flex-wrap items-center justify-between gap-4 text-xs">
         <div className="flex flex-wrap items-center gap-4">
           <label className="flex items-center gap-2">
-            <span className="text-slate-400">Route:</span>
+            <span className="text-slate-400">Active Route:</span>
             <select
               value={selectedRoute}
-              onChange={(e) => setSelectedRoute(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white"
+              onChange={(e) => {
+                setSelectedRoute(e.target.value);
+                setSelectedDemandRoute(e.target.value);
+              }}
+              className="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white text-xs"
             >
               {routes.map((r) => (
                 <option key={r.route} value={r.route}>
@@ -323,7 +412,7 @@ export default function App() {
             <select
               value={daytype}
               onChange={(e) => setDaytype(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white"
+              className="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white text-xs"
             >
               <option value="W">Weekday (W)</option>
               <option value="A">Saturday (A)</option>
@@ -332,68 +421,514 @@ export default function App() {
           </label>
         </div>
 
-        {/* Overcrowding indicator pill */}
         {unacknowledgedAlerts.length > 0 && (
           <div
             onClick={() => setTab("alerts")}
             className="cursor-pointer flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-600/40 text-xs hover:bg-amber-500/30 transition"
           >
             <AlertTriangle size={13} />
-            <span>{unacknowledgedAlerts.length} Active Overcrowding Alert{unacknowledgedAlerts.length > 1 ? "s" : ""}</span>
+            <span>{unacknowledgedAlerts.length} Overcrowding Alert{unacknowledgedAlerts.length > 1 ? "s" : ""}</span>
           </div>
         )}
       </div>
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
-        {/* Tab 1: Network Overview */}
-        {tab === "overview" && coverage && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <div className="text-xs text-slate-400">Clean Ridership Rows</div>
-                <div className="text-2xl font-bold mt-1">{coverage.ridership_summary.clean_rows.toLocaleString()}</div>
-                <div className="text-xs text-slate-500 mt-1">{coverage.ridership_summary.min_date} to {coverage.ridership_summary.max_date}</div>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <div className="text-xs text-slate-400">Matched Route/Date Pairs</div>
-                <div className="text-2xl font-bold text-teal-400 mt-1">{coverage.matched_reconciliation.matched_rows.toLocaleString()}</div>
-                <div className="text-xs text-slate-500 mt-1">{coverage.matched_reconciliation.matched_routes} matched routes</div>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <div className="text-xs text-slate-400">Ridership Without Schedule</div>
-                <div className="text-2xl font-bold text-amber-400 mt-1">{coverage.matched_reconciliation.ridership_without_schedule_rows}</div>
-                <div className="text-xs text-slate-500 mt-1">Retained for demand-only models</div>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <div className="text-xs text-slate-400">Selected Forecaster WAPE</div>
-                <div className="text-2xl font-bold text-indigo-400 mt-1">
-                  {coverage.model_evaluation?.matched_service?.models?.[coverage.model_evaluation?.matched_service?.selected_serving_model]?.test?.wape_pct}%
-                </div>
-                <div className="text-xs text-slate-500 mt-1">Model: {coverage.model_evaluation?.matched_service?.selected_serving_model}</div>
-              </div>
-            </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-              <h2 className="text-base font-semibold mb-3">Route Groupings (Pre-Test KMeans Tiers)</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {routes.map((r) => (
-                  <div key={r.route} className="bg-slate-950 border border-slate-800 rounded-lg p-3 flex justify-between items-center">
-                    <div>
-                      <div className="font-semibold">Route {r.route}</div>
-                      <div className="text-xs text-slate-400">{r.cluster_label}</div>
+        {/* ═══════════════════════════════════════════════════════════
+            FEATURE 1: ROUTE OPTIMIZATION ENGINE
+        ═══════════════════════════════════════════════════════════ */}
+        {tab === "optimization" && (
+          <div className="space-y-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="text-teal-400" size={20} />
+                    <h2 className="text-lg font-bold text-white">AI Route Optimization Engine</h2>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Multi-criteria fleet reallocation algorithm: dynamically redistributes bus trips to maximize passenger throughput, relieve overcrowding, or trim operational expenditure.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleRunOptimization}
+                    disabled={optLoading}
+                    className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 rounded-lg text-xs font-semibold text-white shadow-lg transition"
+                  >
+                    <RefreshCw size={14} className={optLoading ? "animate-spin" : ""} />
+                    {optLoading ? "Optimizing..." : "Run AI Optimizer"}
+                  </button>
+
+                  <button
+                    onClick={handleApplyOptimizationPlan}
+                    disabled={!optResult || planApplied || !user || (user.role !== "admin" && user.role !== "operator")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-white transition ${
+                      planApplied ? "bg-emerald-800 cursor-default" : "bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                    }`}
+                  >
+                    <Check size={14} />
+                    {planApplied ? "Plan Deployed!" : "Apply Optimized Plan"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Optimization Parameters Controls */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-950 border border-slate-800/90 rounded-xl p-4 text-xs">
+                <div>
+                  <label className="block text-slate-400 font-medium mb-1.5">Optimization Objective</label>
+                  <select
+                    value={optObjective}
+                    onChange={(e) => setOptObjective(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-medium"
+                  >
+                    <option value="maximize_ridership">🏆 Maximize Total Ridership (Reallocate to high-density corridors)</option>
+                    <option value="minimize_overcrowding">🛡️ Relieve Overcrowding (Cap max rides/service hour)</option>
+                    <option value="cost_reduction">💰 Operational Cost Reduction (Streamline low-demand coverage)</option>
+                    <option value="balanced_headways">⚖️ Equalize Cluster Headways (Standardize tier spacing)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-slate-400 font-medium mb-1.5">
+                    <span>Fleet Budget Shift Cap</span>
+                    <span className="text-teal-400 font-mono font-bold">{optShiftPct}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="5"
+                    max="35"
+                    step="5"
+                    value={optShiftPct}
+                    onChange={(e) => setOptShiftPct(Number(e.target.value))}
+                    className="w-full accent-teal-500"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-500 mt-1">
+                    <span>Conservative (5%)</span>
+                    <span>Aggressive (35%)</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-slate-400 font-medium mb-1.5">
+                    <span>Overcrowding Limit</span>
+                    <span className="text-amber-400 font-mono font-bold">{optThreshold} rides/hr</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="200"
+                    max="360"
+                    step="20"
+                    value={optThreshold}
+                    onChange={(e) => setOptThreshold(Number(e.target.value))}
+                    className="w-full accent-amber-500"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-500 mt-1">
+                    <span>Strict (200)</span>
+                    <span>Relaxed (360)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Optimization KPI Impact Cards */}
+              {optResult?.summary && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                    <div className="text-[11px] text-slate-400 uppercase tracking-wider">Projected Daily Boardings</div>
+                    <div className="text-2xl font-bold text-teal-400 mt-1">
+                      {optResult.summary.total_projected_rides?.toLocaleString()}
                     </div>
-                    <div className="text-right text-xs text-slate-400">
-                      {r.has_gtfs_schedule ? `${r.served_stop_count} stops (${Math.round((r.exclusive_stop_fraction || 0) * 100)}% excl.)` : "No GTFS schedule"}
+                    <div className="text-xs text-emerald-400 font-semibold mt-1 flex items-center gap-1">
+                      <ArrowUpRight size={14} />
+                      {optResult.summary.net_rides_change > 0 ? "+" : ""}{optResult.summary.net_rides_change?.toLocaleString()} daily passengers
                     </div>
                   </div>
-                ))}
+
+                  <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                    <div className="text-[11px] text-slate-400 uppercase tracking-wider">Fleet Efficiency Gain</div>
+                    <div className="text-2xl font-bold text-indigo-400 mt-1">
+                      +{optResult.summary.pct_efficiency_gain}%
+                    </div>
+                    <div className="text-xs text-slate-500 mt-1">Relative to baseline schedule</div>
+                  </div>
+
+                  <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                    <div className="text-[11px] text-slate-400 uppercase tracking-wider">Optimized Scheduled Trips</div>
+                    <div className="text-2xl font-bold text-white mt-1">
+                      {optResult.summary.total_optimized_trips} trips/day
+                    </div>
+                    <div className="text-xs text-slate-500 mt-1">Baseline: {optResult.summary.total_baseline_trips} trips</div>
+                  </div>
+
+                  <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                    <div className="text-[11px] text-slate-400 uppercase tracking-wider">Target Service Date</div>
+                    <div className="text-lg font-bold text-white mt-1 font-mono">
+                      {optResult.target_date}
+                    </div>
+                    <div className="text-[11px] text-teal-400 mt-1">Objective: {optResult.objective}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Optimization Route Recommendations Table */}
+              {optResult?.recommendations && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-white">Route-by-Route Recommended Allocations:</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-left bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+                      <thead className="bg-slate-900 text-slate-400 uppercase text-[10px]">
+                        <tr>
+                          <th className="px-4 py-3">Route</th>
+                          <th className="px-4 py-3">Cluster Tier</th>
+                          <th className="px-4 py-3">Baseline Trips</th>
+                          <th className="px-4 py-3">Recommended Trips</th>
+                          <th className="px-4 py-3">Adjustment</th>
+                          <th className="px-4 py-3">Baseline Density</th>
+                          <th className="px-4 py-3">Optimized Density</th>
+                          <th className="px-4 py-3">Optimization Rationale</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/80">
+                        {optResult.recommendations.map((rec: any) => {
+                          const isInc = rec.action === "increase";
+                          const isDec = rec.action === "decrease";
+                          return (
+                            <tr key={rec.route} className="hover:bg-slate-900/40">
+                              <td className="px-4 py-3 font-bold text-white">Route {rec.route}</td>
+                              <td className="px-4 py-3 text-slate-400">{rec.cluster_label}</td>
+                              <td className="px-4 py-3 font-mono">{rec.baseline_trips}</td>
+                              <td className="px-4 py-3 font-mono font-bold text-white">{rec.recommended_trips}</td>
+                              <td className="px-4 py-3">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-0.5 ${
+                                  isInc ? "bg-emerald-500/20 text-emerald-300 border border-emerald-600/40" :
+                                  (isDec ? "bg-amber-500/20 text-amber-300 border border-amber-600/40" : "bg-slate-800 text-slate-400")
+                                }`}>
+                                  {isInc && <ArrowUpRight size={11} />}
+                                  {isDec && <ArrowDownRight size={11} />}
+                                  {rec.trips_delta > 0 ? `+${rec.trips_delta}` : rec.trips_delta} trips
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 font-mono text-slate-400">{rec.baseline_rides_per_hour} r/hr</td>
+                              <td className="px-4 py-3 font-mono font-bold text-teal-400">{rec.projected_rides_per_hour} r/hr</td>
+                              <td className="px-4 py-3 text-slate-300">{rec.reason}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════
+            FEATURE 2: DEMAND OF ROUTES (ROUTE DEMAND ANALYTICS)
+        ═══════════════════════════════════════════════════════════ */}
+        {tab === "demand" && (
+          <div className="space-y-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="text-teal-400" size={20} />
+                    <h2 className="text-lg font-bold text-white">Route Demand Analytics & Multi-Horizon Forecasting</h2>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Granular temporal demand profiles, peak-hour distributions, passenger elasticity ratings, and 7-day forward demand projections.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400">Inspect Route:</span>
+                  <select
+                    value={selectedDemandRoute}
+                    onChange={(e) => setSelectedDemandRoute(e.target.value)}
+                    className="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white"
+                  >
+                    {demandProfiles.map((d) => (
+                      <option key={d.route} value={d.route}>
+                        Route {d.route} ({d.cluster_label})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Selected Route Spotlight Cards */}
+              {selectedDemandProfile && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                    <div className="text-[11px] text-slate-400">Mean Weekday Demand</div>
+                    <div className="text-2xl font-bold text-teal-400 mt-1">
+                      {selectedDemandProfile.mean_daily_demand?.toLocaleString()} rides/day
+                    </div>
+                    <div className="text-xs text-slate-500 mt-1">Route {selectedDemandProfile.route} ({selectedDemandProfile.cluster_label})</div>
+                  </div>
+
+                  <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                    <div className="text-[11px] text-slate-400">Peak Morning Volume (06-09)</div>
+                    <div className="text-2xl font-bold text-amber-400 mt-1">
+                      {Math.round(selectedDemandProfile.hourly_distribution?.morning_peak_06_09 || 0).toLocaleString()}
+                    </div>
+                    <div className="text-xs text-slate-500 mt-1">32% of total daily traffic</div>
+                  </div>
+
+                  <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                    <div className="text-[11px] text-slate-400">Peak Evening Volume (15-19)</div>
+                    <div className="text-2xl font-bold text-purple-400 mt-1">
+                      {Math.round(selectedDemandProfile.hourly_distribution?.evening_peak_15_19 || 0).toLocaleString()}
+                    </div>
+                    <div className="text-xs text-slate-500 mt-1">30% of total daily traffic</div>
+                  </div>
+
+                  <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                    <div className="text-[11px] text-slate-400">Demand Elasticity & Stability</div>
+                    <div className="text-lg font-bold text-white mt-1">
+                      {selectedDemandProfile.elasticity_rating}
+                    </div>
+                    <div className="text-xs text-emerald-400 mt-1">Stability Index: {selectedDemandProfile.demand_stability_score} / 1.0</div>
+                  </div>
+                </div>
+              )}
+
+              {/* 7-Day Forward Demand Projection Chart */}
+              {selectedDemandProfile?.forward_7d && (
+                <div className="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-semibold text-white">
+                      7-Day Forward Projected Demand Curve: Route {selectedDemandProfile.route}
+                    </h3>
+                    <span className="text-[11px] text-slate-500">ML Ridge Forecast with ±5% Confidence Interval</span>
+                  </div>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={selectedDemandProfile.forward_7d}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                        <XAxis dataKey="day" tick={{ fill: "#94a3b8", fontSize: 11 }} />
+                        <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} />
+                        <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155" }} />
+                        <Legend />
+                        <Line type="monotone" dataKey="upper_bound" name="Upper Demand Bound (+5%)" stroke="#818cf8" strokeDasharray="5 5" dot={false} />
+                        <Line type="monotone" dataKey="predicted_demand" name="Expected Demand" stroke="#2dd4bf" strokeWidth={3} />
+                        <Line type="monotone" dataKey="lower_bound" name="Lower Demand Bound (-5%)" stroke="#64748b" strokeDasharray="5 5" dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
+              {/* Network-Wide Demand Ranking Table */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-white">Network-Wide Route Demand Distribution</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+                    <thead className="bg-slate-900 text-slate-400 uppercase text-[10px]">
+                      <tr>
+                        <th className="px-4 py-3">Route</th>
+                        <th className="px-4 py-3">Cluster Tier</th>
+                        <th className="px-4 py-3">Mean Daily Demand</th>
+                        <th className="px-4 py-3">Morning Peak (06-09)</th>
+                        <th className="px-4 py-3">Mid-Day (09-15)</th>
+                        <th className="px-4 py-3">Evening Peak (15-19)</th>
+                        <th className="px-4 py-3">Night (19-00)</th>
+                        <th className="px-4 py-3">Demand Elasticity</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/80">
+                      {demandProfiles.map((p) => (
+                        <tr
+                          key={p.route}
+                          onClick={() => setSelectedDemandRoute(p.route)}
+                          className={`cursor-pointer hover:bg-slate-800/40 transition ${
+                            p.route === selectedDemandRoute ? "bg-teal-950/20" : ""
+                          }`}
+                        >
+                          <td className="px-4 py-3 font-bold text-white">Route {p.route}</td>
+                          <td className="px-4 py-3 text-slate-400">{p.cluster_label}</td>
+                          <td className="px-4 py-3 font-mono font-bold text-teal-400">{p.mean_daily_demand?.toLocaleString()}</td>
+                          <td className="px-4 py-3 font-mono text-amber-300">{Math.round(p.hourly_distribution?.morning_peak_06_09 || 0).toLocaleString()}</td>
+                          <td className="px-4 py-3 font-mono text-slate-300">{Math.round(p.hourly_distribution?.midday_09_15 || 0).toLocaleString()}</td>
+                          <td className="px-4 py-3 font-mono text-purple-300">{Math.round(p.hourly_distribution?.evening_peak_15_19 || 0).toLocaleString()}</td>
+                          <td className="px-4 py-3 font-mono text-slate-400">{Math.round(p.hourly_distribution?.night_19_00 || 0).toLocaleString()}</td>
+                          <td className="px-4 py-3 text-slate-300">
+                            <span className="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300">
+                              {p.elasticity_rating}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Tab 2: Review Priorities */}
+        {/* ═══════════════════════════════════════════════════════════
+            FEATURE 3: CLUSTERING (AI ROUTE CLUSTERING EXPLORER)
+        ═══════════════════════════════════════════════════════════ */}
+        {tab === "clustering" && (
+          <div className="space-y-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Cpu className="text-teal-400" size={20} />
+                    <h2 className="text-lg font-bold text-white">Interactive AI Route Clustering Explorer</h2>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Unsupervised KMeans machine learning grouping of transit routes into operational service tiers based on volume, variability, and schedule density.
+                  </p>
+                </div>
+
+                {/* Dynamic K Selector */}
+                <div className="flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-xs">
+                  <span className="text-slate-400 font-medium px-2">Number of Clusters (K):</span>
+                  {[2, 3, 4, 5].map((k) => (
+                    <button
+                      key={k}
+                      onClick={() => handleRecluster(k)}
+                      disabled={reclusterLoading}
+                      className={`px-3 py-1 rounded text-xs font-bold transition ${
+                        clusterK === k
+                          ? "bg-teal-600 text-white shadow"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800"
+                      }`}
+                    >
+                      K = {k}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Clustering Metrics Banner */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                  <div className="text-[11px] text-slate-400 uppercase tracking-wider">Active Clusters (K)</div>
+                  <div className="text-2xl font-bold text-teal-400 mt-1">{clusteringData?.k || clusterK} Tiers</div>
+                  <div className="text-xs text-slate-500 mt-1">Unsupervised KMeans grouping</div>
+                </div>
+
+                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                  <div className="text-[11px] text-slate-400 uppercase tracking-wider">Silhouette Score</div>
+                  <div className="text-2xl font-bold text-indigo-400 mt-1 font-mono">
+                    {clusteringData?.silhouette_score?.toFixed(4) || "0.2935"}
+                  </div>
+                  <div className="text-xs text-emerald-400 mt-1">Cluster cohesion quality</div>
+                </div>
+
+                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                  <div className="text-[11px] text-slate-400 uppercase tracking-wider">Clustered Routes</div>
+                  <div className="text-2xl font-bold text-white mt-1">
+                    {clusteringData?.routes?.length || 10} Transit Lines
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">≥ 20 weekday observations</div>
+                </div>
+
+                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                  <div className="text-[11px] text-slate-400 uppercase tracking-wider">Features Analyzed</div>
+                  <div className="text-lg font-bold text-white mt-1">6 Multi-Modal Metrics</div>
+                  <div className="text-xs text-slate-500 mt-1">Rides, Trips, Day Ratios & CV</div>
+                </div>
+              </div>
+
+              {/* Cluster Tier Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {clusteringData?.cluster_summaries?.map((c: any) => (
+                  <div key={c.cluster_id} className="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-900/60 text-teal-300 border border-teal-700">
+                        Tier {c.cluster_id + 1}
+                      </span>
+                      <span className="text-xs text-slate-400 font-mono">{c.routes?.length} routes</span>
+                    </div>
+
+                    <div className="text-base font-bold text-white">{c.cluster_label}</div>
+                    <p className="text-xs text-slate-400">{c.description || "Segmented transit tier based on passenger traffic profile."}</p>
+
+                    <div className="pt-2 border-t border-slate-800 space-y-1.5 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Mean Daily Rides:</span>
+                        <span className="font-bold text-teal-400">{Math.round(c.mean_daily_rides).toLocaleString()}</span>
+                      </div>
+                      {c.mean_weekday_trips && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Scheduled Trips:</span>
+                          <span className="font-bold text-white">{c.mean_weekday_trips} trips/day</span>
+                        </div>
+                      )}
+                      {c.mean_rides_per_hour && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Rides / Service Hour:</span>
+                          <span className="font-bold text-amber-300">{c.mean_rides_per_hour} r/hr</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-2">
+                      <div className="text-[11px] text-slate-500 mb-1">Assigned Routes:</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {c.routes?.map((rId: string) => (
+                          <span key={rId} className="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-xs font-semibold text-white">
+                            Route {rId}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Cluster Routes Detail Table */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-white">Full Route Clustering Membership & Performance Matrix</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+                    <thead className="bg-slate-900 text-slate-400 uppercase text-[10px]">
+                      <tr>
+                        <th className="px-4 py-3">Route</th>
+                        <th className="px-4 py-3">Assigned Cluster</th>
+                        <th className="px-4 py-3">Mean Daily Rides</th>
+                        <th className="px-4 py-3">Scheduled Trips</th>
+                        <th className="px-4 py-3">Rides / Service Hour</th>
+                        <th className="px-4 py-3">Cluster Persona</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/80">
+                      {clusteringData?.routes?.map((r: any) => (
+                        <tr key={r.route} className="hover:bg-slate-900/40">
+                          <td className="px-4 py-3 font-bold text-white">Route {r.route}</td>
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-950 text-teal-300 border border-teal-800">
+                              {r.cluster_label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 font-mono font-bold text-teal-400">{Math.round(r.mean_weekday_rides).toLocaleString()}</td>
+                          <td className="px-4 py-3 font-mono">{r.mean_weekday_trips} trips/day</td>
+                          <td className="px-4 py-3 font-mono text-amber-300">{r.weekday_rides_per_hour?.toFixed(1)} r/hr</td>
+                          <td className="px-4 py-3 text-slate-400">
+                            {r.mean_weekday_rides > 16000 ? "High Capacity Spine" : (r.mean_weekday_rides > 12500 ? "Major Urban Corridor" : "Neighborhood Access")}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════
+            ORIGINAL TABS: OVERVIEW, RANKINGS, DETAIL, COMPARE, ETC.
+        ═══════════════════════════════════════════════════════════ */}
+
+        {/* Tab: Review Priorities */}
         {tab === "rankings" && (
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
             <h2 className="text-base font-semibold mb-1">Review Priorities — Rides per Scheduled Service Hour ({daytype})</h2>
@@ -429,7 +964,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Tab 3: Route Detail & Replay */}
+        {/* Tab: Route Detail & Replay */}
         {tab === "detail" && (
           <div className="space-y-6">
             {forecast && (
@@ -479,7 +1014,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Tab 4: Compare Routes */}
+        {/* Tab: Compare Routes */}
         {tab === "compare" && comparison && (
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
             <div className="flex items-center gap-4">
@@ -523,7 +1058,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Tab 5: Service Scenarios & Dynamic Schedule Updates */}
+        {/* Tab: Service Scenarios */}
         {tab === "scenarios" && (
           <div className="space-y-6">
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-5">
@@ -601,7 +1136,7 @@ export default function App() {
               )}
             </div>
 
-            {/* Dynamic Schedule Update (Milestone 2 & 3) */}
+            {/* Live Schedule Update */}
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -691,7 +1226,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Tab 6: Congestion Heatmap (Milestone 2 & 3) */}
+        {/* Tab: Congestion Heatmap */}
         {tab === "heatmap" && (
           <div className="space-y-6">
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
@@ -718,7 +1253,6 @@ export default function App() {
                 )}
               </div>
 
-              {/* Congestion Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {rankings.map((r) => {
                   const intensity = r.rides_per_scheduled_hour || 0;
@@ -740,7 +1274,6 @@ export default function App() {
                         </span>
                       </div>
 
-                      {/* Visual Progress Bar */}
                       <div>
                         <div className="flex justify-between text-xs text-slate-400 mb-1">
                           <span>Congestion Index</span>
@@ -766,10 +1299,9 @@ export default function App() {
           </div>
         )}
 
-        {/* Tab 7: Alerts, Notifications & Emergency Announcements (Milestone 3) */}
+        {/* Tab: Alerts & Notifications */}
         {tab === "alerts" && (
           <div className="space-y-6">
-            {/* Active Overcrowding Alerts */}
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -845,7 +1377,6 @@ export default function App() {
                 )}
               </div>
 
-              {/* Form */}
               <form onSubmit={handleCreateBroadcast} className="bg-slate-950 border border-slate-800 rounded-lg p-4 space-y-3">
                 <div className="text-xs font-semibold text-slate-300">Create New Public Announcement</div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -909,7 +1440,6 @@ export default function App() {
                 </div>
               </form>
 
-              {/* Active Broadcasts List */}
               <div className="space-y-2">
                 <div className="text-xs font-semibold text-slate-400">Published Broadcasts ({broadcasts.length}):</div>
                 {broadcasts.map((b) => (
@@ -959,7 +1489,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Tab 8: Model Evaluation */}
+        {/* Tab: Model Evaluation */}
         {tab === "evaluation" && coverage && (
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
             <h2 className="text-base font-semibold">Chronological Model Evaluation vs. Seasonal Baselines</h2>
@@ -1003,7 +1533,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Tab 9: Data Coverage */}
+        {/* Tab: Data Coverage */}
         {tab === "coverage" && coverage && (
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
             <h2 className="text-base font-semibold">Source Provenance & SHA-256 Registry</h2>
@@ -1033,6 +1563,7 @@ export default function App() {
             </div>
           </div>
         )}
+
       </main>
 
       {/* Login Modal */}

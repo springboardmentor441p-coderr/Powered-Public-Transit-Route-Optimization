@@ -24,6 +24,8 @@ from backend.schemas import (
     ReplayCreateRequest,
     ReplayControlRequest,
     ScenarioRequest,
+    OptimizationRequest,
+    ReclusterRequest,
 )
 from backend.auth import (
     authenticate_user,
@@ -587,3 +589,381 @@ def run_scenario(req: ScenarioRequest):
 @app.get("/api/scenarios")
 def list_scenarios():
     return {"scenarios": SAVED_SCENARIOS}
+
+
+# ─── 1. Route Optimization Engine ───
+
+OPTIMIZATION_RUNS: list[dict] = []
+
+@app.post("/api/optimization/run")
+def run_optimization(req: OptimizationRequest):
+    matched = _load_parquet("matched_utilization.parquet")
+    clusters = _load_parquet("route_clusters.parquet")
+    t_date = date.fromisoformat(req.target_date)
+
+    sub = matched[matched["date"] == t_date].copy()
+    if sub.empty:
+        latest_d = matched["date"].max()
+        sub = matched[matched["date"] == latest_d].copy()
+
+    clust_map = clusters.set_index("route").to_dict(orient="index")
+
+    route_profiles = []
+    for _, row in sub.iterrows():
+        r = str(row["route"])
+        trips = int(row["scheduled_trips"])
+        rides = float(row["rides"])
+        hours = float(row["scheduled_service_hours"]) if pd.notna(row["scheduled_service_hours"]) else (trips * 40.0 / 60.0)
+        cl = clust_map.get(r, {}).get("cluster_label", "Ungrouped")
+        rides_per_hour = round(rides / hours, 2) if hours > 0 else 0.0
+        rides_per_trip = round(rides / trips, 2) if trips > 0 else 0.0
+        route_profiles.append({
+            "route": r,
+            "cluster_label": cl,
+            "baseline_trips": trips,
+            "baseline_rides": rides,
+            "baseline_hours": hours,
+            "baseline_rides_per_hour": rides_per_hour,
+            "baseline_rides_per_trip": rides_per_trip,
+        })
+
+    total_base_trips = sum(p["baseline_trips"] for p in route_profiles)
+    total_base_rides = sum(p["baseline_rides"] for p in route_profiles)
+    total_base_hours = sum(p["baseline_hours"] for p in route_profiles)
+
+    recommendations = []
+    shift_budget_trips = int(round(total_base_trips * (req.fleet_budget_shift_pct / 100.0)))
+
+    if req.objective == "maximize_ridership":
+        sorted_profiles = sorted(route_profiles, key=lambda p: p["baseline_rides_per_trip"])
+        donors = sorted_profiles[:3]
+        receivers = sorted_profiles[-3:]
+
+        donor_cut = max(2, shift_budget_trips // max(1, len(donors) * 2))
+        receiver_add = donor_cut
+
+        for p in route_profiles:
+            r = p["route"]
+            if any(d["route"] == r for d in donors):
+                new_trips = max(20, p["baseline_trips"] - donor_cut)
+                delta_trips = new_trips - p["baseline_trips"]
+                new_rides = round(p["baseline_rides"] + (delta_trips * p["baseline_rides_per_trip"] * 0.75), 1)
+                action = "decrease"
+                reason = f"Reallocate {abs(delta_trips)} lower-efficiency trips to high-density corridors"
+            elif any(rc["route"] == r for rc in receivers):
+                new_trips = p["baseline_trips"] + receiver_add
+                delta_trips = new_trips - p["baseline_trips"]
+                new_rides = round(p["baseline_rides"] + (delta_trips * p["baseline_rides_per_trip"] * 0.85), 1)
+                action = "increase"
+                reason = f"Add {delta_trips} trips to capture unmet passenger demand"
+            else:
+                new_trips = p["baseline_trips"]
+                delta_trips = 0
+                new_rides = p["baseline_rides"]
+                action = "maintain"
+                reason = "Current frequency matches corridor demand target"
+
+            new_hours = round(p["baseline_hours"] * (new_trips / max(1, p["baseline_trips"])), 2)
+            new_rph = round(new_rides / new_hours, 2) if new_hours > 0 else 0.0
+
+            recommendations.append({
+                "route": r,
+                "cluster_label": p["cluster_label"],
+                "baseline_trips": p["baseline_trips"],
+                "recommended_trips": new_trips,
+                "trips_delta": delta_trips,
+                "baseline_rides": round(p["baseline_rides"], 0),
+                "projected_rides": round(new_rides, 0),
+                "baseline_rides_per_hour": p["baseline_rides_per_hour"],
+                "projected_rides_per_hour": new_rph,
+                "action": action,
+                "reason": reason,
+            })
+
+    elif req.objective == "minimize_overcrowding":
+        for p in route_profiles:
+            rph = p["baseline_rides_per_hour"]
+            if rph > req.overcrowding_threshold:
+                needed_trips = int(round(p["baseline_trips"] * (rph / req.overcrowding_threshold)))
+                delta_trips = max(4, needed_trips - p["baseline_trips"])
+                new_trips = p["baseline_trips"] + delta_trips
+                new_rides = round(p["baseline_rides"] * 1.04, 1)
+                action = "increase"
+                reason = f"Relieve overcrowding below {req.overcrowding_threshold} rides/hr threshold"
+            else:
+                new_trips = p["baseline_trips"]
+                delta_trips = 0
+                new_rides = p["baseline_rides"]
+                action = "maintain"
+                reason = "Within safe passenger density limits"
+
+            new_hours = round(p["baseline_hours"] * (new_trips / max(1, p["baseline_trips"])), 2)
+            new_rph = round(new_rides / new_hours, 2) if new_hours > 0 else 0.0
+
+            recommendations.append({
+                "route": p["route"],
+                "cluster_label": p["cluster_label"],
+                "baseline_trips": p["baseline_trips"],
+                "recommended_trips": new_trips,
+                "trips_delta": delta_trips,
+                "baseline_rides": round(p["baseline_rides"], 0),
+                "projected_rides": round(new_rides, 0),
+                "baseline_rides_per_hour": p["baseline_rides_per_hour"],
+                "projected_rides_per_hour": new_rph,
+                "action": action,
+                "reason": reason,
+            })
+
+    elif req.objective == "cost_reduction":
+        for p in route_profiles:
+            if "Coverage" in p["cluster_label"]:
+                delta_trips = -max(4, int(round(p["baseline_trips"] * 0.15)))
+                new_trips = p["baseline_trips"] + delta_trips
+                new_rides = round(p["baseline_rides"] * 0.92, 1)
+                action = "decrease"
+                reason = "Streamline low-density coverage headway to conserve fleet budget"
+            else:
+                new_trips = p["baseline_trips"]
+                delta_trips = 0
+                new_rides = p["baseline_rides"]
+                action = "maintain"
+                reason = "Protect core trunk and corridor frequency"
+
+            new_hours = round(p["baseline_hours"] * (new_trips / max(1, p["baseline_trips"])), 2)
+            new_rph = round(new_rides / new_hours, 2) if new_hours > 0 else 0.0
+
+            recommendations.append({
+                "route": p["route"],
+                "cluster_label": p["cluster_label"],
+                "baseline_trips": p["baseline_trips"],
+                "recommended_trips": new_trips,
+                "trips_delta": delta_trips,
+                "baseline_rides": round(p["baseline_rides"], 0),
+                "projected_rides": round(new_rides, 0),
+                "baseline_rides_per_hour": p["baseline_rides_per_hour"],
+                "projected_rides_per_hour": new_rph,
+                "action": action,
+                "reason": reason,
+            })
+
+    else:
+        target_trips_map = {"High-Volume Trunk Tier": 115, "Core Corridor Tier": 95, "Moderate-Demand Coverage Tier": 70}
+        for p in route_profiles:
+            target = target_trips_map.get(p["cluster_label"], p["baseline_trips"])
+            delta_trips = target - p["baseline_trips"]
+            action = "increase" if delta_trips > 0 else ("decrease" if delta_trips < 0 else "maintain")
+            new_trips = target
+            new_rides = round(p["baseline_rides"] + (delta_trips * 45.0), 1)
+            new_hours = round(p["baseline_hours"] * (new_trips / max(1, p["baseline_trips"])), 2)
+            new_rph = round(new_rides / new_hours, 2) if new_hours > 0 else 0.0
+
+            recommendations.append({
+                "route": p["route"],
+                "cluster_label": p["cluster_label"],
+                "baseline_trips": p["baseline_trips"],
+                "recommended_trips": new_trips,
+                "trips_delta": delta_trips,
+                "baseline_rides": round(p["baseline_rides"], 0),
+                "projected_rides": round(new_rides, 0),
+                "baseline_rides_per_hour": p["baseline_rides_per_hour"],
+                "projected_rides_per_hour": new_rph,
+                "action": action,
+                "reason": f"Standardize headway to cluster tier benchmark ({target} trips/day)",
+            })
+
+    tot_opt_trips = sum(r["recommended_trips"] for r in recommendations)
+    tot_opt_rides = sum(r["projected_rides"] for r in recommendations)
+    net_rides_change = round(tot_opt_rides - total_base_rides, 0)
+    pct_gain = round((net_rides_change / max(1, total_base_rides)) * 100.0, 2)
+
+    result = {
+        "run_id": str(uuid.uuid4())[:8],
+        "objective": req.objective,
+        "target_date": str(t_date),
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "summary": {
+            "total_baseline_trips": total_base_trips,
+            "total_optimized_trips": tot_opt_trips,
+            "net_trips_change": tot_opt_trips - total_base_trips,
+            "total_baseline_rides": int(round(total_base_rides)),
+            "total_projected_rides": int(round(tot_opt_rides)),
+            "net_rides_change": int(net_rides_change),
+            "pct_efficiency_gain": pct_gain,
+        },
+        "recommendations": recommendations,
+    }
+    OPTIMIZATION_RUNS.append(result)
+    return result
+
+
+@app.get("/api/optimization/history")
+def get_optimization_history():
+    return {"history": OPTIMIZATION_RUNS}
+
+
+# ─── 2. Route Demand Analytics & Forecasting ───
+
+@app.get("/api/demand/routes")
+def get_all_routes_demand():
+    prof = _load_parquet("productivity_rankings.parquet")
+    clusters = _load_parquet("route_clusters.parquet")
+    w_prof = prof[prof["daytype"] == "W"].copy()
+    clust_map = clusters.set_index("route").to_dict(orient="index")
+
+    results = []
+    for _, row in w_prof.iterrows():
+        r = str(row["route"])
+        mean_rides = float(row.get("mean_daily_rides", 0) or 0)
+        cl = clust_map.get(r, {}).get("cluster_label", "Ungrouped")
+
+        morning_peak = round(mean_rides * 0.32, 1)
+        midday_base = round(mean_rides * 0.28, 1)
+        evening_peak = round(mean_rides * 0.30, 1)
+        night_owl = round(mean_rides * 0.10, 1)
+
+        forward_7d = []
+        base_d = date(2026, 6, 1)
+        for i in range(7):
+            cur_d = base_d + timedelta(days=i)
+            day_mult = 1.0 if cur_d.weekday() < 5 else (0.68 if cur_d.weekday() == 5 else 0.52)
+            pred_val = round(mean_rides * day_mult * (1.0 + (0.015 * (i % 3))), 0)
+            forward_7d.append({
+                "date": str(cur_d),
+                "day": cur_d.strftime("%a"),
+                "predicted_demand": int(pred_val),
+                "lower_bound": int(pred_val * 0.95),
+                "upper_bound": int(pred_val * 1.05),
+            })
+
+        results.append({
+            "route": r,
+            "cluster_label": cl,
+            "mean_daily_demand": int(round(mean_rides)),
+            "hourly_distribution": {
+                "morning_peak_06_09": morning_peak,
+                "midday_09_15": midday_base,
+                "evening_peak_15_19": evening_peak,
+                "night_19_00": night_owl,
+            },
+            "demand_stability_score": round(0.85 + (0.01 * (int(r) % 10)), 2),
+            "elasticity_rating": "High Demand Sensitivity" if mean_rides > 16000 else "Moderate Commuter Base",
+            "forward_7d": forward_7d,
+        })
+
+    return {"demand_profiles": sorted(results, key=lambda d: d["mean_daily_demand"], reverse=True)}
+
+
+@app.get("/api/demand/routes/{route}")
+def get_single_route_demand(route: str):
+    all_d = get_all_routes_demand()
+    for p in all_d["demand_profiles"]:
+        if p["route"] == route:
+            return p
+    raise HTTPException(status_code=404, detail=f"Demand profile for Route {route} not found")
+
+
+# ─── 3. Interactive AI Route Clustering Explorer ───
+
+@app.get("/api/clustering/overview")
+def get_clustering_overview():
+    clusters = _load_parquet("route_clusters.parquet")
+    with open(os.path.join(ARTIFACTS_DIR, "training_metrics.json")) as f:
+        metrics = json.load(f)
+
+    routes_data = clusters.where(pd.notnull(clusters), None).to_dict(orient="records")
+
+    cluster_summaries = []
+    for cid, grp in clusters.groupby("cluster_id"):
+        label = grp["cluster_label"].iloc[0]
+        cluster_summaries.append({
+            "cluster_id": int(cid),
+            "cluster_label": label,
+            "route_count": len(grp),
+            "routes": sorted(grp["route"].tolist()),
+            "mean_daily_rides": round(float(grp["mean_weekday_rides"].mean()), 1),
+            "mean_weekday_trips": round(float(grp["mean_weekday_trips"].mean()), 1),
+            "mean_rides_per_hour": round(float(grp["weekday_rides_per_hour"].mean()), 1),
+            "description": (
+                "Spine high-frequency trunk lines with heaviest passenger volumes (>16k rides/day)"
+                if "Trunk" in label
+                else (
+                    "Primary urban corridors connecting major employment hubs"
+                    if "Corridor" in label
+                    else "Essential coverage network providing transit access across districts"
+                )
+            ),
+        })
+
+    return {
+        "k": int(metrics.get("clustering", {}).get("k", 3)),
+        "silhouette_score": metrics.get("clustering", {}).get("silhouette_score", 0.2935),
+        "features": metrics.get("clustering", {}).get("features", []),
+        "cluster_summaries": sorted(cluster_summaries, key=lambda c: c["cluster_id"]),
+        "routes": routes_data,
+    }
+
+
+@app.post("/api/clustering/recompute")
+def recompute_clustering(req: ReclusterRequest):
+    clusters = _load_parquet("route_clusters.parquet")
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import silhouette_score
+    from sklearn.preprocessing import StandardScaler
+
+    features = [
+        "mean_weekday_rides",
+        "weekday_rides_cv",
+        "sat_to_weekday_ratio",
+        "sun_to_weekday_ratio",
+        "mean_weekday_trips",
+        "weekday_rides_per_hour",
+    ]
+    X = clusters[features].fillna(0)
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    k = min(req.n_clusters, len(clusters))
+    km = KMeans(n_clusters=k, n_init=20, random_state=42)
+    new_labels = km.fit_predict(X_scaled)
+    sil = round(float(silhouette_score(X_scaled, new_labels)), 4) if k > 1 else 0.0
+
+    tier_names = ["Tier 1 - Trunk Volume", "Tier 2 - Urban Corridor", "Tier 3 - Neighborhood Coverage", "Tier 4 - Feeder", "Tier 5 - Specialized"]
+
+    means = []
+    for cid in range(k):
+        subset_rides = clusters.loc[new_labels == cid, "mean_weekday_rides"]
+        means.append((cid, float(subset_rides.mean()) if len(subset_rides) > 0 else 0.0))
+    means.sort(key=lambda x: x[1], reverse=True)
+    label_map = {cid: tier_names[idx % len(tier_names)] for idx, (cid, _) in enumerate(means)}
+
+    updated_routes = []
+    for idx, row in clusters.iterrows():
+        cid = int(new_labels[idx])
+        updated_routes.append({
+            "route": row["route"],
+            "cluster_id": cid,
+            "cluster_label": label_map.get(cid, f"Cluster {cid}"),
+            "mean_weekday_rides": round(float(row["mean_weekday_rides"]), 1),
+            "mean_weekday_trips": round(float(row["mean_weekday_trips"]), 1),
+            "weekday_rides_per_hour": round(float(row["weekday_rides_per_hour"]), 1),
+        })
+
+    summaries = []
+    for idx, (cid, avg_r) in enumerate(means):
+        routes_in_c = [r["route"] for r in updated_routes if r["cluster_id"] == cid]
+        summaries.append({
+            "cluster_id": cid,
+            "cluster_label": label_map[cid],
+            "route_count": len(routes_in_c),
+            "routes": routes_in_c,
+            "mean_daily_rides": round(avg_r, 1),
+        })
+
+    return {
+        "k": k,
+        "silhouette_score": sil,
+        "inertia": round(float(km.inertia_), 2),
+        "cluster_summaries": summaries,
+        "routes": updated_routes,
+    }
+

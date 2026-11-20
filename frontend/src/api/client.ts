@@ -157,3 +157,47 @@ export async function fetchNotifications() {
   const res = await fetch(`${API_BASE}/notifications`);
   return res.json();
 }
+
+export async function runOptimization(payload: {
+  objective: string;
+  target_date?: string;
+  fleet_budget_shift_pct?: number;
+  overcrowding_threshold?: number;
+}) {
+  const res = await fetch(`${API_BASE}/optimization/run`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+export async function fetchOptimizationHistory() {
+  const res = await fetch(`${API_BASE}/optimization/history`);
+  return res.json();
+}
+
+export async function fetchDemandProfiles() {
+  const res = await fetch(`${API_BASE}/demand/routes`);
+  return res.json();
+}
+
+export async function fetchSingleRouteDemand(route: string) {
+  const res = await fetch(`${API_BASE}/demand/routes/${encodeURIComponent(route)}`);
+  return res.json();
+}
+
+export async function fetchClusteringOverview() {
+  const res = await fetch(`${API_BASE}/clustering/overview`);
+  return res.json();
+}
+
+export async function recomputeClustering(n_clusters: number) {
+  const res = await fetch(`${API_BASE}/clustering/recompute`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ n_clusters }),
+  });
+  return res.json();
+}
+

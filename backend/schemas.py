@@ -47,3 +47,12 @@ class ScenarioRequest(BaseModel):
     proposed_trips: int = Field(..., ge=0)
     demand_multiplier: float = Field(default=1.0, gt=0)
     assumed_trip_duration_minutes: Optional[float] = Field(default=None, gt=0)
+
+class OptimizationRequest(BaseModel):
+    objective: str = Field(default="maximize_ridership", pattern="^(maximize_ridership|minimize_overcrowding|cost_reduction|balanced_headways)$")
+    target_date: str = "2026-06-03"
+    fleet_budget_shift_pct: float = Field(default=15.0, ge=0.0, le=50.0)
+    overcrowding_threshold: float = Field(default=280.0, ge=150.0, le=450.0)
+
+class ReclusterRequest(BaseModel):
+    n_clusters: int = Field(default=3, ge=2, le=5)
