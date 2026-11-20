@@ -870,3 +870,18 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - **Tests: 151 pass** (137 earlier + 14 new) in 6 min 4 s. Both databases are empty afterwards.
   - **Where the time goes** (profiled on the test database): one load takes about 117 s, of which **COPY of daily_ridership is 85 s** and the profile identity query 12 s. Everything else takes seconds. Not optimised yet; correctness first.
 - **Interview Q:** *"Your importer verifies hashes, row counts, CHECK constraints and SQL identities. Isn't that overkill?"* Each layer catches a different mistake. Hashes catch a changed file. Row counts catch a truncated read. CHECKs catch a single bad value. Identities catch values that are each valid but inconsistent with each other: the +1-ride test passes every CHECK and is caught only by the identity. Without that layer, the error would have been imported silently.
+
+## Step 59: Provenance rebuild and the real import (`reports/stage6_import_report.md`)
+- **Built:**
+  1. The 6a code committed as `df142f6`.
+  2. The gitignored `geometry/` folder deleted and rebuilt from the committed code.
+  3. The data version imported into the real `routeranker` database with `--create-schema`.
+  4. The import report committed.
+- **Why:** provenance must name real code. A build or import marked `+uncommitted` can't be traced back to exact source, so both had to run after the commit (your rule).
+- **Key concept:** *rebuild as a reproducibility test*. The geometry was rebuilt only so that its manifest names a real commit, but the rebuild also tests determinism: same inputs and code, so the output must match byte for byte. Like re-weighing a parcel on a second scale, which proves the first reading wasn't luck.
+- **Results:**
+  - **Byte-identical geometry:** `route_shapes.csv` sha256 `90e93481…610df`, 47,295,822 bytes, before and after. Only `created_at` and `git_commit` changed in the manifest (`908dc63+uncommitted` → `df142f6`).
+  - **Real import:** `import_git_commit = df142f6`. All 17 tables equal their manifests. **9 of 9 identities hold.** daily_ridership 1,120,604 rows (2001-01-01 → 2026-07-31); 5 ungrouped routes with NULL `group_id`; group IDs only 0 and 1. The tree was clean when the import ran.
+  - **Unexplained:** the real import took **1,091 s**, against 117 s for the same code and data on `routeranker_test` (same server, same default settings: `fsync` on, `shared_buffers` 128 MB). The result is correct, but the cause is not yet known. Something else using the machine is one possibility, not a finding. To check before 6b, if it matters.
+  - The PowerShell display showed `â€¦` in the report; the file itself is valid UTF-8 with real `…` (checked byte by byte).
+- **Interview Q:** *"Why rebuild a file you already had, just to change a commit hash?"* Because a hash in a manifest is a claim: "this code made this file". Before the commit that claim pointed at code that only existed on my disk. After the rebuild it points at a commit anyone can check out, and the identical bytes show the rebuild changed nothing but the claim.
