@@ -885,3 +885,144 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - **Unexplained:** the real import took **1,091 s**, against 117 s for the same code and data on `routeranker_test` (same server, same default settings: `fsync` on, `shared_buffers` 128 MB). The result is correct, but the cause is not yet known. Something else using the machine is one possibility, not a finding. To check before 6b, if it matters.
   - The PowerShell display showed `â€¦` in the report; the file itself is valid UTF-8 with real `…` (checked byte by byte).
 - **Interview Q:** *"Why rebuild a file you already had, just to change a commit hash?"* Because a hash in a manifest is a claim: "this code made this file". Before the commit that claim pointed at code that only existed on my disk. After the rebuild it points at a commit anyone can check out, and the identical bytes show the rebuild changed nothing but the claim.
+
+# Stage 6b: FastAPI endpoints (spec 9.17.3, 9.13.3, 9.12)
+
+## Step 60: API dependencies (`requirements.txt`)
+- **Built:** `fastapi==0.165.0`, `uvicorn==0.54.0` and `httpx==0.28.1`, plus 13 packages they pulled in, all pinned. `pip check` is clean, and `requirements.txt` now matches the environment exactly: **45 pinned = 45 installed**, nothing missing or extra.
+- **Why:**
+  - FastAPI is the backend in the fixed stack (spec 9.17.1);
+  - uvicorn is the server that runs it;
+  - httpx is what FastAPI's `TestClient` uses to call endpoints in tests without starting a server.
+- **Key concept:** *a framework vs a server*. FastAPI is the kitchen: it knows the recipes, i.e. which URL calls which function and how inputs are validated. uvicorn is the waiter: it takes requests from the network to the kitchen and brings the answers back. You need both, and either can be swapped without changing the other.
+- **Decisions:**
+  - **A telemetry package came in, and was checked before pinning.** `opentelemetry-api` is **required by FastAPI itself**, so it can't be dropped without dropping FastAPI. On its own it is a do-nothing interface: the tracer provider is `ProxyTracerProvider`, and no SDK or exporter is installed, so nothing is collected or sent anywhere. A comment in `requirements.txt` says not to add an SDK or exporter without asking.
+  - pydantic, which FastAPI uses to validate request parameters, is now in the environment too; the 422 errors in the plan come from it.
+- **Results:** installed; versions pinned; no conflicts; telemetry confirmed inert.
+- **Interview Q:** *"You installed a web framework and it brought a telemetry library. How do you know your app isn't sending data somewhere?"* I checked rather than assumed. The package is only an API. Without an SDK and an exporter there is no code path that sends anything, and the runtime check shows the placeholder provider. Pinning the version and noting "no SDK without asking" keeps it that way.
+
+## Step 61: App skeleton, `/api/data/coverage`, `/api/routes` (`backend/app/`)
+- **Built:**
+  - `db.py`: one **read-only** connection per request, `resolve_version` (an unknown version is a 404, never a fallback), and the shared cutoff rule `permitted_through(version, cutoff)`;
+  - `labels.py`: the spec 9.13.3 provenance labels and 9.16.1 units in one place, plus `envelope()`, which stamps every response with data version, mode and cutoff;
+  - `routers/data.py` (`GET /api/data/coverage`) and `routers/routes.py` (`GET /api/routes`);
+  - `main.py`.
+  - 16 tests in `backend/tests/test_api_data_routes.py`. The conftest gained `loaded` (the real import, reused across test files and redone only if a test emptied the database) and `client` (the app pointed at `routeranker_test`).
+- **Why:** spec 9.16.2's "Data and coverage" screen and 9.17.3's route discovery are the first two things a reviewer opens.
+- **Key concept:** *a cutoff is enforced where the data is read, not where it is shown*. Every query has `service_date <= permitted_through` in its SQL, so data after the cutoff never reaches Python, let alone the screen. Without a cutoff, the bound is the version's own ridership cutoff, so both cases run the same code. Like a library that keeps future newspapers in a locked room rather than asking readers not to look.
+- **Decisions:**
+  - **Your addition:** coverage and routes take the same backend-enforced `cutoff` as history, rankings and compare.
+  - **Under a cutoff:**
+    - every date-derived count is cut, schedule rows included;
+    - archives captured after it are hidden, and applied ranges are clipped;
+    - version-level figures that describe later data are left out (rows excluded after the version's cutoff, per-file manifest row counts, the import timestamp);
+    - Stage 5 groups are hidden if their profile period ends after the cutoff, and group filters then return 422.
+  - **Bug the tests caught:** `ungrouped=true` first returned about 60 historical identifiers (e.g. `290S`, `X99`) that only have rides from before the ridership window. Those routes were never in Stage 5's population, which is not the same as "ungrouped with a reason". Now `ungrouped=true` returns exactly the 5, routes outside the population match neither value, and an `in_group_population` field keeps the three cases apart.
+  - No connection pool (it would need a new package, `psycopg-pool`). Opening a connection costs about 40 ms per request, to revisit when we measure.
+  - Starlette warns that its TestClient's use of `httpx` is deprecated in favour of a package `httpx2`. Not added, because it would be a new dependency; the tests work as approved.
+- **Results:**
+  - **Real database:**
+    - coverage about 0.9 s (1,120,604 rows; 28,374 matched; 8 archives; 99.915%);
+    - with `cutoff=2026-05-31`: last ride 2026-05-31, 21,360 matched, 7 archives, no date after the cutoff;
+    - routes about 0.3 s (188 identifiers; group 0 = 67; no Saturday service = 30).
+  - **Tests:** 16 pass. The cutoff tests scan every date in the whole response, check every count against independent SQL, and require the cutoff to have actually changed the counts.
+- **Interview Q:** *"Why not just filter the dates in the frontend?"* Then the data has already left the server. Anyone can open the browser's network tab and see the future values, and a tooltip or table could show them by accident. Spec 9.17.3 asks for "replay restrictions in backend queries, not only frontend hiding". The tests check the raw JSON, not the screen.
+
+## Step 62: `GET /api/routes/{route}/history` (`backend/app/routers/history.py`)
+- **Built:** one row for **every calendar date** in the range: reported day type, recorded rides, the selected archive's scheduled service, both ratios, and a status with its reason (`matched`, `ridership_without_schedule`, `schedule_without_ridership`, `no_service_no_record`, `recorded_rides_only`, `no_record`). 14 tests in `backend/tests/test_api_history.py`.
+- **Why:** spec 9.16.3's route detail needs "history, scheduled service, ratios", and 9.16.1 says missing values show "unavailable with a reason" and never render as zero.
+- **Key concept:** *a row for every date makes gaps visible*. If only dates with data were returned, a chart would draw a straight line across a missing week and nobody would notice. With every date present and the missing ones marked, the gap is drawn as a gap, with its reason in the tooltip. Like a diary with a page for every day, where blank pages say "no entry" instead of being torn out.
+- **Decisions:**
+  - The default range is the analysis window (dated schedules exist only there). The full history back to 2001 is available with an explicit `start`.
+  - Day type on dates without this route's record comes from the other routes on that date (Stage 2: one reported day type per date).
+  - `selected_snapshot_id` appears on every date in the schedule window, even when the route didn't run, so "no service" names the timetable that said so (spec 9.19.2).
+  - Only `mode=historical`; `mode=replay` is 422 until Stage 7.
+  - **Your addition:** a range that starts after the cutoff is a **422** ("the requested range starts after the cutoff"), not an empty 200. That includes starts after the version's own cutoff (2026-08-01).
+  - **The strict scan caught an echo:** the response first echoed `requested_end = 2026-07-31` under a 2026-05-31 cutoff. It was only the caller's own input, but I removed the echo rather than add an exemption to the test, so "no date after the cutoff anywhere in the response" holds without exceptions. The response gives the effective range and `clipped_to_cutoff`.
+  - Under a cutoff, the "not found" check uses only data up to the cutoff, so a route that first appears later is a 404 instead of leaking that it exists.
+- **Results:**
+  - **Tests:** 14 pass. Statuses equal the Stage 2 tables for routes 22, 169, 1001 and 10. Route 169's Thanksgiving and Christmas rows are `schedule_without_ridership` with rides null. Route 1001 never has scheduled service.
+  - **Real database:** route 22 default 166 ms (251 days, 88 KB); cutoff 2026-05-31 79 ms (190 days); full history 401 ms but **3.7 MB** (9,343 days). My earlier estimate of about 1.5 MB was wrong, which is another reason the default is the analysis window.
+- **Interview Q:** *"Why return 9,000 rows when most are 'recorded_rides_only'? Just return the days with data."* The client then has to rebuild the calendar to find the gaps, and every client must get that right. Here the server, which knows the schedule window and the reasons, decides once what each day is. The default range keeps the normal response small (88 KB).
+
+## Step 63: `GET /api/rankings` (`backend/app/routers/rankings.py`)
+- **Built:**
+  - the three named rankings of spec 9.12 (observed daily demand, rides per scheduled trip, rides per scheduled hour) for a configured period or `start`/`end`, a day type, a gate (`min_days`), an optional group and an optional cutoff;
+  - the **route overlap review** (Stage 5 pairs ranked by Jaccard) as a fourth metric;
+  - `permitted_matched` and `permitted_schedule` in `db.py`, the shared loaders with the cutoff in SQL;
+  - 22 tests in `backend/tests/test_api_rankings.py`.
+- **Why:** spec 9.16.2's "Review priorities" screen: choose an indicator and minimum days, see the eligible ordering, sample size and explanation.
+- **Key concept:** *one implementation, two callers*. The endpoint doesn't re-implement ranking. It loads the permitted rows and calls Stage 5's own `utilization_profiles`. The API and the Stage 5 report can't drift apart, because there is only one recipe. Like two restaurants serving from the same central kitchen: the dish is the same because it is the same pot.
+- **Decisions:**
+  - **Your change:** `min_days` defaults to *not given*, meaning the reference gate of 20. Any explicit `min_days` with the overlap review is a 422, and `non_reference_gate` is true only when the resolved gate differs from 20, so an explicit `min_days=20` is still "reference".
+  - Ranking within a group takes day types from all routes (as Stage 5 does) and ranks only the group's routes.
+  - The overlap review isn't hidden by the Stage 5 profile period, because it comes from GTFS stop sets alone, with no ridership. Under a cutoff only archives captured on or before it can be chosen.
+  - Only the configuration that applies (gate, direction, ties, ratio rule) is returned, not the period list, so no configured date after a cutoff appears.
+- **Results:**
+  - **Tests:** 22 pass, all on the first run.
+    - For both periods × W/A/U × all 3 metrics, the API equals the imported Stage 5 table (rank, eligibility, reason, days, numerator, denominator) and the committed `stage5_rankings.csv` to its 6 decimals.
+    - With `cutoff=2026-05-31`, the API equals `utilization_profiles` run directly on the CSV rows up to the cutoff, and at least one rank changes.
+    - **Synthetic data version:** route X is 1st with a 2026-02-15 cutoff, and route Y is 1st without it. This is the whole path, SQL included.
+    - Development-period Saturdays: 0 ranked at gate 20, some ranked at gate 8 (labelled non-reference).
+  - **Real database (median of 5):** rankings **129–242 ms** (15–26 KB); overlap review **73 ms** (286 KB).
+- **Interview Q:** *"Your synthetic test inserts fake data into the test database. Why not just test the ranking function directly?"* Because the cutoff lives in SQL, not in the function. A pure function test would pass even if the endpoint forgot the `WHERE service_date <= cutoff`. The synthetic version goes through the real request, the real query and the real function. It is given an old `imported_at`, so it can never become the default version, and it is deleted afterwards.
+
+## Step 64: `GET /api/routes/compare` (`backend/app/routers/compare.py`)
+- **Built:**
+  - 2–8 routes over **one** period and day type, with the three indicators (value, numerator, denominator, network rank, eligibility, reason), service per day, coverage on both sides, group, map lines in one named geometry version, and the Stage 5 overlap rows among the chosen routes;
+  - a refactor of `rankings.py` into `resolve_period()` and `compute_profiles()`, so both endpoints use the same code; the 22 rankings tests confirm nothing changed;
+  - 15 tests in `backend/tests/test_api_compare.py`.
+- **Why:** spec 9.16.2 "Compare routes: comparable period/day type, demand/service and coverage differences", and 9.17.3 "comparable route evidence and geometry version".
+- **Key concept:** *same ruler, same days*. Comparing two routes only means something if both are measured the same way over the same days. The endpoint puts every route on one period, one day type and one gate. It also counts the dates on which **all** chosen routes were observed (`common_matched_days`), and warns when they differ. Route 10 has matched weekdays only from June, so comparing its ratio with route 22's full-window ratio compares a summer with a whole season.
+- **Decisions:**
+  - **Network ranks:** all routes are ranked, then the chosen ones picked, so a rank means the same as on Review priorities.
+  - **Your additions:**
+    1. The response states the gate: `gate_label: "reference gate: 20"`. The rankings endpoint now has the same field, which reads "non-reference gate: 8 (reference: 20)" when another gate is used.
+    2. A route not in the chosen geometry version comes back with no lines and the reason **"not in this timetable version"**: no error and no silently empty map. Route 10 in the 2026-03-26 version is the test. A separate reason ("in this timetable version, but no active trips on its applied dates") is ready for routes listed but not running. No route in this data version needs it (checked: 0).
+  - The default geometry version is the archive in force on the period's last permitted day.
+  - Overlap rows come from GTFS stop sets only, so the group cutoff rule doesn't hide them (consistent with the overlap review).
+- **Results:**
+  - **Tests:** 15 compare + 22 rankings pass.
+    - 49 / X49 in the 2026-03-26 version: smaller-route overlap 1.0, 4 lines, all `[lon, lat]` inside the Chicago box.
+    - Under `cutoff=2026-05-31`: no date after it in the whole response, ranks equal the rankings endpoint with the same cutoff, the geometry is the 2026-05-30 version, and the 2026-07-11 version is a 422.
+  - **Real database (median of 5):** 206–332 ms. Two routes 144–167 KB, eight routes 646 KB; most of it is map lines.
+- **Interview Q:** *"Why return ranks among all routes instead of ranking just the routes being compared?"* With two routes, a "rank among the compared" can only be 1st or 2nd, which says almost nothing. A network rank tells the planner where each route sits among all routes, and it matches the Review priorities screen, so the same route never shows two different ranks.
+
+## Step 65: `GET /api/route-groups`, `GET /api/map/lines`, display simplification
+- **Built:**
+  - `routers/groups.py`: the Stage 5 groups with names, sizes, members, summaries of all 7 candidate features in original units (the 5 used for clustering marked), weekend-service counts, all 4 caveats, the profile period, artifact version and sha, and the ungrouped routes with their reasons;
+  - `analytics/geometry/simplify.py`: Douglas–Peucker simplification for display, numpy only;
+  - `routers/maps.py`: one geometry version's lines, chosen by `geometry_version`, by `date`, or by default the one in force on the last permitted date;
+  - tests: 4 in `test_api_groups.py`, 11 in `test_api_maps.py`, 4 in `analytics/tests/test_simplify.py`.
+- **Why:** spec 9.16.2 needs a home for "inspect a group" (your Route groups screen) and a "dated map" on Network overview. 9.19.2 says every map identifies its geometry version.
+- **Key concept:** *simplify for the eye, never for the record*. A line with 1,100 points along straight grid streets looks identical with 30 points at city zoom, where one screen pixel is about 75 m. Douglas–Peucker keeps a point only if dropping it would move the drawn line by more than the tolerance. The stored lines never change, and every response states the tolerance and both point counts. Like a subway map: true enough to navigate by, and labelled as a diagram, not a survey.
+- **Decisions:**
+  - **Silhouette (your choice, option 1):** the k table is not in the API. It exists only in the committed `reports/stage5_quality_checks.json`, which isn't imported and isn't covered by a manifest sha. The groups response gives k = 2, the fixed k rule and the 5 features, and points to the Stage 5 report, section 4. *My earlier claim that the silhouette was in the Stage 5 manifest was wrong: only `silhouette_tolerance` is there.*
+  - Summaries come from Stage 5's own `group_summary` on the imported profiles. Under a cutoff before 2026-03-31, the response is a 200 with `available: false` and the reason, so the screen can explain instead of erroring.
+  - The map defaults to **10 m**; `simplify_m=0` returns the stored lines exactly. Lines carry `group_id` for colouring and `tie_label`; requested routes missing from the version come back with the compare endpoint's reasons.
+  - A `date` before 2025-11-23 is a 422 ("no timetable version applies"), never an older map.
+- **Results:**
+  - **Tests:** 19 pass. The simplify test checks **every stored point of all 250 lines** of the 2026-07-11 version against its simplified line, point to segment: all within 10 m (+1 m for 5-decimal rounding). Route 125 northbound is the only tied line, as in Step 57.
+  - **One test first failed on precision, explained rather than loosened:** the API's group-0 maximum is 17,082.93258, against 17,082.932584 in `stage5_group_summary.csv`. `route_profiles.csv`, the file that was imported, stores **10 significant digits** (checked), while the summary was computed from full precision and printed to 6 decimals. The test now compares at "equal within both roundings" (relative 1e-9, absolute 5e-7).
+  - **Map size:** a full version is **5.9 MB exact vs 213 KB at 10 m**.
+- **Interview Q:** *"Isn't simplifying the geometry hiding data?"* It would be if it were silent or stored. Here the stored line is untouched, the response says "simplified for display: every stored point within 10 m of the drawn line" with both point counts, and a test proves the 10 m promise for every point of every line. The route-detail and compare views use the exact lines.
+
+## Step 66: Response times of every 6b endpoint on the real database (median of 5, in-process)
+| endpoint | median | size |
+|---|---:|---:|
+| `/api/health` | 5 ms | 0 KB |
+| `/api/data/coverage` (cutoff 2026-05-31) | 1,114 ms (879 ms) | 9 KB (4 KB) |
+| `/api/routes` (cutoff + Saturday filter) | 244 ms (244 ms) | 75 KB (39 KB) |
+| `/api/routes/22/history` (from 2001) | 76 ms (390 ms) | 88 KB (3.7 MB) |
+| `/api/rankings` (dev/Sat/gate 8; cutoff + group) | 240 ms (173 ms; 195 ms) | 15–27 KB |
+| `/api/rankings?metric=route_overlap_review` | 73 ms | 286 KB |
+| `/api/routes/compare` 2 routes (8 routes + cutoff) | 312 ms (275 ms) | 167 KB (645 KB) |
+| `/api/route-groups` (cutoff before profile end) | 81 ms (57 ms) | 6 KB |
+| `/api/map/lines` default 10 m (exact) | 653 ms (426 ms) | 213 KB (5.9 MB) |
+| `/api/map/lines` 2 routes exact | 77 ms | 142 KB |
+- **Verdict:** nothing is slow enough to investigate now (your rule: investigate only if slow). Every call is under 1.2 s.
+  - The slowest is **coverage**, which counts all 1.12 M ridership rows on each call. A cached summary would fix it if it ever matters.
+  - The default **map** spends its time on simplification in Python, the price of a 28× smaller payload.
+  - Opening a connection per request costs roughly 40 ms; a pool still isn't needed.
+- The 18-minute real import (Step 59) is still unexplained. These read times show the real database itself is not slow.
+- **Full suite after 6b:** **237 passed** in 6 min 37 s (137 analytics + 4 simplify + 96 backend). The shared `loaded` fixture means the real import ran **once** (118 s), plus the two deliberate rollback loads (about 100 s each). Before this change the backend tests imported three times.

@@ -3,8 +3,11 @@ from __future__ import annotations
 
 import psycopg
 import pytest
+from fastapi.testclient import TestClient
 
-from backend.importer.import_data import DEFAULTS, REPO_ROOT, collect, read_env
+from backend.app.db import get_conn, open_conn
+from backend.app.main import app
+from backend.importer.import_data import DEFAULTS, REPO_ROOT, collect, create_schema, read_env, write
 
 TABLES = ["dataset_versions", "source_files", "gtfs_snapshots", "routes", "route_shapes", "daily_ridership",
           "daily_schedule", "matched_utilization", "ridership_without_schedule", "schedule_without_ridership",
@@ -35,6 +38,31 @@ def conn(test_url):
 def collected():
     """Real inputs, verified and collected once per session (no database involved)."""
     return collect(DEFAULTS)
+
+
+@pytest.fixture
+def loaded(conn, collected):
+    """routeranker_test holding the real data version. Imported once; re-imported only if a test emptied it
+    (the rollback tests do), so the slow load is not repeated needlessly. Returns the stored import report."""
+    tables, meta = collected
+    dv = meta["data_version"]
+    if conn.execute("SELECT to_regclass('public.dataset_versions') IS NULL").fetchone()[0] or \
+            not conn.execute("SELECT count(*) FROM dataset_versions WHERE data_version = %s", (dv,)).fetchone()[0]:
+        reset(conn)
+        create_schema(conn)
+        write(conn, tables, meta)
+    return conn.execute("SELECT import_report FROM dataset_versions WHERE data_version = %s", (dv,)).fetchone()[0]
+
+
+@pytest.fixture
+def client(test_url, loaded):
+    """The real app, with its database dependency pointed at routeranker_test (same read-only connection type)."""
+    def test_conn():
+        with open_conn(test_url) as c:
+            yield c
+    app.dependency_overrides[get_conn] = test_conn
+    yield TestClient(app)
+    app.dependency_overrides.clear()
 
 
 def reset(c: psycopg.Connection) -> None:

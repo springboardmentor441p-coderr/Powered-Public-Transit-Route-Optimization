@@ -38,3 +38,23 @@ typing_extensions==4.16.0
 psycopg==3.3.9
 psycopg-binary==3.3.9
 # (psycopg's own requirements, typing_extensions and tzdata, are already pinned above)
+# Stage 6b (Application foundation: API): FastAPI app, uvicorn server, httpx for FastAPI's TestClient. spec 9.17.1
+fastapi==0.165.0
+uvicorn==0.54.0
+httpx==0.28.1
+# Transitive (pulled in by fastapi / uvicorn / httpx)
+annotated-doc==0.0.7
+annotated-types==0.8.0
+anyio==4.16.0
+certifi==2026.10.23
+click==8.5.1
+h11==0.16.0
+httpcore==1.0.9
+idna==3.20
+pydantic==2.14.4
+pydantic_core==2.50.5
+starlette==1.10.0
+typing-inspection==0.4.5
+# Required by fastapi itself. API only: with no SDK/exporter installed it is a no-op (ProxyTracerProvider) and
+# sends nothing anywhere. Do not add opentelemetry-sdk or any exporter without asking.
+opentelemetry-api==1.45.2

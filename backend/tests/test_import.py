@@ -7,9 +7,8 @@ import pandas as pd
 import psycopg
 import pytest
 
-from backend.importer.import_data import (DEFAULTS, GROUPS, ImportRefused, create_schema, membership_group_ids,
-                                          write)
-from backend.tests.conftest import counts, reset
+from backend.importer.import_data import DEFAULTS, GROUPS, ImportRefused, membership_group_ids, write
+from backend.tests.conftest import counts
 
 VDIR = DEFAULTS["version_dir"]
 
@@ -18,12 +17,10 @@ def csv(name: str) -> pd.DataFrame:
     return pd.read_csv(VDIR / name, dtype=str, keep_default_na=False, na_filter=False)
 
 
-@pytest.fixture(scope="module")
-def imported(conn, collected):
-    reset(conn)
-    create_schema(conn)
-    tables, meta = collected
-    return write(conn, tables, meta)
+@pytest.fixture
+def imported(loaded):
+    """The import report of the shared test import (conftest `loaded`: one real import per session)."""
+    return loaded
 
 
 def one(conn, sql: str, *args):
