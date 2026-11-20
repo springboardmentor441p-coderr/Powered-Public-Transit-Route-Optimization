@@ -2,6 +2,7 @@
 set -e
 echo "Running RouteRanker analytics & ML training pipeline..."
 python analytics/run_pipeline.py
+python train_models.py
 
 echo "Starting FastAPI backend on http://localhost:8000 ..."
 uvicorn backend.main:app --host 0.0.0.0 --port 8000 &

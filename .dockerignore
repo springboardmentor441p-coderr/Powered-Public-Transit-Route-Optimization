@@ -1,0 +1,8 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+frontend/node_modules/
+.git/
+.vscode/
+*.egg-info/

@@ -1,5 +1,34 @@
 const API_BASE = "http://localhost:8000/api";
 
+function authHeaders(): Record<string, string> {
+  const token = localStorage.getItem("rr_token");
+  if (token) return { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+  return { "Content-Type": "application/json" };
+}
+
+export async function login(username: string, password: string) {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!res.ok) throw new Error("Invalid credentials");
+  const data = await res.json();
+  localStorage.setItem("rr_token", data.access_token);
+  localStorage.setItem("rr_user", JSON.stringify(data.user));
+  return data;
+}
+
+export function logout() {
+  localStorage.removeItem("rr_token");
+  localStorage.removeItem("rr_user");
+}
+
+export function getStoredUser() {
+  const u = localStorage.getItem("rr_user");
+  return u ? JSON.parse(u) : null;
+}
+
 export async function fetchCoverage() {
   const res = await fetch(`${API_BASE}/data/coverage`);
   return res.json();
@@ -65,5 +94,66 @@ export async function runServiceScenario(payload: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+  return res.json();
+}
+
+export async function fetchAlerts() {
+  const res = await fetch(`${API_BASE}/alerts`);
+  return res.json();
+}
+
+export async function acknowledgeAlert(alertId: string) {
+  const res = await fetch(`${API_BASE}/alerts/${alertId}/acknowledge`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  return res.json();
+}
+
+export async function fetchBroadcasts() {
+  const res = await fetch(`${API_BASE}/broadcasts`);
+  return res.json();
+}
+
+export async function createBroadcast(payload: { title: string; message: string; severity: string; affected_routes: string[] }) {
+  const res = await fetch(`${API_BASE}/broadcasts`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("Failed to create broadcast (Admin/Operator required)");
+  return res.json();
+}
+
+export async function deactivateBroadcast(broadcastId: string) {
+  const res = await fetch(`${API_BASE}/broadcasts/${broadcastId}/deactivate`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  return res.json();
+}
+
+export async function fetchHeatmapData(daytype: string) {
+  const res = await fetch(`${API_BASE}/heatmap?daytype=${daytype}`);
+  return res.json();
+}
+
+export async function createScheduleUpdate(payload: { route: string; service_date: string; new_scheduled_trips: number; reason: string }) {
+  const res = await fetch(`${API_BASE}/schedule-updates`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("Failed to update schedule (Admin/Operator required)");
+  return res.json();
+}
+
+export async function fetchScheduleUpdates() {
+  const res = await fetch(`${API_BASE}/schedule-updates`);
+  return res.json();
+}
+
+export async function fetchNotifications() {
+  const res = await fetch(`${API_BASE}/notifications`);
   return res.json();
 }

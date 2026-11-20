@@ -1,28 +1,41 @@
 """
 RouteRanker FastAPI Application (Spec Section 9.17).
 Serves data coverage, route discovery, cutoff-aware history, productivity rankings,
-route comparisons, forecasts, stateful historical replay, and conditional service scenarios.
+route comparisons, forecasts, stateful historical replay, conditional service scenarios,
+JWT authentication & RBAC, overcrowding alerts, emergency broadcasts, schedule updates,
+and congestion heatmap data.
 """
 import os
 import json
 import uuid
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import joblib
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import PROCESSED_DIR, ARTIFACTS_DIR
 from backend.schemas import (
+    LoginRequest,
+    AlertConfigRequest,
+    EmergencyBroadcastRequest,
+    ScheduleUpdateRequest,
     ForecastRequest,
     ReplayCreateRequest,
     ReplayControlRequest,
     ScenarioRequest,
 )
+from backend.auth import (
+    authenticate_user,
+    create_jwt_token,
+    get_current_user,
+    require_authenticated_user,
+    require_operator_or_admin,
+)
 from src.models import DEMAND_FEATURES, SERVICE_FEATURES
 from src.scenarios import calculate_service_scenario
 
-app = FastAPI(title="RouteRanker API", version="3.8.0")
+app = FastAPI(title="RouteRanker API", version="4.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,11 +47,252 @@ REPLAY_SESSIONS: dict[str, dict] = {}
 SAVED_FORECASTS: dict[str, dict] = {}
 SAVED_SCENARIOS: list[dict] = []
 
+# Alert & Notification Stores
+ALERT_CONFIGS: list[dict] = []
+ACTIVE_ALERTS: list[dict] = []
+EMERGENCY_BROADCASTS: list[dict] = []
+SCHEDULE_UPDATES: list[dict] = []
+NOTIFICATION_LOG: list[dict] = []
+
+# Default overcrowding thresholds (auto-seeded on startup)
+DEFAULT_THRESHOLDS = [
+    {"route": "79", "metric": "rides_per_scheduled_hour", "threshold": 300.0, "condition": "above", "severity": "critical", "message": "Route 79 overcrowding: rides/hour exceeds 300"},
+    {"route": "66", "metric": "rides_per_scheduled_hour", "threshold": 270.0, "condition": "above", "severity": "warning", "message": "Route 66 high utilization: rides/hour exceeds 270"},
+    {"route": "8", "metric": "rides_per_scheduled_hour", "threshold": 260.0, "condition": "above", "severity": "warning", "message": "Route 8 high utilization: rides/hour exceeds 260"},
+]
+
+
 def _load_parquet(name: str) -> pd.DataFrame:
     path = os.path.join(PROCESSED_DIR, name)
     if not os.path.exists(path):
         raise HTTPException(status_code=503, detail=f"Processed dataset {name} not built yet.")
     return pd.read_parquet(path)
+
+
+def _evaluate_alerts():
+    """Check all alert configs against current data and generate active alerts."""
+    global ACTIVE_ALERTS
+    try:
+        prof = _load_parquet("productivity_rankings.parquet")
+    except Exception:
+        return
+
+    new_alerts = []
+    for cfg in ALERT_CONFIGS:
+        route_data = prof[prof["route"] == cfg["route"]]
+        if route_data.empty:
+            continue
+        for _, row in route_data.iterrows():
+            metric_val = row.get(cfg["metric"])
+            if metric_val is None or pd.isna(metric_val):
+                continue
+            triggered = (cfg["condition"] == "above" and metric_val > cfg["threshold"]) or \
+                        (cfg["condition"] == "below" and metric_val < cfg["threshold"])
+            if triggered:
+                alert = {
+                    "alert_id": str(uuid.uuid4())[:8],
+                    "route": cfg["route"],
+                    "metric": cfg["metric"],
+                    "metric_value": round(float(metric_val), 2),
+                    "threshold": cfg["threshold"],
+                    "condition": cfg["condition"],
+                    "severity": cfg["severity"],
+                    "message": cfg.get("message") or f"Route {cfg['route']}: {cfg['metric']} = {round(float(metric_val), 2)} ({cfg['condition']} {cfg['threshold']})",
+                    "daytype": str(row.get("daytype", "W")),
+                    "triggered_at": datetime.utcnow().isoformat() + "Z",
+                    "acknowledged": False,
+                }
+                new_alerts.append(alert)
+    ACTIVE_ALERTS = new_alerts
+
+
+@app.on_event("startup")
+def seed_default_alerts():
+    for t in DEFAULT_THRESHOLDS:
+        ALERT_CONFIGS.append(t)
+    _evaluate_alerts()
+
+
+# ─── Authentication Endpoints ───
+
+@app.post("/api/auth/login")
+def login(req: LoginRequest):
+    user = authenticate_user(req.username, req.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    token = create_jwt_token(user)
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": user,
+    }
+
+
+@app.get("/api/auth/me")
+def get_me(user: dict = Depends(require_authenticated_user)):
+    return user
+
+
+# ─── Alert & Notification Endpoints ───
+
+@app.get("/api/alerts")
+def list_alerts():
+    _evaluate_alerts()
+    return {"alerts": ACTIVE_ALERTS, "total": len(ACTIVE_ALERTS)}
+
+
+@app.get("/api/alerts/configs")
+def list_alert_configs():
+    return {"configs": ALERT_CONFIGS}
+
+
+@app.post("/api/alerts/configs")
+def create_alert_config(req: AlertConfigRequest, user: dict = Depends(require_operator_or_admin)):
+    cfg = {
+        "config_id": str(uuid.uuid4())[:8],
+        "route": req.route,
+        "metric": req.metric,
+        "threshold": req.threshold,
+        "condition": req.condition,
+        "severity": req.severity,
+        "message": req.message,
+        "created_by": user["username"],
+        "created_at": datetime.utcnow().isoformat() + "Z",
+    }
+    ALERT_CONFIGS.append(cfg)
+    _evaluate_alerts()
+    return cfg
+
+
+@app.post("/api/alerts/{alert_id}/acknowledge")
+def acknowledge_alert(alert_id: str):
+    for a in ACTIVE_ALERTS:
+        if a["alert_id"] == alert_id:
+            a["acknowledged"] = True
+            NOTIFICATION_LOG.append({
+                "type": "alert_acknowledged",
+                "alert_id": alert_id,
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+            })
+            return a
+    raise HTTPException(status_code=404, detail="Alert not found")
+
+
+# ─── Emergency Broadcast Endpoints ───
+
+@app.get("/api/broadcasts")
+def list_broadcasts():
+    return {"broadcasts": EMERGENCY_BROADCASTS}
+
+
+@app.post("/api/broadcasts")
+def create_broadcast(req: EmergencyBroadcastRequest, user: dict = Depends(require_operator_or_admin)):
+    broadcast = {
+        "broadcast_id": str(uuid.uuid4())[:8],
+        "title": req.title,
+        "message": req.message,
+        "severity": req.severity,
+        "affected_routes": req.affected_routes,
+        "active": req.active,
+        "created_by": user["username"],
+        "created_at": datetime.utcnow().isoformat() + "Z",
+    }
+    EMERGENCY_BROADCASTS.append(broadcast)
+    NOTIFICATION_LOG.append({
+        "type": "emergency_broadcast",
+        "broadcast_id": broadcast["broadcast_id"],
+        "title": req.title,
+        "timestamp": broadcast["created_at"],
+    })
+    return broadcast
+
+
+@app.post("/api/broadcasts/{broadcast_id}/deactivate")
+def deactivate_broadcast(broadcast_id: str, user: dict = Depends(require_operator_or_admin)):
+    for b in EMERGENCY_BROADCASTS:
+        if b["broadcast_id"] == broadcast_id:
+            b["active"] = False
+            return b
+    raise HTTPException(status_code=404, detail="Broadcast not found")
+
+
+# ─── Schedule Update Endpoints ───
+
+@app.get("/api/schedule-updates")
+def list_schedule_updates():
+    return {"updates": SCHEDULE_UPDATES}
+
+
+@app.post("/api/schedule-updates")
+def create_schedule_update(req: ScheduleUpdateRequest, user: dict = Depends(require_operator_or_admin)):
+    update = {
+        "update_id": str(uuid.uuid4())[:8],
+        "route": req.route,
+        "service_date": req.service_date,
+        "new_scheduled_trips": req.new_scheduled_trips,
+        "reason": req.reason,
+        "status": "applied",
+        "created_by": user["username"],
+        "created_at": datetime.utcnow().isoformat() + "Z",
+    }
+    SCHEDULE_UPDATES.append(update)
+    NOTIFICATION_LOG.append({
+        "type": "schedule_update",
+        "update_id": update["update_id"],
+        "route": req.route,
+        "timestamp": update["created_at"],
+    })
+    return update
+
+
+# ─── Notification Log ───
+
+@app.get("/api/notifications")
+def list_notifications():
+    return {"notifications": sorted(NOTIFICATION_LOG, key=lambda n: n.get("timestamp", ""), reverse=True)}
+
+
+# ─── Congestion Heatmap Data ───
+
+@app.get("/api/heatmap")
+def get_heatmap_data(daytype: str = Query(default="W", pattern="^(W|A|U)$")):
+    prof = _load_parquet("productivity_rankings.parquet")
+    structure = _load_parquet("route_structure.parquet")
+    with open(os.path.join(PROCESSED_DIR, "route_shapes.json")) as f:
+        shapes_doc = json.load(f)
+
+    sub = prof[prof["daytype"] == daytype].copy()
+    struct_map = structure.set_index("route").to_dict(orient="index")
+
+    heatmap_points = []
+    for _, row in sub.iterrows():
+        route = row["route"]
+        coords = shapes_doc["shapes"].get(route, [])
+        intensity = float(row.get("rides_per_scheduled_hour", 0) or 0)
+        rides = float(row.get("mean_daily_rides", 0) or 0)
+        st = struct_map.get(route, {})
+        for c in coords:
+            heatmap_points.append({
+                "route": route,
+                "lat": c[0],
+                "lng": c[1],
+                "intensity": round(intensity, 2),
+                "rides": round(rides, 0),
+                "stop_count": st.get("served_stop_count"),
+                "congestion_level": "critical" if intensity > 280 else ("high" if intensity > 200 else ("moderate" if intensity > 140 else "low")),
+            })
+    return {
+        "daytype": daytype,
+        "points": heatmap_points,
+        "summary": {
+            "total_routes": len(sub),
+            "critical_routes": len(set(p["route"] for p in heatmap_points if p["congestion_level"] == "critical")),
+            "high_routes": len(set(p["route"] for p in heatmap_points if p["congestion_level"] == "high")),
+        },
+    }
+
+
+# ─── Original Data Endpoints (unchanged) ───
 
 @app.get("/api/data/coverage")
 def get_data_coverage():
@@ -72,6 +326,7 @@ def get_data_coverage():
         "model_evaluation": metrics,
     }
 
+
 @app.get("/api/routes")
 def list_routes():
     structure = _load_parquet("route_structure.parquet")
@@ -96,6 +351,7 @@ def list_routes():
             "cluster_label": cl.get("cluster_label", "Ungrouped"),
         })
     return {"routes": out}
+
 
 @app.get("/api/routes/{route}/history")
 def get_route_history(
@@ -134,6 +390,7 @@ def get_route_history(
         "history": records,
     }
 
+
 @app.get("/api/rankings")
 def get_rankings(daytype: str = Query(default="W", pattern="^(W|A|U)$")):
     prof = _load_parquet("productivity_rankings.parquet")
@@ -149,6 +406,7 @@ def get_rankings(daytype: str = Query(default="W", pattern="^(W|A|U)$")):
         "metric": "rides_per_scheduled_hour",
         "rankings": sub.where(pd.notnull(sub), None).to_dict(orient="records"),
     }
+
 
 @app.get("/api/routes/compare")
 def compare_routes(route_a: str, route_b: str, daytype: str = "W"):
@@ -168,6 +426,7 @@ def compare_routes(route_a: str, route_b: str, daytype: str = "W"):
         "route_b_profile": pb.where(pd.notnull(pb), None).to_dict(orient="records"),
         "stop_overlap": ov.to_dict(orient="records"),
     }
+
 
 @app.post("/api/forecasts")
 def generate_forecast(req: ForecastRequest):
@@ -252,6 +511,7 @@ def generate_forecast(req: ForecastRequest):
     SAVED_FORECASTS[key] = res
     return res
 
+
 @app.post("/api/replays")
 def create_replay(req: ReplayCreateRequest):
     sid = str(uuid.uuid4())[:8]
@@ -266,11 +526,13 @@ def create_replay(req: ReplayCreateRequest):
     }
     return REPLAY_SESSIONS[sid]
 
+
 @app.get("/api/replays/{session_id}")
 def get_replay(session_id: str):
     if session_id not in REPLAY_SESSIONS:
         raise HTTPException(status_code=404, detail="Replay session not found")
     return REPLAY_SESSIONS[session_id]
+
 
 @app.post("/api/replays/{session_id}/control")
 def control_replay(session_id: str, req: ReplayControlRequest):
@@ -292,6 +554,7 @@ def control_replay(session_id: str, req: ReplayControlRequest):
         else:
             sess["status"] = "completed"
     return sess
+
 
 @app.post("/api/scenarios")
 def run_scenario(req: ScenarioRequest):
@@ -319,6 +582,7 @@ def run_scenario(req: ScenarioRequest):
     }
     SAVED_SCENARIOS.append(record)
     return record
+
 
 @app.get("/api/scenarios")
 def list_scenarios():
