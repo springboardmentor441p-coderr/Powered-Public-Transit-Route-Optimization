@@ -22,7 +22,7 @@ import { Empty } from '../components/States'
 import { Value } from '../components/Value'
 import { METRIC_ORDER } from '../lib/closerLook'
 import { fmtDate, fmtRange } from '../lib/dates'
-import { fmt } from '../lib/format'
+import { fmt, fmtPct } from '../lib/format'
 import { rankingProvenance } from '../lib/provenance'
 import { daytypeMeans, recordCoverage, shareOfWeekday } from '../lib/routeProfile'
 
@@ -213,7 +213,7 @@ function RouteBody({ route, info }: { route: string; info: RouteRow | undefined 
                             <RouteSign route={other(p)} groupId={groupOf.get(other(p))} size="sm" /></Link></td>
                           <td className="n num">{fmt(p.shared_stop_count)}</td>
                           <td className="n num">{fmt(p.jaccard_stop_overlap, 3)}</td>
-                          <td className="n num">{fmt(p.smaller_route_stop_overlap * 100)} %</td>
+                          <td className="n num">{fmtPct(p.smaller_route_stop_overlap)} %</td>
                           <td className="n num">#{p.rank}</td>
                         </tr>
                       ))}

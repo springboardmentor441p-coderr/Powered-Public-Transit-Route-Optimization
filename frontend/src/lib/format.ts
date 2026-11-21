@@ -20,3 +20,11 @@ export function fmtRank(rank: number | null | undefined, of: number, reason?: st
 /** A number field's width: one `ch` per character typed (at least 2) plus room for the padding and the list
  *  arrow, so the whole value is always visible ("20" never shows as "2"). */
 export const fieldWidth = (text: string) => `calc(${Math.max(text.length, 2) + 1}ch + 1.5rem)`
+
+/** A 0-1 share as a whole percent, except that a share just below 1 is never rounded up to "100": it shows one
+ *  decimal ("99.6"), so "100 %" always means every one. Missing stays "unavailable". */
+export function fmtPct(share: number | null | undefined, reason?: string | null): string {
+  if (share == null || Number.isNaN(share)) return fmt(share, 0, reason)
+  const p = share * 100
+  return share < 1 && Math.round(p) >= 100 ? fmt(Math.floor(p * 10) / 10, 1) : fmt(p, 0)
+}

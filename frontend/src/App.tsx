@@ -9,6 +9,7 @@ import { TopBar } from './components/TopBar'
 import { AlikePage } from './screens/AlikePage'
 import { CloserLookPage } from './screens/CloserLookPage'
 import { OneRoutePage } from './screens/OneRoutePage'
+import { SharedStopsPage } from './screens/SharedStopsPage'
 import { StartPage } from './screens/StartPage'
 import { StylePage } from './screens/StylePage'
 
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/route" element={<OneRoutePage />} />
           <Route path="/route/:route" element={<OneRoutePage />} />
           <Route path="/alike" element={<AlikePage />} />
+          <Route path="/shared-stops" element={<SharedStopsPage />} />
           <Route path="/style" element={<StylePage />} />
           <Route path="*" element={<NotBuilt />} />
         </Route>

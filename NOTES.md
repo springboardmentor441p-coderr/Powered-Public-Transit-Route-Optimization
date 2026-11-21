@@ -1286,3 +1286,29 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - the left-off note used column keys (`sunday_holiday_to_weekday_rides_ratio`); it now uses words, with a test;
   - the API server's auto-reload had hung and was serving old code. I restarted it without `--reload`.
 - **Interview Q:** *"Silhouette 0.38: are these groups real?"* They're moderately separated. The page says so (caveat 3) and shows the overlap directly, so nobody reads a group number as a grade. The useful claim is "typical members differ", not "every route belongs cleanly".
+
+## Step 74: Shared stops (`/shared-stops`), plan written before coding
+- **What it shows:**
+  - **The route overlap review table:** every pair of routes that share stops in a chosen timetable, with both overlap measures side by side:
+    - **Jaccard:** shared ÷ all stops of either route;
+    - **share of the smaller route:** shared ÷ stops of the shorter route.
+  - **Each route's own stops,** as a share of its total.
+  - **Controls:** sort by either measure (highest or lowest first), and an optional "involving route X" filter.
+  - **Selected pair:** the stop-share strip and a map of both routes.
+  - **The "corridor review only" label,** shown as the API sends it.
+- **Insight it highlights:** the two overlap measures answer different questions. Jaccard says "are these two routes the same?", and the smaller-route share says "is one route inside the other?". The opening sentence counts how many of the top 10 pairs by each measure are the same pairs, and how many pairs share every stop of the smaller route.
+- **Rules:**
+  - Shared stop IDs are corridor evidence only, never merge/split evidence, so the label stays next to the table.
+  - Pair counts and stop counts come from the API.
+- **Built:**
+  - `/shared-stops`: timetable, route filter, sort measure and order in one sentence. It has the "corridor review only" label, an opening sentence counted from the pairs, the pair table (both measures, plus each route's own stops), and for the chosen pair the stop-share strip and a map of both routes.
+  - Helpers in `lib/sharedStops.ts` (`sortPairs`, `topAgreement`, `fullyInside`, `involving`), with tests.
+- **Key concept:** *two overlap measures, two questions*. Jaccard compares two routes as equals: how much of everything they serve is shared? The smaller-route share asks whether a short route is contained in a long one. An express inside a local scores low on Jaccard but 100 % on the smaller-route share.
+- **Decisions:**
+  - A new `fmtPct` never rounds a share below 1 up to "100" (0.996 shows 99.6). "100 %" therefore always agrees with the "every stop of the smaller route" count. It is used on every screen that shows these shares.
+  - The strip's warning label is optional, so a page that shows the label once doesn't repeat it.
+- **Results:** in `frontend\`: tsc, lint, vitest (71 tests) and build pass.
+- **Screenshot check (1366/1920):**
+  - the strip's narrow "1 only" segment was cut to "1 o". A narrow segment now shows just the count, with the words in its tooltip and a minimum width.
+  - I checked that the "100 %" pair (49/X49) really is 71 of 71 stops.
+- **Interview Q:** *"Why not just say routes 120 and 121 should merge?"* Shared stop IDs ignore direction, timing, walking access and transfers. The data supports "these corridors are worth a look", not a merge decision. That's why the label sits next to the table.

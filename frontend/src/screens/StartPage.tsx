@@ -19,7 +19,7 @@ import { Choice } from '../components/Sentence'
 import { TrendChart } from '../components/TrendChart'
 import { Value } from '../components/Value'
 import { fmtDate, fmtRange } from '../lib/dates'
-import { fmt } from '../lib/format'
+import { fmt, fmtPct } from '../lib/format'
 import { daytypeLevels, importChecks, type DaytypeLevel } from '../lib/insights'
 
 const TABLE_ROWS = 12
@@ -183,7 +183,7 @@ export function StartPage() {
               return <>Most shared{top.length > 1 && ` (${top.length} pairs tied)`}:{' '}
                 <RouteSign route={p.route_a} groupId={groupOf.get(p.route_a)} size="sm" />{' and '}
                 <RouteSign route={p.route_b} groupId={groupOf.get(p.route_b)} size="sm" />
-                {`, ${fmt(p.shared_stop_count)} shared stops, ${fmt(p.smaller_route_stop_overlap * 100)} % of the smaller route's stops · timetable ${o.geometry_version}`}</>
+                {`, ${fmt(p.shared_stop_count)} shared stops, ${fmtPct(p.smaller_route_stop_overlap)} % of the smaller route's stops · timetable ${o.geometry_version}`}</>
             }}</Live> },
           { question: 'How do these routes differ?', to: '/compare',
             preview: <>Put two or more routes side by side for the same period and day type.</> },

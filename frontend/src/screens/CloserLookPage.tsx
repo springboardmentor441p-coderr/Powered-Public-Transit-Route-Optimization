@@ -16,7 +16,7 @@ import { Value } from '../components/Value'
 import { METRIC_ORDER, displayedGate, higherMeans, orderRanked, parseMinDays, rankMovement, topOverlap, unrankedSummary } from '../lib/closerLook'
 import { fmtRange } from '../lib/dates'
 import { rankingProvenance } from '../lib/provenance'
-import { fmt } from '../lib/format'
+import { fmt, fmtPct } from '../lib/format'
 import { stability } from '../lib/stability'
 
 const OVERLAP = 'route_overlap_review'
@@ -325,7 +325,6 @@ function OverlapView({ s, lowestFirst, routeInfo }: {
         const visible = all ? rows : rows.slice(0, PAGE_ROWS)
         const sharing = o.rows.filter(r => r.shared_stop_count > 0).length
         const mostly = o.rows.filter(r => r.smaller_route_stop_overlap > 0.5).length
-        const pct = (x: number) => fmt(x * 100)
         return (
           <div className="space-y-6">
             <div className="space-y-3">
@@ -352,9 +351,9 @@ function OverlapView({ s, lowestFirst, routeInfo }: {
                           <RouteLink route={r.route_b} info={routeInfo.get(r.route_b)} /></td>
                         <td className="n num">{fmt(r.shared_stop_count)} <span className="text-xs text-ink-2">of {fmt(r.route_a_stop_count)} / {fmt(r.route_b_stop_count)}</span></td>
                         <td className="n num">{fmt(r.jaccard_stop_overlap, 3)}</td>
-                        <td className="n num">{pct(r.smaller_route_stop_overlap)} %</td>
-                        <td className="n num">{pct(r.route_a_exclusive_fraction)} %</td>
-                        <td className="n num">{pct(r.route_b_exclusive_fraction)} %</td>
+                        <td className="n num">{fmtPct(r.smaller_route_stop_overlap)} %</td>
+                        <td className="n num">{fmtPct(r.route_a_exclusive_fraction)} %</td>
+                        <td className="n num">{fmtPct(r.route_b_exclusive_fraction)} %</td>
                       </tr>
                     ))}
                   </tbody>

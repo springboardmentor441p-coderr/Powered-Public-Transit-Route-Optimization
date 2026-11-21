@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fmt, fmtRank } from './format'
+import { fmt, fmtPct, fmtRank } from './format'
 
 describe('fmt: missing is never 0', () => {
   it('null and undefined read "unavailable", with the reason when given', () => {
@@ -21,5 +21,17 @@ describe('fmtRank', () => {
   it('unranked rows carry their reason', () => {
     expect(fmtRank(null, 125, 'fewer than 20 observed days')).toBe('unranked – fewer than 20 observed days')
     expect(fmtRank(3, 125)).toBe('rank 3 of 125')
+  })
+})
+
+describe('fmtPct', () => {
+  it('"100" only when the share is exactly 1', () => {
+    expect(fmtPct(1)).toBe('100')
+    expect(fmtPct(0.9996)).toBe('99.9')
+    expect(fmtPct(0.996)).toBe('99.6')
+    expect(fmtPct(0.944)).toBe('94')
+  })
+  it('missing stays unavailable, never 0', () => {
+    expect(fmtPct(null, 'no stops')).toBe('unavailable – no stops')
   })
 })
