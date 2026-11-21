@@ -1,4 +1,6 @@
 """Visible labels and units (spec 9.13.3, 9.16.1). Every endpoint uses these; the frontend shows them as given."""
+import re
+
 MODE = "historical_analysis"
 MODE_LABEL = "Historical analysis"
 LABELS = {  # spec 9.13.3 provenance labels
@@ -25,6 +27,13 @@ REASON_WORDS = {
     "route_in_snapshot_no_active_trips": "the route is in the timetable but has no trips on this date",
     "no_ridership_record": "service was scheduled but no ridership was recorded",
 }
+
+
+def prose(text: str) -> str:
+    """Screen typography for stored text: ">=" -> "\u2265", "<=" -> "\u2264", and a number range "13-60" -> "13\u201360".
+    ISO dates such as 2026-03-31 are left alone (a range is two numbers with no other hyphen around them)."""
+    text = text.replace(">=", "\u2265").replace("<=", "\u2264")
+    return re.sub(r"(?<![\d-])(\d+)-(\d+)(?![\d-])", "\\1\u2013\\2", text)
 
 
 def reason_words(code: str | None) -> str | None:

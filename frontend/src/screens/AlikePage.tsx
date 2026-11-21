@@ -75,7 +75,7 @@ function AlikeBody({ g }: { g: Ok }) {
 
       <div className="mt-6 grid items-start gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
         <Panel title={`${labelOf[y]} against ${labelOf[x]?.toLowerCase()}`} purpose={`${fmt(plotted.length)} routes plotted, development profile period.`}
-               howToRead={`Across: ${unitOf[x]}; up: ${unitOf[y]}. Each dot is one route, coloured by its group (grey ring = ungrouped). A dot at 0 on a weekend measure is a route with no scheduled weekend service, not a missing value. Click a dot to open the route.`}>
+               howToRead={`Across: ${unitOf[x]}; up: ${unitOf[y]}. Each dot is one route, coloured by its group${ungroupedPlotted > 0 ? ' (grey ring = ungrouped)' : ''}. A dot at 0 on a weekend measure is a route with no scheduled weekend service, not a missing value. Click a dot to open the route.`}>
           <GroupScatter points={plotted} x={{ label: labelOf[x] ?? x, unit: unitOf[x] ?? '' }} y={{ label: labelOf[y] ?? y, unit: unitOf[y] ?? '' }}
                         names={Object.fromEntries(g.groups.map(gr => [gr.group_id, gr.name]))} />
           <div className="mt-2"><GroupLegend groups={g.groups} showUngrouped={ungroupedPlotted > 0} /></div>
@@ -163,9 +163,9 @@ function GroupScatter({ points, x, y, names }: {
       <ResponsiveContainer width="100%" height="100%">
         <ScatterChart margin={{ top: 8, right: 16, bottom: 28, left: 8 }}>
           <CartesianGrid stroke={RULE} />
-          <XAxis type="number" dataKey="x" name={x.label} tick={{ fontSize: 11, fill: INK_2 }} tickFormatter={(v: number) => fmt(v, xd)}
+          <XAxis type="number" dataKey="x" name={x.label} tick={{ fontSize: 11, fill: INK_2 }} tickFormatter={(v: number) => fmt(v, Number.isInteger(v) ? 0 : xd)}
                  label={{ value: x.label, position: 'insideBottom', offset: -16, fontSize: 11, fill: INK_2 }} />
-          <YAxis type="number" dataKey="y" name={y.label} tick={{ fontSize: 11, fill: INK_2 }} width={64} tickFormatter={(v: number) => fmt(v, yd)}
+          <YAxis type="number" dataKey="y" name={y.label} tick={{ fontSize: 11, fill: INK_2 }} width={64} tickFormatter={(v: number) => fmt(v, Number.isInteger(v) ? 0 : yd)}
                  label={{ value: y.label, angle: -90, position: 'insideLeft', fontSize: 11, fill: INK_2, style: { textAnchor: 'middle' } }} />
           <Tooltip content={<ScatterTip x={x} y={y} names={names} />} isAnimationActive={false} />
           {ids.map(id => (

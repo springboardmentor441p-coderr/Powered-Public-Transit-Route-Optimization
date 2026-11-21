@@ -22,7 +22,7 @@ from fastapi import APIRouter, Depends, Query
 from analytics.groups.clustering import group_summary
 from backend.app.db import GROUPS_AFTER_CUTOFF, cutoff_block, get_conn, group_version_for, permitted_through, \
     resolve_version
-from backend.app.labels import UNITS, envelope
+from backend.app.labels import UNITS, envelope, prose
 from backend.app.routers.rankings import CFG
 
 router = APIRouter(tags=["groups"])
@@ -47,7 +47,7 @@ K_TABLE_NOTE = "k table (silhouette, stability, half-period agreement): Stage 5 
 STATUSES = ("available", "no_scheduled_service", "insufficient_observations")
 WEEKEND = {"saturday_to_weekday_rides_ratio": ("saturday", "Saturday"),
            "sunday_holiday_to_weekday_rides_ratio": ("sunday_holiday", "Sunday/holiday")}
-VALUES_NOTE = ("each route's own development-period profile value. A missing value is null with its reason: it is "
+VALUES_NOTE = ("each route's own development-period profile value. A missing value is shown as missing, with its reason: it is "
                "never 0 and never the median the clustering filled in. A structural zero (no scheduled service) is 0.")
 
 
@@ -120,8 +120,8 @@ def route_groups(cutoff: date | None = Query(None, description="use only service
                         "note": "groups describe what a route is like over this period; fitted once, then frozen"},
         method={"k": g["k"], "selected_features": selected,
                 "selected_feature_labels": [FEATURE_LABELS[f] for f in selected], "algorithm": "KMeans on standardised features",
-                "k_rule": CFG["clustering"]["_k_rule"], "k_table": K_TABLE_NOTE},
-        caveats=g["caveats"],
+                "k_rule": prose(CFG["clustering"]["_k_rule"]), "k_table": K_TABLE_NOTE},
+        caveats=[prose(c) for c in g["caveats"]],
         groups=groups,
         ungrouped=[{"route": m["route"], "reason": m["reason"]} for m in members if m["group_id"] is None],
         route_values_note=VALUES_NOTE, route_values=route_values,

@@ -9,6 +9,7 @@ from datetime import date
 import pandas as pd
 import pytest
 
+from backend.app.labels import prose
 from backend.importer.import_data import REPO_ROOT
 
 ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
@@ -40,7 +41,7 @@ def test_names_sizes_caveats_and_ungrouped(client):
     assert {g["name"] for g in body["groups"]} == {"Higher-demand, seven-day routes",
                                                     "Lower-demand routes, often with limited or no weekend service"}
     caveats = json.loads((REPO_ROOT / "analytics/config/group_names.json").read_text(encoding="utf-8"))["caveats"]
-    assert body["caveats"] == caveats and len(caveats) == 4
+    assert body["caveats"] == [prose(c) for c in caveats] and len(caveats) == 4   # stored wording, screen typography
     assert {u["route"] for u in body["ungrouped"]} == UNGROUPED and all(u["reason"] for u in body["ungrouped"])
     selected = [f["feature"] for f in body["groups"][0]["features"] if f["selected_for_clustering"]]
     assert selected == body["method"]["selected_features"] and len(selected) == 5
@@ -127,3 +128,15 @@ def test_every_feature_has_a_plain_label(client):
     assert labels and all(x and "_" not in x for x in labels)
     first = body["groups"][0]["features"]
     assert {f["feature"]: f["label"] for f in first}["weekday_rides_per_scheduled_hour"] == "Weekday rides per scheduled hour"
+
+
+def test_screen_text_uses_plain_typography(client):
+    """No "null", no ">=", ranges with an en dash; the stored wording is otherwise unchanged."""
+    from backend.app.labels import prose
+    assert prose("has >= 5 routes") == "has \u2265 5 routes"
+    assert prose("overlap 13-60 vs 24-51") == "overlap 13\u201360 vs 24\u201351"
+    assert prose("fitted on 2025-11-23 to 2026-03-31") == "fitted on 2025-11-23 to 2026-03-31"   # dates untouched
+    body = client.get("/api/route-groups").json()
+    texts = [body["route_values_note"], body["method"]["k_rule"], *body["caveats"]]
+    assert all(">=" not in x and "null" not in x for x in texts)
+    assert any("\u2265" in x for x in texts) and any("13\u201360" in x for x in body["caveats"])

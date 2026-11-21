@@ -1456,3 +1456,16 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
 - **Decisions:** the feature stays visible but marked unavailable, so its absence is explained rather than hidden.
 - **Results:** tsc and lint pass. A search found no other visible stage number in a screen (the `/style` reference page mentions "Stage 5 memberships"; it isn't a user screen).
 - **Interview Q:** *"Why show a feature that doesn't work yet?"* So a reviewer knows it's planned and where it will live, without guessing. Labelling it "not available yet" keeps that honest.
+
+## Step 83: Alike polish (typography, whole-number ticks, legend text)
+- **Built:**
+  - **API:** a new `labels.prose()` turns ">=" into "≥" and number ranges into en dashes ("13–60"), leaving ISO dates alone. It's applied to the k rule and the caveats. The values note now says "shown as missing" instead of "null".
+  - **Scatter:** ticks drop decimals when the step is whole (15, 30, 45, 60 instead of 15.0 …).
+  - The "grey ring = ungrouped" text appears only when an ungrouped route is plotted.
+- **Why:** "null" and ">=" are programmer notation, "13-60" reads like a subtraction, and "15.0" suggests a precision that isn't there.
+- **Key concept:** *typography is part of honesty*. A hyphen and an en dash look alike, but "13–60" says "from 13 to 60" while "13-60" could be misread. A trailing ".0" suggests a measured decimal.
+- **Decisions:**
+  - The stored caveats and config are unchanged. The API changes only their typography on the way out, and the test still checks the wording against the stored text after the same `prose()` step.
+  - Dates are protected, so 2026-03-31 never turns into an en dash.
+- **Results:** groups tests pass (12, 1 new for `prose`). Rendered text: "≥ 5 routes", "13–60 vs 24–51", ticks "0 | 15 | 30 | 45 | 60", no grey-ring text with nothing ungrouped plotted.
+- **Interview Q:** *"Why change typography in the API rather than the page?"* The same caveats can appear on several screens or in an export. Fixing them once at the source keeps every reader consistent, while the stored text stays as it was approved.
