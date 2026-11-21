@@ -6,6 +6,7 @@ import { ProvenanceProvider } from './components/Provenance'
 import { SourcesPanel } from './components/SourcesPanel'
 import { Empty } from './components/States'
 import { TopBar } from './components/TopBar'
+import { AlikePage } from './screens/AlikePage'
 import { CloserLookPage } from './screens/CloserLookPage'
 import { OneRoutePage } from './screens/OneRoutePage'
 import { StartPage } from './screens/StartPage'
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/closer-look" element={<CloserLookPage />} />
           <Route path="/route" element={<OneRoutePage />} />
           <Route path="/route/:route" element={<OneRoutePage />} />
+          <Route path="/alike" element={<AlikePage />} />
           <Route path="/style" element={<StylePage />} />
           <Route path="*" element={<NotBuilt />} />
         </Route>

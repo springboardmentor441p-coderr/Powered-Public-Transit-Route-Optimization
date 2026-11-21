@@ -116,3 +116,14 @@ def test_after_the_profile_period_groups_are_unchanged_and_no_later_date_appears
     cut = client.get("/api/route-groups", params={"cutoff": "2026-05-31"}).json()
     assert cut["groups"] == full["groups"] and cut["caveats"] == full["caveats"]
     assert max(date.fromisoformat(s) for s in ISO.findall(json.dumps(cut))) <= date(2026, 5, 31)
+
+
+def test_every_feature_has_a_plain_label(client):
+    """Screens show feature labels, never the column keys (no underscores, no field names)."""
+    body = client.get("/api/route-groups").json()
+    labels = [f["label"] for g in body["groups"] for f in g["features"]]
+    labels += [v["label"] for r in body["route_values"] for v in r["values"]]
+    labels += body["method"]["selected_feature_labels"]
+    assert labels and all(x and "_" not in x for x in labels)
+    first = body["groups"][0]["features"]
+    assert {f["feature"]: f["label"] for f in first}["weekday_rides_per_scheduled_hour"] == "Weekday rides per scheduled hour"

@@ -17,15 +17,33 @@ export function scatterPoints(routes: RouteValues[], xFeature: string, yFeature:
   for (const r of routes) {
     const x = r.values.find(v => v.feature === xFeature)
     const y = r.values.find(v => v.feature === yFeature)
-    const missing = [x ?? { feature: xFeature, value: null, reason: 'not in the profile' },
-                     y ?? { feature: yFeature, value: null, reason: 'not in the profile' }]
+    const missing = [x ?? { label: xFeature, value: null, reason: 'not in the profile' },
+                     y ?? { label: yFeature, value: null, reason: 'not in the profile' }]
       .filter(v => v.value == null)
     if (x && y && x.value != null && y.value != null) {
       plotted.push({ route: r.route, groupId: r.group_id, x: x.value, y: y.value, xStatus: x.status, yStatus: y.status })
     } else {
-      const why = missing.map(v => `${v.feature}: ${v.reason ?? 'unavailable'}`).join('; ')
+      const why = missing.map(v => `${v.label.toLowerCase()}: ${v.reason ?? 'unavailable'}`).join('; ')
       leftOff.push({ route: r.route, groupId: r.group_id, note: `Route ${r.route} is not plotted (${why}).` })
     }
   }
   return { plotted, leftOff }
+}
+
+export type Range = { groupId: number; min: number; max: number }
+
+/** Routes whose point lies inside ANOTHER group's [min, max] on both axes (ranges from the plotted points). */
+export function insideOtherGroup(points: ScatterPoint[]): { inside: number; grouped: number } {
+  const ids = [...new Set(points.map(p => p.groupId).filter((g): g is number => g != null))]
+  const box = new Map(ids.map(g => {
+    const own = points.filter(p => p.groupId === g)
+    return [g, { x0: Math.min(...own.map(p => p.x)), x1: Math.max(...own.map(p => p.x)),
+                 y0: Math.min(...own.map(p => p.y)), y1: Math.max(...own.map(p => p.y)) }]
+  }))
+  const grouped = points.filter(p => p.groupId != null)
+  const inside = grouped.filter(p => ids.some(g => {
+    const b = box.get(g)!
+    return g !== p.groupId && p.x >= b.x0 && p.x <= b.x1 && p.y >= b.y0 && p.y <= b.y1
+  })).length
+  return { inside, grouped: grouped.length }
 }

@@ -182,7 +182,7 @@ export type CompareResponse = Envelope & {
 
 // ---- GET /api/route-groups
 export type GroupFeature = {
-  feature: string; unit: string; selected_for_clustering: boolean; median: number; mean: number; min: number; max: number
+  feature: string; label: string; unit: string; selected_for_clustering: boolean; median: number; mean: number; min: number; max: number
 }
 export type RouteGroup = {
   group_id: number; name: string; size: number; routes: string[]; features: GroupFeature[]
@@ -192,7 +192,7 @@ export type RouteGroup = {
  *  status no_scheduled_service = a structural zero: value is 0 and is plotted at 0. */
 export type ProfileValueStatus = 'available' | 'no_scheduled_service' | 'insufficient_observations' | 'unavailable'
 export type RouteProfileValue = {
-  feature: string; unit: string; value: number | null; status: ProfileValueStatus; reason: string | null
+  feature: string; label: string; unit: string; value: number | null; status: ProfileValueStatus; reason: string | null
 }
 export type RouteValues = {
   route: string; group_id: number | null; weekday_observed_days: number; values: RouteProfileValue[]
@@ -202,7 +202,7 @@ export type GroupsResponse = Envelope & (
   | {
       available: true; group_version: string; artifact_version: string; artifact_sha256: string; built_git_commit: string
       profile_period: { start: ISODate; end: ISODate; note: string }
-      method: { k: number; selected_features: string[]; algorithm: string; k_rule: string; k_table: string }
+      method: { k: number; selected_features: string[]; selected_feature_labels: string[]; algorithm: string; k_rule: string; k_table: string }
       caveats: string[]; groups: RouteGroup[]; ungrouped: { route: string; reason: string }[]
       route_values_note: string; route_values: RouteValues[]
     }

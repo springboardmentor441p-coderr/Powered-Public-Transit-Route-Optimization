@@ -34,6 +34,15 @@ FEATURE_UNITS = {  # original units for the summary columns
     "weekday_rides_per_scheduled_hour": UNITS["rides_per_scheduled_hour"],
     "mean_weekday_trip_duration_minutes": "minutes per scheduled trip",
 }
+FEATURE_LABELS = {  # plain names for the screens; the keys above stay for machines
+    "mean_weekday_rides": "Average weekday rides",
+    "weekday_rides_cv": "Weekday ride variability",
+    "saturday_to_weekday_rides_ratio": "Saturday level vs weekday",
+    "sunday_holiday_to_weekday_rides_ratio": "Sunday/holiday level vs weekday",
+    "mean_weekday_scheduled_trips": "Weekday scheduled trips",
+    "weekday_rides_per_scheduled_hour": "Weekday rides per scheduled hour",
+    "mean_weekday_trip_duration_minutes": "Average weekday trip length",
+}
 K_TABLE_NOTE = "k table (silhouette, stability, half-period agreement): Stage 5 report, section 4"
 STATUSES = ("available", "no_scheduled_service", "insufficient_observations")
 WEEKEND = {"saturday_to_weekday_rides_ratio": ("saturday", "Saturday"),
@@ -87,7 +96,8 @@ def route_groups(cutoff: date | None = Query(None, description="use only service
     route_values = [
         {"route": p["route"], "group_id": group_of.get(p["route"]),
          "weekday_observed_days": int(p["weekday_observed_days"]),
-         "values": [{"feature": f, "unit": FEATURE_UNITS[f], **profile_value(p, f)} for f in features]}
+         "values": [{"feature": f, "label": FEATURE_LABELS[f], "unit": FEATURE_UNITS[f], **profile_value(p, f)}
+                    for f in features]}
         for p in profile_rows]
     groups = []
     for row in summary.to_dict("records"):
@@ -95,7 +105,8 @@ def route_groups(cutoff: date | None = Query(None, description="use only service
         groups.append({
             "group_id": gid, "name": g["group_names"][str(gid)], "size": int(row["routes"]),
             "routes": sorted(labels.index[labels == gid]),
-            "features": [{"feature": f, "unit": FEATURE_UNITS[f], "selected_for_clustering": f in selected,
+            "features": [{"feature": f, "label": FEATURE_LABELS[f], "unit": FEATURE_UNITS[f],
+                          "selected_for_clustering": f in selected,
                           **{s: float(row[f"{f}_{s}"]) for s in ("median", "mean", "min", "max")}}
                          for f in CFG["clustering"]["candidates_in_priority_order"]],
             "weekend_service": {f"{n}_{s}": int(row[f"{n}_{s}"]) for n in ("saturday", "sunday_holiday")
@@ -107,7 +118,8 @@ def route_groups(cutoff: date | None = Query(None, description="use only service
         artifact_sha256=g["artifact_sha256"], built_git_commit=g["built_git_commit"],
         profile_period={"start": g["profile_start"], "end": g["profile_end"],
                         "note": "groups describe what a route is like over this period; fitted once, then frozen"},
-        method={"k": g["k"], "selected_features": selected, "algorithm": "KMeans on standardised features",
+        method={"k": g["k"], "selected_features": selected,
+                "selected_feature_labels": [FEATURE_LABELS[f] for f in selected], "algorithm": "KMeans on standardised features",
                 "k_rule": CFG["clustering"]["_k_rule"], "k_table": K_TABLE_NOTE},
         caveats=g["caveats"],
         groups=groups,

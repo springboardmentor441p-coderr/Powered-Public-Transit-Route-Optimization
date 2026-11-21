@@ -1257,3 +1257,32 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - removed a duplicated "corridor review only" label;
   - checked that the chart's dips are real low counts (e.g. 1 ride on 11 Apr for route 169), not missing days drawn as 0.
 - **Interview Q:** *"Why keep both `reason` and `reason_code`?"* People need words and programs need stable keys. Tests and filters match the code, which never changes. The words can be improved without breaking any program.
+
+## Step 73: Alike (`/alike`), plan written before coding
+- **What it shows:**
+  - **Scatter:** any two of the seven profile measures, coloured by group. A route with a missing value is left off, with a note naming it and the reason. A structural zero (no scheduled weekend service) is plotted at 0, and its tooltip says why.
+  - **Group spread:** each measure's min–median–max per group on one shared scale, so you can see where groups overlap.
+  - **Weekend service counts per group.**
+  - **Members:** each group's member routes, and the ungrouped routes with their reasons.
+  - **The method:** k, the measures used and the k rule.
+  - **All four caveats,** as the API sends them.
+- **Insight it highlights:** groups describe a typical member, not a hard boundary. The opening sentence counts how many plotted routes sit inside another group's range on both measures shown. With the defaults, that shows the groups overlap.
+- **Rules:**
+  - The API now sends a plain `label` for every measure (with a test), so no column key such as `weekday_rides_cv` appears on screen.
+  - Group colours are the only colours.
+- **Built:**
+  - `/alike`: the sentence picks any two of the seven measures. It holds the scatter (group colours, structural zeros at 0, routes with missing values listed under the chart with their reason), weekend service by group, the group spread table (min–median–max bars on each measure's scale), members, ungrouped routes with reasons, the method and all 4 caveats.
+  - `insideOtherGroup` counts routes inside another group's range on both axes.
+  - **API:** every measure now has a plain `label`, and the method has `selected_feature_labels`.
+- **Key concept:** *a cluster is a summary, not a fence*. KMeans gives every route its nearest centre, the way a postcode puts a house in one district even when it sits on the border. The overlap count shows how many routes sit in that border zone.
+- **Decisions:**
+  - Spread bars use each measure's own scale, because rides and ratios can't share one.
+  - Axis labels carry only the measure's name, and the units go in "How to read this".
+- **Results:**
+  - backend: groups and visible-text tests pass (25), including a new test that every measure has a plain label;
+  - frontend: tsc, lint, vitest (63 tests) and build pass.
+- **Screenshot check (1366/1920):**
+  - the vertical axis label was cut off ("…(rides pe"); I shortened it;
+  - the left-off note used column keys (`sunday_holiday_to_weekday_rides_ratio`); it now uses words, with a test;
+  - the API server's auto-reload had hung and was serving old code. I restarted it without `--reload`.
+- **Interview Q:** *"Silhouette 0.38: are these groups real?"* They're moderately separated. The page says so (caveat 3) and shows the overlap directly, so nobody reads a group number as a grade. The useful claim is "typical members differ", not "every route belongs cleanly".
