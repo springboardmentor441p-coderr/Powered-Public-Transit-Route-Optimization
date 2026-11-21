@@ -29,7 +29,8 @@ REASONS = {
     "no_record": "no route has a ridership record on this date",
 }
 STARTS_AFTER_CUTOFF = "the requested range starts after the cutoff"
-TOTAL_NOTE = "network total of the routes that reported rides that day; compare it with routes_reporting"
+TOTAL_NOTE = ("network total of the routes that reported rides that day; compare it with the number of routes "
+              "reporting that day (hover a day)")
 DAYTYPES = {"W": "weekday", "A": "Saturday", "U": "Sunday/holiday"}
 
 TREND_SQL = """

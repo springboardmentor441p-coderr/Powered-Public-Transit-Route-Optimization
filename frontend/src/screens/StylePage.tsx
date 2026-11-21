@@ -67,6 +67,7 @@ const perHour: ProvenanceInfo = {
   numerator: { label: 'recorded rides', value: 1_234_567 }, denominator: { label: 'scheduled trip-hours', value: 21_003.9, digits: 1 },
   days: { observed: 171, gateLabel: 'reference gate: 20' }, period, daytype: 'Weekday (W)', timetables: TIMETABLES,
   dataVersion: DV, request: '/api/rankings?metric=rides_per_scheduled_hour&period=full_matched_window&daytype=W',
+  specReference: 'spec 9.12',
 }
 const perTrip: ProvenanceInfo = {
   ...perHour, title: 'Route 49 · rides per scheduled trip', value: 41.06, unit: 'rides per scheduled trip',

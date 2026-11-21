@@ -75,8 +75,8 @@ def test_a_cutoff_changes_a_ranking_and_equals_stage5_on_the_cut_rows(client):
     full = get(client, metric="rides_per_scheduled_hour")
     body = get(client, metric="rides_per_scheduled_hour", cutoff=str(CUT))
     assert max(date.fromisoformat(s) for s in ISO.findall(json.dumps(body))) <= CUT
-    assert body["period"] == {"name": "full_matched_window", "start": "2025-11-23", "end": str(CUT),
-                              "clipped_to_cutoff": True}
+    assert body["period"] == {"name": "full_matched_window", "label": "Full matched window", "start": "2025-11-23",
+                              "end": str(CUT), "clipped_to_cutoff": True}
     matched = load_matched(VDIR / "expanded_matched_utilization.csv")  # independent of the database
     schedule = load_schedule(VDIR / "expanded_scheduled_route_day_service.csv", matched)
     matched = matched[matched["date"] <= pd.Timestamp(CUT)]

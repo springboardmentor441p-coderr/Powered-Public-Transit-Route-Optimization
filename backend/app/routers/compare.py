@@ -26,8 +26,8 @@ from analytics.geometry.route_shapes import PATH_LABEL, tie_label
 from backend.app.db import GROUPS_AFTER_CUTOFF, cutoff_block, get_conn, group_version_for, permitted_through, \
     resolve_version
 from backend.app.labels import UNITS, envelope
-from backend.app.routers.rankings import (CAVEAT, METRICS, REFERENCE_GATE, _none, compute_profiles, gate_label,
-                                          resolve_period)
+from backend.app.routers.rankings import (CAVEAT, METRICS, PERIOD_LABELS, REFERENCE_GATE, _none, compute_profiles,
+                                          gate_label, resolve_period)
 
 router = APIRouter(tags=["routes"])
 MAX_ROUTES = 8
@@ -157,7 +157,7 @@ def compare_routes(
         })
     return envelope(
         v, cutoff_block(v, cutoff),
-        period={"name": name, "start": a, "end": b_eff, "clipped_to_cutoff": b > through},
+        period={"name": name, "label": PERIOD_LABELS[name], "start": a, "end": b_eff, "clipped_to_cutoff": b > through},
         daytype=daytype, units=UNITS, caveat=CAVEAT,
         configuration={"min_observed_days": REFERENCE_GATE, "gate_label": gate_label(REFERENCE_GATE),
                        "ranks": "network ranks among all routes in the period and day type"},

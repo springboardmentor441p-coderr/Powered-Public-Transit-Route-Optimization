@@ -6,6 +6,8 @@ import { ProvenanceProvider } from './components/Provenance'
 import { SourcesPanel } from './components/SourcesPanel'
 import { Empty } from './components/States'
 import { TopBar } from './components/TopBar'
+import { CloserLookPage } from './screens/CloserLookPage'
+import { StartPage } from './screens/StartPage'
 import { StylePage } from './screens/StylePage'
 
 function NotBuilt() {
@@ -30,6 +32,8 @@ export default function App() {
                   dataThrough={dataThrough}
                   sources={<AsyncBlock state={coverage} retry={coverage.retry} label="Loading sources">{c => <SourcesPanel c={c} />}</AsyncBlock>} />
         }>
+          <Route path="/" element={<StartPage />} />
+          <Route path="/closer-look" element={<CloserLookPage />} />
           <Route path="/style" element={<StylePage />} />
           <Route path="*" element={<NotBuilt />} />
         </Route>

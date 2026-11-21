@@ -101,6 +101,12 @@ export type TrendResponse = Envelope & {
   summary: TrendSummary[]; count: number; days: TrendDay[]
 }
 
+// ---- a period as sent with rankings and compare ("label" is the plain-words name to show)
+export type Period = {
+  name: 'full_matched_window' | 'development' | 'custom'; label: string
+  start: ISODate; end: ISODate; clipped_to_cutoff: boolean
+}
+
 // ---- GET /api/rankings (three named rankings)
 export type RankingRow = {
   rank: number | null; route: string; eligible: boolean; reason: string | null; observed_days: number
@@ -108,8 +114,11 @@ export type RankingRow = {
   numerator: number | null; denominator: number | null; value: number | null
 }
 export type RankingResponse = Envelope & {
-  metric: { key: RankingMetric; label: string; unit: string; meaning: string; caveat: string; numerator: string; denominator: string }
-  period: { name: string; start: ISODate; end: ISODate; clipped_to_cutoff: boolean }
+  metric: {
+    key: RankingMetric; label: string; unit: string; meaning: string; caveat: string; numerator: string; denominator: string
+    numerator_label: string; denominator_label: string; spec_reference: string
+  }
+  period: Period
   daytype: DayType
   configuration: {
     min_observed_days: number; reference_min_observed_days: number; non_reference_gate: boolean; gate_label: string
@@ -128,7 +137,7 @@ export type OverlapRow = {
   route_a_exclusive_fraction: number; route_b_exclusive_fraction: number; interpretation: string
 }
 export type OverlapResponse = Envelope & {
-  metric: { key: 'route_overlap_review'; label: string; meaning: string; caveat: string | null }
+  metric: { key: 'route_overlap_review'; label: string; meaning: string; caveat: string | null; spec_reference: string }
   geometry_version: string; default_geometry_version: string; available_geometry_versions: string[]
   counts: { pairs: number }; rows: OverlapRow[]
 }
@@ -159,7 +168,7 @@ export type CompareRoute = {
   map_lines: number
 }
 export type CompareResponse = Envelope & {
-  period: { name: string; start: ISODate; end: ISODate; clipped_to_cutoff: boolean }
+  period: Period
   daytype: DayType; units: Units; caveat: string
   configuration: { min_observed_days: number; gate_label: string; ranks: string }
   common_matched_days: number; comparable_note: string | null; groups_note: string | null

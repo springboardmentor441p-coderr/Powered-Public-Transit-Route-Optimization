@@ -34,7 +34,11 @@ router = APIRouter(tags=["rankings"])
 CFG = json.loads((REPO_ROOT / "analytics/config/groups.json").read_text(encoding="utf-8"))
 REFERENCE_GATE = int(CFG["gates"]["ranking_min_observed_days"])
 CAVEAT = ("A high value may reflect route length, speed and turnover; a low value may reflect coverage obligations "
-          "or limited observations. A ranking is a review indicator, not a measure of route quality (spec 9.12).")
+          "or limited observations. A ranking is a review indicator, not a measure of route quality.")
+SPEC_REFERENCE = "spec 9.12"  # shown in "How was this number made?", never in visible text
+PART_LABELS = {"rides_sum": "recorded rides", "observed_days": "observed days",
+               "scheduled_trips_sum": "scheduled trips", "scheduled_hours_sum": "scheduled trip-hours"}
+PERIOD_LABELS = {"full_matched_window": "Full matched window", "development": "Development period", "custom": "Chosen dates"}
 METRICS = {  # API name -> Stage 5 ranking column, value, numerator, denominator, label, unit
     "observed_daily_demand": ("observed_daily_demand_rank", "mean_daily_rides", "rides_sum", "observed_days",
                               "Observed daily demand", UNITS["rides"]),
@@ -146,8 +150,10 @@ def rankings(
         v, cutoff_block(v, cutoff),
         metric={"key": metric, "label": label, "unit": unit,
                 "meaning": CFG["rankings"]["views"][rank_col]["meaning"], "caveat": CAVEAT,
-                "numerator": num_col, "denominator": den_col},
-        period={"name": name, "start": a, "end": b_eff, "clipped_to_cutoff": b > through},
+                "numerator": num_col, "denominator": den_col,
+                "numerator_label": PART_LABELS[num_col], "denominator_label": PART_LABELS[den_col],
+                "spec_reference": SPEC_REFERENCE},
+        period={"name": name, "label": PERIOD_LABELS[name], "start": a, "end": b_eff, "clipped_to_cutoff": b > through},
         daytype=daytype,
         configuration={"min_observed_days": gate, "reference_min_observed_days": REFERENCE_GATE,
                        "non_reference_gate": gate != REFERENCE_GATE, "gate_label": gate_label(gate),
@@ -194,7 +200,8 @@ def _overlap(conn, v, cutoff, through, geometry_version, unused) -> dict:
     return envelope(
         v, cutoff_block(v, cutoff),
         metric={"key": OVERLAP, "label": "Route overlap review",
-                "meaning": "shared stops, Jaccard and exclusive coverage: a corridor worth examining (spec 9.12)",
+                "meaning": "shared stops, Jaccard and exclusive coverage: a corridor worth examining",
+                "spec_reference": SPEC_REFERENCE,
                 "caveat": rows[0]["interpretation"] if rows else None},
         geometry_version=geometry_version, default_geometry_version=gv["default_overlap_version"],
         available_geometry_versions=allowed, counts={"pairs": len(rows)}, rows=rows,

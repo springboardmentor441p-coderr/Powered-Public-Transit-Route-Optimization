@@ -16,3 +16,7 @@ export function fmt(value: number | null | undefined, digits = 0, reason?: strin
 export function fmtRank(rank: number | null | undefined, of: number, reason?: string | null): string {
   return rank == null ? `unranked – ${reason ?? 'no reason given'}` : `rank ${rank} of ${of}`
 }
+
+/** A number field's width: one `ch` per character typed (at least 2) plus room for the padding and the list
+ *  arrow, so the whole value is always visible ("20" never shows as "2"). */
+export const fieldWidth = (text: string) => `calc(${Math.max(text.length, 2) + 1}ch + 1.5rem)`

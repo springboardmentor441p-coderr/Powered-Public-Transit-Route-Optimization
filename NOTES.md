@@ -1168,3 +1168,61 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
 - **Decisions:** a real `<label>` rather than only `aria-label`, because it works with every assistive tool and with Chrome's check; the visible sentence stays the label people read.
 - **Results:** `tsc`, lint, vitest and build pass. The DevTools Issues count is to be confirmed by you in the browser.
 - **Interview Q:** *"`aria-label` already names the field. Why add a `<label>` too?"* `aria-label` is read only by screen readers. A `<label for>` is native HTML: browsers, autofill, voice control and audit tools all understand it, and clicking it focuses the field. Native first, ARIA only when HTML can't do it.
+
+## Step 70: Start page, and plain words in every API text (`screens/StartPage.tsx`, `rankings.py`, `compare.py`, `network.py`, `data.py`)
+- **Built:**
+  - The Start page (`/`). It shows the planner questions, each with a live one-line answer, then the network trend with its day-type sentence, the dated map and a route summary table.
+  - **Four fixes after your review:**
+    - the chart note no longer says `routes_reporting`;
+    - "120 and 121, 17 shared stops" now has correct spacing;
+    - the weekend column fits on one line ("Sat ✓ · Sun/hol –", with the key in "How to read this" and on hover);
+    - "(spec 9.12)" is gone from visible text.
+  - **API:**
+    - spec numbers now travel in their own `spec_reference` field, which the "How was this number made?" drawer shows as "Defined in";
+    - periods carry a plain `label`;
+    - rankings carry `numerator_label`/`denominator_label`;
+    - `/api/data/coverage` sends Stage 2's reason codes as `reason_code` and plain words in `reason`.
+  - `tests/test_api_visible_text.py` scans every visible text field of 11 requests for spec numbers and field names.
+- **Why:** a screen is read by planners, not by the API's authors. `routes_reporting` and "spec 9.12" mean nothing to them. The same facts stay available to anyone who asks "how was this made?".
+- **Key concept:** *separate the words from the codes*. An API is like a parcel: the label on the outside (`reason`) is for people, and the barcode (`reason_code`) is for machines. Never print the barcode where the label should be.
+- **Decisions:**
+  - The fix sits in the API, not in each screen, so every screen gets the plain words for free and a test guards them.
+  - Weekend status uses short marks with a key rather than two extra columns, so the table stays narrow.
+- **Results:**
+  - pytest: all passed after the fixes (the first full run caught 2 failures: a coverage reason code, and a test expecting the old period shape);
+  - in `frontend\`: tsc, lint, vitest and build pass.
+  - Still to fix: `/api/routes/{route}/history` sends coded reasons too (e.g. `no_ridership_record`). It will be fixed with the One route screen, the first screen to show them.
+- **Interview Q:** *"Why not just translate codes in the frontend?"* Then every screen (and every future client) must repeat the translation and can drift. Doing it once in the API, with a test that scans all visible fields, makes "no field names on screen" a checked rule instead of a habit.
+
+## Step 71: Closer look (`screens/CloserLookPage.tsx`, `lib/closerLook.ts`, `NumberChoice`)
+- **Built:** `/closer-look`, spec 9.16.2's "Review priorities".
+  - **The sentence controls:** measure (three rankings plus the route overlap review), day type, period, peer group, highest/lowest first, and minimum observed days. The minimum-days field takes any whole number of 1 or more: type it, or pick from 1, 5, 10, the reference gate and two to three times the reference.
+  - **Under the sentence:** "N of M routes ranked at X days", the API's gate label (amber with "non-reference gate: X (reference: 20)" when X ≠ 20), and a "Back to the reference gate" button.
+  - **Peer group:** ranks restart from 1 within the chosen group (the API's `group_id`), and a sentence says so. When the groups were fitted after the cutoff, the control reads "all routes (peer groups unavailable – reason)".
+  - **The ranked table:** each route has its value and #rank on all three measures, and each value opens "How was this number made?". Rank stability is shown per measure as the development rank → full-window rank ("#5 → #3 · 2 up", or "not comparable").
+  - **"Not ranked" panel:** a "Why unranked" line counted from the API reasons, e.g. on Saturdays "33 unranked: no scheduled service of this day type (30), fewer than 20 observed days (3)". Each route is listed with its reason, never as rank 0.
+  - **Route overlap review:** a timetable choice, the "corridor review only" label, a sentence counted from the pairs, and the pair table (shared stops, Jaccard, share of the smaller route, each route's own stops).
+- **Why:** the project's own finding is that *the measure you rank by changes who leads*. The insight sentence counts how many of the top 10 by one measure are also in the top 10 by another, and how many routes keep their place between periods, so a ranking reads as a prompt to look, not a verdict.
+- **Key concept:** *a ranking depends on its settings*. Like a race result that changes if you count only finishers, or only one age group: the gate (minimum days), the peer group and the period are part of the answer, so the page states them in its first sentence.
+- **Decisions:**
+  - **Stability:** always the development period → the full matched window (the two configured periods), on the same day type, gate and group. There's no "stable/unstable" verdict, because the spec defines no threshold.
+  - **Unranked rows:** in their own panel, so "highest first / lowest first" never mixes them in with the ranked rows.
+  - **Ordering:** only reverses the ranks. The words stay neutral ("highest first", "lowest first").
+  - **Helpers:** the counting lives in `lib/closerLook.ts`, which holds no numbers of its own.
+- **Results:** in `frontend\`: tsc, lint, vitest (52 tests, 10 new) and build pass. Live API checks: `group_id=0` gives 67 routes ranked from 1, and `min_days=7` on Saturdays gives "non-reference gate: 7 (reference: 20)".
+- **Interview Q:** *"Why show unranked routes at all?"* Leaving them out silently makes the ranking look complete when it isn't. A route with no Saturday service and a route with 7 observed days are both "not ranked", but for very different reasons. Showing the count by reason lets a planner see what the ranking can't tell them.
+
+## Step 71b: Four Closer look fixes after review
+- **Built:**
+  - **Minimum-days box:** its width grows with the digits (`fieldWidth`), and the spin buttons are hidden. It shows the gate the API *applied* (`displayedGate`), so the box can never disagree with the ranking under it.
+  - **Dropdowns:** they size to the chosen option (`field-sizing: content`), so "all routes" no longer has a long empty underline.
+  - **Units:** each unit appears once, in the column header ("rides/day · rank"). Cells keep only the number and #rank, and the drawer still shows the unit.
+  - **Table subtitle:** a plain sentence built from the API's labels: "Higher value = more recorded rides for each scheduled trip-hour."
+- **Why:**
+  - the box displayed "2" while the gate was 20, because the field was narrower than its text;
+  - the select was as wide as its longest option;
+  - units repeated in every cell were noise.
+- **Key concept:** *the display must follow the applied value, not the typed one*. A thermostat shows the temperature it is set to, not the button you last pressed. A test pins the box to the API's applied gate.
+- **Decisions:** `field-sizing` works in Chrome and Edge. In Firefox the select falls back to its old width, which is still usable.
+- **Results:** in `frontend\`: tsc and lint (no warnings), vitest (56 tests) and build pass.
+- **Interview Q:** *"How do you test that a box shows the right value without a browser?"* Move the decision into a pure function (`displayedGate(applied, requested, reference)`) and test it, including the stale-value case. The component only renders what the function returns.

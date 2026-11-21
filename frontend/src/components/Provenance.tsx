@@ -19,6 +19,7 @@ export type ProvenanceInfo = {
   missing?: { reason: string; side?: string }
   dataVersion: string
   request: string                      // the exact API request, e.g. /api/rankings?metric=...
+  specReference?: string               // e.g. "spec 9.12"; shown only here, never in a page's visible text
 }
 
 const Ctx = createContext<(p: ProvenanceInfo) => void>(() => undefined)
@@ -36,12 +37,12 @@ export function ProvenanceProvider({ children }: { children: ReactNode }) {
 }
 
 /** A number that opens its own provenance. Dotted underline = "you can ask where this came from". */
-export function Num({ p, className = '' }: { p: ProvenanceInfo; className?: string }) {
+export function Num({ p, className = '', showUnit = true }: { p: ProvenanceInfo; className?: string; showUnit?: boolean }) {
   const open = useContext(Ctx)
   return (
     <button type="button" onClick={() => open(p)} title="How was this number made?"
             className={`cursor-help border-b border-dotted border-ink-2 text-left hover:border-ink hover:bg-hover ${className}`}>
-      <Value value={p.value} digits={p.digits} unit={p.unit} reason={p.missing?.reason} />
+      <Value value={p.value} digits={p.digits} unit={showUnit ? p.unit : undefined} reason={p.missing?.reason} />
     </button>
   )
 }
@@ -81,6 +82,7 @@ export function ProvenanceBody({ p }: { p: ProvenanceInfo }) {
         )}
         <Row k="Data version"><span className="num break-all">{p.dataVersion}</span></Row>
         <Row k="Request"><code className="break-all font-mono text-xs">{p.request}</code></Row>
+        {p.specReference && <Row k="Defined in"><span className="text-ink-2">{p.specReference}</span></Row>}
       </dl>
     </div>
   )
