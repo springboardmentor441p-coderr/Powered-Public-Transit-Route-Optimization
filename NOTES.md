@@ -1405,3 +1405,15 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - Tied ranks are also ordered naturally (a test now expects 9 before 49).
 - **Results:** vitest (91 tests, 4 new for the sort), tsc, lint and build pass.
 - **Interview Q:** *"Why one shared sort function instead of sorting in each screen?"* Five screens sorting their own way drift apart. One tested function keeps the same set of routes in the same order on every screen.
+
+## Step 79: Shared stops fixes (pair map line patterns, timetable dates in the sentence)
+- **Built:**
+  - The pair map draws the first route solid and the second dashed (group colours kept), with a key under the map naming each route next to its line style. This uses `lib/lineStyles.ts` (`routeDashes`, 8 distinct patterns) and a new `routeDash` option and `LineKey` in `RouteMap`.
+  - The sentence names each timetable by its applied dates ("26 Mar 2026 – 23 Apr 2026 (default)"). The archive ID stays in the panel subtitle and the map caption.
+- **Why:**
+  - when both routes are in the same group they have the same colour, so the two lines looked identical;
+  - an archive ID like mdb-389-202603260020 means nothing to a planner.
+- **Key concept:** *one visual channel, one meaning*. Colour already means "group", so it can't also mean "which route". A second channel (the line pattern) carries route identity, and the key names it.
+- **Decisions:** the patterns are assigned in order (first solid, second dashed, then dotted and so on), so Compare can reuse them for up to 8 routes.
+- **Results:** tsc, lint and vitest (93 tests, 2 new for the patterns) pass. I checked the 120/121 pair map: 121 is dashed and the key reads "Route 120 / Route 121".
+- **Interview Q:** *"Why not give each route its own colour?"* Colour is reserved for groups across the whole app. A third and fourth colour would make readers think there are more groups. A pattern adds identity without changing what colour means.

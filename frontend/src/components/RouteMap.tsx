@@ -10,8 +10,9 @@ type Line = RouteLine & { group_id?: number | null; route_long_name?: string | n
 /** Route lines on greyed OpenStreetMap tiles. Colour = the route's group (dashed grey when ungrouped);
  *  `groupNames` labels the tooltip. The caption with the geometry version sits outside, under the map.
  *  Clicking a line opens that route's page. */
-export function RouteMap({ lines, groupNames = {}, height = 420, weight = 2 }: {
+export function RouteMap({ lines, groupNames = {}, height = 420, weight = 2, routeDash }: {
   lines: (Line | MapLine)[]; groupNames?: Record<number, string>; height?: number; weight?: number
+  routeDash?: Record<string, string | null>   // per-route pattern (null = solid), when routes share a colour
 }) {
   const navigate = useNavigate()
   const bounds = linesBounds(lines)
@@ -26,7 +27,8 @@ export function RouteMap({ lines, groupNames = {}, height = 420, weight = 2 }: {
           return (
             <Polyline key={`${l.route}-${l.direction_id}-${l.shape_id}`}
                       positions={l.line_geojson.coordinates.map(([lon, lat]) => [lat, lon] as [number, number])}
-                      pathOptions={{ color: groupColour(g), weight, opacity: 0.85, dashArray: groupDash(g) }}
+                      pathOptions={{ color: groupColour(g), weight, opacity: 0.85,
+                                    dashArray: routeDash && l.route in routeDash ? routeDash[l.route] ?? undefined : groupDash(g) }}
                       eventHandlers={{ click: () => navigate(`/route/${encodeURIComponent(l.route)}`) }}>
               <Tooltip sticky>
                 <strong>Route {l.route}</strong>{l.route_long_name ? ` ${l.route_long_name}` : ''} · {l.direction_label}
@@ -39,6 +41,23 @@ export function RouteMap({ lines, groupNames = {}, height = 420, weight = 2 }: {
         })}
       </MapContainer>
     </div>
+  )
+}
+
+/** Key for per-route line patterns: each route's sign next to a sample of its line (its group colour and pattern). */
+export function LineKey({ routes, groupOf, routeDash }: {
+  routes: readonly string[]; groupOf: (route: string) => number | null | undefined; routeDash: Record<string, string | null>
+}) {
+  return (
+    <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-ink-2" aria-label="Which line is which route">
+      {routes.map(r => (
+        <li key={r} className="flex items-center gap-1.5">
+          <svg width="34" height="8" aria-hidden><line x1="0" y1="4" x2="34" y2="4" stroke={groupColour(groupOf(r))} strokeWidth="3"
+                                                      strokeDasharray={routeDash[r] ?? undefined} /></svg>
+          <span>Route <span className="font-semibold text-ink">{r}</span></span>
+        </li>
+      ))}
+    </ul>
   )
 }
 

@@ -9,11 +9,14 @@ import { useApi } from '../api/useApi'
 import { AsyncBlock } from '../components/AsyncBlock'
 import { MapCaption } from '../components/MapCaption'
 import { ApiLabel, Panel } from '../components/Panel'
-import { RouteMap } from '../components/RouteMap'
+import { LineKey, RouteMap } from '../components/RouteMap'
 import { RouteSign } from '../components/RouteSign'
 import { Choice, Sentence } from '../components/Sentence'
 import { StopShareStrip } from '../components/StopShareStrip'
+import { archiveRange } from '../lib/compare'
+import { fmtRange } from '../lib/dates'
 import { fmt, fmtPct } from '../lib/format'
+import { routeDashes } from '../lib/lineStyles'
 import { fullyInside, involving, pairKey, sortPairs, topAgreement, type OverlapMeasure } from '../lib/sharedStops'
 import { compareRoutes } from '../lib/routeSort'
 
@@ -45,6 +48,12 @@ function SharedBody({ o, onVersion }: { o: OverlapResponse; onVersion: (v: strin
   const [all, setAll] = useState(false)
   const [picked, setPicked] = useState<string | null>(null)
   const routes = useApi(op => api.routes({}, op), 'routes')
+  const coverage = useApi(op => api.coverage(op), 'coverage')
+  // a timetable is named by the dates it applied (from coverage); its archive ID stays in the captions
+  const versionText = (v: string) => {
+    const a = coverage.status === 'ok' ? archiveRange(coverage.data.archives, v) : null
+    return a ? fmtRange(a.start, a.end) : v
+  }
   const groupOf = routes.status === 'ok' ? new Map(routes.data.routes.map(r => [r.route, r.group_id])) : new Map<string, number | null>()
 
   const rows = sortPairs(involving(o.rows, route), by, lowestFirst)
@@ -57,9 +66,9 @@ function SharedBody({ o, onVersion }: { o: OverlapResponse; onVersion: (v: strin
   return (
     <div>
       <Sentence>
-        Showing pairs of routes that share stops in timetable{' '}
+        Showing pairs of routes that share stops in the timetable of{' '}
         <Choice label="Timetable" value={o.geometry_version} onChange={onVersion}
-                options={o.available_geometry_versions.map(v => ({ value: v, text: v === o.default_geometry_version ? `${v} (default)` : v }))} />,
+                options={o.available_geometry_versions.map(v => ({ value: v, text: v === o.default_geometry_version ? `${versionText(v)} (default)` : versionText(v) }))} />,
         {' '}involving <Choice label="Route filter" value={route} onChange={v => { setRoute(v); setPicked(null) }}
                                options={[{ value: '', text: 'any route' }, ...routeList.map(r => ({ value: r, text: `route ${r}` }))]} />,
         {' '}sorted by <Choice label="Sort by" value={by} onChange={setBy}
@@ -140,6 +149,7 @@ function PairSigns({ r, groupOf }: { r: OverlapRow; groupOf: Map<string, number 
 }
 
 function PairPanel({ r, o, groupOf }: { r: OverlapRow; o: OverlapResponse; groupOf: Map<string, number | null> }) {
+  const dash = routeDashes([r.route_a, r.route_b])
   const lines = useApi(op => api.mapLines({ routes: [r.route_a, r.route_b], geometry_version: o.geometry_version }, op),
                        `lines:${r.route_a},${r.route_b}:${o.geometry_version}`)
   return (
@@ -152,7 +162,8 @@ function PairPanel({ r, o, groupOf }: { r: OverlapRow; o: OverlapResponse; group
         <AsyncBlock state={lines} retry={lines.retry} label="Loading the map" isEmpty={m => m.lines.length === 0}
                     emptyMessage={m => m.routes_without_lines.map(x => `Route ${x.route}: ${x.reason}`).join('; ') || 'No lines for these routes.'}>
           {m => <>
-            <RouteMap lines={m.lines} height={300} weight={3} />
+            <RouteMap lines={m.lines.map(l => ({ ...l, group_id: groupOf.get(l.route) ?? null }))} height={300} weight={3} routeDash={dash} />
+            <div className="px-4 pt-2"><LineKey routes={[r.route_a, r.route_b]} groupOf={x => groupOf.get(x)} routeDash={dash} /></div>
             <MapCaption geometryVersion={m.geometry_version} appliedStart={m.applied.start} appliedEnd={m.applied.end}
                         pathLabel={m.label} displayNote={m.display.note} />
           </>}
