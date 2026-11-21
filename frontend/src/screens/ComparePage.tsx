@@ -11,19 +11,22 @@ import { AsyncBlock } from '../components/AsyncBlock'
 import { MapCaption } from '../components/MapCaption'
 import { ApiLabel, Panel } from '../components/Panel'
 import { Num, type ProvenanceInfo } from '../components/Provenance'
-import { RouteMap } from '../components/RouteMap'
+import { LineKey, RouteMap } from '../components/RouteMap'
 import { RouteSign } from '../components/RouteSign'
 import { Choice, Sentence } from '../components/Sentence'
 import { Empty } from '../components/States'
 import { Value } from '../components/Value'
 import { DIGITS, METRIC_ORDER } from '../lib/closerLook'
+import { routeDashes } from '../lib/lineStyles'
 import { archiveRange, leaders, MAX_ROUTES, MIN_ROUTES, parseRoutes } from '../lib/compare'
 import { fmtRange } from '../lib/dates'
 import { fmt, fmtPct } from '../lib/format'
 import { sortByRoute } from '../lib/routeSort'
 
 const DAYTYPE_TEXT: Record<DayType, string> = { W: 'weekdays', A: 'Saturdays', U: 'Sundays and holidays' }
-const PERIOD_TEXT: Record<PeriodName, string> = { full_matched_window: 'the full matched window', development: 'the development period' }
+// One-click starting points (UI suggestions only: no number or conclusion is attached to them)
+const EXAMPLES: [string, string][] = [['22', '49'], ['49', 'X49'], ['169', '22']]
+const PERIOD_TEXT: Record<PeriodName, string> ={ full_matched_window: 'the full matched window', development: 'the development period' }
 
 export function ComparePage() {
   const [params, setParams] = useSearchParams()
@@ -71,7 +74,19 @@ export function ComparePage() {
       </div>
 
       {!ready
-        ? <Empty message={`Choose at least ${MIN_ROUTES} routes to compare (${chosen.length} chosen).`} />
+        ? <div className="space-y-3">
+            <Empty message={`Choose at least ${MIN_ROUTES} routes to compare (${chosen.length} chosen).`} />
+            <p className="text-sm">
+              Or start from an example:{' '}
+              {EXAMPLES.map((pair, i) => (
+                <span key={pair.join(',')}>{i > 0 && ' · '}
+                  <Link to={`/compare?routes=${pair.join(',')}`} aria-label={`Compare routes ${pair.join(' and ')}`}
+                        className="inline-flex items-center gap-1 align-middle no-underline">
+                    <RouteSign route={pair[0]!} groupId={groupOf.get(pair[0]!)} size="sm" />&amp;<RouteSign route={pair[1]!} groupId={groupOf.get(pair[1]!)} size="sm" />
+                  </Link></span>
+              ))}
+            </p>
+          </div>
         : <AsyncBlock state={cmp} retry={cmp.retry} label="Loading the comparison" isEmpty={c => c == null}>
             {c => <CompareBody c={c!} groupOf={groupOf} onSameDays={() => set('same_days', 'true')} />}
           </AsyncBlock>}
@@ -82,6 +97,7 @@ export function ComparePage() {
 function CompareBody({ c, groupOf, onSameDays }: { c: CompareResponse; groupOf: Map<string, number | null>; onSameDays: () => void }) {
   const cutoff = useCutoff()
   const coverage = useApi(o => api.coverage(o), 'coverage')
+  const dash = routeDashes(c.routes.map(r => r.route))
   const applied = coverage.status === 'ok' ? archiveRange(coverage.data.archives, c.map.geometry_version) : null
   const request = buildUrl('/api/routes/compare', { routes: c.routes.map(r => r.route).join(','), daytype: c.daytype, period: c.period.name,
                                                    same_days: c.same_days || undefined }, { cutoff })
@@ -145,11 +161,12 @@ function CompareBody({ c, groupOf, onSameDays }: { c: CompareResponse; groupOf: 
       </Panel>
 
       <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
-        <Panel title="Map" purpose="Each route's most common path per direction, coloured by group.">
+        <Panel title="Map" purpose="Each route's most common path per direction, coloured by group; each route has its own line pattern (key under the map).">
           {c.map.lines.length === 0
             ? <Empty message={c.map.routes_without_lines.map(x => `Route ${x.route}: ${x.reason}`).join('; ') || 'No lines for these routes.'} />
             : <div className="-mx-4 -my-3">
-                <RouteMap lines={c.map.lines.map(l => ({ ...l, group_id: groupOf.get(l.route) ?? null }))} height={380} weight={3} />
+                <RouteMap lines={c.map.lines.map(l => ({ ...l, group_id: groupOf.get(l.route) ?? null }))} height={380} weight={3} routeDash={dash} />
+                <div className="px-4 pt-2"><LineKey routes={c.routes.map(r => r.route)} groupOf={x => groupOf.get(x) ?? null} routeDash={dash} /></div>
                 {c.map.routes_without_lines.length > 0 && (
                   <p className="px-4 pt-2 text-xs text-ink-2">Not drawn: {c.map.routes_without_lines.map(x => `route ${x.route} (${x.reason})`).join('; ')}.</p>
                 )}

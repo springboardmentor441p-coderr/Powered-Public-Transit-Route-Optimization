@@ -1417,3 +1417,15 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
 - **Decisions:** the patterns are assigned in order (first solid, second dashed, then dotted and so on), so Compare can reuse them for up to 8 routes.
 - **Results:** tsc, lint and vitest (93 tests, 2 new for the patterns) pass. I checked the 120/121 pair map: 121 is dashed and the key reads "Route 120 / Route 121".
 - **Interview Q:** *"Why not give each route its own colour?"* Colour is reserved for groups across the whole app. A third and fourth colour would make readers think there are more groups. A pattern adds identity without changing what colour means.
+
+## Step 80: Compare fixes (line patterns, example pairs)
+- **Built:**
+  - The Compare map uses the same per-route patterns as Shared stops (first solid, then dashed, dotted and so on), with the key under the map.
+  - The empty state offers three one-click example pairs: 22 & 49, 49 & X49, 169 & 22.
+  - The click-through check now also expects the examples.
+- **Why:** up to 8 routes can share a group colour, and an empty page gives no starting point.
+- **Key concept:** *a good empty state is a starting point*: it shows what the page can do instead of only saying what's missing.
+- **Decisions:** the examples are plain links (`/compare?routes=…`) with no number or conclusion attached. Their result comes from the API like any other comparison.
+- **Results:** tsc and lint pass; clicking "49 & X49" opens the comparison.
+  - Limit: 49 and X49 run on the same street, so their lines overlap on the map and no pattern can separate them there. The key and the shared-stops table make it clear.
+- **Interview Q:** *"Why put the routes in the URL?"* The address then fully describes the view: it can be bookmarked, shared and reloaded, and the examples are just links.
