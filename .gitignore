@@ -1,6 +1,9 @@
 # --- Private mentor documents: must NEVER be uploaded ---
 docs-private/
 
+# --- Personal Claude Code instructions: local only, never committed ---
+CLAUDE.local.md
+
 # --- Data (raw downloads and processed tables are large and reproducible) ---
 data/
 
