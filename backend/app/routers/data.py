@@ -17,6 +17,27 @@ from backend.app.db import cutoff_block, get_conn, permitted_through, resolve_ve
 from backend.app.labels import LABELS, envelope, reason_words
 
 router = APIRouter(tags=["data"])
+# The importer's identity checks in plain words (their names mention table names); the name stays in `check`.
+CHECK_WORDS = {
+    "matched rows agree with daily_schedule": "Matched days agree with the scheduled service",
+    "matched rows agree with daily_ridership (daytype, rides)": "Matched days agree with the recorded rides and day types",
+    "no ridership_without_schedule row has a schedule row": "No day listed as rides without a schedule has a schedule",
+    "no schedule_without_ridership row has a ridership row": "No day listed as a schedule without rides has recorded rides",
+    "ridership_without_schedule rows agree with daily_ridership": "Days with rides but no schedule agree with the recorded rides",
+    "every schedule date lies within its snapshot's applied dates": "Every scheduled day lies within its timetable's applied dates",
+    "schedule = matched + schedule_without_ridership (difference)": "Scheduled days = matched days + scheduled days without rides",
+    "profile observed days and ride sums equal the matched rows of their period":
+        "Route profiles' observed days and ride totals equal the matched days of their period",
+    "ridership in the analysis window = matched + ridership_without_schedule (difference)":
+        "Recorded rides in the analysis window = matched days + days with rides but no schedule",
+}
+
+
+def _checks(identities: dict) -> list[dict]:
+    return [{"check": k, "label": CHECK_WORDS.get(k, k.replace("_", " ")), "violations": int(n)}
+            for k, n in identities.items()]
+
+
 def _worded(rows: list[dict]) -> list[dict]:
     return [{**r, "reason_code": r["reason"],
              "reason": reason_words(r["reason"])} for r in rows]
@@ -94,6 +115,7 @@ def coverage(data_version: str | None = None,
                   "ridership_without_schedule": _worded(no_sched), "schedule_without_ridership": _worded(no_rides)},
         quality={"import_identities": report["identities"],
                  "import_identities_hold": all(x == 0 for x in report["identities"].values()),
-                 "note": "identities were checked on the whole version at import; they are violation counts (0)"},
+                 "import_checks": _checks(report["identities"]),
+                 "note": "checked on the whole data version at import; each number counts rows that break the rule"},
         details=details,
     )

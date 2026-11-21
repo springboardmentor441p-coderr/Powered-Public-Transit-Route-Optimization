@@ -31,7 +31,7 @@ describe('daytypeLevels', () => {
 
 describe('importChecks', () => {
   it('counts identities with 0 violations', () => {
-    expect(importChecks({ import_identities: { a: 0, b: 0, c: 2 }, import_identities_hold: false, note: '' }))
+    expect(importChecks({ import_identities: { a: 0, b: 0, c: 2 }, import_identities_hold: false, note: '', import_checks: [] }))
       .toEqual({ held: 2, total: 3 })
   })
 })

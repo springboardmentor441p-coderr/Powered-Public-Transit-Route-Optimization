@@ -11,7 +11,8 @@ import pytest
 
 VISIBLE = {"caveat", "caveats", "meaning", "note", "total_note", "label", "gate_label", "interpretation", "reason",
            "route_values_note", "groups_note", "comparable_note", "k_rule", "k_table", "mode_label",
-           "numerator_label", "denominator_label", "unit", "daytype_label", "name"}
+           "numerator_label", "denominator_label", "unit", "daytype_label", "name", "kind_label", "test_status",
+           "target_label", "metric_label", "selection_note", "basis_label", "rank_note"}
 NOT_TEXT = {"name"}  # "name" is also an internal period key; it is checked only where it is a group name
 SPEC = re.compile(r"\bspec\s+\d", re.I)
 FIELD = re.compile(r"\b[a-z]+_[a-z0-9_]+\b")
@@ -30,6 +31,8 @@ REQUESTS = [
     ("/api/routes/compare", {"routes": "49,X49", "daytype": "W"}),
     ("/api/route-groups", {}),
     ("/api/map/lines", {}),
+    ("/api/models/summary", {}),
+    ("/api/routes/compare", {"routes": "10,22", "same_days": "true"}),
 ]
 
 

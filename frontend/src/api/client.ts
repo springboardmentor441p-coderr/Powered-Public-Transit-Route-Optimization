@@ -5,7 +5,7 @@
 // analysis). Stage 7's replay will pass one, and the BACKEND then hides every date after it in SQL; the client
 // only forwards it, it never filters data itself.
 import type {
-  CompareResponse, Coverage, DayType, GroupsResponse, HistoryResponse, MapLinesResponse, OverlapResponse,
+  CompareResponse, Coverage, DayType, ModelsResponse, GroupsResponse, HistoryResponse, MapLinesResponse, OverlapResponse,
   PeriodName, RankingMetric, RankingResponse, RoutesResponse, TrendResponse,
 } from './types'
 
@@ -67,6 +67,8 @@ export type PeriodChoice = { period?: PeriodName; start?: string; end?: string }
 
 export const api = {
   coverage: (o?: ApiOptions) => apiGet<Coverage>('/api/data/coverage', {}, o),
+
+  models: (o?: ApiOptions) => apiGet<ModelsResponse>('/api/models/summary', {}, o),
 
   routes: (f: { group_id?: number; ungrouped?: boolean; saturday_service?: boolean; sunday_holiday_service?: boolean
                 active_start?: string; active_end?: string } = {}, o?: ApiOptions) =>

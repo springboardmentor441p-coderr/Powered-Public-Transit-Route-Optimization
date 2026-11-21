@@ -1342,3 +1342,40 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - React reported table rows without `key`s; they now have keys.
   - the whole-period coverage rows weren't labelled as such in same-days mode; they now say "in the whole period".
 - **Interview Q:** *"Why does the leader change with 'same days only'?"* Route 10 was observed only from June. Comparing on the shared dates removes the seasons the others saw and route 10 didn't, so each route is judged on the same days.
+
+## Step 76: Data (`/data`), plan written before coding
+- **What it shows:**
+  - **Coverage:** recorded-rides range, analysis window, matched routes, dates and rows, and the share of scheduled route-days with a record.
+  - **Missing data in both directions,** with reasons in words.
+  - **The import checks,** in plain words ("N of N hold").
+  - **Timetable archives** with their applied dates.
+  - **The sources**, the same content as the Sources drawer.
+  - **An honest model card:**
+    - what was tried: 2 baselines, 2 ridge, 2 random forests and 4 neural networks;
+    - what won: the random forest on ride history;
+    - by how much it beat the 4-week average baseline, on validation and on the reused test period;
+    - that the test period is a reused holdout, and that no neural network beat the random forest.
+- **Insight it highlights:** how complete the data is, and how modest the model's gain over a simple 4-week average is. Both numbers come from the API.
+- **Rules:**
+  - The import-check names currently contain table names, so the API sends plain labels (with a test).
+  - A new `/api/models/summary` reads the committed model manifests, gives every method a plain label, and is hidden under a cutoff before the test period ends (as the groups are).
+- **Built:**
+  - `/data`: opening sentences counted from the API (coverage %, gaps in both directions, import checks held), coverage counts, missing data with reasons, import checks in plain words, timetable archives, the model card and the sources (the same panel as the drawer).
+  - **API:**
+    - `quality.import_checks` (plain labels, with the original name kept in `check`);
+    - new `GET /api/models/summary`: it reads the committed model manifests, gives every method a plain label, sorts best first, computes the gain over the best baseline, lists withheld reasons in words, and is hidden under a cutoff before 31 Jul 2026.
+  - Helpers in `lib/modelCard.ts` (`gainWords`, `scoredShare`), with tests.
+- **Key concept:** *a model card states the comparison, not just the score*. "MAE 345" means nothing alone; "4.1 % lower than a 4-week average" tells you what the model adds over a rule anyone could compute. A model card also says what was tried and lost (4 neural networks), and that the test period was looked at during development.
+- **Decisions:**
+  - The baseline is the best simple rule by validation error (the 4-week average), chosen in the API, not named in the page.
+  - The gain words follow the sign, so a loss would read "higher".
+  - The neural network count is counted from the methods, not written into the text.
+- **Results:**
+  - backend: the new `test_api_models.py` (5 tests: manifest values, gain arithmetic, cutoff rule, withheld words, import-check labels), plus the visible-text scan of `/api/models/summary` and of compare's same-days mode;
+  - frontend: tsc, lint, vitest (80 tests) and build pass.
+- **Screenshot check (1366/1920):**
+  - "5.5 % lower than on the test period" was ungrammatical; it now reads "5.5 % lower on the test period".
+  - "The four neural networks" was a hard-coded count; it's now counted.
+  - lowercasing had turned "GRU" into "gru"; the label is now kept as sent.
+  - the import-check names had shown table names; they are now plain labels from the API.
+- **Interview Q:** *"Your model only beats the baseline by 4 %. Is it worth it?"* Maybe not on its own. That's exactly why the card shows the baseline. A 4 % lower error across 123 routes is real but small, and the 4-week average is cheap and transparent. The honest answer depends on what a planner gains from the extra accuracy, and the card gives them the numbers to decide.

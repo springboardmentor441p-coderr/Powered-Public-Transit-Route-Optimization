@@ -18,7 +18,7 @@ export type Units = {
 
 // ---- GET /api/data/coverage
 export type MissingGroup = {
-  reason: string; rows: number; routes: number; route_list: string[]; first_date: ISODate; last_date: ISODate
+  reason: string; reason_code: string; rows: number; routes: number; route_list: string[]; first_date: ISODate; last_date: ISODate
 }
 export type Archive = {
   geometry_version: string; captured_date: ISODate; applied_start: ISODate; applied_end: ISODate
@@ -41,7 +41,10 @@ export type Coverage = Envelope & {
     matched_routes: number; schedule_conditioned_coverage_pct: number | null
     ridership_without_schedule: MissingGroup[]; schedule_without_ridership: MissingGroup[]
   }
-  quality: { import_identities: Record<string, number>; import_identities_hold: boolean; note: string }
+  quality: {
+    import_identities: Record<string, number>; import_identities_hold: boolean; note: string
+    import_checks: { check: string; label: string; violations: number }[]
+  }
   details: {
     import_git_commit: string; built_git_commit: string; schema_sha256: string
     archive_sha256: Record<string, string>
@@ -217,3 +220,27 @@ export type MapLinesResponse = Envelope & {
   display: { simplify_m: number; note: string; points_stored: number; points_sent: number }
   groups_note: string | null; count: number; lines: MapLine[]; routes_without_lines: NoLines[]
 }
+
+// ---- GET /api/models/summary (the Data screen's model card)
+export type SplitMetrics = { mae: number; wape_percent: number; rmse: number; scored_rows: number; withheld_rows: number; coverage: number }
+export type ModelMethod = {
+  method: string; label: string; kind: string; kind_label: string; validation: SplitMetrics; test: SplitMetrics | null
+}
+export type Gain = {
+  model_mae: number; baseline_mae: number; mae_reduction: number; mae_reduction_percent: number
+  model_wape_percent: number; baseline_wape_percent: number
+}
+export type ModelsResponse = Envelope & (
+  | { available: false; reason: string }
+  | {
+      available: true; artifact_version: string; git_commit: string; created_at: string
+      extra_experiment: { artifact_version: string; git_commit: string }
+      target_label: string; metric_label: string; test_status: string; selection_note: string
+      periods: { train: [ISODate, ISODate]; validation: [ISODate, ISODate]; test: [ISODate, ISODate] }
+      methods: ModelMethod[]
+      selected: { method: string; label: string }; best_baseline: { method: string; label: string }
+      best_network: { method: string; label: string; beats_selected: boolean } | null
+      gain: { validation: Gain | null; test: Gain | null }
+      withheld: { validation: { reason: string; rows: number }[]; test: { reason: string; rows: number }[] }
+    }
+)
