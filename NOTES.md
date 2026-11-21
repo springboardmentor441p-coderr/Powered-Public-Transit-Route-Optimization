@@ -1448,3 +1448,11 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - backend: models and visible-text tests pass;
   - frontend: vitest (101 tests, 8 new: sameRows, topAndRest, fmtTimestamp, networkSentence, inSentence), tsc and lint pass. I read the rendered sentences back from the page.
 - **Interview Q:** *"Why check that every method was scored on the same rows?"* If one method skipped the hard days, its error would look better for the wrong reason. Same rows mean the comparison is fair, and the page only claims it when the data proves it.
+
+## Step 82: Top bar: "Replay: not available yet"
+- **Built:** the top bar reads "Historical analysis · Replay: not available yet" (still disabled), and its hover text says the same.
+- **Why:** "Replay: Stage 7" put a project stage number in front of users. It means nothing to a planner.
+- **Key concept:** *internal plans stay internal*. A screen tells the user what they can do now, not which milestone something belongs to.
+- **Decisions:** the feature stays visible but marked unavailable, so its absence is explained rather than hidden.
+- **Results:** tsc and lint pass. A search found no other visible stage number in a screen (the `/style` reference page mentions "Stage 5 memberships"; it isn't a user screen).
+- **Interview Q:** *"Why show a feature that doesn't work yet?"* So a reviewer knows it's planned and where it will live, without guessing. Labelling it "not available yet" keeps that honest.

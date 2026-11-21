@@ -31,9 +31,9 @@ export function TopBar({ modeLabel, dataThrough, sources }: {
             ))}
           </nav>
           <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-x-4 gap-y-1 py-2 text-sm">
-            <span className="whitespace-nowrap" title="Replay arrives with Stage 7">
+            <span className="whitespace-nowrap" title="Replay is not available yet" aria-disabled="true">
               <span className="text-white">{modeLabel}</span>
-              <span className="hidden text-xs xl:inline"> · Replay: Stage 7</span>
+              <span className="hidden text-xs xl:inline"> · Replay: not available yet</span>
             </span>
             <span className="whitespace-nowrap">Data to <span className="num text-white">{dataThrough}</span></span>
             <button type="button" onClick={() => setOpen(true)} aria-expanded={open}
