@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="RouteRanker">
+  <title>RouteRanker</title>
+  <!-- brand slate plate with three ranked bars; no group colours (colour means data) -->
+  <rect width="32" height="32" rx="4" fill="#2B3440"/>
+  <rect x="7" y="8" width="18" height="4" rx="1" fill="#FFFFFF"/>
+  <rect x="7" y="14" width="13" height="4" rx="1" fill="#FFFFFF"/>
+  <rect x="7" y="20" width="8" height="4" rx="1" fill="#C9D1DA"/>
+</svg>

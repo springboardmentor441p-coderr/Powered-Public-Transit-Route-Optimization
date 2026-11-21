@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+/* RouteRanker design tokens.
+   Rule: bright colour means data (route groups, amber warnings). The interface itself is slate on a warm
+   off-white page. Every text pair was measured against WCAG AA (Step 67b in NOTES.md):
+   main text 12.6-15.9:1, secondary 5.8-7.3:1, white on the brand slate 10.2-14.3:1, warning 6.2:1. */
+@theme {
+  --font-sans: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
+
+  /* type scale: 12 / 13 / 14 / 16 / 20 / 24 */
+  --text-xs: 12px;   --text-xs--line-height: 16px;
+  --text-sm: 13px;   --text-sm--line-height: 18px;
+  --text-base: 14px; --text-base--line-height: 20px;
+  --text-md: 16px;   --text-md--line-height: 22px;
+  --text-lg: 20px;   --text-lg--line-height: 26px;
+  --text-xl: 24px;   --text-xl--line-height: 30px;
+
+  --color-brand: #2B3440;      /* slate: top bar, primary buttons, selected states (shade chosen on /style) */
+  --color-brand-text: #C9D1DA; /* unselected text on the brand bar (8.2:1) */
+  --color-canvas: #F4F2EE;     /* warm off-white page */
+  --color-panel: #FFFFFF;      /* working surfaces; data marks always sit on these */
+  --color-ink: #1C232B;        /* main text */
+  --color-ink-2: #4E5762;      /* secondary text */
+  --color-rule: #D9DDE2;       /* 1 px dividers */
+  --color-rule-strong: #AEB4BC;
+  --color-hover: #EDF0F3;      /* light slate tint */
+  --color-selected: #E1E6EC;
+
+  --color-group-0: #0072B2;    /* Okabe-Ito blue: validated vs group 1, CVD dE 21.9 */
+  --color-group-1: #D55E00;    /* Okabe-Ito vermillion */
+  --color-ungrouped: #8B9099;  /* neutral on purpose; always dashed on maps and labelled */
+
+  --color-warn-ink: #7A5300;
+  --color-warn-bg: #FFF3D1;
+}
+
+@layer base {
+  html { background: var(--color-canvas); color: var(--color-ink); font-family: var(--font-sans); }
+  body { font-size: var(--text-base); line-height: var(--text-base--line-height); }
+  .num, table td, table th { font-variant-numeric: tabular-nums; }
+  /* visible keyboard focus everywhere; dark surfaces set --focus-ring to white */
+  :focus-visible { outline: 2px solid var(--focus-ring, var(--color-ink)); outline-offset: 2px; border-radius: 2px; }
+  a { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+}
+
+@layer components {
+  .btn-primary { @apply inline-flex h-8 items-center border border-brand bg-brand px-3 text-sm font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-secondary { @apply inline-flex h-8 items-center border border-rule-strong bg-panel px-3 text-sm text-ink hover:border-brand hover:bg-hover disabled:cursor-not-allowed disabled:text-ink-2; }
+  .field { @apply h-8 border border-rule-strong bg-panel px-2 text-sm text-ink hover:border-brand disabled:cursor-not-allowed disabled:bg-hover disabled:text-ink-2; }
+  .field-label { @apply mb-1 block text-xs text-ink-2; }
+  .data-table { @apply w-full border-collapse text-sm; }
+  .data-table th { @apply border-b border-rule-strong bg-panel px-3 py-2 text-left text-xs font-semibold text-ink-2; }
+  .data-table td { @apply h-8 border-b border-rule px-3 align-middle; }
+  .data-table tbody tr:hover { @apply bg-hover; }
+  .data-table tbody tr[aria-selected="true"] { @apply bg-selected; }
+  .data-table .n { @apply text-right; }
+  /* Minimum widths: in a narrow window the table keeps readable columns and its wrapper (overflow-x-auto)
+     scrolls sideways, instead of squeezing text until it is clipped. Headers never wrap; text cells may. */
+  .data-table th { @apply whitespace-nowrap; }
+  .data-table th, .data-table td { min-width: 6rem; }
+  .data-table .n { min-width: 5rem; white-space: nowrap; }
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-wide text-ink-2; }
+}
+
+/* OpenStreetMap tiles are greyed so the route lines read first. Only the tile layer is filtered. */
+.leaflet-tile-pane { filter: grayscale(1) contrast(0.85) brightness(1.06); }
+.leaflet-container { font-family: var(--font-sans); background: var(--color-canvas); }
+.leaflet-control-attribution { font-size: 11px; }

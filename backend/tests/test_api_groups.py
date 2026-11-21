@@ -7,6 +7,7 @@ import re
 from datetime import date
 
 import pandas as pd
+import pytest
 
 from backend.importer.import_data import REPO_ROOT
 
@@ -51,6 +52,63 @@ def test_before_the_profile_period_ends_groups_are_not_shown(client):
     body = client.get("/api/route-groups", params={"cutoff": "2026-03-01"}).json()
     assert body["available"] is False and "after the cutoff" in body["reason"]
     assert set(body) <= {"data_version", "mode", "mode_label", "cutoff", "available", "reason"}
+
+
+PROFILES = REPO_ROOT / "data/processed/cta_ref__r20261113__gtfs8__to20260731/groups__dev20251123_20260331" \
+                       "/route_profiles.csv"
+RATIOS = {"saturday_to_weekday_rides_ratio": "saturday", "sunday_holiday_to_weekday_rides_ratio": "sunday_holiday"}
+
+
+def values_of(body) -> dict[str, dict[str, dict]]:
+    return {r["route"]: {v["feature"]: v for v in r["values"]} for r in body["route_values"]}
+
+
+def test_route_values_equal_the_stored_profiles(client):
+    body = client.get("/api/route-groups").json()
+    csv = pd.read_csv(PROFILES, dtype={"route": str}).set_index("route")
+    got = values_of(body)
+    assert set(got) == set(csv.index) and len(got) == 123
+    members = {r: g["group_id"] for g in body["groups"] for r in g["routes"]}
+    for route, feats in got.items():
+        assert next(r for r in body["route_values"] if r["route"] == route)["group_id"] == members.get(route)
+        for f, v in feats.items():
+            stored = csv.at[route, f]
+            if pd.isna(stored):
+                assert v["value"] is None and v["reason"], (route, f)
+            else:
+                assert math.isclose(v["value"], stored, rel_tol=1e-9), (route, f)
+
+
+def test_route_169_weekend_ratios_are_null_with_a_reason_never_zero_or_the_filled_median(client):
+    v = values_of(client.get("/api/route-groups").json())["169"]
+    for f in RATIOS:
+        assert v[f]["value"] is None and v[f]["status"] == "insufficient_observations", f
+        assert "unavailable" in v[f]["reason"] and "fewer than 8" in v[f]["reason"], f
+    sun = v["sunday_holiday_to_weekday_rides_ratio"]
+    assert "0 matched Sunday/holiday days of 3 scheduled" in sun["reason"]
+    assert sun["value"] not in (0, 0.0) and sun["value"] != pytest.approx(0.511, abs=1e-3)
+
+
+def test_structural_zeros_are_exactly_zero_and_match_the_profile_status(client):
+    csv = pd.read_csv(PROFILES, dtype={"route": str}).set_index("route")
+    got = values_of(client.get("/api/route-groups").json())
+    n = 0
+    for f, key in RATIOS.items():
+        for route in csv.index[csv[f"{key}_service_status"] == "no_scheduled_service"]:
+            v = got[route][f]
+            assert v["value"] == 0.0 and v["status"] == "no_scheduled_service" and "structural zero" in v["reason"]
+            n += 1
+        for route in csv.index[csv[f"{key}_service_status"] == "available"]:
+            assert got[route][f]["status"] == "available" and got[route][f]["value"] is not None
+    assert n == 30 + 36  # 30 routes with no Saturday service; 36 with no Sunday/holiday service
+
+
+@pytest.mark.parametrize("cutoff, shown", [("2026-03-01", False), ("2026-03-30", False), ("2026-03-31", True)])
+def test_route_values_follow_the_groups_cutoff_rule(client, cutoff, shown):
+    body = client.get("/api/route-groups", params={"cutoff": cutoff}).json()
+    assert ("route_values" in body) is shown and body["available"] is shown
+    if shown:
+        assert len(body["route_values"]) == 123
 
 
 def test_after_the_profile_period_groups_are_unchanged_and_no_later_date_appears(client):

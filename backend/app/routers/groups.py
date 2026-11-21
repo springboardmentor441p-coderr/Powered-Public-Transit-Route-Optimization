@@ -6,6 +6,10 @@ reports/stage5_group_summary.csv. All caveats are returned, always. Ungrouped ro
 The groups were fitted on the development period; under a cutoff before its end they are not shown (200 with
 available = false and the reason, so the screen can say why). The k table (silhouette, stability) is not imported;
 the response points to the Stage 5 report for it.
+
+`route_values` (Stage 6c) carries every profiled route's own values for the "Alike" scatter: missing -> null with a
+reason (route 169's weekend ratios), structural zero -> 0 with status no_scheduled_service. Hidden with the groups
+under an early cutoff.
 """
 from __future__ import annotations
 
@@ -32,6 +36,31 @@ FEATURE_UNITS = {  # original units for the summary columns
 }
 K_TABLE_NOTE = "k table (silhouette, stability, half-period agreement): Stage 5 report, section 4"
 STATUSES = ("available", "no_scheduled_service", "insufficient_observations")
+WEEKEND = {"saturday_to_weekday_rides_ratio": ("saturday", "Saturday"),
+           "sunday_holiday_to_weekday_rides_ratio": ("sunday_holiday", "Sunday/holiday")}
+VALUES_NOTE = ("each route's own development-period profile value. A missing value is null with its reason: it is "
+               "never 0 and never the median the clustering filled in. A structural zero (no scheduled service) is 0.")
+
+
+def profile_value(p: dict, feature: str) -> dict:
+    """One stored profile value with its status. Read from route_profiles, never from the clustering input, so a
+    value the clustering filled with a median comes back as null with its reason."""
+    v = p[feature]
+    if feature in WEEKEND:
+        key, name = WEEKEND[feature]
+        status = p[f"{key}_service_status"]
+        if status == "no_scheduled_service":
+            return {"value": 0.0, "status": status,
+                    "reason": f"no scheduled {name} service: a structural zero (no buses ran), not a missing value"}
+        if status == "insufficient_observations" or v is None:
+            gate = CFG["gates"]["cluster_min_weekend_days"]
+            return {"value": None, "status": "insufficient_observations",
+                    "reason": f"unavailable: {p[f'{key}_observed_days']} matched {name} days of "
+                              f"{p[f'{key}_scheduled_days']} scheduled (fewer than {gate})"}
+        return {"value": float(v), "status": "available", "reason": None}
+    if v is None:
+        return {"value": None, "status": "unavailable", "reason": "unavailable in the stored development profile"}
+    return {"value": float(v), "status": "available", "reason": None}
 
 
 @router.get("/api/route-groups")
@@ -45,13 +74,21 @@ def route_groups(cutoff: date | None = Query(None, description="use only service
     g = conn.execute("""SELECT group_version, artifact_version, artifact_sha256, profile_start, profile_end, k,
                                features, group_names, caveats, built_git_commit
                         FROM group_versions WHERE group_version = %s""", (gv["group_version"],)).fetchone()
-    prof = pd.DataFrame(conn.execute("SELECT * FROM route_profiles WHERE group_version = %s",
-                                     (g["group_version"],)).fetchall())
+    profile_rows = conn.execute("SELECT * FROM route_profiles WHERE group_version = %s ORDER BY route",
+                                (g["group_version"],)).fetchall()
+    prof = pd.DataFrame(profile_rows)
     members = conn.execute("""SELECT route, group_id, group_name, reason FROM group_memberships
                               WHERE group_version = %s ORDER BY route""", (g["group_version"],)).fetchall()
     labels = pd.Series({m["route"]: m["group_id"] for m in members if m["group_id"] is not None}, dtype="int64")
     summary = group_summary(prof, labels, CFG)  # Stage 5's own function
     selected = g["features"]
+    features = CFG["clustering"]["candidates_in_priority_order"]
+    group_of = {m["route"]: m["group_id"] for m in members}
+    route_values = [
+        {"route": p["route"], "group_id": group_of.get(p["route"]),
+         "weekday_observed_days": int(p["weekday_observed_days"]),
+         "values": [{"feature": f, "unit": FEATURE_UNITS[f], **profile_value(p, f)} for f in features]}
+        for p in profile_rows]
     groups = []
     for row in summary.to_dict("records"):
         gid = int(row["group"])
@@ -75,4 +112,5 @@ def route_groups(cutoff: date | None = Query(None, description="use only service
         caveats=g["caveats"],
         groups=groups,
         ungrouped=[{"route": m["route"], "reason": m["reason"]} for m in members if m["group_id"] is None],
+        route_values_note=VALUES_NOTE, route_values=route_values,
     )

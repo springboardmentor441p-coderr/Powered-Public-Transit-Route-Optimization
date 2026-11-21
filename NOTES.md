@@ -1026,3 +1026,145 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - Opening a connection per request costs roughly 40 ms; a pool still isn't needed.
 - The 18-minute real import (Step 59) is still unexplained. These read times show the real database itself is not slow.
 - **Full suite after 6b:** **237 passed** in 6 min 37 s (137 analytics + 4 simplify + 96 backend). The shared `loaded` fixture means the real import ran **once** (118 s), plus the two deliberate rollback loads (about 100 s each). Before this change the backend tests imported three times.
+
+# Stage 6c: React screens (spec 9.16)
+
+## Step 67: Frontend scaffold, packages and the style reference page (`frontend/`, `/style`)
+- **Built:**
+  - **Scaffold:** the Vite React-TS template (create-vite 9.3.4), generated in a scratch folder, inspected, then copied into `frontend/` without its demo assets.
+  - **Packages, all exact versions:**
+    - react 19.3.1, react-router-dom 7.18.6, leaflet 1.9.4, react-leaflet 5.0.0, recharts 3.11.0;
+    - tailwindcss and @tailwindcss/vite 4.3.5, @types/leaflet 1.9.22, vitest 5.1.1;
+    - the template's own vite 8.3.8, typescript 7.0.2, oxlint 1.94.0 and type packages.
+  - **Version pinning:** `.npmrc` has `save-exact=true`, and a small script replaced every template `^`/`~` with the installed version.
+  - **Vite config:** proxies `/api` to `http://127.0.0.1:8000` for both `dev` and `preview`, with no CORS in the backend.
+  - **`tsconfig`:** `strict` and `noUncheckedIndexedAccess` are switched on.
+  - **Building blocks:** design tokens (`index.css`, `design/tokens.ts`), `RouteSign`, `Value`/`fmt`, `Panel`/`KeyNumbers`/`ApiLabel`, `PageHeader` with the mode switch, `PeriodBar`, `MapCaption`, the three states, and the `Shell` (sidebar + top strip).
+  - **`/style` page:** shows all of these with specimen values.
+  - **Tests:** 4 vitest tests for the missing-value rule.
+- **Why:** your design brief asked for one approved look before any screen is built. Every screen will be assembled from these same pieces, so the look stays consistent by construction rather than by care.
+- **Key concept:** *colour means data*. The interface is ink on white, and the only hues are the route-group colours. Then a reader never wonders "why is this blue?": blue always means Group 0, on every chart, map and route sign. Like a transit map, where a colour is a line and nothing else.
+- **Decisions:**
+  - **Direction A, "Signage" (your choice):**
+    - the system font, so no font package and no outside font request;
+    - ink as the only accent;
+    - no shadows or card grids;
+    - route numbers as sign plates with a group stripe.
+  - **Structure from the mentor screenshots (structure only):** sidebar, breadcrumb strip, page header with a mode switch (Replay disabled until Stage 7), period bar, key-number row, chart with a side panel, detail table. Their map showed "API KEY REQUIRED" over the tiles; ours uses OpenStreetMap tiles, which need no key, with attribution.
+  - **Colours checked, not eyeballed:** the dataviz validator passes Group 0 `#0072B2` and Group 1 `#D55E00` on every check (colour-blind ΔE 21.9). The grey for "ungrouped" fails the "reads as grey" check **on purpose**, so it is never the only cue: it is dashed on maps and always labelled. WCAG contrast is ink 17.8:1, secondary text 7.3:1 (6.8:1 on the canvas) and warning text 6.2:1.
+  - **The template now ships oxlint, not ESLint.** It is the template's own linter, kept under your "template lint set" approval and flagged to you.
+  - **A recorded 0 stays "0"; a missing value reads "unavailable – reason"**, and a test proves both.
+- **Results:** `tsc -b` passes; `npm run lint` is clean (one warning fixed by moving the screen list to `screens.ts`); vitest 4/4; `npm run build` passes. The bundle is 845 kB (249 kB gzipped), and Vite warns above 500 kB. To revisit by splitting the map and chart code per screen once the screens exist. `npm ls` shows no invalid or missing packages.
+- **Superseded in Step 67b:** the sidebar, page header, period bar and number-card row were replaced by RouteRanker's own structure. The tokens, route signs and map styling stay.
+- **Interview Q:** *"Why build a style page before any real screen?"* Agreeing on the building blocks once is cheaper than restyling six screens. It also turns design rules into code: if the only way to show a number is `<Value>`, then "missing is never 0" holds everywhere automatically, instead of depending on each screen remembering it.
+
+## Step 67b: RouteRanker's own structure, signature features and the slate palette (`/style`, still no screens)
+- **Built:**
+  - **`TopBar`:** a slate bar with 7 tabs (Start · Closer look · One route · Alike · Shared stops · Compare · Data), the mode in plain words ("Historical analysis · Replay: Stage 7"), "Data through" and a **Sources** drawer. It replaces the sidebar.
+  - **Start page index:** `QuestionIndex` lists the planner questions as full-width rows, each with a one-line answer preview.
+  - **`Sentence`/`Choice`:** the view is stated as a readable sentence with inline dropdowns. It replaces the period bar.
+  - **`Provenance`:** `Num` makes every number a button that opens a **"How was this number made?"** drawer (formula, numerator ÷ denominator = value, days and gate, period, day type, timetables, data version, the exact API request, and the reason when missing).
+  - **`RankTrio`:** the three named rankings side by side, each with its **stability** (development → full window).
+  - **`RhythmGrid`:** weeks across, Mon–Sun down, one slate hue for magnitude.
+  - **`StopShareStrip`:** two bars aligned on the shared stops.
+  - **Helpers:** `lib/rhythm.ts`, `lib/stopShare.ts` and `lib/stability.ts`, plus 10 new tests (14 in all).
+  - **Removed:** the old `Shell`, `PageHeader`, `PeriodBar` and the number-card row.
+- **Why:** you asked for a structure of RouteRanker's own rather than the mentor's skeleton recoloured, and for features that show its strengths: every number can be traced, and nothing is hidden.
+- **Key concept:** *provenance on demand*. A number on screen is a claim. The dotted underline invites "prove it": one click shows the formula, the two totals divided, the days counted and the timetables used. Like a receipt stapled to every price tag. You don't have to read it, but it is always there.
+- **Decisions:**
+  - **Slate brand on a warm page (your request):**
+    - three shades on `/style`, swapped live (`#232B35`, `#2B3440`, `#37424F`);
+    - page `#F4F2EE`, panels white, hover `#EDF0F3`, selected row `#E1E6EC`, main text `#1C232B`.
+  - **Contrast measured for every pair, all AA:** main text 12.6–15.9:1; secondary text 5.8–7.3:1; white on slate 10.2–14.3:1; menu text 6.6–9.3:1; warning 6.2:1.
+  - **The ungrouped grey is only 2.9:1 on the warm page**, so data marks always sit on white panels, where it reaches 3.2:1.
+  - **Missing values are quieter:** `<Value>` always renders them 12 px, normal weight, secondary colour, whatever the parent's size. A test checks the markup never carries bold or large classes, and that a recorded 0 renders "0".
+  - **Rhythm grid:**
+    - the shading is a **single slate ramp**, not blue or orange, because those mean "group" and nothing else;
+    - a missing day is a dashed empty cell with its reason;
+    - a recorded zero is a filled cell marked "0";
+    - a day outside the data is blank, and a test keeps the three apart.
+  - **Stability has no "stable/unstable" verdict:** the spec defines no threshold, so it states the movement ("Development 3rd → full window 5th (moved 2 places down)") or "not comparable – unranked in …". The how-to-read line says the full window contains the development period.
+  - **The stop-share strip shows how many stops are shared, not where.** The database stores stop sets without order or position (`served_stop_ids`, `shared_stop_ids` are `text[]` sets), and the strip says so. An along-the-street strip would need stop order from the GTFS archives: a new import, offered only as a proposal.
+  - **Drawer focus:** the drawer focuses its heading once when it opens and closes on Esc. The first draft re-focused on every parent re-render, and was fixed before running.
+- **Results:** `tsc -b` passes; lint is clean; vitest **14/14**; `npm run build` passes (863 kB, the chunk-size warning is still open from Step 67).
+- **Interview Q:** *"Why make every number clickable? Isn't that clutter?"* The dotted underline is quiet, and the drawer opens only on request. The value is trust: a planner who doubts "58.78 rides per scheduled hour" can see it is 1,234,567 rides ÷ 21,003.9 trip-hours over 171 weekdays, from named timetables, with the exact API request to reproduce it. Without that, the number is a claim the reader can't check.
+
+## Step 67c: Three fixes to the approved style (slate `#2B3440` chosen)
+- **Built:**
+  1. **Top bar above the map:** Leaflet's panes reach z-index 700 and its controls 1000, and the bar was at 900. The bar is now 1100 and the drawers 1200.
+  2. **No overflow at 1366 px:**
+     - every grid column is `minmax(0, …)` instead of `1fr`, and text blocks have `min-w-0`/`break-words`;
+     - side-by-side sections stack below `lg`/`xl`;
+     - the top bar wraps onto a second row when needed, "Data through" became "Data to", and "· Replay: Stage 7" shows from 1280 px (always in the tooltip);
+     - tables scroll inside their panel; table headers are no longer sticky, because a sticky header would slide under the bar;
+     - the shade picker became one "chosen" swatch.
+  3. **Both ends, neutral words:** `lib/ends.ts` `rankingEnds()` gives the highest and lowest ranked routes (ties kept, ends never overlap, unranked routes only counted). `EndsPreview` shows "highest … · lowest … · N unranked", and `END_WORDS` is the only place the words live.
+  4. **Specimens follow the real groups:** 49 and X49 were shown in Group 1 but are in Group 0 (`group_names.json`). Every route sign on `/style` now uses its real Stage 5 membership.
+- **Why:** you found the overlap and the right-edge clipping in the browser. "Best/worst" would turn a review indicator into a verdict, which the spec 9.12 caveat forbids.
+- **Key concept:** *a `1fr` column is not "whatever space is left"*. Its minimum is its content's width, so one long word or wide child pushes the whole grid past the screen. `minmax(0, 1fr)` says "you may shrink to nothing; wrap your text instead". Like telling a shelf it may be narrow, so the books stack instead of sticking out.
+- **Decisions:** wrap rather than cut: no `overflow: hidden` on the page, since hidden text is lost text.
+- **Results:** `tsc`, lint and build pass; vitest 18/18 at this point (4 new for `rankingEnds`). A grep finds "best/worst" only in the rule's comment and the test that forbids them.
+- **Interview Q:** *"Why not just call them the best and worst routes? Everyone understands that."* Because the number can't support the verdict. A low rides-per-hour route may exist for coverage, and a high one may be a short, crowded shuttle. "Highest/lowest" describes the measurement, and the screen leaves the judgement to the planner.
+
+## Step 68: API client, response types, cutoff context and live data status (`frontend/src/api/`)
+- **Built:**
+  - **`api/types.ts`:** the response of every 6b endpoint typed field by field from the routers; anything the API may leave missing is `| null`.
+  - **`api/client.ts`:**
+    - `buildUrl` (null params dropped; `cutoff` and `data_version` added only when set);
+    - `apiGet` (keeps FastAPI's own `detail` text, including 422 validation lists);
+    - `ApiError`, and `api.*` with one function per endpoint.
+  - **`api/cutoff.ts`:** `CutoffContext`, null in Stage 6.
+  - **`api/useApi.ts`:** loading → ok | error with retry; aborts stale requests; passes the cutoff to every call.
+  - **`AsyncBlock`:** loading/empty/error/content for every block.
+  - **`SourcesPanel`:** the Sources drawer (data version, both commits, schema sha, every archive's sha256).
+  - **Live top bar:** it now shows the real `mode_label` and "Data to {permitted_through}".
+  - **Tests:** 14 new in `api/client.test.ts`.
+- **Why:** the screens need one trustworthy way to call the API. Stage 7's replay must reuse these screens without rewriting them, so the cutoff is designed in now (plan: "keep an optional cutoff in the API client").
+- **Key concept:** *the client forwards the cutoff; the server enforces it*. The frontend never filters dates itself. It passes `?cutoff=` and the backend drops later rows in SQL (Step 61). Like handing a sealed envelope to the post office: the client addresses it, and the rules are applied where the mail is sorted.
+- **Decisions:**
+  - Every URL is `/api/...` on the same origin, so Vite's proxy carries it and the backend still has no CORS. A test asserts every endpoint's URL starts with `/api/`.
+  - **"The API is not running" is a sentence, not a stack trace.** A network failure or a proxy 502/504 becomes "the API is not reachable (is uvicorn running on 127.0.0.1:8000?)".
+  - **`simplify_m: 0` is sent, not dropped.** Exact lines depend on it, and a test checks it.
+  - **A slow answer can't overwrite a newer one:** `useApi` aborts the previous request when its key or the cutoff changes.
+  - TypeScript's `erasableSyntaxOnly` (template setting) forbids constructor shorthand, so `ApiError` declares its fields explicitly.
+- **Results:**
+  - `tsc` and lint pass; **vitest 32/32**; the build passes.
+  - **End to end through the Vite proxy** (uvicorn started locally): coverage returns data version `cta_ref__r20261113__gtfs8__to20260731`, "Historical analysis", data through 2026-07-31, 8 archives, 99.915 %.
+  - With `cutoff=2026-05-31`: through 2026-05-31, 7 archives, 21,360 matched rows. Both equal Step 61.
+  - Before uvicorn started, the proxy returned 502, which the client turns into the plain "not reachable" message.
+- **Interview Q:** *"Why does the client test that every endpoint forwards the cutoff, if Stage 6 never uses one?"* Because Stage 7 depends on it, and a missing parameter fails silently: the replay would show "future" data with no error at all. Eight tiny tests now make "forgot the cutoff on one endpoint" impossible to ship.
+
+## Step 69: `GET /api/network/trend` and per-route profile values on `GET /api/route-groups`
+- **Built:**
+  - **`backend/app/routers/network.py`:** `GET /api/network/trend?start&end&cutoff`.
+    - One row for every calendar date: day type, recorded rides summed over the routes that reported, `routes_reporting`, and, inside the schedule window, scheduled trips and `routes_scheduled`.
+    - Status `recorded`, `recorded_rides_only` (before 2025-11-23: no dated schedule) or `no_record` (rides null with a reason, never 0).
+    - `summary` per day type (days, mean and median rides/day), so a screen writes its sentence from the API.
+    - The default range is the analysis window; `start` may go back to 2001. The cutoff clips the range in SQL, as in history.
+  - **`route_values` on `/api/route-groups`:** each of the 123 profiled routes with its group and its own 7 development-period values, each `{value, status, reason}` in original units.
+  - **Frontend:** `TrendResponse` and `RouteValues` types, `api.trend()`, and `lib/scatter.ts` `scatterPoints()`, which splits routes into plotted points and left-off notes.
+  - **`CLAUDE.md`:** the new "UI design principles" section you approved.
+- **Why:** the Start page needs a network demand trend, and the Alike page needs each route's own values to place it among its group (a scatter). Neither existed in 6b.
+- **Key concept:** *the clustering input is not the display value.* For KMeans, Stage 5 had to fill route 169's missing Sunday/holiday ratio with the median (0.511), because KMeans can't take a blank. The screen must not show that filled value as if it were measured. So the API reads the **stored** profile, where the gap is still a gap. It's like a recipe that needs an egg: you substituted applesauce to bake, but the shopping list still says "no eggs".
+- **Decisions:**
+  - **Missing → off the scatter, with a note.** Route 169 has *both* weekend ratios missing: 6 matched Saturdays of 18 scheduled, and 0 Sundays/holidays of 3 scheduled, both below the 8-day gate. The note names the route and the reason.
+  - **Structural zero → plotted at 0.** 30 routes have no Saturday service and 36 no Sunday/holiday service. "No buses ran" is a known value, not a missing one, and its status travels with the point for the tooltip.
+  - **The cutoff rule is the groups' rule:** under a cutoff before 2026-03-31 the whole groups response is unavailable, so `route_values` is hidden too. The boundary is tested: hidden on 03-30, shown on 03-31.
+  - **`routes_reporting` travels with every daily total:** the total drops if routes are missing from the export on a day, and the count makes that visible.
+  - **uvicorn runs without `--reload` here:** on Windows the auto-reload hung (the old worker never exited), so the server is restarted by hand after backend changes.
+- **Results:**
+  - pytest: the new 7 trend tests and 6 route-value tests pass (20/20 in the two files), and the full suite passes: **253 passed** (6 min 15 s; the only warning is the existing starlette/httpx deprecation).
+  - vitest 37/37 (4 new scatter tests, and `trend` in the cutoff-forwarding test); `tsc`, lint and build pass.
+  - Live through the proxy: the analysis window is 251 recorded days; mean rides/day are weekday 612,873, Saturday 428,188, Sunday/holiday 331,099. The full history since 2001 is 9,343 dates (0.6 s, 2.2 MB). The real export has a record on every date, so the gap rule is tested on a range that starts before 2001.
+- **Interview Q:** *"Why not just plot route 169 at the group median? It's only one dot."* Because a dot is a claim that we measured it. A filled-in value sits in the middle of the cloud by construction, so it would look perfectly typical and could even suggest the route is "like" its group for that reason. Leaving it off, with a sentence saying why, is honest and costs one line of text.
+
+## Step 69b: Table minimum widths and the `/style` DevTools issues
+- **Built:**
+  - `.data-table` cells have `min-width: 6rem` (numbers `5rem`, never wrapped), and headers never wrap. Every table sits in an `overflow-x-auto` wrapper; the Sources table was missing one.
+  - `Choice` dropdowns now have an `id` (`useId`), a `name`, and a visually hidden `<label for>`. They previously had only `aria-label`.
+  - Every `<button>` has `type="button"`.
+- **Why:** in a narrow window, columns were squeezed until text clipped. Chrome DevTools reported 8 issues on `/style`: 4 dropdowns × ("no id or name" + "no label associated with a form field").
+- **Key concept:** *let the table scroll, not shrink*. A minimum width per column is like a bookshelf with fixed-width slots: if the wall is too short, you slide along the shelf instead of crushing the books.
+- **Decisions:** a real `<label>` rather than only `aria-label`, because it works with every assistive tool and with Chrome's check; the visible sentence stays the label people read.
+- **Results:** `tsc`, lint, vitest and build pass. The DevTools Issues count is to be confirmed by you in the browser.
+- **Interview Q:** *"`aria-label` already names the field. Why add a `<label>` too?"* `aria-label` is read only by screen readers. A `<label for>` is native HTML: browsers, autofill, voice control and audit tools all understand it, and clicking it focuses the field. Native first, ARIA only when HTML can't do it.

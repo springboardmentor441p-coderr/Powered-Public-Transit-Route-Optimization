@@ -52,6 +52,15 @@ data/processed/<data_version>/...
 ```
 Raw files are never overwritten. A new export is a new version that sits beside the old one.
 
+## UI design principles
+- The mentor's screenshots (`docs-private/ui-reference`) are a structural reference only.
+  Never copy their look, wording or layout one-to-one, and never commit or quote them.
+- Screens show this project's own findings: rankings, groups, coverage and missingness from our data.
+- Every insight sentence on a screen is computed from API values at render time.
+  Never hard-code a number, a route or a conclusion into the text.
+- Colour means data (group colours only); a missing value reads "unavailable – reason" and is never drawn as 0.
+- Every chart has one "How to read this" line.
+
 ## Commands
 - Give **Windows CMD** commands (I'm on CMD), e.g. `.venv\Scripts\activate`.
 - Run scripts that read downloaded data with `python -I` (isolated mode).
