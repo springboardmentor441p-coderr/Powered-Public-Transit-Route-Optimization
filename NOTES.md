@@ -1379,3 +1379,19 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - lowercasing had turned "GRU" into "gru"; the label is now kept as sent.
   - the import-check names had shown table names; they are now plain labels from the API.
 - **Interview Q:** *"Your model only beats the baseline by 4 %. Is it worth it?"* Maybe not on its own. That's exactly why the card shows the baseline. A 4 % lower error across 123 routes is real but small, and the 4-week average is cheap and transparent. The honest answer depends on what a planner gains from the extra accuracy, and the card gives them the numbers to decide.
+
+## Step 77: Loading fix: a cancelled or late answer can no longer become a screen's data (`api/client.ts`, `api/useApi.ts`, `PageBoundary`)
+- **Built:**
+  - `apiGet` re-throws a cancellation that happens while the body is being read. It used to turn it into a "successful" `null`. A 200 answer that is empty or not JSON is now an error.
+  - `useApi` hands an answer to the screen only while its request is still current (`settle`). A late answer from a cancelled or replaced request is dropped.
+  - `PageBoundary`: a screen that fails to render shows the error and a Reload button instead of a blank app. It is keyed by the page address, so the next screen starts clean.
+  - `scripts/clickthrough.mjs`: Start → Closer look → each screen, by clicking, waiting for real content.
+- **Why:** you saw the Data page's coverage block stay grey after arriving from another screen. In my runs the server never failed or stalled: coverage is 11 KB and answers in about 0.6–1.5 s, even with 7 other requests running. Once, after clicking through all the tabs, I got a completely blank page, but I couldn't make it happen again. Reading the loading code found two defects that can put a screen into a wrong state.
+- **Key concept:** *only the latest question may change the screen*. Like asking a waiter for coffee, then changing your mind to tea: if the coffee arrives after the tea, it must go back, not replace the tea. The abort signal says "this order was cancelled", and `settle` checks it before anything is shown.
+- **Decisions:** the fix is at the cause (which answers are accepted), with no delays and no automatic retries. Every screen loads through the same `useApi` and `apiGet`, so all of them get it.
+- **Results:**
+  - vitest: 87 tests, 7 new (cancelled body read, non-JSON or empty 200, plain-text error body, late answers dropped, real failures kept);
+  - tsc and lint clean;
+  - the click-through check passes on all 7 screens.
+  - I couldn't reproduce your exact grey-block state after 8+ attempts. If it ever returns, the browser's Network tab entry for `/api/data/coverage` will tell us more.
+- **Interview Q:** *"Why not just retry when a request fails?"* A retry hides the bug: the wrong answer was being accepted, not lost. The fix decides which answer counts (the current request's), so retries aren't needed for correctness.

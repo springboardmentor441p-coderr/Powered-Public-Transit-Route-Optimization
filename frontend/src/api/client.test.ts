@@ -36,6 +36,7 @@ const CALLS: [string, (o?: { cutoff?: string }) => Promise<unknown>][] = [
   ['groups', o => api.groups(o)],
   ['trend', o => api.trend({}, o)],
   ['mapLines', o => api.mapLines({}, o)],
+  ['models', o => api.models(o)],
 ]
 
 describe('every endpoint forwards the cutoff (for Stage 7 replay) and only when it is set', () => {
@@ -69,6 +70,22 @@ describe('errors carry the API message', () => {
   it('validation list detail', () => {
     expect(errorMessage({ detail: [{ loc: ['query', 'daytype'], msg: "Input should be 'W', 'A' or 'U'" }] }, 422))
       .toBe("daytype: Input should be 'W', 'A' or 'U'")
+  })
+  it('a request cancelled while its body is read stays a cancellation, never a "successful" null', async () => {
+    const res = new Response('{}', { status: 200 })
+    vi.spyOn(res, 'json').mockRejectedValue(new DOMException('aborted', 'AbortError'))
+    vi.stubGlobal('fetch', vi.fn(async () => res))
+    await expect(api.coverage()).rejects.toMatchObject({ name: 'AbortError' })
+  })
+  it('a 200 answer that is not JSON, or is empty, is an error, not data', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('<html>', { status: 200 })))
+    await expect(api.coverage()).rejects.toBeInstanceOf(ApiError)
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('null', { status: 200 })))
+    await expect(api.coverage()).rejects.toMatchObject({ message: 'the API answered with no data' })
+  })
+  it('an error with a plain-text body keeps its status message', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('Bad Gateway', { status: 502 })))
+    await expect(api.coverage()).rejects.toMatchObject({ status: 502, message: expect.stringContaining('not reachable') })
   })
   it('API not running', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('Failed to fetch') }))

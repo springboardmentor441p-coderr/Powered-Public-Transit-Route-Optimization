@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { TABS } from '../screens'
 import { Drawer } from './Drawer'
+import { PageBoundary } from './PageBoundary'
 
 /** The page frame: a slate top bar with the tabs, the mode in plain words, the data status and a Sources
  *  drawer (data details). No sidebar: the page gets the full width for tables and maps.
@@ -11,6 +12,7 @@ export function TopBar({ modeLabel, dataThrough, sources }: {
   modeLabel: string; dataThrough: ReactNode; sources: ReactNode
 }) {
   const [open, setOpen] = useState(false)
+  const { pathname } = useLocation()
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-[1100] bg-brand text-brand-text [--focus-ring:#FFFFFF]">
@@ -39,7 +41,7 @@ export function TopBar({ modeLabel, dataThrough, sources }: {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-[1440px] px-6 pb-12 pt-6"><Outlet /></main>
+      <main className="mx-auto max-w-[1440px] px-6 pb-12 pt-6"><PageBoundary key={pathname}><Outlet /></PageBoundary></main>
       {open && <Drawer eyebrow="Data details" title="Where every number comes from" onClose={() => setOpen(false)}>{sources}</Drawer>}
     </div>
   )

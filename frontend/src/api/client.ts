@@ -57,8 +57,19 @@ export async function apiGet<T>(path: string, params: Params = {}, opts: ApiOpti
     if ((e as Error).name === 'AbortError') throw e
     throw new ApiError(0, 'the API is not reachable (is uvicorn running on 127.0.0.1:8000?)', url)
   }
-  const body: unknown = await res.json().catch(() => null)
+  // Reading the body can fail for two different reasons, and they must not be confused:
+  //  - the request was cancelled (the screen moved on): re-throw the AbortError, so the caller ignores it;
+  //  - the body is not JSON: an error body may be plain text (use its status), but a 200 answer MUST be JSON.
+  // Before this, a cancelled read became a "successful" null, and a screen could render null as its data.
+  let body: unknown = null
+  try {
+    body = await res.json()
+  } catch (e) {
+    if ((e as Error).name === 'AbortError') throw e
+    if (res.ok) throw new ApiError(res.status, 'the API answered, but not with readable data', url)
+  }
   if (!res.ok) throw new ApiError(res.status, errorMessage(body, res.status), url)
+  if (body == null) throw new ApiError(res.status, 'the API answered with no data', url)
   return body as T
 }
 
