@@ -1,5 +1,6 @@
 // Shared stops helpers: they only arrange the /api/rankings?metric=route_overlap_review rows (CLAUDE.md).
 import type { OverlapRow } from '../api/types'
+import { compareRoutes } from './routeSort'
 
 export type OverlapMeasure = 'jaccard' | 'smaller'
 export const measureOf = (r: OverlapRow, m: OverlapMeasure) => (m === 'jaccard' ? r.jaccard_stop_overlap : r.smaller_route_stop_overlap)
@@ -10,7 +11,7 @@ export function sortPairs(rows: OverlapRow[], by: OverlapMeasure, lowestFirst: b
   const other: OverlapMeasure = by === 'jaccard' ? 'smaller' : 'jaccard'
   const sign = lowestFirst ? 1 : -1
   return [...rows].sort((a, b) => sign * (measureOf(a, by) - measureOf(b, by)) || sign * (measureOf(a, other) - measureOf(b, other))
-    || a.route_a.localeCompare(b.route_a) || a.route_b.localeCompare(b.route_b))
+    || compareRoutes(a.route_a, b.route_a) || compareRoutes(a.route_b, b.route_b))
 }
 
 /** How many of the top n pairs by Jaccard are also in the top n by the smaller-route share (n never above the count). */

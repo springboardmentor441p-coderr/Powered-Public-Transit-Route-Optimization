@@ -18,6 +18,7 @@ import { fmtRange } from '../lib/dates'
 import { rankingProvenance } from '../lib/provenance'
 import { fmt, fmtPct } from '../lib/format'
 import { stability } from '../lib/stability'
+import { compareRoutes } from '../lib/routeSort'
 
 const OVERLAP = 'route_overlap_review'
 type View = RankingMetric | typeof OVERLAP
@@ -321,7 +322,7 @@ function OverlapView({ s, lowestFirst, routeInfo }: {
                 emptyMessage={o => `No route pairs share stops in timetable ${o.geometry_version}.`}>
       {o => {
         const rows = [...o.rows].sort((a, b) => (lowestFirst ? b.rank - a.rank : a.rank - b.rank)
-          || a.route_a.localeCompare(b.route_a) || a.route_b.localeCompare(b.route_b))
+          || compareRoutes(a.route_a, b.route_a) || compareRoutes(a.route_b, b.route_b))
         const visible = all ? rows : rows.slice(0, PAGE_ROWS)
         const sharing = o.rows.filter(r => r.shared_stop_count > 0).length
         const mostly = o.rows.filter(r => r.smaller_route_stop_overlap > 0.5).length

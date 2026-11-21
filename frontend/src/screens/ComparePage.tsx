@@ -20,6 +20,7 @@ import { DIGITS, METRIC_ORDER } from '../lib/closerLook'
 import { archiveRange, leaders, MAX_ROUTES, MIN_ROUTES, parseRoutes } from '../lib/compare'
 import { fmtRange } from '../lib/dates'
 import { fmt, fmtPct } from '../lib/format'
+import { sortByRoute } from '../lib/routeSort'
 
 const DAYTYPE_TEXT: Record<DayType, string> = { W: 'weekdays', A: 'Saturdays', U: 'Sundays and holidays' }
 const PERIOD_TEXT: Record<PeriodName, string> = { full_matched_window: 'the full matched window', development: 'the development period' }
@@ -38,7 +39,7 @@ export function ComparePage() {
   const key = `compare:${chosen.join(',')}:${daytype}:${period}:${sameDays}`
   const cmp = useApi(o => (ready ? api.compare(chosen, { daytype, period, same_days: sameDays }, o) : Promise.resolve(null)), key)
   const groupOf = routes.status === 'ok' ? new Map(routes.data.routes.map(r => [r.route, r.group_id])) : new Map<string, number | null>()
-  const addable = routes.status === 'ok' ? routes.data.routes.filter(r => !chosen.includes(r.route)) : []
+  const addable = routes.status === 'ok' ? sortByRoute(routes.data.routes.filter(r => !chosen.includes(r.route)), r => r.route) : []
 
   return (
     <div>

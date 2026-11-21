@@ -25,6 +25,7 @@ import { fmtDate, fmtRange } from '../lib/dates'
 import { fmt, fmtPct } from '../lib/format'
 import { rankingProvenance } from '../lib/provenance'
 import { daytypeMeans, recordCoverage, shareOfWeekday } from '../lib/routeProfile'
+import { compareRoutes, sortByRoute } from '../lib/routeSort'
 
 const DAYTYPE_TEXT: Record<DayType, string> = { W: 'weekdays', A: 'Saturdays', U: 'Sundays and holidays' }
 const PARTNERS = 8
@@ -37,7 +38,7 @@ export function OneRoutePage() {
   const { route } = useParams()
   const navigate = useNavigate()
   const routes = useApi(o => api.routes({}, o), 'routes')
-  const list = routes.status === 'ok' ? routes.data.routes : []
+  const list = routes.status === 'ok' ? sortByRoute(routes.data.routes, r => r.route) : []
   const info = list.find(r => r.route === route)
 
   return (
@@ -69,7 +70,7 @@ function RoutePicker({ s }: { s: ApiState<{ routes: RouteRow[] }> & { retry: () 
       {d => (
         <Panel title={`Choose one of ${fmt(d.routes.length)} routes`} purpose="Each sign opens that route.">
           <ul className="flex flex-wrap gap-2">
-            {d.routes.map(r => (
+            {sortByRoute(d.routes, r => r.route).map(r => (
               <li key={r.route}><Link to={`/route/${encodeURIComponent(r.route)}`} className="no-underline" aria-label={`Open route ${r.route}`}>
                 <RouteSign route={r.route} groupId={r.group_id} groupName={r.group_name} /></Link></li>
             ))}
@@ -190,7 +191,7 @@ function RouteBody({ route, info }: { route: string; info: RouteRow | undefined 
       <AsyncBlock state={overlap} retry={overlap.retry} label="Loading shared stops">
         {o => {
           const pairs = o.rows.filter(r => r.route_a === route || r.route_b === route)
-            .sort((a, b) => b.jaccard_stop_overlap - a.jaccard_stop_overlap || a.rank - b.rank)
+            .sort((a, b) => b.jaccard_stop_overlap - a.jaccard_stop_overlap || a.rank - b.rank || compareRoutes(a.route_a, b.route_a) || compareRoutes(a.route_b, b.route_b))
           if (!pairs.length) return <Empty message={`Route ${route} shares no stop with another route in timetable ${o.geometry_version}.`} />
           const top = pairs[0]!
           const other = (p: typeof top) => (p.route_a === route ? p.route_b : p.route_a)

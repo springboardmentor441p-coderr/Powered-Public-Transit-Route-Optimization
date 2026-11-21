@@ -13,7 +13,7 @@ const C = (route: string, demand: number | null, hour: number | null): CompareRo
 
 describe('parseRoutes', () => {
   it('trims, drops blanks and repeats, keeps at most 8', () => {
-    expect(parseRoutes('49, X49,,49,10')).toEqual(['49', 'X49', '10'])
+    expect(parseRoutes('49, X49,,49,10')).toEqual(['10', '49', 'X49'])
     expect(parseRoutes(null)).toEqual([])
     expect(parseRoutes('1,2,3,4,5,6,7,8,9,10')).toHaveLength(8)
   })

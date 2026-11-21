@@ -1,14 +1,16 @@
 // Compare helpers: they only arrange /api/routes/compare (CLAUDE.md, UI design principles).
 import type { Archive, CompareRoute, RankingMetric } from '../api/types'
+import { sortRoutes } from './routeSort'
 
 export const MIN_ROUTES = 2
 export const MAX_ROUTES = 8
 
-/** "49,X49,,49, 10" -> ["49", "X49", "10"]: trimmed, no blanks, no repeats, at most MAX_ROUTES (first ones kept). */
+/** "49,X49,,49, 10" -> ["10", "49", "X49"]: trimmed, no blanks, no repeats, at most MAX_ROUTES (the first ones
+ *  given are kept), in natural route order, so the chips and table columns read 10, 49, X49. */
 export function parseRoutes(param: string | null): string[] {
   const out: string[] = []
   for (const r of (param ?? '').split(',').map(x => x.trim())) if (r && !out.includes(r)) out.push(r)
-  return out.slice(0, MAX_ROUTES)
+  return sortRoutes(out.slice(0, MAX_ROUTES))
 }
 
 /** The route(s) with the highest value on a measure; routes without a value are left out, never counted as 0.

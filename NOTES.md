@@ -1395,3 +1395,13 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - the click-through check passes on all 7 screens.
   - I couldn't reproduce your exact grey-block state after 8+ attempts. If it ever returns, the browser's Network tab entry for `/api/data/coverage` will tell us more.
 - **Interview Q:** *"Why not just retry when a request fails?"* A retry hides the bug: the wrong answer was being accepted, not lost. The fix decides which answer counts (the current request's), so retries aren't needed for correctness.
+
+## Step 78: One natural route order everywhere (`lib/routeSort.ts`)
+- **Built:** `compareRoutes`, `sortRoutes` and `sortByRoute`. Numeric routes come first, by number, then suffix (1, 2, 3 … 8, 8A, 9, 12, 53, 53A, 53AL). Letter-prefixed routes follow, by prefix, then number (J14, N5, N201, X4, X9, X49). It is used in the One route picker, Alike members and ungrouped list, Compare (chips, columns and the add list), the Shared stops route filter, the Data missing-data route lists, and every tie-break between equal ranks.
+- **Why:** the lists were sorted as text ("119, 12, 126", "1, 100, 103 … 2"), which is hard to scan.
+- **Key concept:** *natural sort*. Text sorting compares character by character, so "12" comes before "9" because "1" < "9". A natural sort reads the number as a number first, then compares the letters after it.
+- **Decisions:**
+  - Compare keeps the routes in natural order (chips and columns), not in the order they were added, so the same set always looks the same.
+  - Tied ranks are also ordered naturally (a test now expects 9 before 49).
+- **Results:** vitest (91 tests, 4 new for the sort), tsc, lint and build pass.
+- **Interview Q:** *"Why one shared sort function instead of sorting in each screen?"* Five screens sorting their own way drift apart. One tested function keeps the same set of routes in the same order on every screen.

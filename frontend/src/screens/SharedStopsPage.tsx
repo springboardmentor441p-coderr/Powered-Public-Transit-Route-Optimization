@@ -15,6 +15,7 @@ import { Choice, Sentence } from '../components/Sentence'
 import { StopShareStrip } from '../components/StopShareStrip'
 import { fmt, fmtPct } from '../lib/format'
 import { fullyInside, involving, pairKey, sortPairs, topAgreement, type OverlapMeasure } from '../lib/sharedStops'
+import { compareRoutes } from '../lib/routeSort'
 
 const PAGE_ROWS = 25
 const TOP_N = 10
@@ -51,7 +52,7 @@ function SharedBody({ o, onVersion }: { o: OverlapResponse; onVersion: (v: strin
   const selected = rows.find(r => pairKey(r) === picked) ?? rows[0]
   const agree = topAgreement(o.rows, TOP_N)
   const inside = fullyInside(o.rows)
-  const routeList = [...new Set(o.rows.flatMap(r => [r.route_a, r.route_b]))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+  const routeList = [...new Set(o.rows.flatMap(r => [r.route_a, r.route_b]))].sort(compareRoutes)
 
   return (
     <div>

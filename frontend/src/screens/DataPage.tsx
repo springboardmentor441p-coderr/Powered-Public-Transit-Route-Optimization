@@ -12,6 +12,7 @@ import { Value } from '../components/Value'
 import { fmtDate, fmtRange } from '../lib/dates'
 import { fmt } from '../lib/format'
 import { gainWords, scoredShare } from '../lib/modelCard'
+import { sortRoutes } from '../lib/routeSort'
 
 type ModelsOk = Extract<ModelsResponse, { available: true }>
 
@@ -126,7 +127,7 @@ function MissingTable({ title, groups }: { title: string; groups: MissingGroup[]
             {groups.map(g => (
               <li key={g.reason_code ?? g.reason}>
                 <span className="num font-semibold">{fmt(g.rows)}</span> route-days, {fmt(g.routes)} {g.routes === 1 ? 'route' : 'routes'}: {g.reason}
-                <span className="block text-xs text-ink-2">Routes {g.route_list.join(', ')} · {fmtRange(g.first_date, g.last_date)}</span>
+                <span className="block text-xs text-ink-2">Routes {sortRoutes(g.route_list).join(', ')} · {fmtRange(g.first_date, g.last_date)}</span>
               </li>
             ))}
           </ul>}

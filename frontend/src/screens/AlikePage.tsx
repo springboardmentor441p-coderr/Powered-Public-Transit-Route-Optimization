@@ -17,6 +17,7 @@ import { groupColour, INK_2, RULE } from '../design/tokens'
 import { fmtRange } from '../lib/dates'
 import { fmt } from '../lib/format'
 import { insideOtherGroup, scatterPoints, type ScatterPoint } from '../lib/scatter'
+import { sortByRoute, sortRoutes } from '../lib/routeSort'
 
 type Ok = Extract<GroupsResponse, { available: true }>
 const DEFAULT_X = 'mean_weekday_rides', DEFAULT_Y = 'weekday_rides_per_scheduled_hour'
@@ -100,7 +101,7 @@ function AlikeBody({ g }: { g: Ok }) {
         {g.groups.map(gr => (
           <Panel key={gr.group_id} title={`Group ${gr.group_id} · ${gr.name}`} purpose={`${fmt(gr.size)} routes`}>
             <ul className="flex flex-wrap gap-1.5">
-              {gr.routes.map(r => <li key={r}><Link to={`/route/${encodeURIComponent(r)}`} className="no-underline" aria-label={`Open route ${r}`}>
+              {sortRoutes(gr.routes).map(r => <li key={r}><Link to={`/route/${encodeURIComponent(r)}`} className="no-underline" aria-label={`Open route ${r}`}>
                 <RouteSign route={r} groupId={gr.group_id} size="sm" /></Link></li>)}
             </ul>
           </Panel>
@@ -109,7 +110,7 @@ function AlikeBody({ g }: { g: Ok }) {
       {g.ungrouped.length > 0 && (
         <Panel className="mt-4" title={`Ungrouped: ${fmt(g.ungrouped.length)} routes`} purpose="Each with the reason it was not grouped.">
           <ul className="space-y-1 text-sm">
-            {g.ungrouped.map(u => <li key={u.route} className="flex items-center gap-2"><Link to={`/route/${encodeURIComponent(u.route)}`} className="no-underline" aria-label={`Open route ${u.route}`}>
+            {sortByRoute(g.ungrouped, u => u.route).map(u => <li key={u.route} className="flex items-center gap-2"><Link to={`/route/${encodeURIComponent(u.route)}`} className="no-underline" aria-label={`Open route ${u.route}`}>
               <RouteSign route={u.route} groupId={null} size="sm" /></Link> <span className="text-ink-2">{u.reason}</span></li>)}
           </ul>
         </Panel>

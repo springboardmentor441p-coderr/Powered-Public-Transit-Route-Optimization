@@ -21,6 +21,7 @@ import { Value } from '../components/Value'
 import { fmtDate, fmtRange } from '../lib/dates'
 import { fmt, fmtPct } from '../lib/format'
 import { daytypeLevels, importChecks, type DaytypeLevel } from '../lib/insights'
+import { compareRoutes } from '../lib/routeSort'
 
 const TABLE_ROWS = 12
 
@@ -91,7 +92,7 @@ function RouteTable({ demand, hour, routes }: { demand: RankingRow[]; hour: Rank
   const rows = useMemo(() => {
     const joined = demand.map(d => ({ d, h: hourOf.get(d.route), r: byRoute.get(d.route) }))
     const rank = (x: (typeof joined)[number]) => (sort === 'demand' ? x.d.rank : x.h?.rank) ?? Infinity
-    return joined.sort((x, y) => rank(x) - rank(y) || x.d.route.localeCompare(y.d.route))
+    return joined.sort((x, y) => rank(x) - rank(y) || compareRoutes(x.d.route, y.d.route))
   }, [demand, hourOf, byRoute, sort])
   const shown = all ? rows : rows.slice(0, TABLE_ROWS)
   return (

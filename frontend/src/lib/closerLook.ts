@@ -1,6 +1,7 @@
 // Closer look helpers. They only arrange what /api/rankings sent: no number, route or conclusion of their own
 // (CLAUDE.md, UI design principles).
 import type { RankingMetric, RankingRow } from '../api/types'
+import { compareRoutes } from './routeSort'
 
 export const METRIC_ORDER: RankingMetric[] = ['observed_daily_demand', 'rides_per_scheduled_trip', 'rides_per_scheduled_hour']
 export const DIGITS: Record<RankingMetric, number> = {
@@ -23,7 +24,7 @@ export function unrankedSummary(rows: RankingRow[]): { total: number; parts: { r
  *  reverses it. Ties keep the route order, so equal ranks never swap places between renders. */
 export function orderRanked<T extends { rank: number | null; route: string }>(rows: T[], lowestFirst: boolean): T[] {
   const ranked = rows.filter(r => r.rank != null)
-  return ranked.sort((a, b) => (lowestFirst ? b.rank! - a.rank! : a.rank! - b.rank!) || a.route.localeCompare(b.route))
+  return ranked.sort((a, b) => (lowestFirst ? b.rank! - a.rank! : a.rank! - b.rank!) || compareRoutes(a.route, b.route))
 }
 
 /** How many routes are in the top n of both rankings (rank <= n, ties included), and the n actually used:

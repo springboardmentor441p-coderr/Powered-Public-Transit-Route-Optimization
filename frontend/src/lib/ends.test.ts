@@ -10,7 +10,7 @@ const rows = [
 describe('rankingEnds', () => {
   it('highest first at the top end, lowest first at the bottom end', () => {
     const e = rankingEnds(rows, 3)
-    expect(e.high.map(r => r.route)).toEqual(['79', '49', '9'])   // tie at rank 2 kept, ordered by route
+    expect(e.high.map(r => r.route)).toEqual(['79', '9', '49'])   // tie at rank 2 kept, in natural route order (9 before 49)
     expect(e.low.map(r => r.route)).toEqual(['125', '55A', '3'])
   })
   it('unranked routes are counted, never placed at either end', () => {
