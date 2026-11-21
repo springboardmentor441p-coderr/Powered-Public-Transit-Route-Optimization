@@ -24,7 +24,7 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend.app.db import cutoff_block, get_conn, permitted_through, resolve_version
-from backend.app.labels import LABELS, UNITS, envelope
+from backend.app.labels import LABELS, UNITS, envelope, reason_words
 
 router = APIRouter(tags=["routes"])
 REASONS = {
@@ -98,7 +98,9 @@ def route_history(
                                  f"on or before {through}")
     rows = conn.execute(HISTORY_SQL, p).fetchall() if a <= b else []
     for row in rows:
-        row["reason"] = row.pop("stage2_reason") or REASONS.get(row["status"])
+        code = row.pop("stage2_reason")
+        row["reason_code"] = code                       # Stage 2's code, for machines; `reason` is for people
+        row["reason"] = reason_words(code) or REASONS.get(row["status"])
     summary: dict[str, int] = {}
     for row in rows:
         summary[row["status"]] = summary.get(row["status"], 0) + 1

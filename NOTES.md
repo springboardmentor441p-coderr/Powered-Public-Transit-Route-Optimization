@@ -1226,3 +1226,34 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
 - **Decisions:** `field-sizing` works in Chrome and Edge. In Firefox the select falls back to its old width, which is still usable.
 - **Results:** in `frontend\`: tsc and lint (no warnings), vitest (56 tests) and build pass.
 - **Interview Q:** *"How do you test that a box shows the right value without a browser?"* Move the decision into a pure function (`displayedGate(applied, requested, reference)`) and test it, including the stale-value case. The component only renders what the function returns.
+
+## Step 72: One route (`/route/:route`), plan written before coding
+- **What it shows:**
+  - **Header:** route sign, name and group (or the ungrouped reason).
+  - **Three ranks side by side:** observed daily demand, rides per scheduled trip and rides per scheduled hour, on a chosen day type. Each has its stability (development → full window).
+  - **Recorded rides per day:** the analysis window by default, with "Show full history since 2001". Gaps show as gaps with their reason, never 0.
+  - **Weekly rhythm grid** for the analysis window.
+  - **Map:** the route's exact lines (no display simplification), with its caption.
+  - **Shared-stop routes:** each partner with shared stops, Jaccard and share of the smaller route, the "corridor review only" label, and the stop-share strip for the closest partner.
+- **Insight it highlights:** one route reads differently on each measure. The opening sentence states its three ranks, its weekend level as a share of an average weekday, and how many of its scheduled days have a ridership record. Every number comes from the API.
+- **Rules:**
+  - The history endpoint's Stage 2 reason codes become plain words (`reason`), with the code kept in `reason_code`.
+  - Clicking any map line opens that route.
+- **Built:**
+  - `/route` (route picker) and `/route/:route`.
+  - `lib/routeProfile.ts` (`daytypeMeans`, `shareOfWeekday`, `recordCoverage`) and `lib/provenance.ts` (one "How was this number made?" builder for ranking values, shared with Closer look).
+  - `RidesChart`: one chart for the network trend and a route's history.
+  - Map lines open their route on click, on every map.
+  - API: history reasons are plain words, with the code kept in `reason_code`. The words live in `labels.REASON_WORDS`, shared with `/api/data/coverage`.
+- **Key concept:** *a profile is several views of the same route*. A route can be last on daily demand and mid-table on rides per trip, the way a small shop can have few customers but a high spend per customer. The page puts the three side by side, so no single number stands for the route.
+- **Decisions:**
+  - The rhythm grid always shows the analysis window, even when the chart shows full history. Twenty-five years of weekly cells would be unreadable.
+  - Shared-stop partners are sorted by Jaccard, and the strip shows the closest partner.
+- **Results:**
+  - backend: history, visible-text and data tests pass (44). The visible-text scan now also covers routes 169 and 1001.
+  - frontend: tsc, lint, vitest (60 tests) and build pass.
+- **Screenshot check (1366/1920):**
+  - no overflow, clipped fields or console errors;
+  - removed a duplicated "corridor review only" label;
+  - checked that the chart's dips are real low counts (e.g. 1 ride on 11 Apr for route 169), not missing days drawn as 0.
+- **Interview Q:** *"Why keep both `reason` and `reason_code`?"* People need words and programs need stable keys. Tests and filters match the code, which never changes. The words can be improved without breaking any program.

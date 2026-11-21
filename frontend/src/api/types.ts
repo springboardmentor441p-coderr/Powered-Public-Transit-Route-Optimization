@@ -75,7 +75,7 @@ export type HistoryDay = {
   scheduled_trips: number | null; scheduled_service_hours: number | null; duration_complete: boolean | null
   trips_missing_duration: number | null
   rides_per_scheduled_trip: number | null; rides_per_scheduled_hour: number | null
-  status: DayStatus; reason: string | null; has_record: boolean; has_schedule: boolean
+  status: DayStatus; reason: string | null; reason_code: string | null; has_record: boolean; has_schedule: boolean
 }
 export type HistoryResponse = Envelope & {
   route: string; route_long_name: string | null; name_geometry_version: string | null

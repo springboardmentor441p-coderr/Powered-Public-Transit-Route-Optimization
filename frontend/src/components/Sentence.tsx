@@ -18,7 +18,7 @@ export function Choice<T extends string>({ label, value, options, onChange, warn
     <>
       <label htmlFor={id} className="sr-only">{label}</label>
       <select id={id} name={name} value={value} onChange={e => onChange(e.target.value as T)}
-              className={`mx-0.5 cursor-pointer appearance-none border-0 border-b-2 px-1 py-0 font-semibold [field-sizing:content] ${
+              className={`ml-1 mr-0 cursor-pointer appearance-none border-0 border-b-2 px-0.5 py-0 font-semibold [field-sizing:content] ${
                 warn ? 'border-warn-ink bg-warn-bg text-warn-ink' : 'border-brand bg-transparent text-ink hover:bg-hover'}`}>
         {options.map(o => <option key={o.value} value={o.value}>{o.text}</option>)}
       </select>

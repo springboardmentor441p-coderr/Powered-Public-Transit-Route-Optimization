@@ -55,7 +55,8 @@ def test_route_169_scheduled_days_without_a_record_keep_rides_null_and_their_rea
         row = days[d]
         assert row["status"] == "schedule_without_ridership" and row["rides"] is None
         assert row["has_schedule"] and not row["has_record"] and row["scheduled_trips"] > 0
-        assert row["reason"] == "no_ridership_record" and row["selected_snapshot_id"]
+        assert row["reason_code"] == "no_ridership_record" and row["selected_snapshot_id"]
+        assert row["reason"] == "service was scheduled but no ridership was recorded"  # plain words on screen
 
 
 def test_route_1001_has_rides_but_never_scheduled_service(client):

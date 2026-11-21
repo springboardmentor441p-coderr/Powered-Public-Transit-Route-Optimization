@@ -17,6 +17,19 @@ UNITS = {  # spec 9.16.1; ratios keep the word "scheduled"
     "rides_per_scheduled_hour": "rides per scheduled hour",
 }
 
+# Stage 2's reason codes (analytics/reconstruction/matching.py) in plain words for the screens. Endpoints send the
+# words as `reason` and the code as `reason_code`; an unknown code is shown as words, never hidden.
+REASON_WORDS = {
+    "no_snapshot_for_date": "no timetable applies to this date",
+    "route_absent_from_selected_snapshot": "the route is not in the timetable that applies on this date",
+    "route_in_snapshot_no_active_trips": "the route is in the timetable but has no trips on this date",
+    "no_ridership_record": "service was scheduled but no ridership was recorded",
+}
+
+
+def reason_words(code: str | None) -> str | None:
+    return None if code is None else REASON_WORDS.get(code, code.replace("_", " "))
+
 
 def envelope(version: dict, cutoff: dict, **body) -> dict:
     """Every response says which data version, which mode, and which cutoff it describes."""

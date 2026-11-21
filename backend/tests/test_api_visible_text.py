@@ -21,6 +21,8 @@ REQUESTS = [
     ("/api/data/coverage", {}),
     ("/api/routes", {}),
     ("/api/routes/22/history", {}),
+    ("/api/routes/169/history", {}),                      # scheduled days without a record (Stage 2 reason)
+    ("/api/routes/1001/history", {}),                     # rides without any scheduled service
     ("/api/rankings", {"metric": "rides_per_scheduled_hour", "daytype": "W"}),
     ("/api/rankings", {"metric": "observed_daily_demand", "daytype": "A", "min_days": 8}),
     ("/api/rankings", {"metric": "rides_per_scheduled_trip", "daytype": "U", "period": "development"}),

@@ -1,5 +1,6 @@
 import 'leaflet/dist/leaflet.css'
 import { MapContainer, Polyline, TileLayer, Tooltip } from 'react-leaflet'
+import { useNavigate } from 'react-router-dom'
 import type { MapLine, RouteLine } from '../api/types'
 import { groupColour, groupDash } from '../design/tokens'
 import { linesBounds } from '../lib/geo'
@@ -7,10 +8,12 @@ import { linesBounds } from '../lib/geo'
 type Line = RouteLine & { group_id?: number | null; route_long_name?: string | null }
 
 /** Route lines on greyed OpenStreetMap tiles. Colour = the route's group (dashed grey when ungrouped);
- *  `groupNames` labels the tooltip. The caption with the geometry version sits outside, under the map. */
+ *  `groupNames` labels the tooltip. The caption with the geometry version sits outside, under the map.
+ *  Clicking a line opens that route's page. */
 export function RouteMap({ lines, groupNames = {}, height = 420, weight = 2 }: {
   lines: (Line | MapLine)[]; groupNames?: Record<number, string>; height?: number; weight?: number
 }) {
+  const navigate = useNavigate()
   const bounds = linesBounds(lines)
   if (!bounds) return null
   return (
@@ -23,11 +26,13 @@ export function RouteMap({ lines, groupNames = {}, height = 420, weight = 2 }: {
           return (
             <Polyline key={`${l.route}-${l.direction_id}-${l.shape_id}`}
                       positions={l.line_geojson.coordinates.map(([lon, lat]) => [lat, lon] as [number, number])}
-                      pathOptions={{ color: groupColour(g), weight, opacity: 0.85, dashArray: groupDash(g) }}>
+                      pathOptions={{ color: groupColour(g), weight, opacity: 0.85, dashArray: groupDash(g) }}
+                      eventHandlers={{ click: () => navigate(`/route/${encodeURIComponent(l.route)}`) }}>
               <Tooltip sticky>
                 <strong>Route {l.route}</strong>{l.route_long_name ? ` ${l.route_long_name}` : ''} · {l.direction_label}
                 <br />{g == null ? 'ungrouped' : (groupNames[g] ?? `Group ${g}`)}
                 {l.tie_label && <><br />{l.tie_label}</>}
+                <br /><span className="text-ink-2">Click to open this route</span>
               </Tooltip>
             </Polyline>
           )

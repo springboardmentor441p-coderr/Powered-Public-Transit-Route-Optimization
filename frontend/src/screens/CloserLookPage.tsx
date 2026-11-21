@@ -13,8 +13,9 @@ import { Num, type ProvenanceInfo } from '../components/Provenance'
 import { RouteSign } from '../components/RouteSign'
 import { Choice, NumberChoice, Sentence } from '../components/Sentence'
 import { Value } from '../components/Value'
-import { DIGITS, METRIC_ORDER, displayedGate, higherMeans, orderRanked, parseMinDays, rankMovement, topOverlap, unrankedSummary } from '../lib/closerLook'
+import { METRIC_ORDER, displayedGate, higherMeans, orderRanked, parseMinDays, rankMovement, topOverlap, unrankedSummary } from '../lib/closerLook'
 import { fmtRange } from '../lib/dates'
+import { rankingProvenance } from '../lib/provenance'
 import { fmt } from '../lib/format'
 import { stability } from '../lib/stability'
 
@@ -169,19 +170,8 @@ function RankingView({ view, shown, full, dev, lowestFirst, routeInfo, cutoff, q
   const visible = all ? ranked : ranked.slice(0, PAGE_ROWS)
   const request = (m: RankingMetric) => buildUrl('/api/rankings', { metric: m, period, ...q }, { cutoff })
 
-  const prov = (m: RankingMetric, r: RankingRow | undefined): ProvenanceInfo => {
-    const d = data(shown, m)
-    return {
-      title: `Route ${r?.route ?? '?'} · ${d.metric.label.toLowerCase()}`, value: r?.value ?? null, digits: DIGITS[m], unit: d.metric.unit,
-      formula: `${d.metric.numerator_label} ÷ ${d.metric.denominator_label}, summed over the observed days`,
-      numerator: { label: d.metric.numerator_label, value: r?.numerator ?? null },
-      denominator: { label: d.metric.denominator_label, value: r?.denominator ?? null, digits: m === 'rides_per_scheduled_hour' ? 1 : 0 },
-      days: r ? { observed: r.observed_days, gateLabel: d.configuration.gate_label } : undefined,
-      period: { name: d.period.label, start: d.period.start, end: d.period.end }, daytype: DAYTYPE_TEXT[d.daytype],
-      missing: r?.value == null ? { reason: r?.reason ?? 'not in this ranking' } : undefined,
-      dataVersion: d.data_version, request: request(m), specReference: d.metric.spec_reference,
-    }
-  }
+  const prov = (m: RankingMetric, r: RankingRow | undefined, route: string): ProvenanceInfo =>
+    rankingProvenance(data(shown, m), r, route, request(m))
 
   return (
     <div className="space-y-6">
@@ -208,7 +198,7 @@ function RankingView({ view, shown, full, dev, lowestFirst, routeInfo, cutoff, q
                   <td><RouteLink route={r.route} info={routeInfo.get(r.route)} /></td>
                   <td className="text-sm">{routeInfo.get(r.route)?.route_long_name ?? <span className="text-xs text-ink-2">no name in the timetables</span>}</td>
                   {METRIC_ORDER.map(m => [
-                    <td key={`${m}v`} className="n"><RankCell p={prov(m, shownIdx[m].get(r.route))} row={shownIdx[m].get(r.route)} /></td>,
+                    <td key={`${m}v`} className="n"><RankCell p={prov(m, shownIdx[m].get(r.route), r.route)} row={shownIdx[m].get(r.route)} /></td>,
                     <td key={`${m}s`}><StabilityCell dev={devIdx[m].get(r.route)} full={fullIdx[m].get(r.route)} /></td>,
                   ])}
                   <td className="n num">{fmt(r.observed_days)}</td>

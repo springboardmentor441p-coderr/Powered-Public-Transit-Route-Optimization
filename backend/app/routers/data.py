@@ -14,22 +14,12 @@ import psycopg
 from fastapi import APIRouter, Depends, Query
 
 from backend.app.db import cutoff_block, get_conn, permitted_through, resolve_version
-from backend.app.labels import LABELS, envelope
+from backend.app.labels import LABELS, envelope, reason_words
 
 router = APIRouter(tags=["data"])
-# Stage 2's reason codes (analytics/reconstruction/matching.py) in plain words for the screens; the code itself
-# travels as `reason_code`. An unknown code is shown as words, never hidden.
-REASON_WORDS = {
-    "no_snapshot_for_date": "no timetable applies to this date",
-    "route_absent_from_selected_snapshot": "the route is not in the timetable that applies to these dates",
-    "route_in_snapshot_no_active_trips": "the route is in the timetable but has no trips on these dates",
-    "no_ridership_record": "scheduled service with no ridership record",
-}
-
-
 def _worded(rows: list[dict]) -> list[dict]:
     return [{**r, "reason_code": r["reason"],
-             "reason": REASON_WORDS.get(r["reason"], str(r["reason"]).replace("_", " "))} for r in rows]
+             "reason": reason_words(r["reason"])} for r in rows]
 
 
 @router.get("/api/data/coverage")
