@@ -49,6 +49,15 @@ def missing_words(reason: str) -> str:
     return "rides " + " and ".join(f"{d} day{'' if d == '1' else 's'}" for d in days) + " earlier missing"
 
 
+def reused_holdout_words(test: list[str]) -> str:
+    """The test period in plain words: it was looked at during development, so it is a second check."""
+    a, b = date.fromisoformat(test[0]), date.fromisoformat(test[1])
+    span = a.strftime("%B") if (a.year, a.month) == (b.year, b.month) else \
+        f"{a.strftime('%B')}\u2013{b.strftime('%B')}" if a.year == b.year else f"{a.strftime('%B %Y')}\u2013{b.strftime('%B')}"
+    return (f"{span} {b.year} was looked at while the method was being built, so treat these scores as a second "
+            "check, not an untouched final test")
+
+
 def _split(m: dict | None) -> dict | None:
     return None if m is None else {"mae": m["MAE"], "wape_percent": m["WAPE_percent"], "rmse": m["RMSE"],
                                    "scored_rows": m["scored_rows"], "withheld_rows": m["withheld_rows"],
@@ -92,13 +101,16 @@ def models_summary(cutoff: date | None = Query(None, description="use only servi
         metric_label="mean absolute error (rides per route-day); lower is better",
         periods={"train": a["periods"]["train"], "validation": a["periods"]["validation"], "test": a["periods"]["test"]},
         test_status=a["test_status"],
+        test_status_label=reused_holdout_words(a["periods"]["test"]),
         methods=[{"method": k, "label": label(k), "kind": val[k]["kind"],
                   "kind_label": KINDS.get(val[k]["kind"], val[k]["kind"]),
                   "validation": _split(val[k]), "test": _split(test.get(k))} for k in order],
         selected={"method": selected, "label": label(selected)},
         best_baseline={"method": best_base, "label": label(best_base)},
         best_network=None if best_net is None else {"method": best_net, "label": label(best_net),
-                                                     "beats_selected": val[best_net]["MAE"] < val[selected]["MAE"]},
+                                                     "validation_mae": val[best_net]["MAE"],
+                                                     "beats_selected": val[best_net]["MAE"] < val[selected]["MAE"],
+                                                     "beats_best_baseline": val[best_net]["MAE"] < val[best_base]["MAE"]},
         gain={"validation": gain(val.get(selected), val.get(best_base)),
               "test": gain(test.get(selected), test.get(best_base))},
         withheld={"validation": [{"reason": missing_words(r), "rows": n} for r, n in sel_val["withheld_by_reason"].items()],

@@ -1429,3 +1429,22 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
 - **Results:** tsc and lint pass; clicking "49 & X49" opens the comparison.
   - Limit: 49 and X49 run on the same street, so their lines overlap on the map and no pattern can separate them there. The key and the shared-stops table make it clear.
 - **Interview Q:** *"Why put the routes in the URL?"* The address then fully describes the view: it can be bookmarked, shared and reloaded, and the examples are just links.
+
+## Step 81: Data fixes (model card wording, same-rows check, plain test-period note, Sources time, withheld list)
+- **Built:**
+  - The neural-network sentence says how the best network did against both the serving method and the best simple rule. It is built by `networkSentence` from the validation errors: GRU 364.9 vs 345.5 (random forest) and 360.4 (4-week average), "beat neither".
+  - The forecast-share sentence now names the serving method.
+  - **API:** `best_network.validation_mae` and `beats_best_baseline`, and `test_status_label` (plain words built from the test dates).
+  - **Checked:** all 10 methods were scored on exactly the same route-days, 6,560 in validation and 6,542 in the test period, with the same withheld counts. The table's "How to read this" says so, but only when `sameRows` confirms it from the API.
+  - The test-period note now reads "June–July 2026 was looked at while the method was being built, so treat these scores as a second check, not an untouched final test".
+  - Sources: "Imported at" shows "20 Nov 2026, 14:43 IST", with the full timestamp on hover (`fmtTimestamp`).
+  - "Route-days not forecast" shows the top 3 reasons per period, then "+ N other combinations (M route-days)", which expands on click.
+- **Why:** the old network sentence only compared against the serving method, which hid that GRU also lost to the simple rule. Technical words ("reused holdout", raw timestamps) don't help a planner.
+- **Key concept:** *compare against the simplest thing that could work*. A model that can't beat "the same weekday's average over 4 weeks" adds complexity without value. Saying so plainly is the honest result.
+- **Decisions:**
+  - The method names inside sentences are derived from the API labels (`inSentence`), not rewritten in the page.
+  - The same-rows claim appears only when the counts really match.
+- **Results:**
+  - backend: models and visible-text tests pass;
+  - frontend: vitest (101 tests, 8 new: sameRows, topAndRest, fmtTimestamp, networkSentence, inSentence), tsc and lint pass. I read the rendered sentences back from the page.
+- **Interview Q:** *"Why check that every method was scored on the same rows?"* If one method skipped the hard days, its error would look better for the wrong reason. Same rows mean the comparison is fair, and the page only claims it when the data proves it.

@@ -11,7 +11,8 @@ import { Empty } from '../components/States'
 import { Value } from '../components/Value'
 import { fmtDate, fmtRange } from '../lib/dates'
 import { fmt } from '../lib/format'
-import { gainWords, scoredShare } from '../lib/modelCard'
+import { useState } from 'react'
+import { gainWords, inSentence, networkSentence, sameRows, scoredShare, topAndRest } from '../lib/modelCard'
 import { sortRoutes } from '../lib/routeSort'
 
 type ModelsOk = Extract<ModelsResponse, { available: true }>
@@ -139,6 +140,9 @@ function ModelCard({ m }: { m: ModelsOk }) {
   const v = gainWords(m.gain.validation), t = gainWords(m.gain.test)
   const sel = m.methods.find(x => x.method === m.selected.method)
   const nets = m.methods.filter(x => x.kind === 'neural').length
+  const same = sameRows(m.methods)
+  const baseShort = m.best_baseline.label.split(' (')[0]!.toLowerCase()
+  const baseRow = m.methods.find(x => x.method === m.best_baseline.method)
   const share = sel ? scoredShare(sel.validation.scored_rows, sel.validation.withheld_rows) : null
   const pct = (g: { pct: number; direction: string } | null) => g == null ? 'unavailable'
     : g.direction === 'equal' ? 'the same as' : `${fmt(g.pct, 1)} % ${g.direction} than`
@@ -147,23 +151,30 @@ function ModelCard({ m }: { m: ModelsOk }) {
       <div className="space-y-2 border-l-[3px] border-brand pl-4 text-md leading-8">
         <p>
           {fmt(m.methods.length)} methods were tried to forecast {m.target_label}. The one serving predictions is{' '}
-          <span className="font-semibold">{m.selected.label.toLowerCase()}</span>: its average error is{' '}
+          <span className="font-semibold">{inSentence(m.selected.label)}</span>: its average error is{' '}
           <span className="font-semibold">{pct(v)}</span> the {m.best_baseline.label.split(' (')[0]!.toLowerCase()} on validation
           {m.gain.validation && <> ({fmt(m.gain.validation.model_mae, 1)} vs {fmt(m.gain.validation.baseline_mae, 1)} rides per route-day)</>},
           and <span className="font-semibold">{t == null ? 'unavailable' : t.direction === 'equal' ? 'the same' : `${fmt(t.pct, 1)} % ${t.direction}`}</span> on the test period
           {m.gain.test && <> ({fmt(m.gain.test.model_mae, 1)} vs {fmt(m.gain.test.baseline_mae, 1)})</>}.
         </p>
         <p>
-          {m.best_network && (m.best_network.beats_selected
-            ? <>The best neural network, {m.best_network.label}, had a lower validation error.</>
-            : <>{fmt(nets)} neural networks were tried as an extra experiment; the best, {m.best_network.label}, did not beat it.</>)}
-          {' '}It forecasts <Value value={share == null ? null : share * 100} digits={1} /> % of validation route-days; the rest lack recent ride history.
+          {m.best_network && sel && baseRow && <>
+            {fmt(nets)} neural networks were tried as an extra experiment.{' '}
+            {networkSentence({ label: m.best_network.label, mae: m.best_network.validation_mae },
+                             { label: m.selected.label, mae: sel.validation.mae },
+                             { label: baseShort, mae: baseRow.validation.mae }, x => fmt(x, 1))}
+          </>}
+          {' '}The {inSentence(m.selected.label)} forecasts <Value value={share == null ? null : share * 100} digits={1} /> % of
+          validation route-days{sel && <> ({fmt(sel.validation.scored_rows)} of {fmt(sel.validation.scored_rows + sel.validation.withheld_rows)})</>};
+          the rest lack the recent ride history it needs.
         </p>
       </div>
-      <ApiLabel warn text={`Test period: ${m.test_status}`} />
+      <ApiLabel warn text={`Test period: ${m.test_status_label}.`} />
 
       <Panel title="All methods, best validation error first" purpose={`Error = ${m.metric_label}. ${m.selection_note[0]!.toUpperCase()}${m.selection_note.slice(1)}.`}
-             howToRead="MAE is the average miss in rides per route-day; WAPE is total miss as a share of total rides. The serving method and the best simple rule are named in the first column.">
+             howToRead={`MAE is the average miss in rides per route-day; WAPE is total miss as a share of total rides.${same
+               ? ` All ${fmt(m.methods.length)} methods were scored on exactly the same route-days (${fmt(same.validation)} in validation${same.test != null ? `, ${fmt(same.test)} in the test period` : ''}), so the errors compare like with like.`
+               : ''} The serving method and the best simple rule are named in the first column.`}>
         <div className="-mx-4 overflow-x-auto">
           <table className="data-table">
             <thead>
@@ -191,7 +202,7 @@ function ModelCard({ m }: { m: ModelsOk }) {
           {(['validation', 'test'] as const).map(split => (
             <div key={split} className="mb-2">
               <h3 className="text-sm font-semibold">{split === 'validation' ? 'Validation' : 'Test'}</h3>
-              <ul className="text-xs text-ink-2">{m.withheld[split].map(w => <li key={w.reason}><span className="num">{fmt(w.rows)}</span> – {w.reason}</li>)}</ul>
+              <WithheldList items={m.withheld[split]} />
             </div>
           ))}
         </Panel>
@@ -206,5 +217,24 @@ function ModelCard({ m }: { m: ModelsOk }) {
         </Panel>
       </div>
     </div>
+  )
+}
+
+/** The 3 most common reasons, then "+ N other combinations" that expands on click. */
+function WithheldList({ items }: { items: { reason: string; rows: number }[] }) {
+  const [open, setOpen] = useState(false)
+  const sorted = [...items].sort((a, b) => b.rows - a.rows || a.reason.localeCompare(b.reason))
+  const { top, rest } = topAndRest(sorted, 3)
+  const line = (w: { reason: string; rows: number }) => <li key={w.reason}><span className="num">{fmt(w.rows)}</span> – {w.reason}</li>
+  return (
+    <ul className="text-xs text-ink-2">
+      {top.map(line)}
+      {open && rest.map(line)}
+      {rest.length > 0 && (
+        <li><button type="button" className="mt-0.5 underline" aria-expanded={open} onClick={() => setOpen(o => !o)}>
+          {open ? 'Show fewer' : `+ ${fmt(rest.length)} other ${rest.length === 1 ? 'combination' : 'combinations'} (${fmt(rest.reduce((s, w) => s + w.rows, 0))} route-days)`}
+        </button></li>
+      )}
+    </ul>
   )
 }

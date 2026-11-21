@@ -235,11 +235,11 @@ export type ModelsResponse = Envelope & (
   | {
       available: true; artifact_version: string; git_commit: string; created_at: string
       extra_experiment: { artifact_version: string; git_commit: string }
-      target_label: string; metric_label: string; test_status: string; selection_note: string
+      target_label: string; metric_label: string; test_status: string; test_status_label: string; selection_note: string
       periods: { train: [ISODate, ISODate]; validation: [ISODate, ISODate]; test: [ISODate, ISODate] }
       methods: ModelMethod[]
       selected: { method: string; label: string }; best_baseline: { method: string; label: string }
-      best_network: { method: string; label: string; beats_selected: boolean } | null
+      best_network: { method: string; label: string; validation_mae: number; beats_selected: boolean; beats_best_baseline: boolean } | null
       gain: { validation: Gain | null; test: Gain | null }
       withheld: { validation: { reason: string; rows: number }[]; test: { reason: string; rows: number }[] }
     }

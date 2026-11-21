@@ -28,6 +28,12 @@ def test_the_gain_over_the_best_baseline_is_computed_not_written(client):
         assert math.isclose(g["mae_reduction"], g["baseline_mae"] - g["model_mae"])
         assert math.isclose(g["mae_reduction_percent"], 100 * g["mae_reduction"] / g["baseline_mae"])
     assert body["best_network"]["beats_selected"] is False                  # no network beat the random forest
+    # nor the best simple rule: GRU 364.86 vs the 4-week average 360.36 on validation
+    base = next(m for m in body["methods"] if m["method"] == body["best_baseline"]["method"])
+    assert body["best_network"]["beats_best_baseline"] == (body["best_network"]["validation_mae"] < base["validation"]["mae"])
+    assert body["best_network"]["beats_best_baseline"] is False
+    assert body["test_status_label"] == ("June\u2013July 2026 was looked at while the method was being built, so treat "
+                                         "these scores as a second check, not an untouched final test")
     assert "reused holdout" in body["test_status"]
 
 

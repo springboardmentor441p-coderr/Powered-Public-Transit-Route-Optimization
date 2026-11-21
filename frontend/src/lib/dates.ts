@@ -18,3 +18,14 @@ export function addDays(iso: string, n: number): string {
   d.setUTCDate(d.getUTCDate() + n)
   return d.toISOString().slice(0, 10)
 }
+
+const ZONE_NAMES: Record<string, string> = { '+05:30': 'IST', '+00:00': 'UTC', 'Z': 'UTC' }
+
+/** "2026-11-20T14:43:01.623976+05:30" -> "20 Nov 2026, 14:43 IST": the clock time as recorded, in the timestamp's
+ *  own offset (never converted to the viewer's zone), named when known, else "UTC+hh:mm". Unparseable -> as given. */
+export function fmtTimestamp(ts: string): string {
+  const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::[\d.]+)?(Z|[+-]\d{2}:\d{2})$/.exec(ts)
+  if (!m) return ts
+  const zone = ZONE_NAMES[m[4]!] ?? `UTC${m[4]}`
+  return `${fmtDate(m[1]!)}, ${m[2]}:${m[3]} ${zone}`
+}

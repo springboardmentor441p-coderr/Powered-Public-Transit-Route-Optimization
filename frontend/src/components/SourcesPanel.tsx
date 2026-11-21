@@ -1,4 +1,5 @@
 import type { Coverage } from '../api/types'
+import { fmtTimestamp } from '../lib/dates'
 
 const short = (sha: string) => `${sha.slice(0, 12)}…`
 
@@ -6,20 +7,20 @@ const short = (sha: string) => `${sha.slice(0, 12)}…`
  *  Everything comes from /api/data/coverage `details` and `archives`. */
 export function SourcesPanel({ c }: { c: Coverage }) {
   const d = c.details
-  const rows: [string, string][] = [
+  const rows: [string, string, string?][] = [
     ['Data version', c.data_version],
     ['Built by commit', d.built_git_commit],
     ['Imported by commit', d.import_git_commit],
     ['Database schema sha256', d.schema_sha256],
   ]
-  if (d.imported_at) rows.push(['Imported at', d.imported_at])
+  if (d.imported_at) rows.push(['Imported at', fmtTimestamp(d.imported_at), d.imported_at])
   if (c.cutoff.applied) rows.push(['Cutoff', `${c.cutoff.permitted_through} (dates after it are hidden by the API)`])
   return (
     <div className="space-y-5 text-sm">
       <dl>
-        {rows.map(([k, v]) => (
+        {rows.map(([k, v, full]) => (
           <div key={k} className="grid grid-cols-[150px_minmax(0,1fr)] gap-3 border-b border-rule py-1.5">
-            <dt className="text-ink-2">{k}</dt><dd className="num break-all" title={v}>{v}</dd>
+            <dt className="text-ink-2">{k}</dt><dd className="num break-all" title={full ?? v}>{v}</dd>
           </div>
         ))}
       </dl>

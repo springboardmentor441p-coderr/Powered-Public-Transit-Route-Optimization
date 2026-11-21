@@ -11,7 +11,7 @@ import pytest
 
 VISIBLE = {"caveat", "caveats", "meaning", "note", "total_note", "label", "gate_label", "interpretation", "reason",
            "route_values_note", "groups_note", "comparable_note", "k_rule", "k_table", "mode_label",
-           "numerator_label", "denominator_label", "unit", "daytype_label", "name", "kind_label", "test_status",
+           "numerator_label", "denominator_label", "unit", "daytype_label", "name", "kind_label", "test_status", "test_status_label",
            "target_label", "metric_label", "selection_note", "basis_label", "rank_note"}
 NOT_TEXT = {"name"}  # "name" is also an internal period key; it is checked only where it is a group name
 SPEC = re.compile(r"\bspec\s+\d", re.I)

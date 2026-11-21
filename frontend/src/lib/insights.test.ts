@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { TrendSummary } from '../api/types'
-import { addDays, fmtDate, fmtRange } from './dates'
+import { addDays, fmtDate, fmtRange, fmtTimestamp } from './dates'
 import { linesBounds } from './geo'
 import { daytypeLevels, importChecks } from './insights'
 
@@ -51,5 +51,16 @@ describe('dates', () => {
     expect(fmtRange('2025-11-23', '2026-07-31')).toBe('23 Nov 2025 – 31 Jul 2026')
     expect(addDays('2025-11-23', -1)).toBe('2025-11-22')
     expect(addDays('2024-02-28', 1)).toBe('2024-02-29')
+  })
+})
+
+describe('fmtTimestamp', () => {
+  it('keeps the recorded clock time and names the zone', () => {
+    expect(fmtTimestamp('2026-11-20T14:43:01.623976+05:30')).toBe('20 Nov 2026, 14:43 IST')
+    expect(fmtTimestamp('2026-11-20T09:13:01Z')).toBe('20 Nov 2026, 09:13 UTC')
+    expect(fmtTimestamp('2026-11-20T09:13:01-04:00')).toBe('20 Nov 2026, 09:13 UTC-04:00')
+  })
+  it('anything else is shown as given', () => {
+    expect(fmtTimestamp('yesterday')).toBe('yesterday')
   })
 })
