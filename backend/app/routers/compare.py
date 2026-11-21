@@ -26,10 +26,12 @@ from analytics.geometry.route_shapes import PATH_LABEL, tie_label
 from backend.app.db import GROUPS_AFTER_CUTOFF, cutoff_block, get_conn, group_version_for, permitted_through, \
     resolve_version
 from backend.app.labels import UNITS, envelope
-from backend.app.routers.rankings import (CAVEAT, METRICS, PERIOD_LABELS, REFERENCE_GATE, _none, compute_profiles,
+from backend.app.routers.rankings import (CAVEAT, METRICS, PART_LABELS, PERIOD_LABELS, REFERENCE_GATE, _none, compute_profiles,
                                           gate_label, resolve_period)
 
 router = APIRouter(tags=["routes"])
+NO_COMMON_DAYS = "no date on which all selected routes were observed"
+SAME_DAYS_RANK_NOTE = "network ranks are shown only for each route's own observed days, not for a chosen set of dates"
 MAX_ROUTES = 8
 NOT_IN_VERSION = "not in this timetable version"
 NO_ACTIVE_TRIPS = "in this timetable version, but no active trips on its applied dates"
@@ -48,6 +50,7 @@ def compare_routes(
     end: date | None = None,
     daytype: Literal["W", "A", "U"] = "W",
     geometry_version: str | None = Query(None, description="default: the archive in force on the period's last day"),
+    same_days: bool = Query(False, description="compute every value on the dates ALL selected routes were observed"),
     cutoff: date | None = Query(None, description="use only service dates on or before this date"),
     data_version: str | None = None,
     conn: psycopg.Connection = Depends(get_conn),
@@ -88,11 +91,15 @@ def compare_routes(
                                    AND o.service_date = w.service_date AND o.daytype = %(dt)s))
                        AS scheduled_days_without_record
         FROM unnest(%(routes)s::text[]) AS x(route)""", p).fetchall()}
-    common = conn.execute("""
-        SELECT count(*) AS n FROM (SELECT service_date FROM matched_utilization
-              WHERE data_version = %(dv)s AND route = ANY(%(routes)s) AND daytype = %(dt)s
-                AND service_date BETWEEN %(a)s AND %(b)s
-              GROUP BY service_date HAVING count(DISTINCT route) = %(n)s) s""", p).fetchone()["n"]
+    common_dates = {r["service_date"] for r in conn.execute("""
+        SELECT service_date FROM matched_utilization
+         WHERE data_version = %(dv)s AND route = ANY(%(routes)s) AND daytype = %(dt)s
+           AND service_date BETWEEN %(a)s AND %(b)s
+         GROUP BY service_date HAVING count(DISTINCT route) = %(n)s""", p).fetchall()}
+    common = len(common_dates)
+    if same_days:  # every value on the shared dates only; network ranks are not defined on hand-picked dates
+        prof = compute_profiles(conn, dv, name, a, b_eff, through, REFERENCE_GATE, set(wanted), common_dates)             if common_dates else None
+        rows = {} if prof is None else {r["route"]: r for r in prof[prof["daytype"] == daytype].to_dict("records")}
 
     # ---- groups (only if fitted on data up to the cutoff)
     gv = group_version_for(conn, dv, through)
@@ -136,14 +143,17 @@ def compare_routes(
         r = rows.get(route)
         obs = 0 if r is None else int(r["observed_days"])
         indicators = None if r is None else {
-            metric: {"label": label, "unit": unit, "value": _none(r[value_col]), "network_rank": _none(r[rank_col]),
+            metric: {"label": label, "unit": unit, "value": _none(r[value_col]),
+                     "network_rank": None if same_days else _none(r[rank_col]),
                      "eligible": bool(r[f"{rank_col}_eligible"]), "reason": _none(r[f"{rank_col}_reason"]),
-                     "numerator": _none(r[num_col]), "denominator": _none(r[den_col])}
+                     "numerator": _none(r[num_col]), "denominator": _none(r[den_col]),
+                     "numerator_label": PART_LABELS[num_col], "denominator_label": PART_LABELS[den_col]}
             for metric, (rank_col, value_col, num_col, den_col, label, unit) in METRICS.items()}
         out.append({
             "route": route,
             "indicators": indicators,
-            "no_matched_days_reason": None if r is not None else "no matched days of this day type in the period",
+            "no_matched_days_reason": None if r is not None else (
+                NO_COMMON_DAYS if same_days else "no matched days of this day type in the period"),
             "service": None if r is None else {
                 "mean_scheduled_trips": _per_day(r["scheduled_trips_sum"], obs),
                 "mean_scheduled_service_hours": _per_day(r["scheduled_hours_sum"], obs)},
@@ -161,6 +171,10 @@ def compare_routes(
         daytype=daytype, units=UNITS, caveat=CAVEAT,
         configuration={"min_observed_days": REFERENCE_GATE, "gate_label": gate_label(REFERENCE_GATE),
                        "ranks": "network ranks among all routes in the period and day type"},
+        same_days=same_days,
+        basis_label=(f"values on the {common} dates all selected routes were observed" if same_days
+                     else "values on each route's own observed days"),
+        rank_note=SAME_DAYS_RANK_NOTE if same_days else None,
         common_matched_days=common,
         comparable_note=None if all(x["coverage"]["observed_days"] == common for x in out) else
         "the routes were not all observed on the same dates; compare observed days before comparing values",

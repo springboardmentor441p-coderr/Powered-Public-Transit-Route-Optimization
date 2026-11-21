@@ -1312,3 +1312,33 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - the strip's narrow "1 only" segment was cut to "1 o". A narrow segment now shows just the count, with the words in its tooltip and a minimum width.
   - I checked that the "100 %" pair (49/X49) really is 71 of 71 stops.
 - **Interview Q:** *"Why not just say routes 120 and 121 should merge?"* Shared stop IDs ignore direction, timing, walking access and transfers. The data supports "these corridors are worth a look", not a merge decision. That's why the label sits next to the table.
+
+## Step 75: Compare (`/compare?routes=…`), plan written before coding
+- **What it shows:**
+  - **Routes:** 2 to 8 of them, added from a list and removed with ×. The choice lives in the address bar, so a comparison can be shared.
+  - **The sentence:** day type, period and the "same days only" switch.
+  - **Warning:** when the routes weren't observed on the same dates, the API's common-days warning appears, with the count of dates all of them share and a button to switch.
+  - **Table:** one column per route. Rows are the three indicators (value and network rank), scheduled trips and trip-hours per day, observed days and the coverage gaps on each side, and the group.
+  - **Map and shared stops:** the routes' lines in one named timetable, and the shared-stop pairs among them with "corridor review only".
+- **Insight it highlights:** which route leads on each measure, and whether one route leads on all three. Usually different routes lead on volume and on productivity. With "same days only", the values are recomputed on the dates all routes share, so a route observed for fewer days isn't compared unfairly.
+- **Rules:**
+  - API: a new `same_days` option recomputes every value on the shared dates. Network ranks are then left out, with a note (a rank among all routes isn't defined on hand-picked dates), and there's a test.
+  - A missing value shows "unavailable – reason".
+- **Built:**
+  - `/compare?routes=…&daytype=…&period=…&same_days=true`: everything lives in the address bar, so a comparison can be shared. You add routes from a list and remove them with ×.
+  - It shows the common-days warning with a "Use the same days only" button, an opening sentence naming each measure's leader, and the route-by-route table (indicators with provenance and network ranks, service, coverage, group). There is also a map in one named timetable with that timetable's own applied dates, and the shared stops among the chosen routes.
+  - **API:** `same_days` recomputes every value on the dates all routes were observed (`compute_profiles(dates=…)`). Network ranks are then left out, with a note. The response also carries `basis_label` and numerator/denominator labels.
+  - Helpers in `lib/compare.ts` (`parseRoutes`, `leaders`, `archiveRange`), with tests.
+- **Key concept:** *compare like with like*. Two runners' average times mean little if one ran only in summer. "Same days only" restricts both to the days they both ran. On 49, X49, 10 and 22 this changes the answer: route 49 leads daily demand on each route's own days, but route 22 leads on all three measures on the 39 shared dates.
+- **Decisions:**
+  - With same days only, network ranks are hidden rather than recomputed. A rank among all routes on hand-picked dates would mean something different from every other rank in the app.
+  - The coverage-gap rows say "in the whole period", because they don't change with the switch.
+- **Results:**
+  - backend: compare and visible-text tests pass (30). The new same-days test checks the means against an independent SQL average.
+  - frontend: tsc, lint, vitest (76 tests) and build pass.
+- **Screenshot check (1366/1920):**
+  - the map caption showed the comparison period as the timetable's applied dates. It is now the timetable's own range, taken from coverage (`archiveRange`).
+  - a long ungrouped reason stretched one column; it now wraps.
+  - React reported table rows without `key`s; they now have keys.
+  - the whole-period coverage rows weren't labelled as such in same-days mode; they now say "in the whole period".
+- **Interview Q:** *"Why does the leader change with 'same days only'?"* Route 10 was observed only from June. Comparing on the shared dates removes the seasons the others saw and route 10 didn't, so each route is judged on the same days.

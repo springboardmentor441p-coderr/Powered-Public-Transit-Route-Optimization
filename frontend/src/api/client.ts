@@ -81,7 +81,7 @@ export const api = {
   overlap: (q: { geometry_version?: string } = {}, o?: ApiOptions) =>
     apiGet<OverlapResponse>('/api/rankings', { metric: 'route_overlap_review', ...q }, o),
 
-  compare: (routes: string[], q: { daytype: DayType; geometry_version?: string } & PeriodChoice, o?: ApiOptions) =>
+  compare: (routes: string[], q: { daytype: DayType; geometry_version?: string; same_days?: boolean } & PeriodChoice, o?: ApiOptions) =>
     apiGet<CompareResponse>('/api/routes/compare', { routes: routes.join(','), ...q }, o),
 
   groups: (o?: ApiOptions) => apiGet<GroupsResponse>('/api/route-groups', {}, o),

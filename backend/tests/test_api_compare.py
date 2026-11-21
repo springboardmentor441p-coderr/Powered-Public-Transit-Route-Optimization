@@ -127,3 +127,25 @@ def test_bad_requests_are_422(client, params):
 def test_unknown_route_is_404_and_named(client):
     r = client.get("/api/routes/compare", params={"routes": "22,NOPE"})
     assert r.status_code == 404 and "NOPE" in r.json()["detail"]
+
+
+def test_same_days_only_uses_the_shared_dates(client, conn):
+    """Compare's "same days only": every value is computed on the dates ALL routes were observed (route 10 starts in
+    June, so route 22 is cut to those dates); ranks are left out with a note, and no comparability warning remains."""
+    body = get(client, routes="10,22", same_days="true")
+    n = body["common_matched_days"]
+    assert body["same_days"] is True and str(n) in body["basis_label"] and body["rank_note"]
+    assert body["comparable_note"] is None
+    shared = conn.execute("""SELECT route, avg(rides) FROM matched_utilization
+                             WHERE route IN ('10', '22') AND daytype = 'W' AND service_date IN (
+                                 SELECT service_date FROM matched_utilization WHERE route IN ('10', '22') AND daytype = 'W'
+                                 GROUP BY service_date HAVING count(DISTINCT route) = 2)
+                             GROUP BY route""").fetchall()
+    for route, mean in shared:
+        r = by_route(body)[route]
+        assert r["coverage"]["observed_days"] == n
+        assert math.isclose(r["indicators"]["observed_daily_demand"]["value"], float(mean), rel_tol=1e-9)
+        assert all(ind["network_rank"] is None for ind in r["indicators"].values())
+    default = get(client, routes="10,22")
+    assert default["same_days"] is False and default["rank_note"] is None
+    assert by_route(default)["22"]["coverage"]["observed_days"] > n                 # the switch really changes the basis

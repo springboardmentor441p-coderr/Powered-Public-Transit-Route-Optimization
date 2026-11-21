@@ -80,13 +80,17 @@ def resolve_period(period: str | None, start: date | None, end: date | None,
 
 
 def compute_profiles(conn: psycopg.Connection, data_version: str, name: str, a: date, b_eff: date, through: date,
-                     gate: int, members: set[str] | None = None) -> pd.DataFrame | None:
+                     gate: int, members: set[str] | None = None, dates: set[date] | None = None) -> pd.DataFrame | None:
     """Stage 5's utilization_profiles on the permitted rows (cutoff in SQL). Day types for scheduled-service days
-    come from all routes (as in Stage 5); `members` then restricts which routes are ranked."""
+    come from all routes (as in Stage 5); `members` then restricts which routes are ranked, and `dates` (Compare's
+    "same days only") which service dates are counted."""
     matched = permitted_matched(conn, data_version, a, b_eff, through)
     schedule = schedule_with_daytype(permitted_schedule(conn, data_version, a, b_eff, through), matched)
     if members is not None:
         matched, schedule = matched[matched["route"].isin(members)], schedule[schedule["route"].isin(members)]
+    if dates is not None:
+        keep = pd.to_datetime(sorted(dates))
+        matched, schedule = matched[matched["date"].isin(keep)], schedule[schedule["date"].isin(keep)]
     cfg = {**CFG, "gates": {**CFG["gates"], "ranking_min_observed_days": gate}}
     return utilization_profiles(matched, name, str(a), str(b_eff), cfg, schedule) if len(matched) else None
 

@@ -154,6 +154,7 @@ export type NoLines = { route: string; reason: string }
 export type Indicator = {
   label: string; unit: string; value: number | null; network_rank: number | null; eligible: boolean
   reason: string | null; numerator: number | null; denominator: number | null
+  numerator_label: string; denominator_label: string
 }
 export type CompareRoute = {
   route: string
@@ -172,6 +173,7 @@ export type CompareResponse = Envelope & {
   daytype: DayType; units: Units; caveat: string
   configuration: { min_observed_days: number; gate_label: string; ranks: string }
   common_matched_days: number; comparable_note: string | null; groups_note: string | null
+  same_days: boolean; basis_label: string; rank_note: string | null
   routes: CompareRoute[]
   map: { geometry_version: string | null; label: string; lines: RouteLine[]; routes_without_lines: NoLines[] }
   overlap: {
