@@ -1571,3 +1571,19 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   1. the SQL only reads rides up to the day before;
   2. the forecasts exactly reproduce the offline test scores, which were built under the same rule;
   3. the leakage test (Step 93) changes every later ride and checks that the forecasts don't move.
+
+## Step 90: Replay sessions and the virtual clock (`backend/replay/clock.py`, `sessions.py`, `routers/replays.py`)
+- **Built:**
+  - `POST /api/replays`: start between 1 Jun and 31 Jul (default 1 Jun), speed, delay; only a 1-day delay is accepted, with the reason given.
+  - `GET /api/replays/{id}`: the state, after applying any elapsed playback.
+  - `POST /api/replays/{id}/control`, with the actions start, pause, advance (n days), next_week, jump_to_end, select_date (forward only), set_speed and reset.
+  - **Reset** creates a new session whose parent is the old one. The old session is kept untouched.
+  - The state includes the "Historical replay" mode label, the virtual day, "revealed through", the delay assumption with its note, the run and model versions (with sha256), and the model's training and validation cutoffs.
+- **Why:** spec 9.14.4 asks to persist the session (versions, virtual date, delay, speed, status), to retrieve it on refresh, to stop at the final date rather than wrap, and for reset to create a clean session without deleting evidence.
+- **Key concept:** *the server owns the clock*. While playing, the session stores when playback started, and every read works out how many whole steps have passed. A browser that closes and reopens sees the same day, and no client can set the date itself. The rules are pure functions (`clock.py`), so they're tested without a database or real time.
+- **Decisions:**
+  - **"Complete" state:** it is one step past 31 Jul. It reveals 31 Jul's rides and stops there, so every June–July forecast gets scored.
+  - **Moving back:** selecting an earlier date in the same session is refused, because it would un-reveal data. Reset with that start date instead.
+  - **Connections:** a separate writable connection (`get_write_conn`) is used only by the replay writers. All analysis endpoints stay read-only.
+- **Results:** 8 clock tests (no database) and 8 session API tests pass on `routeranker_test`. The test fixtures install the Stage 7 tables and build the forecasts there.
+- **Interview Q:** *"Why not let the frontend keep the date?"* Then anyone could change it in the browser and ask for later data. The date lives in the database row, and the API derives every cutoff from it (Step 91).

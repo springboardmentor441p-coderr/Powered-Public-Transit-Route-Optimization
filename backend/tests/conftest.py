@@ -5,7 +5,7 @@ import psycopg
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.app.db import get_conn, open_conn
+from backend.app.db import get_conn, get_write_conn, open_conn, open_write_conn
 from backend.app.main import app
 from backend.importer.import_data import DEFAULTS, REPO_ROOT, collect, create_schema, read_env, write
 
@@ -56,13 +56,32 @@ def loaded(conn, collected):
 
 @pytest.fixture
 def client(test_url, loaded):
-    """The real app, with its database dependency pointed at routeranker_test (same read-only connection type)."""
+    """The real app, with its database dependencies pointed at routeranker_test (same connection types: read-only for
+    the analysis endpoints, writable only for the replay writers)."""
     def test_conn():
         with open_conn(test_url) as c:
             yield c
+
+    def test_write_conn():
+        with open_write_conn(test_url) as c:
+            yield c
     app.dependency_overrides[get_conn] = test_conn
+    app.dependency_overrides[get_write_conn] = test_write_conn
     yield TestClient(app)
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def stage7(conn, loaded):
+    """routeranker_test with the Stage 7 tables, the forecast targets and the June-July forecasts (built once; rebuilt
+    only if a test emptied the database). Returns the build's consistency result."""
+    from backend.importer.import_stage7 import install, stage7_tables_exist
+    from backend.replay.build_forecasts import build
+    if not stage7_tables_exist(conn) or not conn.execute("SELECT count(*) FROM forecast_targets").fetchone()[0]:
+        install(conn)
+    if not conn.execute("SELECT count(*) FROM forecasts").fetchone()[0]:
+        return build(conn)
+    return None
 
 
 def reset(c: psycopg.Connection) -> None:

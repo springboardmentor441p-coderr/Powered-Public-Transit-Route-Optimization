@@ -41,6 +41,18 @@ def get_conn() -> Iterator[psycopg.Connection]:
         yield conn
 
 
+def open_write_conn(url: str) -> psycopg.Connection:
+    """Stage 7: the ONLY writable connection, used by the replay session and forecast endpoints (they write sessions
+    and store forecasts). Every other endpoint keeps the read-only connection above."""
+    return psycopg.connect(url, autocommit=True, row_factory=dict_row)
+
+
+def get_write_conn() -> Iterator[psycopg.Connection]:
+    """FastAPI dependency for the replay writers."""
+    with open_write_conn(database_url()) as conn:
+        yield conn
+
+
 def resolve_version(conn: psycopg.Connection, requested: str | None) -> dict:
     """The requested data version, or the most recently imported one. Unknown -> 404 (never a silent fallback)."""
     row = conn.execute("""SELECT data_version, analysis_start, analysis_end, ridership_cutoff, imported_at,
