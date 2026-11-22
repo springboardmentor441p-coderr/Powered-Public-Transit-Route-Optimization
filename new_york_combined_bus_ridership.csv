@@ -1,0 +1,75 @@
+route_id,route_short_name,route_long_name,route_type,bus_route,total_estimated_ridership,average_estimated_ridership,ridership_record_count
+Q10,Q10,Jfk Airtrain - Kew Gardens Via Rockaway,3,Q10,9,4.5,2
+Q11,Q11,Howard Beach - Elmhurst,3,Q11,0,0.0,1
+Q18,Q18,Astoria - Maspeth,3,Q18,0,0.0,1
+Q19,Q19,Flushing - Astoria,3,Q19,0,0.0,1
+Q22,Q22,Rockaway Beach Bl / Beach Channel Dr,3,Q22,1,0.5,2
+Q23,Q23,East Elmhurst - Forest Hills,3,Q23,0,0.0,1
+Q25,Q25,College Point - Jamaica,3,Q25,15,15.0,1
+Q26,Q26,College Point - Fresh Meadows,3,Q26,8,4.0,2
+Q28,Q28,Flushing - Bay Terrace Rush,3,Q28,0,0.0,1
+Q32,Q32,Jackson Heights - Penn Station (Midtown),3,Q32,117,39.0,3
+Q33,Q33,Marine Air Terminal Lga-Jackson Heights,3,Q33,0,0.0,1
+Q35,Q35,Rockaway Park - Midwood / Brooklyn Coll.,3,Q35,0,0.0,1
+Q37,Q37,Kew Gardens - South Ozone Park,3,Q37,2,1.0,2
+Q40,Q40,South Ozone Park - Jamaica,3,Q40,0,0.0,1
+Q41,Q41,Jamaica - Howard Beach,3,Q41,0,0.0,1
+Q47,Q47,East Elmhurst - Glendale,3,Q47,0,0.0,1
+Q49,Q49,East Elmhurst - Jackson Heights,3,Q49,0,0.0,1
+Q50,Q50,Co-Op City/Pelham Bay - Flushing Ltd,3,Q50,2,1.0,2
+Q51,Q51,Linden Blvd Limited,3,Q51,0,0.0,1
+Q60,Q60,Queens Blvd. - East Midtown,3,Q60,0,0.0,1
+Q64,Q64,Electchester - Forest Hills,3,Q64,46,23.0,2
+Q65,Q65,Flushing - Jamaica,3,Q65,0,0.0,1
+Q66,Q66,Flushing - Long Island City,3,Q66,10,5.0,2
+Q69,Q69,East Elmhurst - Long Island City,3,Q69,5,1.6666666666666667,3
+Q72,Q72,LaGuardia Airport - Rego Park,3,Q72,0,0.0,1
+Q74,Q74,Forest Hills - Qcc Ltd,3,Q74,0,0.0,1
+Q80,Q80,Jfk Airtrain - Kew Gardens Via Lefferts,3,Q80,0,0.0,1
+BM1,BM1,Mill Basin - Downtown/Midtown,3,BM1,0,0.0,1
+BM4,BM4,Gerritsen Beach - Downtown/Midtown,3,BM4,0,0.0,1
+BXM11,BXM11,Wakefield - Midtown,3,BXM11,0,0.0,1
+BXM18,BXM18,Riverdale - Downtown,3,BXM18,0,0.0,1
+BXM3,BXM3,Yonkers - Midtown,3,BXM3,0,0.0,1
+BXM6,BXM6,Parkchester - Midtown,3,BXM6,1,1.0,1
+BXM7,BXM7,Co-Op City - Midtown,3,BXM7,0,0.0,1
+BXM8,BXM8,Pelham Bay/City Island - Midtown,3,BXM8,0,0.0,1
+BXM9,BXM9,Throgs Neck - Midtown Express,3,BXM9,0,0.0,1
+Q100,Q100,Rikers Island - Long Island City Ltd,3,Q100,3,1.5,2
+Q101,Q101,Steinway - Hunters Point,3,Q101,1,0.5,2
+Q102,Q102,Roosevelt Island - Long Island City,3,Q102,0,0.0,1
+Q103,Q103,Astoria - Hunters Point,3,Q103,0,0.0,1
+Q104,Q104,Astoria - Sunnyside,3,Q104,0,0.0,1
+Q110,Q110,Jamaica Avenue East,3,Q110,0,0.0,1
+Q111,Q111,Rosedale - Jamaica Rush,3,Q111,1,0.5,2
+Q112,Q112,Jamaica - East Ny,3,Q112,6,3.0,2
+Q113,Q113,Far Rockaway - Jamaica Limited,3,Q113,0,0.0,1
+Q114,Q114,Far Rockaway - Jamaica Rush,3,Q114,2,0.6666666666666666,3
+Q115,Q115,Brewer Blvd. Local,3,Q115,0,0.0,1
+QM1,QM1,Fresh Meadows - Midtown Express,3,QM1,0,0.0,1
+QM10,QM10,Lefrak City - Midtown Express,3,QM10,0,0.0,1
+QM11,QM11,Forest Hills - Downtown Express,3,QM11,0,0.0,1
+QM12,QM12,Forest Hills - Midtown Express,3,QM12,0,0.0,1
+QM15,QM15,Lindenwood - Midtown Express,3,QM15,0,0.0,1
+QM16,QM16,Neponsit - Midtown Express,3,QM16,0,0.0,1
+QM17,QM17,Far Rockaway - Midtown Express,3,QM17,0,0.0,1
+QM18,QM18,South Ozone Park - Midtown Express,3,QM18,0,0.0,1
+QM2,QM2,Bay Terrace - Midtown Express,3,QM2,0,0.0,1
+QM20,QM20,Bay Terrace - Midtown Express,3,QM20,0,0.0,1
+QM21,QM21,Rochdale Village - Midtown Exp.,3,QM21,0,0.0,1
+QM24,QM24,Glendale - Midtown Express,3,QM24,0,0.0,1
+QM25,QM25,Glendale - Downtown Express,3,QM25,0,0.0,1
+QM31,QM31,Fresh Meadows - Midtown Express,3,QM31,0,0.0,1
+QM32,QM32,Bay Terrace - Midtown Express,3,QM32,0,0.0,1
+QM34,QM34,Glendale - Midtown Express,3,QM34,0,0.0,1
+QM35,QM35,Glen Oaks - Midtown Express,3,QM35,0,0.0,1
+QM36,QM36,Lake Success - Midtown Express,3,QM36,0,0.0,1
+QM4,QM4,Electchester - Midtown Express,3,QM4,7,3.5,2
+QM40,QM40,Lefrak City - Midtown Express,3,QM40,0,0.0,1
+QM42,QM42,Forest Hills - Midtown Express,3,QM42,0,0.0,1
+QM44,QM44,Electchester - Midtown Express,3,QM44,0,0.0,1
+QM5,QM5,Glen Oaks - Midtown Express,3,QM5,0,0.0,1
+QM6,QM6,Lake Success - Midtown Express,3,QM6,0,0.0,1
+QM65,QM65,Laurelton-Rochdale-Lower Manhattan,3,QM65,0,0.0,1
+QM7,QM7,Fresh Meadows - Downtown Express,3,QM7,0,0.0,1
+QM8,QM8,Glen Oaks - Downtown Express,3,QM8,0,0.0,1
