@@ -1522,3 +1522,30 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - The values come from `/api/route-groups` as sent. The shown hash equals `sha256(artifacts/stage5/route_groups.joblib)` = `33d2d42a9b77…`.
 - **Results:** tsc, lint, vitest (101 tests) and build pass. No screenshot this time, because the API wasn't running.
 - **Interview Q:** *"Why show a hash to a planner?"* Most planners won't use it, but an auditor will. It costs one quiet line and turns "trust me" into something anyone can check.
+
+# Stage 7: Replay (spec 9.13–9.14, 9.16, 9.17.2–9.17.4, 9.19; stage table 9.18 row 7)
+
+> Spec row: "Session clock, forecast storage and controlled reveal → June–July updating demo with no future-input access." The spec is read from `docs-private/spec_v3.8.txt`.
+
+## Step 88: Replay tables and forecast targets (`backend/db/schema_stage7.sql`, `backend/importer/import_stage7.py`)
+- **Built:**
+  - Four new tables, purely additive (no Stage 6 table changed):
+    - `forecast_targets`: the forecast-time schedule per route/day;
+    - `forecast_runs`;
+    - `forecasts`;
+    - `replay_sessions`.
+  - The importer loads the targets from Stage 3's `feature_rows.csv` (sha256 checked against its manifest), keeping only timetable columns. It refuses a second import.
+- **Why:** a forecast for day D may only use what was known before D. The timetable for D is known in advance (it comes from an archive captured before D), but rides are not. So timetable facts are stored, and rides and lags are always recomputed from `daily_ridership` through D-1.
+- **Key concept:** *the target population is the schedule, not the ridership*. `forecast_schedule_inputs.csv` has 7,014 June–July rows, but the forecast population has 7,018. The four missing rows are route 169's scheduled Saturdays with no ridership record. You forecast every scheduled day; a missing actual is excluded from scoring later, not from forecasting.
+- **Decisions:**
+  - Targets come from `feature_rows.csv` (all 28,312 route-days, every split), because it is exactly the population Stage 4 was scored on.
+  - Forecasts get their own constraints in SQL:
+    - a prediction exists exactly when the status is `forecast`;
+    - a withheld reason exists exactly when it is `unavailable`;
+    - the latest ride date is before the issue date;
+    - no negative predictions.
+- **Results:**
+  - The app database has 28,312 targets: 14,430 train, 6,864 validation, 7,018 test.
+  - 11 Jul uses the 30 May archive (93 routes), as spec 9.14.3 requires.
+  - A second run is refused with nothing changed.
+- **Interview Q:** *"Why not store the lag features too?"* Then a bug or a later data change could leave stale lags that quietly contain future information. Recomputing them from rides filtered `<= D-1` in SQL, every time, makes "no peeking" a property of the query, not of a file someone trusted.
