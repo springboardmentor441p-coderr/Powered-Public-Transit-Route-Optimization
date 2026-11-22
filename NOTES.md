@@ -1549,3 +1549,25 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - 11 Jul uses the 30 May archive (93 routes), as spec 9.14.3 requires.
   - A second run is refused with nothing changed.
 - **Interview Q:** *"Why not store the lag features too?"* Then a bug or a later data change could leave stale lags that quietly contain future information. Recomputing them from rides filtered `<= D-1` in SQL, every time, makes "no peeking" a property of the query, not of a file someone trusted.
+
+## Step 89: Forecast engine and the June–July build (`backend/replay/forecasting.py`, `build_forecasts.py`)
+- **Built:**
+  - `store_day(conn, run, D)` issues day D's forecasts at the start of D. It loads the forecast-time targets for D and the rides `BETWEEN D-28 AND D-1` (in SQL). It runs Stage 3's `build_features` unchanged, then predicts with the frozen random forest (file sha256 checked against the model manifest first) and the 4-week-average baseline on the same rows.
+  - Missing inputs give `unavailable` with the reason in words ("missing: rides 1 day earlier").
+  - Rows are written once. A retry inserts nothing, and a recomputation that differs from a stored row raises `ForecastConflict`.
+  - `forecast_runs` holds one run per (data version, model version and sha, delay), and the run id is derived from those, so it's the same every time.
+  - `build_forecasts.py` walks 1 Jun → 31 Jul, prints a content hash, and runs the consistency check.
+- **Why:** spec 9.14.2 says to save each prediction with its inputs and versions before its outcome is revealed, and spec 9.17.2 says never to overwrite it afterwards.
+- **Key concept:** *the replay must reproduce the evaluation*. If the day-by-day replay builds exactly the inputs Stage 4 was scored on, it must get exactly the same scores. A difference would mean one of them saw something the other didn't.
+- **Decisions:**
+  - The delay is fixed at 1 day: the model was built for it, and another delay needs new features and a new evaluation.
+  - The baseline is stored for comparison only, not as a fallback, because no fallback was validated.
+- **Results:**
+  - 61 days, 14,036 rows; run `run_389b917629f3a0a2`, content sha256 `5d5bb651…`. Both methods have 6,542 forecasts and 476 unavailable rows.
+  - Consistency on the 6,542 shared route-days: model MAE **398.0115** = Stage 4a 398.0115, baseline **421.1546** = Stage 4a 421.1546 (WAPE 7.67 % vs 8.12 %).
+  - A second build inserted 0 rows, re-verified all 14,036 and gave the identical hash.
+  - 11 Jul used the 30 May archive and rides through 10 Jul. The full build takes about 17 s.
+- **Interview Q:** *"How do you know the replay forecasts didn't peek?"* Three ways:
+  1. the SQL only reads rides up to the day before;
+  2. the forecasts exactly reproduce the offline test scores, which were built under the same rule;
+  3. the leakage test (Step 93) changes every later ride and checks that the forecasts don't move.
