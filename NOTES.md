@@ -1654,3 +1654,30 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - The Replay screen at 9 Jun reports honestly that over the first 8 days the model's average miss (415.5) was 3.5 % higher than the 4-week average's (401.5).
   - Screenshot fixes: the assumption sentence started lowercase; a "have a forecast" count used ranked rows; "issued issued"; an ISO time instead of a date.
 - **Interview Q:** *"The model loses for the first week. Is something broken?"* No. The running error is noisy early on, and over all of June–July the model ends up 5.5 % better. Showing the early loss is the point: the replay reports what happened day by day, not just the final number.
+
+## Step 94: Tests that prove there is no peeking (`test_replay_forecasts.py`, `scripts/replay_check.mjs`)
+- **Built:**
+  - **Leakage:**
+    1. multiply every ride after 30 Jun by 3 and add 7 in the test database (all 3,597 rows);
+    2. delete and rebuild the forecasts through 30 Jun;
+    3. require a bit-identical hash.
+    - **Sensitivity:** a day that does use changed rides (2 Jul) moves for over 100 routes, so the test can actually fail.
+    - The rides are then restored and the full run hash is checked again.
+  - **Determinism:** delete everything, rebuild, same content hash.
+  - **Retry and refresh:** `store_day` again and `POST /api/forecasts` twice store nothing and leave `created_at` unchanged.
+  - **Never rewritten:** a stored prediction tampered by +1 makes the next store raise `ForecastConflict`; it is not "corrected".
+  - **Snapshot boundary (9.14.3):** no forecast uses a timetable captured on or after its day. 11 Jul uses the 30 May archive with rides through 10 Jul, and every `latest_ride_date` is before its issue date.
+  - **Features:** the replay's day-by-day features equal Stage 3's `feature_rows.csv` for all 7,018 June–July route-days (every lag, the seasonal mean, schedule fields and eligibility).
+  - **Consistency:** stored forecasts give MAE 398.0115 / 421.1546 on 6,542 route-days = Stage 4a.
+  - **Unavailable rows:** they have a plain-words reason and no value.
+  - **Playwright `replay_check.mjs`:** switch to replay, check the 1 Jun headline, Next day, Next week, then click through every screen (and route 22 with its forecast panel), failing if any visible date is after the revealed day. Screenshots at 1366 and 1920, then Jump to end.
+  - **`vite.config.ts`:** `ROUTERANKER_API` lets such checks use their own API without touching yours.
+- **Why:** spec 9.19.1, "a replay prediction cannot retrieve target-day/later rides before their availability boundary", and "refresh/retry does not duplicate forecasts or rewrite their original inputs".
+- **Key concept:** *a leakage test must be able to fail*. Proving that forecasts don't change when future data changes only means something if the same test shows that forecasts *do* change when their own inputs change. Both halves are checked.
+- **Decisions:**
+  - The tampering tests run only on `routeranker_test` and always restore in a `finally` block.
+  - The Playwright checks ran on a temporary API (8010) and Vite (5180), never on your servers.
+- **Results:**
+  - 8 forecast-integrity tests, 23 replay-mode tests, 5 review tests, 8 session tests and 8 clock tests pass.
+  - Replay click-through: 20 of 20 checks at 1366 and 1920. No screen shows a date after the revealed day, and the completion message appears.
+- **Interview Q:** *"How would you convince a sceptical reviewer there's no leakage?"* Change the future and show the past forecasts don't move: bit-for-bit, by hash. Then show they do move when their own inputs change. A test that can't fail proves nothing.
