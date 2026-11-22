@@ -17,6 +17,7 @@ from analytics.geometry.route_shapes import PATH_LABEL, tie_label
 from analytics.geometry.simplify import simplify
 from backend.app.db import GROUPS_AFTER_CUTOFF, cutoff_block, get_conn, group_version_for, permitted_through, \
     resolve_version
+from backend.app.db import request_cutoff
 from backend.app.labels import envelope
 from backend.app.routers.compare import NO_ACTIVE_TRIPS, NOT_IN_VERSION
 
@@ -30,7 +31,7 @@ def map_lines(
     date_: date | None = Query(None, alias="date", description="the archive applied on this service date"),
     routes: str | None = Query(None, description="comma-separated; default: every route in the version"),
     simplify_m: float = Query(DEFAULT_SIMPLIFY_M, ge=0, le=100, description="display tolerance in metres; 0 = exact"),
-    cutoff: date | None = Query(None, description="use only service dates on or before this date"),
+    cutoff: date | None = Depends(request_cutoff),
     data_version: str | None = None,
     conn: psycopg.Connection = Depends(get_conn),
 ) -> dict:

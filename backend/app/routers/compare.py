@@ -25,6 +25,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from analytics.geometry.route_shapes import PATH_LABEL, tie_label
 from backend.app.db import GROUPS_AFTER_CUTOFF, cutoff_block, get_conn, group_version_for, permitted_through, \
     resolve_version
+from backend.app.db import request_cutoff
 from backend.app.labels import UNITS, envelope
 from backend.app.routers.rankings import (CAVEAT, METRICS, PART_LABELS, PERIOD_LABELS, REFERENCE_GATE, _none, compute_profiles,
                                           gate_label, resolve_period)
@@ -51,7 +52,7 @@ def compare_routes(
     daytype: Literal["W", "A", "U"] = "W",
     geometry_version: str | None = Query(None, description="default: the archive in force on the period's last day"),
     same_days: bool = Query(False, description="compute every value on the dates ALL selected routes were observed"),
-    cutoff: date | None = Query(None, description="use only service dates on or before this date"),
+    cutoff: date | None = Depends(request_cutoff),
     data_version: str | None = None,
     conn: psycopg.Connection = Depends(get_conn),
 ) -> dict:

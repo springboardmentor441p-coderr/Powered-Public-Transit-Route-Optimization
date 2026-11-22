@@ -22,6 +22,7 @@ from fastapi import APIRouter, Depends, Query
 from analytics.groups.clustering import group_summary
 from backend.app.db import GROUPS_AFTER_CUTOFF, cutoff_block, get_conn, group_version_for, permitted_through, \
     resolve_version
+from backend.app.db import request_cutoff
 from backend.app.labels import UNITS, envelope, prose
 from backend.app.routers.rankings import CFG
 
@@ -73,7 +74,7 @@ def profile_value(p: dict, feature: str) -> dict:
 
 
 @router.get("/api/route-groups")
-def route_groups(cutoff: date | None = Query(None, description="use only service dates on or before this date"),
+def route_groups(cutoff: date | None = Depends(request_cutoff),
                  data_version: str | None = None, conn: psycopg.Connection = Depends(get_conn)) -> dict:
     v = resolve_version(conn, data_version)
     through = permitted_through(v, cutoff)

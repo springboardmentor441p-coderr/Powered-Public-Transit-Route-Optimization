@@ -14,6 +14,7 @@ import psycopg
 from fastapi import APIRouter, Depends, Query
 
 from backend.app.db import cutoff_block, get_conn, permitted_through, resolve_version
+from backend.app.db import request_cutoff
 from backend.app.labels import envelope
 from backend.importer.import_data import REPO_ROOT
 
@@ -74,7 +75,7 @@ def gain(model: dict | None, base: dict | None) -> dict | None:
 
 
 @router.get("/api/models/summary")
-def models_summary(cutoff: date | None = Query(None, description="use only service dates on or before this date"),
+def models_summary(cutoff: date | None = Depends(request_cutoff),
                    data_version: str | None = None, conn: psycopg.Connection = Depends(get_conn)) -> dict:
     v = resolve_version(conn, data_version)
     a = json.loads(MANIFEST_4A.read_text(encoding="utf-8"))

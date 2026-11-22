@@ -1587,3 +1587,21 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - **Connections:** a separate writable connection (`get_write_conn`) is used only by the replay writers. All analysis endpoints stay read-only.
 - **Results:** 8 clock tests (no database) and 8 session API tests pass on `routeranker_test`. The test fixtures install the Stage 7 tables and build the forecasts there.
 - **Interview Q:** *"Why not let the frontend keep the date?"* Then anyone could change it in the browser and ask for later data. The date lives in the database row, and the API derives every cutoff from it (Step 91).
+
+## Step 91: Replay mode on every endpoint, and the forecasts API (`db.request_cutoff`, `routers/forecasts.py`)
+- **Built:**
+  - One dependency, `request_cutoff(cutoff, session)`, now supplies the cutoff of every analysis endpoint: coverage, routes, history, rankings (including overlap), compare, groups, map lines, network trend, model card and forecasts.
+    - **Historical analysis:** the client's optional cutoff, exactly as in Stage 6.
+    - **Replay (`?session=`):** the stored session's "revealed through" date, worked out on the server. A client cutoff sent alongside is refused (422), and an unknown session is 404.
+    - The response's cutoff block shows "source: replay session" with the replay day.
+  - `GET /api/forecasts`: stored predictions with their versions, issue time, latest ride date, input snapshot, delay and status. In replay, only days already reached are shown, and the actual appears only once its day is revealed (read from the database only up to that date).
+  - `POST /api/forecasts`: validated issue-or-return; a day not yet reached in the session is refused.
+- **Why:** spec 9.17.3 says to keep replay restrictions in backend queries, not only in frontend hiding. Spec 9.16.3 says not to reveal the target actual through tooltips, tables or a history endpoint.
+- **Key concept:** *one door for the cutoff*. Every endpoint already used `permitted_through`, which filters in SQL. Replay only changes where the date comes from (the session row instead of the URL), so no endpoint needed new filtering logic.
+- **Decisions:**
+  - The cutoff travels as a `date` subclass carrying the session details, so the existing queries and comparisons work unchanged.
+  - Historical mode may still show everything, which the explicit mode switch allows (spec 9.16.3).
+- **Results:**
+  - 23 replay-mode tests, with a session on 5 Jun: 18 endpoint scans with no ISO date after 5 Jun anywhere, the replay day appearing only as itself or as today's forecast target, no actual for an unrevealed day, a client cutoff refused, a later range clipped, and rankings counted on revealed days only.
+  - All 136 existing backend tests still pass (historical mode unchanged).
+- **Interview Q:** *"Could a user edit the URL to see July in a June replay?"* No. With a session in the request, the date comes from the stored session, a cutoff parameter alongside it is refused, and longer ranges are clipped in SQL. Removing the session switches to historical analysis, which is a different, labelled mode.

@@ -12,7 +12,7 @@ from datetime import date
 
 import pandas as pd
 import psycopg
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException, Query
 from psycopg.rows import dict_row
 
 from backend.importer.import_data import REPO_ROOT, read_env
@@ -70,8 +70,55 @@ def permitted_through(version: dict, cutoff: date | None) -> date:
     return version["ridership_cutoff"] if cutoff is None else min(cutoff, version["ridership_cutoff"])
 
 
+class SessionCutoff(date):
+    """A cutoff that came from a stored replay session (never from the client). It behaves as a plain date in every
+    query and comparison; `replay` describes the session for the response's cutoff block."""
+    replay: dict
+
+    def __new__(cls, d: date, replay: dict):
+        obj = super().__new__(cls, d.year, d.month, d.day)
+        obj.replay = replay
+        return obj
+
+
+REPLAY_CUTOFF_REFUSED = ("in replay the cutoff comes from the replay session, not from the request; "
+                         "send either session or cutoff, not both")
+
+
+def request_cutoff(cutoff: date | None = Query(None, description="historical analysis: use only service dates on or "
+                                                                 "before this date"),
+                   session: str | None = Query(None, description="replay: the session id; the backend takes the "
+                                                                 "cutoff from the stored session"),
+                   conn: psycopg.Connection = Depends(get_conn)) -> date | None:
+    """THE cutoff of every analysis endpoint. Historical analysis: the client's optional cutoff (Stage 6). Replay:
+    the stored session's 'revealed through' date, computed on the server from the session row and the current
+    time; a client-supplied cutoff alongside a session is refused, so editing the URL cannot reveal later data."""
+    if session is None:
+        return cutoff
+    if cutoff is not None:
+        raise HTTPException(422, REPLAY_CUTOFF_REFUSED)
+    from backend.replay.clock import at  # local import: the clock module has no database dependency
+    from backend.replay.sessions import _clock, now_utc
+    if conn.execute("SELECT to_regclass('public.replay_sessions') IS NULL").fetchone()["?column?"]:
+        raise HTTPException(404, "replay is not installed in this database")
+    row = conn.execute("SELECT * FROM replay_sessions WHERE session_id = %s", (session,)).fetchone()
+    if row is None:
+        raise HTTPException(404, f"replay session {session!r} does not exist")
+    c = at(_clock(row), now_utc())
+    return SessionCutoff(c.revealed_through, {
+        "session_id": session, "mode_label": "Historical replay", "complete": c.is_complete,
+        "virtual_date": None if c.is_complete else c.virtual_date, "revealed_through": c.revealed_through,
+        "reporting_delay_days": c.delay})
+
+
 def cutoff_block(version: dict, cutoff: date | None) -> dict:
-    return {"requested": cutoff, "applied": cutoff is not None, "permitted_through": permitted_through(version, cutoff)}
+    replay = getattr(cutoff, "replay", None)
+    block = {"requested": None if replay else cutoff, "applied": cutoff is not None,
+             "permitted_through": permitted_through(version, cutoff)}
+    if replay:
+        block["source"] = "replay session"
+        block["replay"] = replay
+    return block
 
 
 def group_version_for(conn: psycopg.Connection, data_version: str, through: date | None = None) -> dict | None:

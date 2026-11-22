@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend.app.db import GROUPS_AFTER_CUTOFF, cutoff_block, get_conn, group_version_for, permitted_through, \
     resolve_version
+from backend.app.db import request_cutoff
 from backend.app.labels import envelope
 
 router = APIRouter(tags=["routes"])
@@ -28,7 +29,7 @@ HAS_SERVICE = ["available", "insufficient_observations"]  # service scheduled (o
 @router.get("/api/routes")
 def list_routes(
     data_version: str | None = None,
-    cutoff: date | None = Query(None, description="use only service dates on or before this date"),
+    cutoff: date | None = Depends(request_cutoff),
     group_id: int | None = Query(None, ge=0, description="only routes in this group"),
     ungrouped: bool | None = Query(None, description="true: routes in the group population left ungrouped (with a "
                                                      "reason); false: grouped routes. Routes outside the population "

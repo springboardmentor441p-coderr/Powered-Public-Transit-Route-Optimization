@@ -24,6 +24,7 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend.app.db import cutoff_block, get_conn, permitted_through, resolve_version
+from backend.app.db import request_cutoff
 from backend.app.labels import LABELS, UNITS, envelope, reason_words
 
 router = APIRouter(tags=["routes"])
@@ -75,7 +76,7 @@ def route_history(
                                                                   "(replay mode arrives with Stage 7)"),
     start: date | None = Query(None, description="default: the start of the analysis window (dated schedules)"),
     end: date | None = Query(None, description="default: the last permitted date"),
-    cutoff: date | None = Query(None, description="use only service dates on or before this date"),
+    cutoff: date | None = Depends(request_cutoff),
     data_version: str | None = None,
     conn: psycopg.Connection = Depends(get_conn),
 ) -> dict:

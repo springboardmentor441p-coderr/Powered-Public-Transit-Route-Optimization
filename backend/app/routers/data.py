@@ -14,6 +14,7 @@ import psycopg
 from fastapi import APIRouter, Depends, Query
 
 from backend.app.db import cutoff_block, get_conn, permitted_through, resolve_version
+from backend.app.db import request_cutoff
 from backend.app.labels import LABELS, envelope, reason_words
 
 router = APIRouter(tags=["data"])
@@ -45,7 +46,7 @@ def _worded(rows: list[dict]) -> list[dict]:
 
 @router.get("/api/data/coverage")
 def coverage(data_version: str | None = None,
-             cutoff: date | None = Query(None, description="use only service dates on or before this date"),
+             cutoff: date | None = Depends(request_cutoff),
              conn: psycopg.Connection = Depends(get_conn)) -> dict:
     v = resolve_version(conn, data_version)
     through = permitted_through(v, cutoff)

@@ -6,7 +6,8 @@ then open http://127.0.0.1:8000/docs
 """
 from fastapi import FastAPI
 
-from backend.app.routers import compare, data, groups, history, maps, models, network, rankings, replays, routes
+from backend.app.routers import (compare, data, forecasts, groups, history, maps, models, network, rankings, replays,
+                                 routes)
 
 app = FastAPI(title="RouteRanker API", version="0.6.0",
               description="Historical analysis of CTA bus routes (spec 3.8, section 9). Read-only in Stage 6.")
@@ -20,6 +21,7 @@ app.include_router(maps.router)
 app.include_router(network.router)
 app.include_router(models.router)
 app.include_router(replays.router)
+app.include_router(forecasts.router)
 
 
 @app.get("/api/health")

@@ -26,6 +26,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from analytics.groups.profiles import schedule_with_daytype, utilization_profiles
 from backend.app.db import (GROUPS_AFTER_CUTOFF, cutoff_block, get_conn, group_version_for, permitted_matched,
                             permitted_schedule, permitted_through, resolve_version)
+from backend.app.db import request_cutoff
 from backend.app.labels import UNITS, envelope
 from backend.app.routers.history import STARTS_AFTER_CUTOFF
 from backend.importer.import_data import REPO_ROOT
@@ -108,7 +109,7 @@ def rankings(
                                                          f"({REFERENCE_GATE})"),
     group_id: int | None = Query(None, ge=0, description="rank only within this route group"),
     geometry_version: str | None = Query(None, description="route_overlap_review only (default: Stage 5's)"),
-    cutoff: date | None = Query(None, description="use only service dates on or before this date"),
+    cutoff: date | None = Depends(request_cutoff),
     data_version: str | None = None,
     conn: psycopg.Connection = Depends(get_conn),
 ) -> dict:
