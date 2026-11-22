@@ -1605,3 +1605,22 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - 23 replay-mode tests, with a session on 5 Jun: 18 endpoint scans with no ISO date after 5 Jun anywhere, the replay day appearing only as itself or as today's forecast target, no actual for an unrevealed day, a client cutoff refused, a later range clipped, and rankings counted on revealed days only.
   - All 136 existing backend tests still pass (historical mode unchanged).
 - **Interview Q:** *"Could a user edit the URL to see July in a June replay?"* No. With a session in the request, the date comes from the stored session, a cutoff parameter alongside it is refused, and longer ranges are clipped in SQL. Removing the session switches to historical analysis, which is a different, labelled mode.
+
+## Step 92: Forecast review and replay rankings (`GET /api/forecasts/review?session=`)
+- **Built:** for a replay session, from stored forecasts and **revealed** rides only (SQL `<=` revealed-through):
+  - **Running error, day by day:** cumulative MAE and WAPE of the model against the 4-week average on the same route-days, plus each day's own MAE and row count.
+  - **Coverage:** route-days forecast, unavailable, forecast but with no actual, and scored.
+  - **Yesterday:** each route's forecast, baseline and actual for the most recently revealed day.
+  - **The spec's forecast demand/service review (9.12):** for the replay day, predicted rides per scheduled trip and per scheduled hour, ranked with ties sharing a rank, and labelled "a candidate for planner inspection". Unavailable rows are listed with their reason, never 0.
+  - **Largest misses so far:** per-route MAE over revealed days, ranked only at ≥ 20 scored days (the same gate as the other rankings). Every other route is listed with "fewer than 20 scored days (n)".
+- **Why:** spec 9.14.2 says to compare each revealed outcome with its saved forecast and append it to the chart. Spec 9.12 names the forecast demand/service review as its own indicator.
+- **Key concept:** *score only what the clock has revealed*. The same SQL boundary that hides later rides from the screens also limits the scoring. On day 1 nothing is scored and no route is ranked on misses; the page shows that rather than a 0.
+- **Decisions:**
+  - Your "routes where forecasts missed most" is kept as a separately labelled error table, next to the spec's review (which is about predicted demand vs planned service, not error).
+  - Replay rankings need no new code: the existing rankings recompute from revealed rows through the session cutoff (Step 91).
+- **Results:** 5 review tests pass on `routeranker_test`:
+  - day 1: nothing scored, nothing ranked;
+  - after a week: the running MAE equals an independent SQL computation;
+  - at the end: 6,542 route-days, MAE **398.0115** and **421.1546**, exactly Stage 4a's test scores, now reproduced through the API;
+  - review ordering and reasons are correct, and the review needs a session.
+- **Interview Q:** *"Why does the running error at the end equal the offline test MAE?"* Because the replay stored exactly the forecasts the offline evaluation scored, on the same route-days. The replay doesn't create a new experiment; it plays the same one back one day at a time.
