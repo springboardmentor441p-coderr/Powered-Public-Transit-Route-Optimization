@@ -4,7 +4,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { api, buildUrl } from '../api/client'
-import { useCutoff } from '../api/cutoff'
+import { useRequestScope } from '../api/cutoff'
 import type { GroupsResponse, RankingRow, RouteRow, ServiceStatus, TrendResponse } from '../api/types'
 import { useApi, type ApiState } from '../api/useApi'
 import { AsyncBlock } from '../components/AsyncBlock'
@@ -134,7 +134,7 @@ function RouteTable({ demand, hour, routes }: { demand: RankingRow[]; hour: Rank
 
 // ---- the page ------------------------------------------------------------------------------------------------------
 export function StartPage() {
-  const cutoff = useCutoff()
+  const scope = useRequestScope()
   const [full, setFull] = useState(false)
   const coverage = useApi(o => api.coverage(o), 'coverage')
   const routes = useApi(o => api.routes({}, o), 'routes')
@@ -146,7 +146,7 @@ export function StartPage() {
   const first = coverage.status === 'ok' ? coverage.data.observations.first_date : null
   const trendStart = full && first ? first : undefined
   const trend = useApi(o => api.trend({ start: trendStart }, o), `trend:${trendStart ?? 'window'}`)
-  const trendRequest = buildUrl('/api/network/trend', { start: trendStart }, { cutoff })
+  const trendRequest = buildUrl('/api/network/trend', { start: trendStart }, scope)
 
   const groupOf = routes.status === 'ok' ? new Map(routes.data.routes.map(r => [r.route, r.group_id])) : new Map<string, number | null>()
   const gData = groups.status === 'ok' ? groups.data : null

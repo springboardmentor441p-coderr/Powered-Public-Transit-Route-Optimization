@@ -1,15 +1,15 @@
 // The one place the frontend talks to the API. Every call goes to /api/... on the same origin; Vite's proxy
 // forwards it to uvicorn, so the backend needs no CORS.
 //
-// Cutoff: every function takes optional { cutoff, dataVersion }. Stage 6 passes no cutoff (historical
-// analysis). Stage 7's replay will pass one, and the BACKEND then hides every date after it in SQL; the client
-// only forwards it, it never filters data itself.
+// Scope: every function takes optional { cutoff, session, dataVersion }. Historical analysis passes neither cutoff nor
+// session. Replay passes the session id only: the BACKEND takes the cutoff from the stored session and hides every
+// later date in SQL. The client never sends a replay date and never filters data itself.
 import type {
-  CompareResponse, Coverage, DayType, ModelsResponse, GroupsResponse, HistoryResponse, MapLinesResponse, OverlapResponse,
+  CompareResponse, Coverage, DayType, ForecastsResponse, ModelsResponse, ReplayState, ReviewResponse, GroupsResponse, HistoryResponse, MapLinesResponse, OverlapResponse,
   PeriodName, RankingMetric, RankingResponse, RoutesResponse, TrendResponse,
 } from './types'
 
-export type ApiOptions = { cutoff?: string | null; dataVersion?: string | null; signal?: AbortSignal }
+export type ApiOptions = { cutoff?: string | null; session?: string | null; dataVersion?: string | null; signal?: AbortSignal }
 type Params = Record<string, string | number | boolean | null | undefined>
 
 /** An API failure, carrying FastAPI's own message (e.g. "compare needs 2 to 8 routes, got 1"). */
@@ -23,11 +23,12 @@ export class ApiError extends Error {
   }
 }
 
-/** Build "/api/...?..." : null/undefined params are left out; cutoff and data_version are added only when set. */
+/** Build "/api/...?..." : null/undefined params are left out; cutoff, session and data_version only when set. */
 export function buildUrl(path: string, params: Params = {}, opts: ApiOptions = {}): string {
   const q = new URLSearchParams()
   for (const [k, v] of Object.entries(params)) if (v !== null && v !== undefined && v !== '') q.set(k, String(v))
   if (opts.cutoff) q.set('cutoff', opts.cutoff)
+  if (opts.session) q.set('session', opts.session)
   if (opts.dataVersion) q.set('data_version', opts.dataVersion)
   const s = q.toString()
   return s ? `${path}?${s}` : path
@@ -105,4 +106,37 @@ export const api = {
   /** Network map: default 10 m display simplification. Route detail and Compare pass simplify_m: 0 (exact). */
   mapLines: (q: { geometry_version?: string; date?: string; routes?: string[]; simplify_m?: number } = {}, o?: ApiOptions) =>
     apiGet<MapLinesResponse>('/api/map/lines', { ...q, routes: q.routes?.join(',') }, o),
+
+  /** Stored forecasts. In replay (session), only days already reached; the actual only once revealed. */
+  forecasts: (q: { route?: string; start?: string; end?: string; method?: string } = {}, o?: ApiOptions) =>
+    apiGet<ForecastsResponse>('/api/forecasts', q, o),
+
+  /** Replay only: running error, yesterday, the forecast review and the largest misses (revealed days). */
+  review: (o?: ApiOptions) => apiGet<ReviewResponse>('/api/forecasts/review', {}, o),
+}
+
+// ---- replay sessions (the server owns the clock; these calls never carry a cutoff)
+export type ReplayAction = 'start' | 'pause' | 'advance' | 'next_week' | 'jump_to_end' | 'select_date' | 'set_speed' | 'reset'
+
+export async function apiSend<T>(method: 'POST', path: string, body: unknown, signal?: AbortSignal): Promise<T> {
+  let res: Response
+  try {
+    res = await fetch(path, { method, signal, headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+                              body: JSON.stringify(body) })
+  } catch (e) {
+    if ((e as Error).name === 'AbortError') throw e
+    throw new ApiError(0, 'the API is not reachable (is uvicorn running on 127.0.0.1:8000?)', path)
+  }
+  let data: unknown = null
+  try { data = await res.json() } catch (e) { if ((e as Error).name === 'AbortError') throw e }
+  if (!res.ok) throw new ApiError(res.status, errorMessage(data, res.status), path)
+  if (data == null) throw new ApiError(res.status, 'the API answered with no data', path)
+  return data as T
+}
+
+export const replay = {
+  create: (body: { start_date?: string; speed_seconds?: number } = {}) => apiSend<ReplayState>('POST', '/api/replays', body),
+  get: (id: string, signal?: AbortSignal) => apiGet<ReplayState>(`/api/replays/${encodeURIComponent(id)}`, {}, { signal }),
+  control: (id: string, action: ReplayAction, extra: { days?: number; to?: string; speed_seconds?: number; start_date?: string } = {}) =>
+    apiSend<ReplayState>('POST', `/api/replays/${encodeURIComponent(id)}/control`, { action, ...extra }),
 }

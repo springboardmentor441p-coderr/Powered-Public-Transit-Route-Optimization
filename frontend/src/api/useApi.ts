@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { ApiOptions } from './client'
-import { useCutoff } from './cutoff'
+import { useRequestScope } from './cutoff'
 
 export type ApiState<T> =
   | { status: 'loading' }
@@ -17,11 +17,12 @@ export function settle<T>(p: Promise<T>, signal: AbortSignal, set: (s: ApiState<
   )
 }
 
-/** Run an API call for a component: loading -> ok | error, with retry. The cutoff from CutoffContext is passed
- *  to every call, and an older request is aborted when the inputs change (so a slow answer can never
- *  overwrite a newer one). `key` must change whenever the request changes. */
+/** Run an API call for a component: loading -> ok | error, with retry. The request scope (historical, or a replay
+ *  session) is passed to every call, and the call is repeated whenever the replay reveals a day. An older request
+ *  is aborted when the inputs change (so a slow answer can never overwrite a newer one). `key` must change whenever
+ *  the request itself changes. */
 export function useApi<T>(call: (o: ApiOptions) => Promise<T>, key: string): ApiState<T> & { retry: () => void } {
-  const cutoff = useCutoff()
+  const scope = useRequestScope()
   const [state, setState] = useState<ApiState<T>>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
   const retry = useCallback(() => setAttempt(a => a + 1), [])
@@ -29,11 +30,11 @@ export function useApi<T>(call: (o: ApiOptions) => Promise<T>, key: string): Api
   useEffect(() => {
     const ctrl = new AbortController()
     setState({ status: 'loading' })
-    settle(call({ cutoff, signal: ctrl.signal }), ctrl.signal, setState)
+    settle(call({ cutoff: scope.cutoff, session: scope.session, signal: ctrl.signal }), ctrl.signal, setState)
     return () => ctrl.abort()
-    // `call` is a new function each render; `key` (plus cutoff and attempt) says when the request really changed
+    // `call` is a new function each render; `key` (plus the scope and attempt) says when the request really changed
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, cutoff, attempt])
+  }, [key, scope.cutoff, scope.session, scope.tick, attempt])
 
   return { ...state, retry }
 }

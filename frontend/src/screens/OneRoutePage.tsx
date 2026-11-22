@@ -4,10 +4,11 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, buildUrl } from '../api/client'
-import { useCutoff } from '../api/cutoff'
+import { useRequestScope } from '../api/cutoff'
 import type { DayType, HistoryDay, HistoryResponse, PeriodName, RankingMetric, RankingResponse, RouteRow } from '../api/types'
 import { useApi, type ApiState } from '../api/useApi'
 import { AsyncBlock } from '../components/AsyncBlock'
+import { ForecastPanel } from '../components/ForecastPanel'
 import { MapCaption } from '../components/MapCaption'
 import { Panel, SectionHead } from '../components/Panel'
 import { Num, type ProvenanceInfo } from '../components/Provenance'
@@ -82,7 +83,7 @@ function RoutePicker({ s }: { s: ApiState<{ routes: RouteRow[] }> & { retry: () 
 }
 
 function RouteBody({ route, info }: { route: string; info: RouteRow | undefined }) {
-  const cutoff = useCutoff()
+  const scope = useRequestScope()
   const [daytype, setDaytype] = useState<DayType>('W')
   const [full, setFull] = useState(false)
   const coverage = useApi(o => api.coverage(o), 'coverage')
@@ -104,7 +105,7 @@ function RouteBody({ route, info }: { route: string; info: RouteRow | undefined 
   const ranksOk = [...METRIC_ORDER.map(m => fullRank[m]), ...METRIC_ORDER.map(m => devRank[m])]
   const allRanks = ranksOk.every(s => s.status === 'ok')
   const rankData = (by: typeof fullRank, m: RankingMetric) => (by[m] as { data: RankingResponse }).data
-  const request = (m: RankingMetric) => buildUrl('/api/rankings', { metric: m, period: 'full_matched_window', daytype }, { cutoff })
+  const request = (m: RankingMetric) => buildUrl('/api/rankings', { metric: m, period: 'full_matched_window', daytype }, scope)
 
   return (
     <div>
@@ -124,6 +125,8 @@ function RouteBody({ route, info }: { route: string; info: RouteRow | undefined 
         <RouteInsight route={route} h={windowHistory.data} daytype={daytype}
                       ranks={Object.fromEntries(METRIC_ORDER.map(m => [m, rankData(fullRank, m)])) as Record<RankingMetric, RankingResponse>} />
       )}
+
+      <div className="mt-6"><ForecastPanel route={route} /></div>
 
       <SectionHead title="Ranks on three measures" note="Rank 1 is the highest value among all routes on the chosen day type, in the full matched window." />
       <p className="mb-3 text-sm">

@@ -4,7 +4,7 @@
 import type { ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api, buildUrl } from '../api/client'
-import { useCutoff } from '../api/cutoff'
+import { useRequestScope } from '../api/cutoff'
 import type { CompareResponse, CompareRoute, DayType, PeriodName, RankingMetric } from '../api/types'
 import { useApi } from '../api/useApi'
 import { AsyncBlock } from '../components/AsyncBlock'
@@ -95,12 +95,12 @@ export function ComparePage() {
 }
 
 function CompareBody({ c, groupOf, onSameDays }: { c: CompareResponse; groupOf: Map<string, number | null>; onSameDays: () => void }) {
-  const cutoff = useCutoff()
+  const scope = useRequestScope()
   const coverage = useApi(o => api.coverage(o), 'coverage')
   const dash = routeDashes(c.routes.map(r => r.route))
   const applied = coverage.status === 'ok' ? archiveRange(coverage.data.archives, c.map.geometry_version) : null
   const request = buildUrl('/api/routes/compare', { routes: c.routes.map(r => r.route).join(','), daytype: c.daytype, period: c.period.name,
-                                                   same_days: c.same_days || undefined }, { cutoff })
+                                                   same_days: c.same_days || undefined }, scope)
   const prov = (r: CompareRoute, m: RankingMetric): ProvenanceInfo => {
     const ind = r.indicators?.[m]
     return {

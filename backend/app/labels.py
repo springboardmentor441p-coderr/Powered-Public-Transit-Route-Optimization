@@ -40,6 +40,13 @@ def reason_words(code: str | None) -> str | None:
     return None if code is None else REASON_WORDS.get(code, code.replace("_", " "))
 
 
+REPLAY_MODE, REPLAY_MODE_LABEL = "historical_replay", "Historical replay"
+
+
 def envelope(version: dict, cutoff: dict, **body) -> dict:
-    """Every response says which data version, which mode, and which cutoff it describes."""
-    return {"data_version": version["data_version"], "mode": MODE, "mode_label": MODE_LABEL, "cutoff": cutoff, **body}
+    """Every response says which data version, which mode, and which cutoff it describes. A cutoff that came from a
+    replay session makes the mode "Historical replay" (spec 9.13.1)."""
+    replay = isinstance(cutoff, dict) and cutoff.get("replay")
+    mode, label = (REPLAY_MODE, REPLAY_MODE_LABEL) if replay else (MODE, MODE_LABEL)
+    return {"data_version": version["data_version"], "mode": mode, "mode_label": label, "cutoff": cutoff,
+            **{k: v for k, v in body.items() if k != "mode_label"}}

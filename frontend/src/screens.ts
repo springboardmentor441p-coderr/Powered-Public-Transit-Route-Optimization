@@ -6,5 +6,6 @@ export const TABS = [
   { to: '/alike', label: 'Alike', question: 'Which routes are alike?' },                        // Route groups
   { to: '/shared-stops', label: 'Shared stops', question: 'Which routes share stops?' },        // overlap review
   { to: '/compare', label: 'Compare', question: 'How do these routes differ?' },                 // Compare routes
+  { to: '/replay', label: 'Replay', question: 'How good were the forecasts, day by day?' },        // Forecast and evaluation
   { to: '/data', label: 'Data', question: 'Can I trust these numbers?' },                       // Data and coverage
 ] as const

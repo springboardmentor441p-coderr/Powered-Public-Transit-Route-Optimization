@@ -4,7 +4,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, buildUrl } from '../api/client'
-import { useCutoff } from '../api/cutoff'
+import { useRequestScope, type RequestScope } from '../api/cutoff'
 import type { DayType, OverlapResponse, PeriodName, RankingMetric, RankingResponse, RankingRow, RouteRow } from '../api/types'
 import { useApi, type ApiState } from '../api/useApi'
 import { AsyncBlock } from '../components/AsyncBlock'
@@ -44,7 +44,7 @@ const allOk = <T,>(states: ApiState<T>[]): states is { status: 'ok'; data: T }[]
 
 // ---- the page --------------------------------------------------------------------------------------------------------
 export function CloserLookPage() {
-  const cutoff = useCutoff()
+  const scope = useRequestScope()
   const [view, setView] = useState<View>('rides_per_scheduled_hour')
   const [daytype, setDaytype] = useState<DayType>('W')
   const [period, setPeriod] = useState<PeriodName>('full_matched_window')
@@ -130,7 +130,7 @@ export function CloserLookPage() {
       {view === OVERLAP
         ? <OverlapView s={overlap} lowestFirst={lowestFirst} routeInfo={routeInfo} />
         : <RankingView view={view} shown={shown} full={full} dev={dev} lowestFirst={lowestFirst}
-                       routeInfo={routeInfo} cutoff={cutoff} q={q} period={period} />}
+                       routeInfo={routeInfo} scope={scope} q={q} period={period} />}
     </div>
   )
 }
@@ -150,9 +150,9 @@ function OrderChoice({ lowestFirst, onChange }: { lowestFirst: boolean; onChange
 // ---- rankings ------------------------------------------------------------------------------------------------------
 type ByMetric = Record<RankingMetric, ApiState<RankingResponse> & { retry: () => void }>
 
-function RankingView({ view, shown, full, dev, lowestFirst, routeInfo, cutoff, q, period }: {
+function RankingView({ view, shown, full, dev, lowestFirst, routeInfo, scope, q, period }: {
   view: RankingMetric; shown: ByMetric; full: ByMetric; dev: ByMetric; lowestFirst: boolean
-  routeInfo: Map<string, RouteRow>; cutoff: string | null; q: Query; period: PeriodName
+  routeInfo: Map<string, RouteRow>; scope: RequestScope; q: Query; period: PeriodName
 }) {
   const [all, setAll] = useState(false)
   const states = [...METRIC_ORDER.map(m => shown[m]), ...METRIC_ORDER.map(m => full[m]), ...METRIC_ORDER.map(m => dev[m])]
@@ -169,7 +169,7 @@ function RankingView({ view, shown, full, dev, lowestFirst, routeInfo, cutoff, q
   const ranked = orderRanked(main.rows, lowestFirst)
   const unranked = main.rows.filter(r => r.rank == null)
   const visible = all ? ranked : ranked.slice(0, PAGE_ROWS)
-  const request = (m: RankingMetric) => buildUrl('/api/rankings', { metric: m, period, ...q }, { cutoff })
+  const request = (m: RankingMetric) => buildUrl('/api/rankings', { metric: m, period, ...q }, scope)
 
   const prov = (m: RankingMetric, r: RankingRow | undefined, route: string): ProvenanceInfo =>
     rankingProvenance(data(shown, m), r, route, request(m))

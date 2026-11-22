@@ -8,8 +8,11 @@ export type RankingMetric = 'observed_daily_demand' | 'rides_per_scheduled_trip'
 export type Metric = RankingMetric | 'route_overlap_review'
 export type PeriodName = 'full_matched_window' | 'development'
 
-export type CutoffBlock = { requested: ISODate | null; applied: boolean; permitted_through: ISODate }
-export type Envelope = { data_version: string; mode: 'historical_analysis'; mode_label: string; cutoff: CutoffBlock }
+export type CutoffBlock = {
+  requested: ISODate | null; applied: boolean; permitted_through: ISODate | null
+  source?: 'replay session'; replay?: ReplayBlock          // present only when the cutoff came from a replay session
+}
+export type Envelope = { data_version: string; mode: 'historical_analysis' | 'historical_replay'; mode_label: string; cutoff: CutoffBlock }
 
 export type Units = {
   rides: string; scheduled_trips: string; scheduled_service_hours: string
@@ -244,3 +247,59 @@ export type ModelsResponse = Envelope & (
       withheld: { validation: { reason: string; rows: number }[]; test: { reason: string; rows: number }[] }
     }
 )
+
+// ---- Stage 7: replay sessions (GET/POST /api/replays)
+export type ReplayState = {
+  session_id: string; parent_session_id: string | null; mode: 'historical_replay'; mode_label: string
+  status: 'paused' | 'playing' | 'complete'; complete: boolean
+  start_date: ISODate; final_date: ISODate; virtual_date: ISODate | null; revealed_through: ISODate
+  days_revealed: number; days_total: number; speed_seconds: number
+  reporting_delay_days: number; delay_assumption: string; delay_note: string
+  run: { run_id: string; data_version: string; model_version: string; model_sha256: string; issue_time_rule: string
+         first_target: ISODate; last_target: ISODate }
+  model: { label: string; trained_through: ISODate; chosen_on: [ISODate, ISODate]; frozen_note: string; retrained_in_replay: boolean }
+}
+export type ReplayBlock = { session_id: string; mode_label: string; complete: boolean; virtual_date: ISODate | null
+                            revealed_through: ISODate; reporting_delay_days: number }
+
+// ---- GET /api/forecasts
+export type ForecastRow = {
+  route: string; target_date: ISODate; method: string; label: string; issued_at: string
+  prediction: number | null; units: string; status: 'forecast' | 'unavailable'; unavailable_reason: string | null
+  fallback_reason: string | null; latest_available_ride_date: ISODate; input_schedule_snapshot: string
+  scheduled_trips: number; scheduled_hours: number | null
+  forecast_rides_per_scheduled_trip: number | null; forecast_rides_per_scheduled_hour: number | null
+  model_version: string; model_sha256: string; data_version: string; reporting_delay_days: number
+  actual: { rides: number | null; revealed: boolean; reason: string | null }
+  session: { session_id: string; virtual_date: ISODate | null } | null
+}
+export type ForecastsResponse = Envelope & {
+  range: { start: ISODate; end: ISODate }; count: number; forecasts: ForecastRow[]
+  run: { run_id: string; model_version: string; model_sha256: string; issue_time_rule: string; reporting_delay_days: number }
+}
+
+// ---- GET /api/forecasts/review
+export type RunningPoint = {
+  date: ISODate; rows_scored: number; day_rows_scored: number; day_model_mae: number; day_baseline_mae: number
+  model_mae: number; baseline_mae: number; model_wape_percent: number; baseline_wape_percent: number
+}
+export type ReviewRow = {
+  route: string; status: 'forecast' | 'unavailable'; predicted_rides: number | null; scheduled_trips: number
+  scheduled_hours: number | null; predicted_rides_per_scheduled_trip: number | null
+  predicted_rides_per_scheduled_hour: number | null; rank_per_hour: number | null; rank_per_trip: number | null
+  reason: string | null; input_schedule_snapshot: string
+}
+export type MissRow = { route: string; scored_days: number; model_mae: number | null; baseline_mae: number | null
+                        model_wape_percent: number | null; rank: number | null; reason: string | null }
+export type ReviewResponse = Envelope & {
+  units: string
+  model: { method: string; label: string; model_version: string; model_sha256: string }
+  baseline: { method: string; label: string }
+  coverage: { route_days_forecast: number; route_days_unavailable: number; route_days_without_actual: number
+              route_days_scored: number; days_revealed: number }
+  running: RunningPoint[]
+  yesterday: { route: string; status: string; prediction: number | null; baseline: number | null; rides: number | null
+               error: number | null }[]
+  review: { meaning: string; date: ISODate | null; rows: ReviewRow[]; counts: { routes: number; ranked: number } }
+  misses: { meaning: string; gate: number; gate_label: string; rows: MissRow[]; counts: { routes: number; ranked: number } }
+}

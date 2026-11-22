@@ -1624,3 +1624,33 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - at the end: 6,542 route-days, MAE **398.0115** and **421.1546**, exactly Stage 4a's test scores, now reproduced through the API;
   - review ordering and reasons are correct, and the review needs a session.
 - **Interview Q:** *"Why does the running error at the end equal the offline test MAE?"* Because the replay stored exactly the forecasts the offline evaluation scored, on the same route-days. The replay doesn't create a new experiment; it plays the same one back one day at a time.
+
+## Step 93: Replay screens (mode switch, controls, Replay screen, forecast panel)
+- **Built:**
+  - **Top bar:** "Historical analysis | Historical replay", the spec's mode labels. In replay a bar below it shows:
+    - "Replay day: 9 Jun 2026 · data revealed to 8 Jun 2026";
+    - the delay assumption with its note, and day n of 61 with a progress line;
+    - Play/Pause, speed (1 day every 1/2/5/10 s), Next day, Next week, a later date to move to, Jump to end and Reset.
+  - **`ReplayProvider`:** keeps the session id in localStorage (a refresh returns to the same session) and polls once a second while playing. It gives every screen its request scope: nothing in historical mode, the session id in replay. `useApi` refetches whenever a day is revealed.
+  - **Replay screen** (`/replay`, "How good were the forecasts, day by day?"):
+    - an insight sentence computed from the review (average miss vs the 4-week average, and days the model was better);
+    - the model facts (version, sha256, trained to, chosen on, frozen);
+    - the running-error chart (solid model, dashed baseline);
+    - today's forecasts against planned service (the spec's review);
+    - yesterday's forecast against its actual, largest misses first;
+    - the largest misses so far, gated at 20 scored days.
+  - **Forecast panel on One route** (spec 9.16.3):
+    - replay: predicted daily rides, scheduled trips and trip-hours, forecast rides per scheduled trip, and the issue context; a chart of recorded rides (solid, revealed only), predicted rides (dashed) and the 4-week average (dotted), with today marked "actual not yet revealed"; an "Advance one day" button.
+    - historical: a short note that forecasts are shown in replay.
+  - **API envelope:** `mode_label` is "Historical replay" whenever the cutoff came from a session.
+- **Why:** spec 9.16.1 says to keep the virtual date, playback state and delay assumption visible in replay, and spec 9.19.2 says every displayed forecast needs its model version, target date, issue context and status.
+- **Key concept:** *one scope for every request*. The screens didn't change how they ask for data. Only the scope each request carries changed (nothing, or a session id), and the scope also triggers the refetch. That's why all seven existing screens work in replay without screen-by-screen changes.
+- **Decisions:**
+  - The provider shows no screen while a stored replay is being restored, so the full historical period never flashes up first.
+  - Route signs on the Replay screen get their real groups, so colour still means the group.
+- **Results:**
+  - tsc, lint, vitest (107 tests, 6 new for `lib/replay.ts`) and build pass.
+  - The historical click-through passes on the new code (7/7).
+  - The Replay screen at 9 Jun reports honestly that over the first 8 days the model's average miss (415.5) was 3.5 % higher than the 4-week average's (401.5).
+  - Screenshot fixes: the assumption sentence started lowercase; a "have a forecast" count used ranked rows; "issued issued"; an ISO time instead of a date.
+- **Interview Q:** *"The model loses for the first week. Is something broken?"* No. The running error is noisy early on, and over all of June–July the model ends up 5.5 % better. Showing the early loss is the point: the replay reports what happened day by day, not just the final number.

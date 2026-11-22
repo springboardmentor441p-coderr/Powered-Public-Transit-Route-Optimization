@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { TABS } from '../screens'
 import { Drawer } from './Drawer'
 import { PageBoundary } from './PageBoundary'
+import { ModeSwitch, ReplayBar } from './ReplayBar'
 
 /** The page frame: a slate top bar with the tabs, the mode in plain words, the data status and a Sources
  *  drawer (data details). No sidebar: the page gets the full width for tables and maps.
@@ -15,7 +16,8 @@ export function TopBar({ modeLabel, dataThrough, sources }: {
   const { pathname } = useLocation()
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-[1100] bg-brand text-brand-text [--focus-ring:#FFFFFF]">
+      <div className="sticky top-0 z-[1100]">
+      <header className="bg-brand text-brand-text [--focus-ring:#FFFFFF]">
         <div className="mx-auto flex min-h-12 max-w-[1440px] flex-wrap items-stretch gap-x-5 px-6">
           <NavLink to="/" className="flex items-center text-md font-bold tracking-tight text-white no-underline">
             RouteRanker
@@ -31,16 +33,16 @@ export function TopBar({ modeLabel, dataThrough, sources }: {
             ))}
           </nav>
           <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-x-4 gap-y-1 py-2 text-sm">
-            <span className="whitespace-nowrap" title="Replay is not available yet" aria-disabled="true">
-              <span className="text-white">{modeLabel}</span>
-              <span className="hidden text-xs xl:inline"> · Replay: not available yet</span>
-            </span>
+            <ModeSwitch />
+            <span className="sr-only">Mode: {modeLabel}</span>
             <span className="whitespace-nowrap">Data to <span className="num text-white">{dataThrough}</span></span>
             <button type="button" onClick={() => setOpen(true)} aria-expanded={open}
                     className="h-7 whitespace-nowrap border border-brand-text px-2.5 text-sm text-white hover:bg-white/10">Sources</button>
           </div>
         </div>
       </header>
+      <ReplayBar />
+      </div>
       <main className="mx-auto max-w-[1440px] px-6 pb-12 pt-6"><PageBoundary key={pathname}><Outlet /></PageBoundary></main>
       {open && <Drawer eyebrow="Data details" title="Where every number comes from" onClose={() => setOpen(false)}>{sources}</Drawer>}
     </div>
