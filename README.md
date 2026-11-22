@@ -13,8 +13,15 @@ named ranking indicators, historical replay and service scenarios. The work foll
 | 4a. Baselines, Ridge, Random Forest | 6 methods on identical rows; selected `rf_demand` (validation MAE 345.47 vs seasonal mean 360.36) | complete | `reports/stage4a_quality_report.md` |
 | 4b. Neural networks (an additional modelling experiment) | MLP, LSTM, GRU, 1D CNN on 28-day sequences, early stopping on the last three training weeks; all ten methods on the identical rows | complete: every network loses to `rf_demand` and to the seasonal-mean baseline (best network `gru`, 364.86); serving unchanged | `reports/stage4b_quality_report.md` |
 | 5. Route groups and ranking | development-period route profiles, KMeans groups, three named rankings (demand, rides per trip, rides per hour) and route stop overlap | complete: 2 named groups (67 + 56 routes; silhouette 0.38, moderate separation); rankings for the full matched window and the development period, ties preserved, unranked rows kept with reasons; overlap for 8 timetable versions (corridor review only) | `reports/stage5_quality_report.md` |
+| 6. Application foundation | PostgreSQL import, a read-only FastAPI (9 endpoints, one cutoff rule enforced in SQL) and 7 React screens (Start, Closer look, One route, Alike, Shared stops, Compare, Data) | complete, historical-analysis mode only: 277 backend and 101 frontend tests pass; every screen reached by clicking and checked at 1366 and 1920 px. Replay (Stage 7) and Scenarios (Stage 8) come later | `reports/stage6_import_report.md`, `reports/stage6_application_report.md` |
 
 The step-by-step log of decisions is in `NOTES.md`. The test period (June-July 2026) is a reused holdout, not an untouched test.
+
+### Supported dates and model cutoffs (data version `cta_ref__r20261113__gtfs8__to20260731`)
+- Recorded rides: 2001-01-01 to 2026-07-31. Dated schedules (and every ratio): 2025-11-23 to 2026-07-31, from 8 timetable archives.
+- Forecast models: trained to 2026-03-31, chosen on validation (2026-04-01 to 2026-05-31), scored once on 2026-06-01 to 2026-07-31.
+- Route groups: fitted on 2025-11-23 to 2026-03-31, then frozen.
+- The app runs in historical-analysis mode. Every endpoint takes an optional `cutoff`. Results built from later data (groups, the model card) are hidden under an earlier cutoff, with the reason.
 
 ## Setup (Windows CMD, Python 3.12)
 ```
@@ -61,11 +68,50 @@ python -I analytics\groups\build_stage5.py --features data\processed\cta_ref__r2
 ```
 The build stops if the frozen groups differ from the named memberships. The full-window ranking includes June-July 2026, so it is a historical-analysis table, not a replay view.
 
+**Stage 6: application (database, API, screens)**
+
+One-time database setup:
+- PostgreSQL 17, a `routeranker` role (not a superuser) and two databases, `routeranker` and `routeranker_test`.
+- Copy `backend\.env.example` to `backend\.env` (gitignored) and put the role's own password in it.
+
+Build the route lines, then import the data version (the import refuses a version that is already imported):
+```
+python -I analytics\geometry\build_geometry.py --sources analytics\config\sources.json --register data\raw\source_register.csv --version-dir data\processed\cta_ref__r20261113__gtfs8__to20260731
+python -I backend\importer\import_data.py --create-schema
+```
+On a database that already has the schema, import a new version with `--version-dir data\processed\<data_version>` instead of `--create-schema`.
+
+Start the app in two CMD windows, both from the repo root:
+```
+:: window 1, the API (http://127.0.0.1:8000, docs at /docs)
+.venv\Scripts\activate
+python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+
+:: window 2, the screens (http://localhost:5173)
+cd frontend
+npm ci
+npm run dev
+```
+`npm ci` is only needed the first time, or after `package-lock.json` changes. Vite forwards `/api` to the API, so open http://localhost:5173.
+
 **Tests**
 ```
 python -m pytest
 ```
-The integration tests skip until the stage they check has been run.
+The integration tests skip until the stage they check has been run. The API tests use `routeranker_test`.
+
+Frontend checks (from `frontend\`):
+```
+npx tsc -b
+npm run lint
+npx vitest run
+npm run build
+```
+Optional layout and navigation checks, with both servers running (Playwright, dev-only; run `npx playwright install chromium` once first):
+```
+node scripts\clickthrough.mjs
+node scripts\screens.mjs <output folder> / /closer-look /route/22 /alike /shared-stops /compare?routes=49,X49 /data
+```
 
 ## Layout
 `data/` raw + processed (gitignored) · `analytics/` pipeline code · `artifacts/` fitted models · `backend/` FastAPI · `frontend/` React · `reports/` quality and evaluation reports

@@ -1486,3 +1486,16 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - The limitations name what couldn't be reproduced (the 10-second Data page load) rather than claiming it's solved.
 - **Results:** the report is committed; the presentation note is confirmed ignored by git (`docs-private/`).
 - **Interview Q:** *"What would you tell a reviewer first?"* What the app can't do yet and where its numbers are weakest: the reused test period, the two timetables and the unreproduced slow load. Trust comes from showing limits before someone finds them.
+
+## Step 85: README: Stage 6 status row, supported dates, run commands
+- **Built:**
+  - a Stage 6 row in the README status table;
+  - a "Supported dates and model cutoffs" section: rides 2001-01-01 to 2026-07-31, schedules from 2025-11-23, models trained to 2026-03-31 and tested Jun–Jul 2026, groups fitted to 2026-03-31;
+  - the Stage 6 commands: geometry build, import, the two CMD windows for API and screens, and the frontend and Playwright checks.
+- **Why:** spec 9.18 asks the README to record model cutoffs and supported dates, and a fresh setup must be runnable from the README alone (Stage 9's evidence).
+- **Key concept:** *a README is a runbook*. Someone new should get from an empty machine to a running app by following it top to bottom, without asking.
+- **Decisions:**
+  - The commands use `data\raw\source_register.csv`, like the other stages. (The geometry script's docstring names `reports\source_register.csv`; the two files are byte-identical.)
+  - Replay assumptions are left for Stage 7, where they come into existence.
+- **Results:** the README now covers Stages 1–6. The spec was read from `docs-private/spec_v3.8.txt` (47 pages), extracted with pypdf in a separate tools environment outside the project.
+- **Interview Q:** *"Why record supported dates in the README?"* Every number in the app depends on them. A reader must know the data stops at 2026-07-31 and the models never saw data after 2026-05-31 when choosing a method, so nobody reads a result as covering more than it does.
