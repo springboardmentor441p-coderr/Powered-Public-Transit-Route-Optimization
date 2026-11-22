@@ -1469,3 +1469,20 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - Dates are protected, so 2026-03-31 never turns into an en dash.
 - **Results:** groups tests pass (12, 1 new for `prose`). Rendered text: "≥ 5 routes", "13–60 vs 24–51", ticks "0 | 15 | 30 | 45 | 60", no grey-ring text with nothing ungrouped plotted.
 - **Interview Q:** *"Why change typography in the API rather than the page?"* The same caveats can appear on several screens or in an export. Fixing them once at the source keeps every reader consistent, while the stored text stays as it was approved.
+
+## Step 84: Stage 6 completion evidence (`reports/stage6_application_report.md`)
+- **Built:**
+  - The Stage 6 application report:
+    - what the stage delivers;
+    - a walkthrough of all seven screens (question, real example, endpoints);
+    - how the cutoff is enforced;
+    - test counts (277 backend, 101 frontend, 7/7 click-throughs, 18/18 screenshots);
+    - an honest limitations section.
+  - A one-page presentation note with 8 likely questions, kept in `docs-private/` and never committed.
+- **Why:** a stage is finished when someone else can check it. The report lets a reviewer verify each claim against the app without reading the code.
+- **Key concept:** *evidence, not adjectives*. Every number in the report was read from the API on the same data version the screens use (route 22: #11, #6, #24; 49 vs X49: 13,767 vs 3,976 rides/day; 120 & 121: 17 of 18/20 shared stops; random forest 345.5 vs 4-week average 360.4). Nothing was copied from memory.
+- **Decisions:**
+  - The numbers were gathered by calling the endpoints in-process (FastAPI's test client, read-only), because the servers weren't running.
+  - The limitations name what couldn't be reproduced (the 10-second Data page load) rather than claiming it's solved.
+- **Results:** the report is committed; the presentation note is confirmed ignored by git (`docs-private/`).
+- **Interview Q:** *"What would you tell a reviewer first?"* What the app can't do yet and where its numbers are weakest: the reused test period, the two timetables and the unreproduced slow load. Trust comes from showing limits before someone finds them.
