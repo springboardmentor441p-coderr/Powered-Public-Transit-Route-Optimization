@@ -1499,3 +1499,13 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - Replay assumptions are left for Stage 7, where they come into existence.
 - **Results:** the README now covers Stages 1–6. The spec was read from `docs-private/spec_v3.8.txt` (47 pages), extracted with pypdf in a separate tools environment outside the project.
 - **Interview Q:** *"Why record supported dates in the README?"* Every number in the app depends on them. A reader must know the data stops at 2026-07-31 and the models never saw data after 2026-05-31 when choosing a method, so nobody reads a result as covering more than it does.
+
+## Step 86: Stage 6 report: cross-check against Stage 5
+- **Built:** section 5 of `reports/stage6_application_report.md`. All 18 rankings (2 periods × 3 day types × 3 measures) from the API on the main database were compared row by row (route, rank, value) with `reports/stage5_rankings.csv`. Every one is identical. Group sizes (67 / 56 / 5 ungrouped) and the 703 overlap pairs also match the Stage 5 files.
+- **Why:** the Stage 6 plan asked the report to show that the import and the API reproduce Stage 5 exactly (125 / 92 / 86 ranked by rides per scheduled hour on W / A / U).
+- **Key concept:** *compare at the precision of the source*. The first run said "NO" everywhere because the file stores values to 6 decimals while the API sends full precision. That was a bug in my check, not in the data. Comparing within half a unit of the 6th decimal, every row matches.
+- **Decisions:**
+  - The report explains the one surprising number: no Saturday ranks in the development period, because ~18 Saturdays fall below the 20-day gate. This is the same in Stage 5.
+  - The report names the existing tests that already do this on the test database.
+- **Results:** 18 of 18 rankings identical; groups and overlap counts identical.
+- **Interview Q:** *"Your check failed at first. How did you know it was the check, not the data?"* The counts all matched and every combination failed at once, so the difference was systematic. Looking at one row showed 34.169471 vs 34.169471279…, which is rounding in the file. A real data bug would hit some rows, not all, and would usually change a rank.

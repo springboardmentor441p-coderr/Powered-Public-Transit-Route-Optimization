@@ -191,7 +191,39 @@ Notable tests:
 - a cancelled or late answer can never become a screen's data;
 - the natural route order (1, 2 … 8, 8A, 9, 12, then J14, N5, X49).
 
-## 5. Limitations
+## 5. Cross-check against Stage 5
+
+The API computes rankings live, from the imported rows, by calling Stage 5's own ranking function. To show that the
+import and the API changed nothing, every ranking was compared with the committed Stage 5 output
+`reports/stage5_rankings.csv`. The comparison covered 2 periods × 3 day types × 3 measures = 18 rankings, row by row
+(route, rank, value). Values were compared at the file's own precision of 6 decimals.
+
+| Period | Day type | Routes | Ranked (Stage 5 file = API), each of the 3 measures | Rows identical |
+|---|---|---|---|---|
+| Full matched window | Weekday | 125 | 125 | yes (3 of 3 measures) |
+| Full matched window | Saturday | 125 | 92 | yes (3 of 3) |
+| Full matched window | Sunday/holiday | 125 | 86 | yes (3 of 3) |
+| Development period | Weekday | 123 | 123 | yes (3 of 3) |
+| Development period | Saturday | 123 | 0 | yes (3 of 3) |
+| Development period | Sunday/holiday | 123 | 86 | yes (3 of 3) |
+
+- **The headline numbers match the Stage 5 report.** For the reference period (full matched window), the routes
+  ranked by rides per scheduled hour are 125 on weekdays, 92 on Saturdays and 86 on Sundays and holidays. The
+  unranked rows also match: on Saturdays 30 routes have no scheduled service and 3 have fewer than 20 observed days;
+  on Sundays and holidays it's 36 and 3.
+- **No Saturday ranks in the development period.** The development period (23 Nov 2025 – 31 Mar 2026) has only about
+  18 Saturdays, below the 20-day gate, so no route has enough observed Saturdays. This is the same in Stage 5. Every
+  route is still listed, with its reason.
+- **Route groups:** Group 0 has 67 routes, Group 1 has 56, and 5 are ungrouped, both from the API and in
+  `route_group_membership.csv`.
+- **Route overlap review:** 703 pairs for the default timetable `mdb-389-202603260020`, both from the API and in
+  `route_stop_overlap.csv`.
+- **Also in the tests (on the test database):** `test_api_rankings.py` checks every period, day type and measure
+  against the Stage 5 file (`test_rankings_equal_stage5_for_every_period_daytype_and_metric`), checks the overlap
+  review against Stage 5 (`test_overlap_review_equals_stage5`), and checks that a cutoff ranking equals a
+  recomputation on the cut rows. The table above repeats the ranking comparison on the main database the app uses.
+
+## 6. Limitations
 
 - **The Data page was slow once.** Its top section took about 10 seconds to appear once in the project owner's
   browser, after clicking through from another screen. In repeated measurements the coverage request takes about
