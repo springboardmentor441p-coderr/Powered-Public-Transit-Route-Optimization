@@ -1509,3 +1509,16 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - The report names the existing tests that already do this on the test database.
 - **Results:** 18 of 18 rankings identical; groups and overlap counts identical.
 - **Interview Q:** *"Your check failed at first. How did you know it was the check, not the data?"* The counts all matched and every combination failed at once, so the difference was systematic. Looking at one row showed 34.169471 vs 34.169471279…, which is rounding in the file. A real data bug would hit some rows, not all, and would usually change a rank.
+
+## Step 87: Alike shows the group version and the groups file's checksum
+- **Built:** under Method on `/alike`:
+  - the group version (`…/groups__dev20251123_20260331`);
+  - the groups file: artifact version `stage5-1.0.0`, its sha256 (first 12 characters, full value on hover) and the commit that built it;
+  - one line saying what the checksum identifies.
+- **Why:** the Stage 6 plan lists the group version and artifact sha on the Route groups screen, so a reviewer can tie what they see to one exact saved file.
+- **Key concept:** *a checksum is a fingerprint*. If even one byte of the groups file changed, the sha256 would be completely different. Showing it lets anyone confirm the screen's groups came from the file that was evaluated.
+- **Decisions:**
+  - The full hash goes on hover, so the panel stays readable.
+  - The values come from `/api/route-groups` as sent. The shown hash equals `sha256(artifacts/stage5/route_groups.joblib)` = `33d2d42a9b77…`.
+- **Results:** tsc, lint, vitest (101 tests) and build pass. No screenshot this time, because the API wasn't running.
+- **Interview Q:** *"Why show a hash to a planner?"* Most planners won't use it, but an auditor will. It costs one quiet line and turns "trust me" into something anyone can check.

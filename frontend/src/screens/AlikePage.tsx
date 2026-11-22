@@ -126,6 +126,14 @@ function AlikeBody({ g }: { g: Ok }) {
             <div><dt className="inline text-ink-2">Profile period: </dt><dd className="inline">{fmtRange(g.profile_period.start, g.profile_period.end)}: {g.profile_period.note}</dd></div>
             <div><dt className="inline text-ink-2">Values shown: </dt><dd className="inline">{g.route_values_note}</dd></div>
           </dl>
+          <dl className="mt-3 space-y-1 border-t border-rule pt-2 text-xs">
+            <div><dt className="inline text-ink-2">Group version: </dt><dd className="inline num break-all">{g.group_version}</dd></div>
+            <div><dt className="inline text-ink-2">Groups file: </dt>
+              <dd className="inline num">{g.artifact_version} · sha256{' '}
+                <span title={g.artifact_sha256} className="cursor-help border-b border-dotted border-ink-2">{g.artifact_sha256.slice(0, 12)}…</span>
+                {' '}· built by commit {g.built_git_commit}</dd></div>
+          </dl>
+          <p className="mt-1 text-xs text-ink-2">The checksum identifies the exact saved groups file these memberships come from. Hover it for the full value.</p>
         </Panel>
         <Panel title={`Caveats (${g.caveats.length})`}>
           <ol className="list-decimal space-y-1.5 pl-5 text-sm">{g.caveats.map(c => <li key={c}>{c}</li>)}</ol>
