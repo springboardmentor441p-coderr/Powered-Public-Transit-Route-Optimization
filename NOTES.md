@@ -1681,3 +1681,22 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - 8 forecast-integrity tests, 23 replay-mode tests, 5 review tests, 8 session tests and 8 clock tests pass.
   - Replay click-through: 20 of 20 checks at 1366 and 1920. No screen shows a date after the revealed day, and the completion message appears.
 - **Interview Q:** *"How would you convince a sceptical reviewer there's no leakage?"* Change the future and show the past forecasts don't move: bit-for-bit, by hash. Then show they do move when their own inputs change. A test that can't fail proves nothing.
+
+## Step 95: Stage 7 evidence (`reports/stage7_replay_report.md`, README replay section)
+- **Built:**
+  - **The report:** a requirement → evidence table (R1–R33, each with its spec reference and the test or file that proves it), a demo walkthrough with real numbers, the leakage test, the consistency check, test counts and limitations.
+  - **README:** the Stage 7 row in the status table, the two commands (`import_stage7.py`, `build_forecasts.py`), the replay assumptions and supported dates (spec 9.18 asks the README to record them), and the replay click-through command.
+  - **The mentor page:** written to `docs-private/` and never committed.
+- **Why:** the stage table's evidence is a "June–July updating demo with no future-input access". The report shows the demo and the proof side by side.
+- **Key concept:** *check every sentence against the data before it ships*. Re-reading the draft against the API caught three wrong claims:
+  - the 2 Jun loss wasn't "narrow" (259 vs 219);
+  - after 8 days the model was behind, but after 7 it was ahead;
+  - routes 10 and 130 were unranked for having no scheduled weekday service yet, not for too few days.
+- **Decisions:** the report leads with honest findings, not only the final score:
+  - only 86 of 123 forecasts exist on 1 Jun, because 31 May was a Sunday;
+  - the model wins on only 29 of 61 days, yet is 5.5 % better overall.
+- **Results:**
+  - backend: 329 passed (277 + 52 new) in 11 min;
+  - frontend: vitest (107 tests), tsc, lint and build pass;
+  - the replay click-through passes 20 of 20, and the historical click-through 7 of 7.
+- **Interview Q:** *"What's the strongest single piece of evidence?"* The leakage test. Change every future ride and the past forecasts stay bit-identical, while forecasts that do use those rides move. That shows future data can't reach a forecast, not just that the code was written not to use it.

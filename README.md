@@ -14,6 +14,7 @@ named ranking indicators, historical replay and service scenarios. The work foll
 | 4b. Neural networks (an additional modelling experiment) | MLP, LSTM, GRU, 1D CNN on 28-day sequences, early stopping on the last three training weeks; all ten methods on the identical rows | complete: every network loses to `rf_demand` and to the seasonal-mean baseline (best network `gru`, 364.86); serving unchanged | `reports/stage4b_quality_report.md` |
 | 5. Route groups and ranking | development-period route profiles, KMeans groups, three named rankings (demand, rides per trip, rides per hour) and route stop overlap | complete: 2 named groups (67 + 56 routes; silhouette 0.38, moderate separation); rankings for the full matched window and the development period, ties preserved, unranked rows kept with reasons; overlap for 8 timetable versions (corridor review only) | `reports/stage5_quality_report.md` |
 | 6. Application foundation | PostgreSQL import, a read-only FastAPI (9 endpoints, one cutoff rule enforced in SQL) and 7 React screens (Start, Closer look, One route, Alike, Shared stops, Compare, Data) | complete, historical-analysis mode only: 277 backend and 101 frontend tests pass; every screen reached by clicking and checked at 1366 and 1920 px. Replay (Stage 7) and Scenarios (Stage 8) come later | `reports/stage6_import_report.md`, `reports/stage6_application_report.md` |
+| 7. Replay | a server-side virtual clock over June–July 2026, forecasts stored before each day is revealed, every screen limited to revealed data, a Replay screen and a forecast panel | complete: stored forecasts reproduce Stage 4a's test MAE exactly (398.0 vs 421.2 for the 4-week average, on 6,542 route-days); changing every later ride leaves earlier forecasts bit-identical | `reports/stage7_replay_report.md` |
 
 The step-by-step log of decisions is in `NOTES.md`. The test period (June-July 2026) is a reused holdout, not an untouched test.
 
@@ -94,11 +95,27 @@ npm run dev
 ```
 `npm ci` is only needed the first time, or after `package-lock.json` changes. Vite forwards `/api` to the API, so open http://localhost:5173.
 
+**Stage 7: historical replay (needs Stage 6's import)**
+
+Add the replay tables and forecast targets, then store every June–July forecast. Each day is issued from rides through the day before, and the build checks the stored forecasts against Stage 4a's test scores:
+```
+python -I backend\importer\import_stage7.py
+python -I backend\replay\build_forecasts.py
+```
+Both are safe to repeat: the import refuses a second load, and the build stores nothing new and re-verifies every stored row (a difference stops it). Restart the API after this step. In the app, switch the top bar to **Historical replay**.
+
+Replay assumptions and supported dates:
+- Replay days: 1 Jun 2026 to 31 Jul 2026; a session can start on any of them.
+- Reporting delay: on replay day D, rides through D-1 are available. This is a stated demonstration assumption, not a verified public-feed capability. Only a 1-day delay is supported, because the frozen model was built for it.
+- Each forecast uses the timetable captured strictly before its day (for example, 11 Jul uses the 30 May archive).
+- Model: the frozen random forest on ride history (`stage4a-1.0.0`), trained to 2026-03-31 and chosen on April–May. It is never retrained in the replay. The 4-week average is stored alongside it for comparison only.
+- Route groups stay frozen at their 23 Nov 2025 – 31 Mar 2026 profile period.
+
 **Tests**
 ```
 python -m pytest
 ```
-The integration tests skip until the stage they check has been run. The API tests use `routeranker_test`.
+The integration tests skip until the stage they check has been run. The API tests use `routeranker_test` (the Stage 7 tests install the replay tables there themselves).
 
 Frontend checks (from `frontend\`):
 ```
@@ -111,6 +128,10 @@ Optional layout and navigation checks, with both servers running (Playwright, de
 ```
 node scripts\clickthrough.mjs
 node scripts\screens.mjs <output folder> / /closer-look /route/22 /alike /shared-stops /compare?routes=49,X49 /data
+```
+The replay click-through (switch to replay, reveal a day and a week, check every screen, jump to the end):
+```
+node scripts\replay_check.mjs <output folder>
 ```
 
 ## Layout
