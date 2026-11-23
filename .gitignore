@@ -1,12 +1,26 @@
-# Python virtual environment
+# Python virtual environments & bytecode
 .venv/
+venv/
 __pycache__/
 *.pyc
+*.pyo
 
-# Local Jupyter checkpoints
+# Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# Data files (Do not push heavy GTFS ZIPs or raw CSVs to GitHub)
+# Raw & Processed Datasets (Keep repository lightweight)
 data/raw/
 data/processed/
+
+# Model Binaries (rf_demand_model.pkl is 568 MB - exceeds GitHub 100 MB limit)
 backend/models/*.pkl
+
+# Frontend dependencies & build outputs
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.vite-temp/
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
