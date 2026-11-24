@@ -1,0 +1,46 @@
+sl_no,item,unit,period,value,period_label
+1,Total Fleet,count,2024_2025,3407.0,FY 2024-2025
+2,Average Age of Bus,years,2024_2025,7.43,FY 2024-2025
+3,New Buses Put on Road,count,2024_2025,715.0,FY 2024-2025
+4,Scheduled Services,count,2024_2025,3233.0,FY 2024-2025
+5,Effective Kms (in Lakhs),lakh_km,2024_2025,2635.25,FY 2024-2025
+6,Km / Bus / Day,km,2024_2025,253.0,FY 2024-2025
+7,% of Fleet Utilization,percentage,2024_2025,83.94,FY 2024-2025
+8,Km Efficiency %,percentage,2024_2025,83.29,FY 2024-2025
+9,% of Occupancy,percentage,2024_2025,71.22,FY 2024-2025
+10,Passenger / Day (in Lakhs),lakh_passengers,2024_2025,32.24,FY 2024-2025
+11,Breakdowns,count,2024_2025,35.0,FY 2024-2025
+12,B.D. / 10000 KMS,rate,2024_2025,0.001,FY 2024-2025
+13,ACCT / 100000 KM,rate,2024_2025,0.56,FY 2024-2025
+14,Tyre Life in KM,km,2024_2025,291961.0,FY 2024-2025
+15,Men / Bus (for Fleet),ratio,2024_2025,5.87,FY 2024-2025
+1,Total Fleet,count,2025_2026,4060.0,FY 2025-2026
+2,Average Age of Bus,years,2025_2026,5.07,FY 2025-2026
+3,New Buses Put on Road,count,2025_2026,1347.0,FY 2025-2026
+4,Scheduled Services,count,2025_2026,3783.0,FY 2025-2026
+5,Effective Kms (in Lakhs),lakh_km,2025_2026,2802.45,FY 2025-2026
+6,Km / Bus / Day,km,2025_2026,252.0,FY 2025-2026
+7,% of Fleet Utilization,percentage,2025_2026,83.77,FY 2025-2026
+8,Km Efficiency %,percentage,2025_2026,87.77,FY 2025-2026
+9,% of Occupancy,percentage,2025_2026,77.34,FY 2025-2026
+10,Passenger / Day (in Lakhs),lakh_passengers,2025_2026,34.0,FY 2025-2026
+11,Breakdowns,count,2025_2026,34.0,FY 2025-2026
+12,B.D. / 10000 KMS,rate,2025_2026,0.001,FY 2025-2026
+13,ACCT / 100000 KM,rate,2025_2026,0.48,FY 2025-2026
+14,Tyre Life in KM,km,2025_2026,279144.0,FY 2025-2026
+15,Men / Bus (for Fleet),ratio,2025_2026,5.18,FY 2025-2026
+1,Total Fleet,count,2026_2027_oct,4206.0,FY 2026-2027 (Through Oct)
+2,Average Age of Bus,years,2026_2027_oct,5.08,FY 2026-2027 (Through Oct)
+3,New Buses Put on Road,count,2026_2027_oct,111.0,FY 2026-2027 (Through Oct)
+4,Scheduled Services,count,2026_2027_oct,3988.0,FY 2026-2027 (Through Oct)
+5,Effective Kms (in Lakhs),lakh_km,2026_2027_oct,1603.06,FY 2026-2027 (Through Oct)
+6,Km / Bus / Day,km,2026_2027_oct,252.0,FY 2026-2027 (Through Oct)
+7,% of Fleet Utilization,percentage,2026_2027_oct,84.85,FY 2026-2027 (Through Oct)
+8,Km Efficiency %,percentage,2026_2027_oct,89.55,FY 2026-2027 (Through Oct)
+9,% of Occupancy,percentage,2026_2027_oct,68.39,FY 2026-2027 (Through Oct)
+10,Passenger / Day (in Lakhs),lakh_passengers,2026_2027_oct,34.4,FY 2026-2027 (Through Oct)
+11,Breakdowns,count,2026_2027_oct,17.0,FY 2026-2027 (Through Oct)
+12,B.D. / 10000 KMS,rate,2026_2027_oct,0.001,FY 2026-2027 (Through Oct)
+13,ACCT / 100000 KM,rate,2026_2027_oct,0.46,FY 2026-2027 (Through Oct)
+14,Tyre Life in KM,km,2026_2027_oct,273661.0,FY 2026-2027 (Through Oct)
+15,Men / Bus (for Fleet),ratio,2026_2027_oct,5.17,FY 2026-2027 (Through Oct)

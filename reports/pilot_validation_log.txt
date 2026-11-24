@@ -1,0 +1,79 @@
+[2026-11-17 10:34:02] --- START pilot run ---
+[2026-11-17 10:34:03] Loaded GTFS: routes(4611), trips(47047), stops(5580), stop_times(1360443)
+[2026-11-17 10:34:03] Loaded project CSVs: route_cluster_assignments(4611), bus_frequency_analysis(3934)
+[2026-11-17 10:34:03] Active routes (from bus_frequency_analysis): 3934
+[2026-11-17 10:34:03] Filtered route_cluster_assignments to active routes: 3934 rows
+[2026-11-17 10:34:03] No duplicate route_id after filtering
+[2026-11-17 10:34:07] Graph built: 5580 nodes, 11139 edges
+[2026-11-17 10:34:07] Connected components: 105
+[2026-11-17 10:34:07] Isolated nodes: 103
+[2026-11-17 10:34:08] Built route‑stop map for 3934 routes
+[2026-11-17 10:34:08] Pilot subset: 200 routes
+[2026-11-17 10:34:08] adj_sparse dtype: float64
+[2026-11-17 10:34:08] adj_sparse indices dtype: int32
+[2026-11-17 10:34:08] adj_sparse indptr dtype: int32
+[2026-11-17 10:34:08] Sparse adjacency matrix constructed (CSR) via to_scipy_sparse_array with int32 indices
+[2026-11-17 10:34:08] Adjacency shape: (5580, 5580), nnz: 22278
+[2026-11-17 10:34:09] SpectralEmbedding dim=8 succeeded, shape=(5580, 8), time=0.66s
+[2026-11-17 10:34:09] SpectralEmbedding dim=16 succeeded, shape=(5580, 16), time=0.71s
+[2026-11-17 10:34:10] SpectralEmbedding dim=32 succeeded, shape=(5580, 32), time=0.87s
+[2026-11-17 10:34:10] Computed route embeddings for dim=8: 200 routes
+[2026-11-17 10:34:10] Computed route embeddings for dim=16: 200 routes
+[2026-11-17 10:34:10] Computed route embeddings for dim=32: 200 routes
+[2026-11-17 10:34:10] Imputed 869 missing values in weekday_headway_min with median=65.0
+[2026-11-17 10:34:10] Imputed 869 missing values in weekend_headway_min with median=65.0
+[2026-11-17 10:34:10] Clustering pilot: dim=8, agg=unweighted, routes=200
+[2026-11-17 10:34:12] KMeans k=2, dim=8, agg=unweighted: silhouette=0.2926
+[2026-11-17 10:34:12] KMeans k=3, dim=8, agg=unweighted: silhouette=0.4450
+[2026-11-17 10:34:12] KMeans k=4, dim=8, agg=unweighted: silhouette=0.2188
+[2026-11-17 10:34:12] KMeans k=5, dim=8, agg=unweighted: silhouette=0.4711
+[2026-11-17 10:34:12] GMM k=2, dim=8, agg=unweighted: silhouette=0.1435
+[2026-11-17 10:34:12] GMM k=3, dim=8, agg=unweighted: silhouette=0.1745
+[2026-11-17 10:34:12] GMM k=4, dim=8, agg=unweighted: silhouette=0.2097
+[2026-11-17 10:34:12] GMM k=5, dim=8, agg=unweighted: silhouette=0.1787
+[2026-11-17 10:34:12] Clustering pilot: dim=8, agg=weighted, routes=200
+[2026-11-17 10:34:12] KMeans k=2, dim=8, agg=weighted: silhouette=0.4833
+[2026-11-17 10:34:13] KMeans k=3, dim=8, agg=weighted: silhouette=0.2444
+[2026-11-17 10:34:13] KMeans k=4, dim=8, agg=weighted: silhouette=0.2939
+[2026-11-17 10:34:13] KMeans k=5, dim=8, agg=weighted: silhouette=0.4856
+[2026-11-17 10:34:13] GMM k=2, dim=8, agg=weighted: silhouette=0.1975
+[2026-11-17 10:34:13] GMM k=3, dim=8, agg=weighted: silhouette=0.1549
+[2026-11-17 10:34:13] GMM k=4, dim=8, agg=weighted: silhouette=0.2037
+[2026-11-17 10:34:13] GMM k=5, dim=8, agg=weighted: silhouette=0.1948
+[2026-11-17 10:34:13] Clustering pilot: dim=16, agg=unweighted, routes=200
+[2026-11-17 10:34:13] KMeans k=2, dim=16, agg=unweighted: silhouette=0.7855
+[2026-11-17 10:34:13] KMeans k=3, dim=16, agg=unweighted: silhouette=0.2791
+[2026-11-17 10:34:13] KMeans k=4, dim=16, agg=unweighted: silhouette=0.1932
+[2026-11-17 10:34:13] KMeans k=5, dim=16, agg=unweighted: silhouette=0.1840
+[2026-11-17 10:34:13] GMM k=2, dim=16, agg=unweighted: silhouette=0.4877
+[2026-11-17 10:34:13] GMM k=3, dim=16, agg=unweighted: silhouette=0.1457
+[2026-11-17 10:34:13] GMM k=4, dim=16, agg=unweighted: silhouette=0.1500
+[2026-11-17 10:34:13] GMM k=5, dim=16, agg=unweighted: silhouette=0.1839
+[2026-11-17 10:34:13] Clustering pilot: dim=16, agg=weighted, routes=200
+[2026-11-17 10:34:13] KMeans k=2, dim=16, agg=weighted: silhouette=0.8045
+[2026-11-17 10:34:13] KMeans k=3, dim=16, agg=weighted: silhouette=0.1306
+[2026-11-17 10:34:13] KMeans k=4, dim=16, agg=weighted: silhouette=0.3036
+[2026-11-17 10:34:13] KMeans k=5, dim=16, agg=weighted: silhouette=0.1699
+[2026-11-17 10:34:13] GMM k=2, dim=16, agg=weighted: silhouette=0.5600
+[2026-11-17 10:34:13] GMM k=3, dim=16, agg=weighted: silhouette=0.1335
+[2026-11-17 10:34:14] GMM k=4, dim=16, agg=weighted: silhouette=0.1367
+[2026-11-17 10:34:14] GMM k=5, dim=16, agg=weighted: silhouette=0.1915
+[2026-11-17 10:34:14] Clustering pilot: dim=32, agg=unweighted, routes=200
+[2026-11-17 10:34:14] KMeans k=2, dim=32, agg=unweighted: silhouette=0.3224
+[2026-11-17 10:34:14] KMeans k=3, dim=32, agg=unweighted: silhouette=0.2687
+[2026-11-17 10:34:14] KMeans k=4, dim=32, agg=unweighted: silhouette=0.2780
+[2026-11-17 10:34:14] KMeans k=5, dim=32, agg=unweighted: silhouette=0.1824
+[2026-11-17 10:34:14] GMM k=2, dim=32, agg=unweighted: silhouette=0.2237
+[2026-11-17 10:34:14] GMM k=3, dim=32, agg=unweighted: silhouette=0.2687
+[2026-11-17 10:34:14] GMM k=4, dim=32, agg=unweighted: silhouette=0.2780
+[2026-11-17 10:34:14] GMM k=5, dim=32, agg=unweighted: silhouette=0.1824
+[2026-11-17 10:34:14] Clustering pilot: dim=32, agg=weighted, routes=200
+[2026-11-17 10:34:14] KMeans k=2, dim=32, agg=weighted: silhouette=0.3563
+[2026-11-17 10:34:14] KMeans k=3, dim=32, agg=weighted: silhouette=0.2451
+[2026-11-17 10:34:14] KMeans k=4, dim=32, agg=weighted: silhouette=0.2562
+[2026-11-17 10:34:14] KMeans k=5, dim=32, agg=weighted: silhouette=0.2446
+[2026-11-17 10:34:14] GMM k=2, dim=32, agg=weighted: silhouette=0.1966
+[2026-11-17 10:34:14] GMM k=3, dim=32, agg=weighted: silhouette=0.2411
+[2026-11-17 10:34:14] GMM k=4, dim=32, agg=weighted: silhouette=0.2521
+[2026-11-17 10:34:14] GMM k=5, dim=32, agg=weighted: silhouette=0.1473
+[2026-11-17 10:34:14] --- END pilot run (total 11.91s) ---

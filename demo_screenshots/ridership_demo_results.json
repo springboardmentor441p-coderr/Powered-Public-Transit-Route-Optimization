@@ -1,0 +1,216 @@
+[
+  {
+    "slug": "01_executive_overview",
+    "label": "Executive Overview",
+    "status": "PASS",
+    "title": "Chennai MTC Network Executive Dashboard",
+    "metricCards": [
+      "ACTIVE ROUTES: 3,934",
+      "HIGH FREQUENCY: 176",
+      "LONG SERVICE GAPS: 2,431",
+      "SINGLE-TRIP LINES: 869",
+      "SUPPLY OUTLIERS: 197"
+    ],
+    "charts": 4,
+    "tables": 2,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\01_executive_overview.png"
+  },
+  {
+    "slug": "02_routeranker_explorer",
+    "label": "RouteRanker Explorer",
+    "status": "PASS",
+    "title": "Chennai MTC Network Executive Dashboard",
+    "metricCards": [
+      "ACTIVE ROUTES: 3,934",
+      "HIGH FREQUENCY: 176",
+      "LONG SERVICE GAPS: 2,431",
+      "SINGLE-TRIP LINES: 869",
+      "SUPPLY OUTLIERS: 197"
+    ],
+    "charts": 4,
+    "tables": 2,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\02_routeranker_explorer.png"
+  },
+  {
+    "slug": "03_compare_routes",
+    "label": "Compare Routes",
+    "status": "PASS",
+    "title": "Compare Routes",
+    "metricCards": [
+      "91 (ID: 24072): Rank #1",
+      "29A (ID: 18751): Rank #138"
+    ],
+    "charts": 2,
+    "tables": 1,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\03_compare_routes.png"
+  },
+  {
+    "slug": "04_frequency_optimizer",
+    "label": "Frequency Optimizer",
+    "status": "PASS",
+    "title": "Frequency Optimizer & Policy Simulation",
+    "metricCards": [
+      "NETWORK MEDIAN HEADWAY: 65m",
+      "PEAK INTRA-WINDOW: 31.5m",
+      "OFF-PEAK INTRA-WINDOW: 40m",
+      "OPTIMIZATION NEED: 1,518",
+      "EST. ADDITIONAL TRIPS: +14,486"
+    ],
+    "charts": 6,
+    "tables": 2,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\04_frequency_optimizer.png"
+  },
+  {
+    "slug": "05_supply_anomaly_inspector",
+    "label": "Supply Anomaly Inspector",
+    "status": "PASS",
+    "title": "Supply-Side Anomaly Inspector",
+    "metricCards": [
+      "ANALYZED LINES: 3,934",
+      "TIER 1: SEVERE: 41",
+      "TIER 2: MODERATE: 156",
+      "NOMINAL ROUTES: 3,737",
+      "TOP-5% JACCARD: 0.7473",
+      "LOF AGREEMENT: 0.1622",
+      "CLASSIFICATION: Tier 1: Severe Outlier",
+      "ANOMALY SCORE: 1.0000",
+      "SCHEDULED SERVICE: 39 Trips",
+      "ROUTE GEOMETRY: 26.6 km"
+    ],
+    "charts": 4,
+    "tables": 2,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\05_supply_anomaly_inspector.png"
+  },
+  {
+    "slug": "06_network_map_explorer",
+    "label": "Network Map Explorer",
+    "status": "PASS",
+    "title": "Network Spatial & Trajectory Map",
+    "metricCards": [
+      "TOTAL STOPS: 5,580",
+      "ROUTES LOADED: 4,611",
+      "CLUSTER: High\u2011frequency core trunk"
+    ],
+    "charts": 2,
+    "tables": 0,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\06_network_map_explorer.png"
+  },
+  {
+    "slug": "07_route_groups_explorer",
+    "label": "Interactive Route Groups Explorer",
+    "status": "PASS",
+    "title": "Route Groups Explorer",
+    "metricCards": [
+      ": ",
+      ": ",
+      ": ",
+      "STOP COUNT: 29",
+      "ROUTE LENGTH: 32.61 km",
+      "WEEKDAY TRIPS: 1",
+      "HEADWAY: Undefined (Single-Trip)"
+    ],
+    "charts": 2,
+    "tables": 1,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\07_route_groups_explorer.png"
+  },
+  {
+    "slug": "08_scenario_simulator",
+    "label": "Scenario Simulator",
+    "status": "PASS",
+    "title": "Scenario Simulator",
+    "metricCards": [
+      "DAILY TRIP VOLUME: 168,747",
+      "VEHICLE-TRIP DEMAND: +121700",
+      "MEAN SCHEDULED HEADWAY: 9.9 min",
+      "IMPACTED LINES: 2888"
+    ],
+    "charts": 4,
+    "tables": 1,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\08_scenario_simulator.png"
+  },
+  {
+    "slug": "09_model_evaluation",
+    "label": "Model Evaluation",
+    "status": "PASS",
+    "title": "Model Evaluation & Methodology Audit",
+    "metricCards": [
+      "SILHOUETTE SCORE: 0.4671",
+      "DAVIES-BOULDIN INDEX: 1.0005",
+      "CALINSKI-HARABASZ: 1,060.4",
+      "ACTIVE SEGREGATION: 92.6% / 7.4%",
+      "Jaccard Stability: 0.7473",
+      "Rank Correlation: 0.9812",
+      "LOF Concordance: 0.1622",
+      "Severity Tiers: 41 / 156"
+    ],
+    "charts": 0,
+    "tables": 3,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\09_model_evaluation.png"
+  },
+  {
+    "slug": "10_methodology_audit",
+    "label": "Methodology & Audit",
+    "status": "PASS",
+    "title": "System Methodology & Audit Framework",
+    "metricCards": [],
+    "charts": 0,
+    "tables": 0,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\10_methodology_audit.png"
+  },
+  {
+    "slug": "11_data_backend_status",
+    "label": "Data & Backend Status",
+    "status": "PASS",
+    "title": "Data & Backend Infrastructure Status",
+    "metricCards": [
+      "DATABASE ENGINE: SQLite 3",
+      "CATALOGUED DATASETS: 17",
+      "COLLECTION AUDIT RUNS: 11",
+      "LAST INGEST STATUS: SUCCESS"
+    ],
+    "charts": 0,
+    "tables": 2,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\11_data_backend_status.png"
+  },
+  {
+    "slug": "12_ridership_insights",
+    "label": "Ridership Insights",
+    "status": "PASS",
+    "title": "Official Chennai MTC Ridership Insights",
+    "metricCards": [
+      "FY 2024\u201325 DAILY AVERAGE: 32.24 Lakh",
+      "FY 2025\u201326 DAILY AVERAGE: 34.00 Lakh",
+      "FY 2026\u201327 (THROUGH OCT 2026): 34.58 Lakh"
+    ],
+    "charts": 2,
+    "tables": 2,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\12_ridership_insights.png"
+  },
+  {
+    "slug": "13_historical_data_analysis",
+    "label": "Historical Data Analysis",
+    "status": "PASS",
+    "title": "Official Chennai MTC Ridership Insights",
+    "metricCards": [
+      "FY 2024\u201325 DAILY AVERAGE: 32.24 Lakh",
+      "FY 2025\u201326 DAILY AVERAGE: 34.00 Lakh",
+      "FY 2026\u201327 (THROUGH OCT 2026): 34.58 Lakh"
+    ],
+    "charts": 2,
+    "tables": 2,
+    "exceptions": [],
+    "screenshot": "C:\\Users\\kavyasri\\Downloads\\mtc-gtfs\\demo_screenshots\\13_historical_data_analysis.png"
+  }
+]

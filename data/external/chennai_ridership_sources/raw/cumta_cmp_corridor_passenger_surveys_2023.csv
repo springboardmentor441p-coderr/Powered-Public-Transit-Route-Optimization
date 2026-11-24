@@ -1,0 +1,7 @@
+corridor_id,corridor_name,survey_location,survey_year,daily_bus_passenger_volume_surveyed,peak_hour_bus_passenger_volume,peak_hour_bus_modal_share_pct,primary_mtc_routes_observed,data_source_reference
+CORR-01,Anna Salai (Grand Southern Trunk / NH 45 inner),Guindy / Nandanam Screenline,2023,285000,24500,34.2,"18A, 18D, 18R, 52, 52B, 54, 54V, 21G, A1","CUMTA CMP Report (2023-2048), Chapter 4, Table 4.8 (p. 86)"
+CORR-02,GST Road (Grand Southern Trunk - Guindy to Kilambakkam),Airport / Tambaram Screenline,2023,340000,28200,41.5,"70V, 91, 500, 500B, 500ET, 118, 119, 70A","CUMTA CMP Report (2023-2048), Chapter 4, Table 4.8 (p. 86)"
+CORR-03,Rajiv Gandhi Salai (Old Mahabalipuram Road - OMR IT Corridor),Thiruvanmiyur / Sholinganallur Screenline,2023,220000,19800,31.8,"19B, 102, 102CT, 102P, 570, 570V, 91, 221","CUMTA CMP Report (2023-2048), Chapter 4, Table 4.9 (p. 88)"
+CORR-04,Poonamallee High Road (NH 48 / EVR Periyar Salai),Koyambedu / Maduravoyal Screenline,2023,260000,22100,38.0,"25 R, 53, 53E, 153, 54, 54P, 206","CUMTA CMP Report (2023-2048), Chapter 4, Table 4.9 (p. 88)"
+CORR-05,Jawaharlal Nehru Road (Inner Ring Road / 100 Feet Road),CMBT / Vadapalani Screenline,2023,290000,25600,43.1,"70, 70A, 70V, 170, 170K, 270, 77, 77A","CUMTA CMP Report (2023-2048), Chapter 4, Table 4.10 (p. 91)"
+CORR-06,Grand Northern Trunk Road (GNT Road / NH 16),Madhavaram / Moolakadai Screenline,2023,175000,15400,36.4,"57, 57 R1, 57A, 58, 58G, 157, 158","CUMTA CMP Report (2023-2048), Chapter 4, Table 4.10 (p. 91)"

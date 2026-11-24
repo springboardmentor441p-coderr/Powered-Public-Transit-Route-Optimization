@@ -1,0 +1,132 @@
+[
+  {
+    "slug": "01_executive_overview",
+    "label": "Executive Overview",
+    "status": "PASS",
+    "title": "Chennai MTC Network Executive Dashboard",
+    "tables": 2,
+    "cards": 5,
+    "charts": 2,
+    "exceptions": []
+  },
+  {
+    "slug": "02_routeranker_explorer",
+    "label": "RouteRanker Explorer",
+    "status": "PASS",
+    "title": "RouteRanker Priority Explorer",
+    "tables": 1,
+    "cards": 0,
+    "charts": 1,
+    "exceptions": []
+  },
+  {
+    "slug": "03_compare_routes",
+    "label": "Compare Routes",
+    "status": "PASS",
+    "title": "Compare Routes",
+    "tables": 1,
+    "cards": 2,
+    "charts": 1,
+    "exceptions": []
+  },
+  {
+    "slug": "04_frequency_optimizer",
+    "label": "Frequency Optimizer",
+    "status": "PASS",
+    "title": "Frequency Optimizer & Policy Simulation",
+    "tables": 2,
+    "cards": 5,
+    "charts": 3,
+    "exceptions": []
+  },
+  {
+    "slug": "05_supply_anomaly_inspector",
+    "label": "Supply Anomaly Inspector",
+    "status": "PASS",
+    "title": "Supply-Side Anomaly Inspector",
+    "tables": 2,
+    "cards": 10,
+    "charts": 2,
+    "exceptions": []
+  },
+  {
+    "slug": "06_network_map_explorer",
+    "label": "Network Map Explorer",
+    "status": "PASS",
+    "title": "Network Spatial & Trajectory Map",
+    "tables": 0,
+    "cards": 3,
+    "charts": 1,
+    "exceptions": []
+  },
+  {
+    "slug": "07_route_groups_explorer",
+    "label": "Interactive Route Groups Explorer",
+    "status": "PASS",
+    "title": "Route Groups Explorer",
+    "tables": 1,
+    "cards": 7,
+    "charts": 1,
+    "exceptions": []
+  },
+  {
+    "slug": "08_scenario_simulator",
+    "label": "Scenario Simulator",
+    "status": "PASS",
+    "title": "Scenario Simulator",
+    "tables": 1,
+    "cards": 4,
+    "charts": 2,
+    "exceptions": []
+  },
+  {
+    "slug": "09_model_evaluation",
+    "label": "Model Evaluation",
+    "status": "PASS",
+    "title": "Model Evaluation & Methodology Audit",
+    "tables": 3,
+    "cards": 8,
+    "charts": 0,
+    "exceptions": []
+  },
+  {
+    "slug": "10_methodology_audit",
+    "label": "Methodology & Audit",
+    "status": "PASS",
+    "title": "System Methodology & Audit Framework",
+    "tables": 0,
+    "cards": 0,
+    "charts": 0,
+    "exceptions": []
+  },
+  {
+    "slug": "11_data_backend_status",
+    "label": "Data & Backend Status",
+    "status": "PASS",
+    "title": "Data & Backend Infrastructure Status",
+    "tables": 2,
+    "cards": 4,
+    "charts": 0,
+    "exceptions": []
+  },
+  {
+    "slug": "12_ridership_insights",
+    "label": "Ridership Insights",
+    "status": "PASS",
+    "title": "Official Chennai MTC Ridership Insights",
+    "tables": 1,
+    "cards": 3,
+    "charts": 1,
+    "exceptions": []
+  },
+  {
+    "slug": "13_historical_data_analysis",
+    "label": "Historical Data Analysis",
+    "status": "PASS",
+    "title": "Historical MTC Passenger Statistics & Trend Analysis",
+    "tables": 1,
+    "cards": 4,
+    "charts": 1,
+    "exceptions": []
+  }
+]

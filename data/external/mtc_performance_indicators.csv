@@ -1,0 +1,16 @@
+sl_no,item,unit,2024_2025,2025_2026,2026_2027_oct
+1,Total Fleet,count,3407,4060,4206
+2,Average Age of Bus,years,7.43,5.07,5.08
+3,New Buses Put on Road,count,715,1347,111
+4,Scheduled Services,count,3233,3783,3988
+5,Effective Kms (in Lakhs),lakh_km,2635.25,2802.45,1603.06
+6,Km / Bus / Day,km,253,252,252
+7,% of Fleet Utilization,percentage,83.94,83.77,84.85
+8,Km Efficiency %,percentage,83.29,87.77,89.55
+9,% of Occupancy,percentage,71.22,77.34,68.39
+10,Passenger / Day (in Lakhs),lakh_passengers,32.24,34.00,34.40
+11,Breakdowns,count,35,34,17
+12,B.D. / 10000 KMS,rate,0.001,0.001,0.001
+13,ACCT / 100000 KM,rate,0.56,0.48,0.46
+14,Tyre Life in KM,km,291961,279144,273661
+15,Men / Bus (for Fleet),ratio,5.87,5.18,5.17

@@ -1,0 +1,9 @@
+[2026-11-17 10:08:56] --- START prototype run ---
+[2026-11-17 10:08:59] Loaded GTFS files: routes(4611), trips(47047), stops(5580), stop_times(1360443)
+[2026-11-17 10:08:59] Loaded project CSVs: route_cluster_assignments(4611), bus_frequency_analysis(3934)
+[2026-11-17 10:08:59] Active routes according to bus_frequency_analysis: 3934
+[2026-11-17 10:08:59] Filtered route_cluster_assignments to active routes: 3934 rows
+[2026-11-17 10:08:59] No duplicate route_id entries after filtering.
+[2026-11-17 10:08:59] WARNING: missing values in numeric columns: {'weekday_headway_min': 869, 'weekend_headway_min': 869}
+[2026-11-17 10:08:59] Building stop‑stop graph...
+[2026-11-17 10:09:26] Graph constructed: 5580 nodes, 11139 edges

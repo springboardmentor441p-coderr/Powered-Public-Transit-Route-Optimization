@@ -1,0 +1,33 @@
+task_number,deliverable_name,file_path,file_exists,file_size_bytes,validation_status,issues_found,action_taken
+1,Dataset Inspection Notebook,notebooks/01_dataset_inspection.ipynb,True,94353,VERIFIED,None,No action required
+1,Dataset Inspection Report,reports/module1_dataset_inspection.md,True,6386,VERIFIED,None,No action required
+2,EDA Notebook,notebooks/02_exploratory_data_analysis.ipynb,True,603897,VERIFIED,None,No action required
+2,EDA Report,reports/eda_report.md,True,7968,VERIFIED,None,No action required
+2,EDA Verification,reports/eda_verification.md,True,13221,VERIFIED,None,No action required
+3,Network Construction Notebook,notebooks/03_network_construction.ipynb,True,691808,VERIFIED,None,No action required
+3,Network Construction Report,reports/network_construction_report.md,True,8727,VERIFIED,None,No action required
+3,Network Verification,reports/network_verification.md,True,12300,VERIFIED,None,No action required
+4,Route-Date Matching Notebook,notebooks/04_route_date_matching.ipynb,True,2573,VERIFIED,None,No action required
+4,Route Optimization Notebook,notebooks/04_route_optimization.ipynb,True,247986,VERIFIED,None,No action required
+4,Route Service Matching Report,reports/route_service_matching_report.md,True,582,VERIFIED,None,No action required
+4,Route Optimization Report,reports/route_optimization_report.md,True,8595,VERIFIED,None,No action required
+5,Phase 1 Data Integration Notebook,notebooks/05_phase1_data_integration.ipynb,True,20400,VERIFIED,None,No action required
+5,Phase 1 Feasibility Report,reports/phase1_data_feasibility_report.md,True,16898,VERIFIED,None,No action required
+5,Phase 1 Verification,reports/phase1_verification.md,True,12068,VERIFIED,None,No action required
+6,Route Clustering Notebook,notebooks/06_route_clustering.ipynb,False,0,MISSING,File does not exist in source directory,Document as gap; recreate if data is available
+6,Route Clustering Report,reports/route_clustering_report.md,True,5558,VERIFIED,None,No action required
+6,Route Cluster Assignments CSV,reports/route_cluster_assignments.csv,True,256459,VERIFIED,None,No action required
+7,Explainable Route Ranking Notebook,notebooks/07_explainable_route_ranking.ipynb,True,39082,VERIFIED,None,No action required
+7,Explainable Route Ranking Report,reports/explainable_route_ranking_report.md,True,9170,VERIFIED,None,No action required
+7,Route Ranking Results CSV,reports/route_ranking_results.csv,True,2140675,VERIFIED,None,No action required
+8,Bus Frequency Analysis Notebook,notebooks/08_bus_frequency_analysis.ipynb,True,53199,VERIFIED,None,No action required
+8,Bus Frequency Optimization Report,reports/bus_frequency_optimization_report.md,True,10042,VERIFIED,None,No action required
+8,Bus Frequency Analysis CSV,reports/bus_frequency_analysis.csv,True,1007616,VERIFIED,None,No action required
+8,Bus Frequency Recommendations CSV,reports/bus_frequency_recommendations.csv,True,504185,VERIFIED,None,No action required
+9,Ridership Availability Report,reports/ridership_data_availability_report.md,True,15905,VERIFIED,None,No action required
+9,Ridership Source Assessment CSV,reports/ridership_source_assessment.csv,True,3940,VERIFIED,None,No action required
+10,MTC Data Collection Report,reports/chennai_mtc_data_collection_report.md,True,11591,VERIFIED,None,No action required
+10,MTC Data Inventory CSV,reports/chennai_mtc_data_inventory.csv,True,4865,CORRECTED,DS-ETM-03 DOI unresolvable; model_readiness_status updated,Inventory updated to flag DS-ETM-03 as UNVERIFIED
+10,MTC Data Quality Report,reports/chennai_mtc_data_quality_report.md,True,7092,VERIFIED,None,No action required
+10,GTFS Matching Assessment,reports/chennai_mtc_gtfs_matching_assessment.md,True,7746,VERIFIED,None,No action required
+10,Model Readiness Matrix CSV,reports/chennai_mtc_model_readiness_matrix.csv,True,4959,VERIFIED,None,No action required
