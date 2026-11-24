@@ -1841,3 +1841,33 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - **The first screenshot review** showed 32 rows of "unavailable – … → unavailable – …" for a group on Sundays. Those routes are now one line ("32 routes not in the table – no scheduled service on Sundays and holidays, so nothing to compare"), still with links, still never 0.
 - **Results:** tsc, lint, vitest (116 tests, 9 new for `lib/scenarios.ts`) and build pass.
 - **Interview Q:** *"Why is the insight sentence computed in the browser rather than sent by the API?"* The API sends numbers and plain facts. The page decides which comparison matters for this view (one route, or a group's totals) and words it. Every number in the sentence is read from the response, so it can't go stale.
+
+## Step 101: Browser checks in both modes (`scripts/scenario_check.mjs`), on the test database only
+- **Built:**
+  - **`scenario_check.mjs`** runs at 1366 and 1920, in two passes.
+    - **Historical:**
+      - build "+20 % trips on route 49";
+      - check that the "demand is held fixed" insight appears;
+      - save, open it from the saved list, then "Recalculate and compare" → identical;
+      - click route 49 (it opens), then "Create scenario" on One route;
+      - check that a group on Sundays under −15 % says the assumption, and shows the structural zeros as unavailable.
+    - **Replay:**
+      - start, then Next week (8 Jun);
+      - save a group demand assumption and see "saved on replay day 8 Jun 2026";
+      - check no visible date is after 8 Jun, and historical scenarios are not listed;
+      - use "+20 % trips on the replay day's forecast";
+      - Next day, then the saved one still opens and recalculates identically.
+  - Scenarios is added to `clickthrough.mjs` and `replay_check.mjs`.
+  - **`GET /api/health/database`** names the database the API reads.
+- **Why:** your rule. Scenarios and replay sessions can never be deleted, so automated checks must not leave them in the app database.
+- **Key concept:** *make the safe path the only path*. `scenario_check.mjs` and `replay_check.mjs` ask the API which database it reads, and refuse (exit 2, nothing created) unless it is `routeranker_test`. They ran against a temporary API (`ROUTERANKER_URL_VAR=TEST_DATABASE_URL`, port 8010) and Vite (5180).
+- **Decisions:**
+  - The test database was loaded with the documented commands, using `--url-var TEST_DATABASE_URL`.
+  - The import report went to the scratchpad, so the committed Stage 6 import report was not touched.
+  - A full pytest run empties `routeranker_test` afterwards, which is what makes it resettable.
+- **Results:**
+  - scenario check: 40/40 (one earlier run counted 38 of 40, and the next three runs were all clean);
+  - replay check: 22/22;
+  - historical click-through: 8/8.
+  - Screenshots at 1366 and 1920 are in the scratchpad, not committed.
+- **Interview Q:** *"How do you test an append-only system without polluting it?"* Test against a copy you're allowed to throw away, and make the test refuse to run anywhere else. The refusal is checked by asking the server, not by trusting a port number.

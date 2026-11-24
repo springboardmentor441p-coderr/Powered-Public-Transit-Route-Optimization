@@ -15,6 +15,7 @@ const SCREENS = [
   ['Alike', ['How far each group spreads', 'grouped routes sit inside', 'Caveats (4)']],
   ['Shared stops', ['route pairs share at least one stop', 'Show all']],
   ['Compare', ['Choose at least 2 routes', 'Or start from an example']],
+  ['Scenarios', ['Choose a route or a route group to start.', 'Saved scenarios']],
   ['Data', ['of scheduled route-days have a ridership record', 'Import checks:', 'methods were tried', 'Data version, code and files']],
 ]
 

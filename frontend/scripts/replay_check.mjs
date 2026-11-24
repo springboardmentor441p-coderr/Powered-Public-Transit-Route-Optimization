@@ -11,14 +11,20 @@ import { chromium } from 'playwright'
 
 const out = process.argv[2]
 if (!out) { console.error('usage: node scripts/replay_check.mjs <screenshot folder>'); process.exit(2) }
-mkdirSync(out, { recursive: true })
 const BASE = process.env.APP_URL ?? 'http://localhost:5173'
+// Replay sessions are never deleted, so this check only runs against an API on the test database.
+const db = await fetch(`${BASE}/api/health/database`).then(r => r.json()).catch(() => null)
+if (db?.database !== 'routeranker_test') {
+  console.error(`REFUSED: the API behind ${BASE} reads ${db?.database ?? 'an unknown database'}, not routeranker_test.`)
+  process.exit(2)
+}
+mkdirSync(out, { recursive: true })
 const TIMEOUT = 60_000
 const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 }
 const SCREENS = [
   ['Start', 'The network over time'], ['Closer look', 'Ranked routes:'], ['One route', 'Choose one of'],
   ['Alike', 'How far each group spreads'], ['Shared stops', 'route pairs share at least one stop'],
-  ['Compare', 'Choose at least 2 routes'], ['Replay', 'Running error'], ['Data', 'Import checks:'],
+  ['Compare', 'Choose at least 2 routes'], ['Scenarios', 'Saved scenarios'], ['Replay', 'Running error'], ['Data', 'Import checks:'],
 ]
 
 /** Every date on the page outside the replay bar, as UTC ms. "D Mon YYYY", ISO dates, and year-less June/July ticks. */
