@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metroflow-platform
+  labels:
+    app: metroflow
+    component: api-and-frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: metroflow
+  template:
+    metadata:
+      labels:
+        app: metroflow
+    spec:
+      containers:
+        - name: metroflow-app
+          image: metroflow:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: ROUTERANKER_PROCESSED_DIR
+              value: "/app/data/processed"
+            - name: ROUTERANKER_ARTIFACTS_DIR
+              value: "/app/artifacts"
+            - name: ROUTERANKER_RETRAIN_INTERVAL_HOURS
+              value: "24"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          readinessProbe:
+            httpGet:
+              path: /api/data/coverage
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/data/coverage
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 20

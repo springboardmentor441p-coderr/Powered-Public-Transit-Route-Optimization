@@ -1,5 +1,6 @@
 {
-  "model_version": "v3.8-prototype",
+  "model_version": "v4.0-autonomous",
+  "trained_at_utc": "2026-11-23T15:11:58.510306+00:00",
   "missing_history_policy": "Option 2 (Impute missing 28d lag from 7/14/21d mean + availability indicator)",
   "demand_only": {
     "counts": {
@@ -41,7 +42,7 @@
     },
     "models": {
       "ridge": {
-        "artifact_path": "C:\\Users\\priya\\Downloads\\RouteRanker-Complete-Project\\route-ranker\\artifacts\\demand_only_ridge.joblib",
+        "artifact_path": "C:\\Users\\priya\\Downloads\\Powered-Public-Transit-Route-Optimization-Autonomous-ML\\Powered-Public-Transit-Route-Optimization-Priyanka-Jambagi\\artifacts\\demand_only_ridge.joblib",
         "validation": {
           "rows": 671,
           "mae": 818.29,
@@ -56,7 +57,7 @@
         }
       },
       "random_forest": {
-        "artifact_path": "C:\\Users\\priya\\Downloads\\RouteRanker-Complete-Project\\route-ranker\\artifacts\\demand_only_random_forest.joblib",
+        "artifact_path": "C:\\Users\\priya\\Downloads\\Powered-Public-Transit-Route-Optimization-Autonomous-ML\\Powered-Public-Transit-Route-Optimization-Priyanka-Jambagi\\artifacts\\demand_only_random_forest.joblib",
         "validation": {
           "rows": 671,
           "mae": 816.53,
@@ -71,7 +72,7 @@
         }
       },
       "xgboost": {
-        "artifact_path": "C:\\Users\\priya\\Downloads\\RouteRanker-Complete-Project\\route-ranker\\artifacts\\demand_only_xgboost.joblib",
+        "artifact_path": "C:\\Users\\priya\\Downloads\\Powered-Public-Transit-Route-Optimization-Autonomous-ML\\Powered-Public-Transit-Route-Optimization-Priyanka-Jambagi\\artifacts\\demand_only_xgboost.joblib",
         "validation": {
           "rows": 671,
           "mae": 816.08,
@@ -128,7 +129,7 @@
     },
     "models": {
       "ridge": {
-        "artifact_path": "C:\\Users\\priya\\Downloads\\RouteRanker-Complete-Project\\route-ranker\\artifacts\\matched_service_ridge.joblib",
+        "artifact_path": "C:\\Users\\priya\\Downloads\\Powered-Public-Transit-Route-Optimization-Autonomous-ML\\Powered-Public-Transit-Route-Optimization-Priyanka-Jambagi\\artifacts\\matched_service_ridge.joblib",
         "validation": {
           "rows": 610,
           "mae": 856.27,
@@ -143,7 +144,7 @@
         }
       },
       "random_forest": {
-        "artifact_path": "C:\\Users\\priya\\Downloads\\RouteRanker-Complete-Project\\route-ranker\\artifacts\\matched_service_random_forest.joblib",
+        "artifact_path": "C:\\Users\\priya\\Downloads\\Powered-Public-Transit-Route-Optimization-Autonomous-ML\\Powered-Public-Transit-Route-Optimization-Priyanka-Jambagi\\artifacts\\matched_service_random_forest.joblib",
         "validation": {
           "rows": 610,
           "mae": 893.89,
@@ -158,7 +159,7 @@
         }
       },
       "xgboost": {
-        "artifact_path": "C:\\Users\\priya\\Downloads\\RouteRanker-Complete-Project\\route-ranker\\artifacts\\matched_service_xgboost.joblib",
+        "artifact_path": "C:\\Users\\priya\\Downloads\\Powered-Public-Transit-Route-Optimization-Autonomous-ML\\Powered-Public-Transit-Route-Optimization-Priyanka-Jambagi\\artifacts\\matched_service_xgboost.joblib",
         "validation": {
           "rows": 610,
           "mae": 898.11,

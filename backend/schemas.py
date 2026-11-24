@@ -56,3 +56,20 @@ class OptimizationRequest(BaseModel):
 
 class ReclusterRequest(BaseModel):
     n_clusters: int = Field(default=3, ge=2, le=5)
+
+class ActualRidershipFeedbackRequest(BaseModel):
+    route: str
+    service_date: str
+    actual_rides: float = Field(..., ge=0)
+    predicted_rides: float = Field(..., ge=0)
+
+class SelfTrainTriggerRequest(BaseModel):
+    force_retrain: bool = False
+
+class DelayReportRequest(BaseModel):
+    route: str
+    delay_minutes: int = Field(..., ge=1)
+    cause: str = Field(default="Signal Issue", pattern="^(Signal Issue|Track Maintenance|Medical Emergency|Weather|Rolling Stock Failure)$")
+    station_or_segment: Optional[str] = "Downtown Core Corridor"
+    estimated_impact_multiplier: float = Field(default=1.25, ge=1.0, le=3.0)
+

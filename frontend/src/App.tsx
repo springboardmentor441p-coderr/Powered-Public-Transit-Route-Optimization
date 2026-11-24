@@ -300,10 +300,10 @@ export default function App() {
       <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-teal-400">RouteRanker</h1>
+            <h1 className="text-xl font-bold text-teal-400">MetroFlow</h1>
             <span className="px-1.5 py-0.5 rounded text-[10px] bg-teal-900/60 text-teal-300 border border-teal-700">v4.0 Complete</span>
           </div>
-          <p className="text-xs text-slate-400">Transit Demand Forecasting, Route Optimization, Dynamic Grouping & Scenario Engine</p>
+          <p className="text-xs text-slate-400">AI Platform for Metro Crowd Management, Scheduling Optimization & Real-Time Monitoring</p>
         </div>
 
         <div className="flex items-center gap-3">

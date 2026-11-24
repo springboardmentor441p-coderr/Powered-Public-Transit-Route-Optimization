@@ -28,6 +28,7 @@ from backend.schemas import (
     AlertConfigRequest,
     EmergencyBroadcastRequest,
     ScheduleUpdateRequest,
+    DelayReportRequest,
 )
 import backend.main as app_module
 
@@ -210,3 +211,27 @@ def test_endpoint_schedule_update():
 
     notifs = app_module.list_notifications()
     assert "notifications" in notifs
+
+def test_endpoint_delay_handling_and_integrations():
+    operator = authenticate_user("operator", "operator123")
+    delay_record = app_module.report_delay(
+        DelayReportRequest(
+            route="22",
+            delay_minutes=15,
+            cause="Signal Issue",
+            station_or_segment="Loop Station",
+            estimated_impact_multiplier=1.4,
+        ),
+        user=operator,
+    )
+    assert delay_record["route"] == "22"
+    assert delay_record["delay_minutes"] == 15
+    assert delay_record["estimated_platform_surge_pct"] == 40.0
+
+    delays = app_module.list_reported_delays()
+    assert any(d["delay_id"] == delay_record["delay_id"] for d in delays["delays"])
+
+    dispatches = app_module.list_integration_dispatches()
+    assert "dispatches" in dispatches
+    assert len(dispatches["dispatches"]) > 0
+

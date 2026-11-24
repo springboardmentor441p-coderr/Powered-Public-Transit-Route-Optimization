@@ -14,7 +14,7 @@
     "source_url": "https://files.mobilitydatabase.org/mdb-389/mdb-389-202511230128/mdb-389-202511230128.zip",
     "catalog_retrieved_date": "2025-11-23",
     "file_path": "data/raw\\gtfs\\mdb-389-202511230128\\original.zip",
-    "sha256": "3132343a0a494cfd2da3b8039a8a4b34aa7e8945b481bb1dd01e12b8e9e4edf0",
+    "sha256": "30df54140531319e3ddcac3bb2e2cc5cb956aa19c950e2434898af90dad22f43",
     "byte_size": 40329
   },
   {
@@ -23,7 +23,7 @@
     "source_url": "https://files.mobilitydatabase.org/mdb-389/mdb-389-202603260020/mdb-389-202603260020.zip",
     "catalog_retrieved_date": "2026-03-26",
     "file_path": "data/raw\\gtfs\\mdb-389-202603260020\\original.zip",
-    "sha256": "4351d5032e8060b8103fa8d365fe4b6cfd5d1c46e8a1c7db5d9ef331cb92b9e7",
+    "sha256": "e8d77c669ec56ddddf3c0c483135a26a33d6de1d3174198a44f4bec5c74c6a04",
     "byte_size": 42321
   }
 ]

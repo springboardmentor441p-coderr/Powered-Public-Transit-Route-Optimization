@@ -1,23 +1,18 @@
-# RouteRanker: AI-Powered Public Transit Intelligence Platform
+# MetroFlow: AI Platform for Metro Crowd Management and Scheduling
 
-RouteRanker is an end-to-end transit analytics, machine learning forecasting, route clustering, and scenario simulation platform with **JWT authentication & RBAC**, **overcrowding alerts**, **emergency broadcast announcements**, **congestion heatmaps**, and **containerized Docker deployment**.
+**MetroFlow** is an end-to-end AI-powered transit crowd management, predictive demand forecasting, route clustering, and real-time scheduling optimization platform. It features **JWT authentication & RBAC**, **overcrowding alerts**, **emergency disruption broadcasts**, **multi-channel notifications (Email, SMS, Mobile Push, Public Address)**, **corridor congestion heatmaps**, **service delay handling**, **Kubernetes orchestration**, and **containerized Docker deployment**.
 
 ---
 
-## 🌟 Key Features
+## 🌟 Key Architecture Modules (100% Implemented)
 
-1. **AI Demand Forecasting**: Chronologically validated Ridge, Random Forest, and XGBoost models delivering a **6.11% WAPE** on held-out test data.
-2. **KMeans Route Clustering**: Unsupervised grouping into High-Volume Trunk, Core Corridor, and Coverage tiers.
-3. **Productivity Rankings**: Routes ranked by passenger productivity (*Rides per Scheduled Service Hour* and *Rides per Scheduled Trip*).
-4. **Historical Replay Engine**: Virtual clock with strict `D-1` cutoff policies to prevent future data leakage during backtesting.
-5. **Conditional Service Scenarios**: What-if calculator for planners to test frequency adjustments and demand multipliers.
-6. **Authentication & RBAC (Milestone 1)**: Zero-dependency HMAC-SHA256 JWT authentication supporting `Admin`, `Operator`, and `Viewer` roles.
-7. **Overcrowding & Capacity Alerts (Milestone 3)**: Automated real-time alerts when routes exceed density thresholds (>300 rides/hr).
-8. **Emergency Broadcast System (Milestone 3)**: System-wide transit disruption announcements and live banner ticker.
-9. **Corridor Congestion Heatmap (Milestone 2 & 3)**: Visual route density indicators categorized as Critical, High, or Moderate load.
-10. **Live Schedule Updates (Milestone 2 & 3)**: Authorized operator workflow to submit and log operational schedule adjustments.
-11. **Automated Verification Suite (Milestone 4)**: 16 automated tests covering data integrity, lag features, scenario math, auth, and API workflows.
-12. **Docker Containerization (Milestone 4)**: Multi-stage Dockerfile and `docker-compose.yml` for unified deployment.
+1. **User Management Module**: Zero-dependency HMAC-SHA256 JWT authentication supporting `Admin`, `Operator`, and `Viewer` roles.
+2. **Crowd Monitoring Module**: Real-time passenger density tracking, corridor congestion heatmaps, and station inflow/outflow analysis.
+3. **Scheduling Management Module**: Live train/bus schedule management, delay impact prediction, frequency adjustments, and peak-hour optimization.
+4. **AI Prediction Module**: Chronologically validated Ridge, Random Forest, and XGBoost models delivering a **6.11% WAPE** on held-out test data, plus unsupervised KMeans route clustering ($K=3$).
+5. **Alert & Notification Module**: Real-time overcrowding alerts (>300 rides/hr), emergency broadcast banners, and multi-channel external dispatchers (Email, SMS, Push, PA System).
+6. **Analytics Dashboard Module**: Interactive React/Recharts dashboard with 7-day projected demand curves, historical replay engine with $D-1$ cutoff rules, and continuous drift monitoring.
+7. **Cloud & DevOps Ready**: Multi-stage `Dockerfile`, `docker-compose.yml`, Kubernetes manifests (`k8s/`), AWS ECS task definitions, and GitHub Actions CI/CD.
 
 ---
 

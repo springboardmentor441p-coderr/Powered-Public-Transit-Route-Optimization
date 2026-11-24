@@ -6,12 +6,21 @@ JWT authentication & RBAC, overcrowding alerts, emergency broadcasts, schedule u
 and congestion heatmap data.
 """
 import os
+import sys
+
+# Silence joblib/loky CPU core warning on modern Windows where wmic is deprecated
+try:
+    import joblib.externals.loky.backend.context as _loky_ctx
+    _loky_ctx.physical_cores_cache = os.cpu_count() or 4
+except Exception:
+    pass
+
 import json
 import uuid
 from datetime import date, timedelta, datetime
 import joblib
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi import FastAPI, HTTPException, Query, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import PROCESSED_DIR, ARTIFACTS_DIR
@@ -26,7 +35,11 @@ from backend.schemas import (
     ScenarioRequest,
     OptimizationRequest,
     ReclusterRequest,
+    ActualRidershipFeedbackRequest,
+    SelfTrainTriggerRequest,
+    DelayReportRequest,
 )
+from backend.integrations import dispatch_external_notifications, get_dispatch_history
 from backend.auth import (
     authenticate_user,
     create_jwt_token,
@@ -55,6 +68,42 @@ ACTIVE_ALERTS: list[dict] = []
 EMERGENCY_BROADCASTS: list[dict] = []
 SCHEDULE_UPDATES: list[dict] = []
 NOTIFICATION_LOG: list[dict] = []
+
+# In-Memory Model Registry for Zero-Downtime Hot-Reloading
+MODEL_REGISTRY: dict = {
+    "metrics": None,
+    "matched_service": None,
+    "demand_only": None,
+    "last_loaded_utc": None,
+}
+SELF_TRAINING_STATE: dict = {
+    "is_running": False,
+    "last_result": None,
+}
+
+
+def load_models_into_memory():
+    """Loads current production models and metrics into memory for fast, hot-reloadable inference."""
+    metrics_path = os.path.join(ARTIFACTS_DIR, "training_metrics.json")
+    if not os.path.exists(metrics_path):
+        return
+    with open(metrics_path, "r", encoding="utf-8") as f:
+        metrics = json.load(f)
+
+    ms_sel = metrics["matched_service"]["selected_serving_model"]
+    do_sel = metrics["demand_only"]["selected_serving_model"]
+
+    ms_path = os.path.join(ARTIFACTS_DIR, f"matched_service_{ms_sel}.joblib")
+    do_path = os.path.join(ARTIFACTS_DIR, f"demand_only_{do_sel}.joblib")
+
+    if os.path.exists(ms_path):
+        MODEL_REGISTRY["matched_service"] = joblib.load(ms_path)
+    if os.path.exists(do_path):
+        MODEL_REGISTRY["demand_only"] = joblib.load(do_path)
+
+    MODEL_REGISTRY["metrics"] = metrics
+    MODEL_REGISTRY["last_loaded_utc"] = datetime.utcnow().isoformat() + "Z"
+
 
 # Default overcrowding thresholds (auto-seeded on startup)
 DEFAULT_THRESHOLDS = [
@@ -113,6 +162,7 @@ def seed_default_alerts():
     for t in DEFAULT_THRESHOLDS:
         ALERT_CONFIGS.append(t)
     _evaluate_alerts()
+    load_models_into_memory()
 
 
 # ─── Authentication Endpoints ───
@@ -206,6 +256,16 @@ def create_broadcast(req: EmergencyBroadcastRequest, user: dict = Depends(requir
         "title": req.title,
         "timestamp": broadcast["created_at"],
     })
+    try:
+        dispatch_external_notifications(
+            event_type="emergency_broadcast",
+            title=req.title,
+            message=req.message,
+            severity=req.severity,
+            affected_routes=req.affected_routes,
+        )
+    except Exception:
+        pass
     return broadcast
 
 
@@ -216,6 +276,59 @@ def deactivate_broadcast(broadcast_id: str, user: dict = Depends(require_operato
             b["active"] = False
             return b
     raise HTTPException(status_code=404, detail="Broadcast not found")
+
+
+# ─── External Integrations & Multi-Channel Dispatch ───
+
+@app.get("/api/integrations/history")
+def list_integration_dispatches():
+    return {"dispatches": get_dispatch_history()}
+
+
+# ─── Delay Handling & Impact Prediction ───
+
+REPORTED_DELAYS: list[dict] = []
+
+@app.get("/api/delays")
+def list_reported_delays():
+    return {"delays": sorted(REPORTED_DELAYS, key=lambda d: d["reported_at"], reverse=True)}
+
+
+@app.post("/api/delays/report")
+def report_delay(req: DelayReportRequest, user: dict = Depends(require_operator_or_admin)):
+    now_str = datetime.utcnow().isoformat() + "Z"
+    surge_pct = round((req.estimated_impact_multiplier - 1.0) * 100, 1)
+    record = {
+        "delay_id": str(uuid.uuid4())[:8],
+        "route": req.route,
+        "delay_minutes": req.delay_minutes,
+        "cause": req.cause,
+        "station_or_segment": req.station_or_segment,
+        "estimated_platform_surge_pct": surge_pct,
+        "recommended_action": f"Inject standby fleet & hold preceding trains at {req.station_or_segment}" if req.delay_minutes >= 10 else "Absorb via dwell time reduction",
+        "reported_by": user["username"],
+        "reported_at": now_str,
+    }
+    REPORTED_DELAYS.append(record)
+    NOTIFICATION_LOG.append({
+        "type": "service_delay",
+        "delay_id": record["delay_id"],
+        "route": req.route,
+        "delay_minutes": req.delay_minutes,
+        "timestamp": now_str,
+    })
+    try:
+        dispatch_external_notifications(
+            event_type="service_delay",
+            title=f"Route {req.route} Delay ({req.delay_minutes} min)",
+            message=f"{req.cause} causing ~{req.delay_minutes}m delay at {req.station_or_segment}. Expected platform crowd surge: +{surge_pct}%.",
+            severity="warning" if req.delay_minutes < 15 else "critical",
+            affected_routes=[req.route],
+        )
+    except Exception:
+        pass
+    return record
+
 
 
 # ─── Schedule Update Endpoints ───
@@ -468,7 +581,7 @@ def generate_forecast(req: ForecastRequest):
         merged = row_df.merge(s_row[["route", "service_date", "scheduled_trips", "scheduled_service_hours", "source_snapshot"]], left_on=["route", "date"], right_on=["route", "service_date"])
         if merged[SERVICE_FEATURES].notna().all(axis=1).iloc[0]:
             sel_name = metrics["matched_service"]["selected_serving_model"]
-            pipe = joblib.load(metrics["matched_service"]["models"][sel_name]["artifact_path"])
+            pipe = MODEL_REGISTRY.get("matched_service") or joblib.load(os.path.join(ARTIFACTS_DIR, f"matched_service_{sel_name}.joblib"))
             pred = max(0.0, float(pipe.predict(merged[SERVICE_FEATURES])[0]))
             res = {
                 "route": req.route,
@@ -486,7 +599,7 @@ def generate_forecast(req: ForecastRequest):
 
     if row_df[DEMAND_FEATURES].notna().all(axis=1).iloc[0]:
         sel_name = metrics["demand_only"]["selected_serving_model"]
-        pipe = joblib.load(metrics["demand_only"]["models"][sel_name]["artifact_path"])
+        pipe = MODEL_REGISTRY.get("demand_only") or joblib.load(os.path.join(ARTIFACTS_DIR, f"demand_only_{sel_name}.joblib"))
         pred = max(0.0, float(pipe.predict(row_df[DEMAND_FEATURES])[0]))
         res = {
             "route": req.route,
@@ -967,3 +1080,99 @@ def recompute_clustering(req: ReclusterRequest):
         "routes": updated_routes,
     }
 
+
+# ─── 4. Autonomous Self-Training, Drift Detection & Model Hot-Reload ───
+
+def _background_self_train(force_retrain: bool = False):
+    if SELF_TRAINING_STATE["is_running"]:
+        return
+    SELF_TRAINING_STATE["is_running"] = True
+    try:
+        from analytics.auto_retrain import run_autonomous_cycle
+        res = run_autonomous_cycle(force_retrain=force_retrain)
+        SELF_TRAINING_STATE["last_result"] = res
+        load_models_into_memory()
+    except Exception as exc:
+        SELF_TRAINING_STATE["last_result"] = {
+            "timestamp_utc": datetime.utcnow().isoformat() + "Z",
+            "status": "error",
+            "detail": str(exc),
+            "promoted": False,
+        }
+    finally:
+        SELF_TRAINING_STATE["is_running"] = False
+
+
+@app.get("/api/models/status")
+def get_model_status():
+    if MODEL_REGISTRY["metrics"] is None:
+        load_models_into_memory()
+    metrics = MODEL_REGISTRY.get("metrics") or {}
+    history_path = os.path.join(os.path.dirname(ARTIFACTS_DIR), "reports", "retrain_history.jsonl")
+    recent_runs = []
+    if os.path.exists(history_path):
+        with open(history_path, "r", encoding="utf-8") as f:
+            lines = [line.strip() for line in f if line.strip()]
+            for line in lines[-10:]:
+                try:
+                    recent_runs.append(json.loads(line))
+                except Exception:
+                    pass
+    return {
+        "model_version": metrics.get("model_version", "unknown"),
+        "trained_at_utc": metrics.get("trained_at_utc"),
+        "last_loaded_in_memory_utc": MODEL_REGISTRY.get("last_loaded_utc"),
+        "selected_service_model": metrics.get("matched_service", {}).get("selected_serving_model"),
+        "selected_demand_model": metrics.get("demand_only", {}).get("selected_serving_model"),
+        "is_retraining_now": SELF_TRAINING_STATE["is_running"],
+        "last_autonomous_cycle": SELF_TRAINING_STATE["last_result"],
+        "recent_retrain_history": list(reversed(recent_runs)),
+    }
+
+
+@app.post("/api/models/reload")
+def reload_models():
+    load_models_into_memory()
+    return {
+        "status": "reloaded",
+        "last_loaded_utc": MODEL_REGISTRY["last_loaded_utc"],
+        "model_version": (MODEL_REGISTRY.get("metrics") or {}).get("model_version"),
+    }
+
+
+@app.post("/api/models/self-train")
+def trigger_autonomous_training(req: SelfTrainTriggerRequest, background_tasks: BackgroundTasks):
+    if SELF_TRAINING_STATE["is_running"]:
+        return {"status": "already_running", "message": "Autonomous self-training cycle is already in progress."}
+    background_tasks.add_task(_background_self_train, req.force_retrain)
+    return {
+        "status": "started",
+        "force_retrain": req.force_retrain,
+        "message": "Autonomous online data fetch & self-training cycle started in background.",
+    }
+
+
+@app.post("/api/feedback/actual-ridership")
+def ingest_actual_ridership(req: ActualRidershipFeedbackRequest, background_tasks: BackgroundTasks):
+    denom = max(req.actual_rides, 1.0)
+    error_pct = round((abs(req.actual_rides - req.predicted_rides) / denom) * 100.0, 2)
+    drift_threshold_pct = 22.0
+
+    if error_pct > drift_threshold_pct and not SELF_TRAINING_STATE["is_running"]:
+        background_tasks.add_task(_background_self_train, True)
+        return {
+            "status": "drift_detected",
+            "route": req.route,
+            "service_date": req.service_date,
+            "error_pct": error_pct,
+            "threshold_pct": drift_threshold_pct,
+            "action": "Autonomous self-training triggered in background.",
+        }
+
+    return {
+        "status": "within_tolerance",
+        "route": req.route,
+        "service_date": req.service_date,
+        "error_pct": error_pct,
+        "threshold_pct": drift_threshold_pct,
+    }

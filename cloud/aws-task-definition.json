@@ -1,0 +1,54 @@
+{
+  "ipcMode": null,
+  "executionRoleArn": "arn:aws:iam::123456789012:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "dnsSearchDomains": null,
+      "environmentFiles": null,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "secretOptions": null,
+        "options": {
+          "awslogs-group": "/ecs/metroflow",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "entryPoint": null,
+      "portMappings": [
+        {
+          "hostPort": 8000,
+          "protocol": "tcp",
+          "containerPort": 8000
+        }
+      ],
+      "command": null,
+      "linuxParameters": null,
+      "cpu": 1024,
+      "environment": [
+        {
+          "name": "ROUTERANKER_PROCESSED_DIR",
+          "value": "data/processed"
+        },
+        {
+          "name": "ROUTERANKER_ARTIFACTS_DIR",
+          "value": "artifacts"
+        }
+      ],
+      "resourceRequirements": null,
+      "memory": 2048,
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/metroflow:latest",
+      "essential": true,
+      "name": "metroflow-app"
+    }
+  ],
+  "placementConstraints": [],
+  "memory": "2048",
+  "taskRoleArn": "arn:aws:iam::123456789012:role/ecsTaskRole",
+  "family": "metroflow-task",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "networkMode": "awsvpc",
+  "cpu": "1024"
+}

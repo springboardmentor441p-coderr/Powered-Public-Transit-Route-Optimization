@@ -3,6 +3,14 @@ Orchestrates the entire RouteRanker offline ETL, feature engineering, and model 
 """
 import os
 import sys
+
+# Silence joblib/loky CPU core warning on modern Windows where wmic is deprecated
+try:
+    import joblib.externals.loky.backend.context as _loky_ctx
+    _loky_ctx.physical_cores_cache = os.cpu_count() or 4
+except Exception:
+    pass
+
 import importlib
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

@@ -1,6 +1,6 @@
 # RouteRanker Model Evaluation Report
 
-- **Model Version**: `v3.8-prototype`
+- **Model Version**: `v4.0-autonomous`
 - **Missing History Policy**: Option 2 (Impute missing 28d lag from 7/14/21d mean + availability indicator)
 - **Selected Service-Aware Regressor**: `ridge`
 

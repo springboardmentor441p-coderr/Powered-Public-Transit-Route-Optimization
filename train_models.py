@@ -6,7 +6,17 @@ Saves versioned model artifacts, metrics JSON, and audit reports.
 """
 import os
 import sys
+
+# Silence joblib/loky CPU core warning on modern Windows where wmic is deprecated
+try:
+    import joblib.externals.loky.backend.context as _loky_ctx
+    _loky_ctx.physical_cores_cache = os.cpu_count() or 4
+except Exception:
+    pass
+
 import json
+import argparse
+from datetime import datetime, timezone
 from pathlib import Path
 import joblib
 import numpy as np
@@ -105,7 +115,7 @@ PROCESSED_DIR = os.getenv("ROUTERANKER_PROCESSED_DIR", str(BASE_DIR / "data" / "
 ARTIFACTS_DIR = os.getenv("ROUTERANKER_ARTIFACTS_DIR", str(BASE_DIR / "artifacts"))
 REPORTS_DIR = os.getenv("ROUTERANKER_REPORTS_DIR", str(BASE_DIR / "reports"))
 
-def train_forecast_family(df: pd.DataFrame, feature_cols: list[str], prefix: str) -> dict:
+def train_forecast_family(df: pd.DataFrame, feature_cols: list[str], prefix: str, artifacts_dir: str = ARTIFACTS_DIR) -> dict:
     eligible = df.dropna(subset=feature_cols + [TARGET]).copy()
     train_df = eligible[eligible["split"] == "train"]
     val_df = eligible[eligible["split"] == "validation"]
@@ -149,7 +159,7 @@ def train_forecast_family(df: pd.DataFrame, feature_cols: list[str], prefix: str
         val_metrics = compute_regression_metrics(val_df[TARGET], val_preds)
         test_metrics = compute_regression_metrics(test_df[TARGET], test_preds)
 
-        artifact_path = os.path.join(ARTIFACTS_DIR, f"{prefix}_{m_name}.joblib")
+        artifact_path = os.path.join(artifacts_dir, f"{prefix}_{m_name}.joblib")
         joblib.dump(pipe, artifact_path)
 
         results["models"][m_name] = {
@@ -164,8 +174,8 @@ def train_forecast_family(df: pd.DataFrame, feature_cols: list[str], prefix: str
     results["selected_serving_model"] = best_model_name
     return results
 
-def train_route_clusters():
-    matched = pd.read_parquet(os.path.join(PROCESSED_DIR, "matched_utilization.parquet"))
+def train_route_clusters(artifacts_dir: str = ARTIFACTS_DIR, processed_dir: str = PROCESSED_DIR):
+    matched = pd.read_parquet(os.path.join(processed_dir, "matched_utilization.parquet"))
     dev = matched[pd.to_datetime(matched["date"]) < pd.to_datetime("2026-06-01")].copy()
 
     w_df = dev[dev["daytype"] == "W"].groupby("route", as_index=False).agg(
@@ -214,35 +224,36 @@ def train_route_clusters():
     name_map = {cid: rank_labels[idx % len(rank_labels)] for idx, cid in enumerate(cluster_means.index)}
     eligible["cluster_label"] = eligible["cluster_id"].map(name_map)
 
-    joblib.dump(scaler, os.path.join(ARTIFACTS_DIR, "kmeans_scaler.joblib"))
-    joblib.dump(km, os.path.join(ARTIFACTS_DIR, "kmeans_model.joblib"))
-    eligible.to_parquet(os.path.join(PROCESSED_DIR, "route_clusters.parquet"), index=False)
+    joblib.dump(scaler, os.path.join(artifacts_dir, "kmeans_scaler.joblib"))
+    joblib.dump(km, os.path.join(artifacts_dir, "kmeans_model.joblib"))
+    eligible.to_parquet(os.path.join(processed_dir, "route_clusters.parquet"), index=False)
 
     return {"k": k, "clustered_routes": len(eligible), "silhouette_score": sil, "features": cluster_features}
 
-def run():
-    os.makedirs(ARTIFACTS_DIR, exist_ok=True)
-    os.makedirs(REPORTS_DIR, exist_ok=True)
+def run(artifacts_dir: str = ARTIFACTS_DIR, processed_dir: str = PROCESSED_DIR, reports_dir: str = REPORTS_DIR, model_version: str = "v4.0-autonomous"):
+    os.makedirs(artifacts_dir, exist_ok=True)
+    os.makedirs(reports_dir, exist_ok=True)
 
-    demand_df = pd.read_parquet(os.path.join(PROCESSED_DIR, "daily_forecasting_features.parquet"))
-    service_df = pd.read_parquet(os.path.join(PROCESSED_DIR, "matched_service_features.parquet"))
+    demand_df = pd.read_parquet(os.path.join(processed_dir, "daily_forecasting_features.parquet"))
+    service_df = pd.read_parquet(os.path.join(processed_dir, "matched_service_features.parquet"))
 
-    demand_res = train_forecast_family(demand_df, DEMAND_FEATURES, "demand_only")
-    service_res = train_forecast_family(service_df, SERVICE_FEATURES, "matched_service")
-    cluster_res = train_route_clusters()
+    demand_res = train_forecast_family(demand_df, DEMAND_FEATURES, "demand_only", artifacts_dir=artifacts_dir)
+    service_res = train_forecast_family(service_df, SERVICE_FEATURES, "matched_service", artifacts_dir=artifacts_dir)
+    cluster_res = train_route_clusters(artifacts_dir=artifacts_dir, processed_dir=processed_dir)
 
     metrics_payload = {
-        "model_version": "v3.8-prototype",
+        "model_version": model_version,
+        "trained_at_utc": datetime.now(timezone.utc).isoformat(),
         "missing_history_policy": "Option 2 (Impute missing 28d lag from 7/14/21d mean + availability indicator)",
         "demand_only": demand_res,
         "matched_service": service_res,
         "clustering": cluster_res,
     }
 
-    with open(os.path.join(ARTIFACTS_DIR, "training_metrics.json"), "w") as f:
+    with open(os.path.join(artifacts_dir, "training_metrics.json"), "w") as f:
         json.dump(metrics_payload, f, indent=2)
 
-    with open(os.path.join(ARTIFACTS_DIR, "feature_schema.json"), "w") as f:
+    with open(os.path.join(artifacts_dir, "feature_schema.json"), "w") as f:
         json.dump({"demand_features": DEMAND_FEATURES, "service_features": SERVICE_FEATURES, "target": TARGET}, f, indent=2)
 
     sel_m = str(service_res.get("selected_serving_model") or "ridge")
@@ -272,4 +283,15 @@ def run():
     print(f"[train_models] Training complete. Selected model: {sel_m} (Test MAE: {test_m['mae']}, WAPE: {test_m['wape_pct']}%)")
 
 if __name__ == "__main__":
-    run()
+    parser = argparse.ArgumentParser(description="Train RouteRanker ML models.")
+    parser.add_argument("--output-dir", type=str, default=ARTIFACTS_DIR, help="Directory to save model artifacts")
+    parser.add_argument("--processed-dir", type=str, default=PROCESSED_DIR, help="Directory of processed parquet datasets")
+    parser.add_argument("--reports-dir", type=str, default=REPORTS_DIR, help="Directory to save evaluation reports")
+    parser.add_argument("--model-version", type=str, default="v4.0-autonomous", help="Version tag for trained models")
+    args = parser.parse_args()
+    run(
+        artifacts_dir=args.output_dir,
+        processed_dir=args.processed_dir,
+        reports_dir=args.reports_dir,
+        model_version=args.model_version,
+    )
