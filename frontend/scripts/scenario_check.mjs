@@ -61,8 +61,9 @@ async function save(page, label) {
   return text
 }
 async function openSavedAndRecheck(page, name, label) {
+  const listed = await page.getByRole('button', { name, exact: true }).first().waitFor({ timeout: TIMEOUT }).then(() => true, () => false)
+  if (!listed) { fail(`${label}: "${name}" is not in the saved list`); return }
   const item = page.locator('li', { has: page.getByRole('button', { name, exact: true }) }).first()
-  if (!(await item.count())) { fail(`${label}: "${name}" is not in the saved list`); return }
   const title = item.getByRole('button', { name, exact: true })
   if ((await title.getAttribute('aria-expanded')) !== 'true') await title.click()
   await expect(page, 'Stored result', `${label}: saved scenario opens with its stored result`)
@@ -70,11 +71,59 @@ async function openSavedAndRecheck(page, name, label) {
   await expect(page, 'identical result', `${label}: recalculated from the stored inputs, identical`)
 }
 
+/** No comparison table on the page may scroll sideways. */
+async function tablesFit(page, label) {
+  const wide = await page.evaluate(() => [...document.querySelectorAll('.overflow-x-auto')]
+    .filter(d => d.querySelector('table') && d.scrollWidth > d.clientWidth + 1).map(d => `${d.scrollWidth} > ${d.clientWidth}`))
+  if (wide.length) fail(`${label}: a table scrolls sideways (${wide.join(', ')})`)
+  else ok(`${label}: tables fit without sideways scrolling`)
+  // every reason number shown in the table is explained once under it
+  const { shown, listed } = await page.evaluate(() => ({
+    shown: Math.max(0, ...[...document.querySelectorAll('table sup')].flatMap(x => x.textContent.split(',').map(Number))),
+    listed: document.querySelectorAll('ol[aria-label="Why values are unavailable"] li').length,
+  }))
+  if (shown > listed) fail(`${label}: the table shows reason ${shown} but only ${listed} are listed`)
+  else ok(`${label}: all ${listed} reason(s) listed once under the table`)
+}
+
+/** The saved examples (if the database holds them): each opens, its table fits, the chart tooltip shows both values. */
+async function examples(page, width) {
+  const list = await fetch(`${BASE}/api/scenarios`).then(r => r.json())
+  const ex = list.scenarios.filter(s => s.origin === 'example')
+  if (!ex.length) { console.log(`skip ${width}: no saved examples in this database`); return }
+  for (const [i, s] of ex.entries()) {
+    await page.goto(BASE + '/scenarios')
+    const title = page.getByRole('button', { name: s.name, exact: true })
+    await title.waitFor({ timeout: TIMEOUT })
+    await title.click()
+    await expect(page, 'Stored result', `${width} example "${s.name}" opens`)
+    await waitIdle(page)
+    await tablesFit(page, `${width} example ${i + 1}`)
+    const bar = page.locator('.recharts-bar-rectangle').first()
+    if (await bar.count()) {
+      await bar.hover()
+      const tip = page.locator('.recharts-tooltip-wrapper')
+      const text = (await tip.textContent().catch(() => '')) ?? ''
+      if (/Baseline: [\d,.]+/.test(text) && /Scenario: [\d,.]+/.test(text)) ok(`${width} example ${i + 1}: tooltip shows both values`)
+      else fail(`${width} example ${i + 1}: tooltip shows "${text}"`)
+    }
+    await page.screenshot({ path: join(out, `example_${i + 1}_${width}.png`), fullPage: true })
+  }
+}
+
 const browser = await chromium.launch()
 for (const width of [1366, 1920]) {
   const page = await browser.newPage({ viewport: { width, height: 900 } })
   const errors = []
   page.on('pageerror', e => errors.push(String(e)))
+  await examples(page, width)
+  await page.goto(BASE + '/scenarios?routes=1&daytype=U&verb=set&amount=40')
+  await expect(page, 'Route 1 gets 40.0 scheduled trips per day on Sundays and holidays', `${width} route 1 Sunday builder`)
+  await waitIdle(page)
+  await tablesFit(page, `${width} route 1 Sunday builder`)
+  const said = (await page.locator('[data-insight]').first().textContent()) ?? ''
+  if ((said.match(/no recorded rides on days without service/g) ?? []).length === 1) ok(`${width} route 1: the reason is said once above the table`)
+  else fail(`${width} route 1: the reason appears ${(said.match(/no recorded rides on days without service/g) ?? []).length} times in the insight`)
 
   // ---------------------------------------------------------------- historical analysis
   await page.goto(BASE + '/')

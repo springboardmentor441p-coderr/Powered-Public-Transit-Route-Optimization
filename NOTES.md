@@ -1902,3 +1902,28 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - Group −15 %: rides/day 72,323.1 → 61,474.6 (exactly × 0.85 on every route); per hour 28.92 → 24.58; the network per hour 37.87 → 37.20.
   - Full backend suite: **384 passed** (329 + 55 new) in 31 min.
 - **Interview Q:** *"Your scenario says route 49 gets worse with more buses. Would you show that to a planner?"* Yes, with the sentence that comes with it: rides per scheduled hour falls *because demand is held fixed*. It's the honest arithmetic of spreading the same riders over more service. Whether the extra buses are worth it depends on crowding and rider response, which this data can't measure. The tool says so instead of guessing.
+
+## Step 103: Scenarios layout fixes (numbered "unavailable" reasons, one reason per insight, both values in the tooltip)
+- **Built:**
+  - **Table cells** show only "unavailable" with a small number. Each distinct reason is listed once, numbered, under the table. When both sides are unavailable, the cell says it once, with both numbers (e.g. "unavailable ¹˒²").
+  - **Row notes** ("not changed: …") and the reasons a route is unranked use the same numbers. Nothing long sits beside the route sign any more.
+  - **The insight** for a route given service where it had none is now one sentence, with the reason said once. Before, three sentences repeated it.
+  - **The chart tooltip** shows the route, the baseline, the scenario and the change, in ink.
+  - **`scenario_check.mjs`** now opens each saved example at 1366 and 1920 and checks three things: no table scrolls sideways; every number shown in a table is explained under it; the tooltip shows both values. It also checks that the route 1 Sunday insight says its reason once.
+  - **`save_examples.py --out`**, so a test-database run doesn't overwrite the committed examples file.
+- **Why:** your review of the route 1 Sunday example. The long reasons in cells pushed the table wider than the screen at 1366 and overlapped the route sign. The tooltip only showed the baseline: Recharts colours each tooltip line like its bar, and the scenario bar is white, so its line was invisible.
+- **Key concept:** *render order matters when numbering*. The first version numbered reasons inside small React components. Those render *after* the list under the table, so cells showed ³ ⁴ ⁵ with no matching entries. The cells are now built by plain functions while the table is assembled, so every number exists before the list is drawn. The new check catches this ("shows reason 5 but only 2 are listed").
+- **Decisions:**
+  - Reasons are numbered in table order, so the same scenario always gets the same numbers.
+  - A route given new service gets no extra note, because its cells already explain it.
+- **Results:**
+  - vitest 117 (1 new), tsc, lint and build pass.
+  - On the test database holding the three saved examples (the same ids as in the app database):
+    - scenario check 70/70 at 1366 and 1920;
+    - replay check 22/22;
+    - click-through 8/8.
+  - Two flakes, both clean on the next run:
+    - one run timed out waiting for the replay to reach 8 Jun;
+    - one click-through run printed nothing, for an unknown reason.
+  - The temporary servers are stopped.
+- **Interview Q:** *"Why not just show the reason in each cell?"* Ten copies of the same sentence hide the numbers they explain and break the layout. A numbered note keeps every reason visible exactly once, and a missing value still never reads as 0.

@@ -231,7 +231,7 @@ function ResultView({ resp, groupOf, saved }: { resp: ScenarioResponse; groupOf:
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2"><ApiLabel text={resp.note} /></div>
-      <div className="border-l-[3px] border-brand pl-4 text-md leading-8">
+      <div data-insight className="border-l-[3px] border-brand pl-4 text-md leading-8">
         {insights(resp).map(t => <p key={t}>{t}</p>)}
       </div>
       <Panel title="Assumptions" purpose={saved ? `Saved with “${saved.name}”, version ${saved.version}.` : 'Saved with the scenario, word for word.'}>
@@ -255,13 +255,45 @@ function ResultView({ resp, groupOf, saved }: { resp: ScenarioResponse; groupOf:
   )
 }
 
-function BeforeAfter({ b, s, digits = 1, rb, rs }: { b: number | null; s: number | null; digits?: number; rb?: string; rs?: string }) {
+/** Numbers each distinct reason once; cells show "unavailable" with the reason's number. */
+type Mark = (reason: string | null | undefined) => number | null
+function makeMarks(): { mark: Mark; list: string[] } {
+  const list: string[] = []
+  const mark: Mark = reason => {
+    if (!reason) return null
+    const i = list.indexOf(reason)
+    if (i >= 0) return i + 1
+    list.push(reason)
+    return list.length
+  }
+  return { mark, list }
+}
+
+/** "unavailable" with the numbers of its reasons (each explained once under the table). */
+function Missing({ marks, reasons }: { marks: number[]; reasons: string[] }) {
+  return (
+    <span className="whitespace-nowrap text-xs font-normal text-ink-2" title={reasons.join('; ') || undefined}
+          aria-label={reasons.length ? `unavailable: ${reasons.join('; ')}` : 'unavailable'}>
+      unavailable{marks.length > 0 && <sup className="ml-0.5 font-semibold text-ink">{marks.join(',')}</sup>}
+    </span>
+  )
+}
+
+/** Baseline → scenario for one cell. A plain function, not a component: it numbers its reasons while the table is
+ *  being built, so the list under the table (drawn afterwards) holds every number a cell shows. When both sides are
+ *  unavailable, the cell says "unavailable" once, with each side's reason number. */
+function beforeAfter(b: number | null, s: number | null, digits: number, rb: string | null | undefined,
+                     rs: string | null | undefined, mark: Mark): ReactNode {
+  const missing = (...why: (string | null | undefined)[]) => {
+    const reasons = [...new Set(why.filter((w): w is string => !!w))]
+    return <Missing marks={reasons.map(w => mark(w)!)} reasons={reasons} />
+  }
+  if (b == null && s == null) return missing(rb, rs)
   const same = b != null && s != null && fmt(b, digits) === fmt(s, digits)
-  if (b == null && s == null && rb === rs) return <Value value={null} reason={rb} />
   return (
     <span className="whitespace-nowrap">
-      <Value value={b} digits={digits} reason={rb} />
-      {!same && <><span className="mx-1 text-ink-2" aria-label="becomes">→</span><Value value={s} digits={digits} reason={rs} /></>}
+      {b == null ? missing(rb) : <Value value={b} digits={digits} />}
+      {!same && <><span className="mx-1 text-ink-2" aria-label="becomes">→</span>{s == null ? missing(rs) : <Value value={s} digits={digits} />}</>}
     </span>
   )
 }
@@ -270,6 +302,8 @@ const KEYS: [keyof ScenarioSide, 'rides_per_day' | 'trips_per_day' | 'hours_per_
   ['rides_per_day', 'rides_per_day', 0], ['trips_per_day', 'trips_per_day', 1], ['hours_per_day', 'hours_per_day', 1],
   ['rides_per_scheduled_trip', 'rides_per_trip', 1], ['rides_per_scheduled_hour', 'rides_per_hour', 1],
 ]
+
+const NO_TOTAL = 'no route has a value on both sides'
 
 function ComparisonTable({ resp, groupOf }: { resp: ScenarioResponse; groupOf: GroupOf }) {
   const s = resp.scenario, res = s.result
@@ -282,17 +316,18 @@ function ComparisonTable({ resp, groupOf }: { resp: ScenarioResponse; groupOf: G
     blank.set(why, [...(blank.get(why) ?? []), r.route])
   }
   const of = res.ranked_routes.rides_per_scheduled_hour
+  const { mark, list } = makeMarks()
   const demandWord = s.baseline.demand === 'predicted' ? 'Predicted rides/day' : 'Recorded rides/day'
   const totals = (label: string, t: ScenarioTotals) => (
     <tr className="border-t-2 border-rule-strong font-semibold">
       <th scope="row" className="text-left">{label}<span className="block text-xs font-normal text-ink-2">{t.rides_per_scheduled_hour.routes_included} of {t.routes} routes with values on both sides</span></th>
       {(['rides_per_day', 'trips_per_day', 'hours_per_day'] as const).map(k => (
-        <td key={k} className="n"><BeforeAfter b={t[k].baseline} s={t[k].scenario} digits={k === 'rides_per_day' ? 0 : 1} rb="no route has a value" rs="no route has a value" /></td>
+        <td key={k} className="n">{beforeAfter(t[k].baseline, t[k].scenario, k === 'rides_per_day' ? 0 : 1, NO_TOTAL, NO_TOTAL, mark)}</td>
       ))}
       <td className="n" />
       {(['rides_per_scheduled_trip', 'rides_per_scheduled_hour'] as const).map(k => (
-        <td key={k} className="n"><BeforeAfter b={t[k].baseline} s={t[k].scenario} rb="no route has a value" rs="no route has a value" />
-          <span className="block text-xs font-normal text-ink-2">{fmtChange(t[k].change_percent)}</span></td>
+        <td key={k} className="n">{beforeAfter(t[k].baseline, t[k].scenario, 1, NO_TOTAL, NO_TOTAL, mark)}
+          {t[k].change_percent != null && <span className="block text-xs font-normal text-ink-2">{fmtChange(t[k].change_percent)}</span>}</td>
       ))}
       <td />
     </tr>
@@ -302,7 +337,7 @@ function ComparisonTable({ resp, groupOf }: { resp: ScenarioResponse; groupOf: G
            purpose={s.baseline.demand === 'predicted'
              ? `The replay day, ${fmtDate(s.baseline.period.start)} · predicted rides from the stored forecast, with that day's timetable.`
              : `${s.baseline.period.label} · ${s.baseline.daytype_label} · per-day values are means over each route's observed days; ratios are sums over the same days.`}
-           howToRead={`Each cell shows the baseline, then → the scenario. "Assumed" marks rides changed by the demand assumption. Rank is the position on rides per scheduled hour among ${of.scenario} ranked routes (1 = highest), with ties sharing a rank. Unavailable values say why and are never shown as 0.`}>
+           howToRead={`Each cell shows the baseline, then → the scenario. "Assumed" marks rides changed by the demand assumption. Rank is the position on rides per scheduled hour among ${of.scenario} ranked routes (1 = highest), with ties sharing a rank. A numbered "unavailable" is explained under the table; it is never shown as 0.`}>
       <div className="-mx-4 overflow-x-auto">
         <table className="data-table">
           <thead><tr>
@@ -310,12 +345,17 @@ function ComparisonTable({ resp, groupOf }: { resp: ScenarioResponse; groupOf: G
             <th className="n">Minutes per trip</th><th className="n">Rides per scheduled trip</th><th className="n">Rides per scheduled hour</th><th className="n">Rank</th>
           </tr></thead>
           <tbody>
-            {rows.map(r => <RouteRow key={r.route} r={r} groupOf={groupOf} />)}
+            {rows.map(r => routeRow(r, groupOf, mark))}
             {res.rows.length > 1 && totals(s.baseline.group ? 'The group' : 'These routes', res.totals.selected)}
             {totals('Whole network', res.totals.network)}
           </tbody>
         </table>
       </div>
+      {list.length > 0 && (
+        <ol className="mt-3 space-y-0.5 text-xs text-ink-2" aria-label="Why values are unavailable">
+          {list.map((why, i) => <li key={why}><sup className="mr-1 font-semibold text-ink">{i + 1}</sup>{why}</li>)}
+        </ol>
+      )}
       {[...blank.entries()].map(([why, rs]) => (
         <p key={why} className="mt-3 text-sm">
           <span className="font-semibold">{rs.length} route{rs.length === 1 ? '' : 's'} not in the table</span>
@@ -339,28 +379,34 @@ function nothingToCompare(r: ScenarioRow): boolean {
   return KEYS.every(([k]) => r.baseline[k] == null && r.scenario[k] == null)
 }
 
-function RouteRow({ r, groupOf }: { r: ScenarioRow; groupOf: GroupOf }) {
+/** One table row. A plain function (not a component), so its reasons are numbered in table order before the list
+ *  under the table is drawn. */
+function routeRow(r: ScenarioRow, groupOf: GroupOf, mark: Mark): ReactNode {
   const b = r.baseline, s = r.scenario
   const cells: ReactNode[] = KEYS.map(([k, reasonKey, d]) => (
     <td key={k} className="n">
-      <BeforeAfter b={b[k] as number | null} s={s[k] as number | null} digits={d} rb={b.reasons[reasonKey]} rs={s.reasons[reasonKey]} />
+      {beforeAfter(b[k] as number | null, s[k] as number | null, d, b.reasons[reasonKey], s.reasons[reasonKey], mark)}
       {k === 'rides_per_day' && r.demand_assumed && <span className="ml-1 text-xs font-semibold text-warn-ink">assumed</span>}
       {(k === 'rides_per_scheduled_trip' || k === 'rides_per_scheduled_hour') && b[k] != null && s[k] != null &&
         <span className="block text-xs text-ink-2">{fmtChange(r.change_percent[k])}</span>}
     </td>
   ))
-  cells.splice(3, 0, <td key="minutes" className="n"><BeforeAfter b={b.mean_trip_minutes} s={s.mean_trip_minutes} rb="no duration" rs="no duration" /></td>)
+  const noDuration = 'no trip duration to show'
+  cells.splice(3, 0, <td key="minutes" className="n">{beforeAfter(b.mean_trip_minutes, s.mean_trip_minutes, 1, noDuration, noDuration, mark)}</td>)
+  // a route given new service is explained by its cells' own reasons; only a change that was not applied needs a note
+  const note = r.note && r.status !== 'service_added' ? mark(`Route ${r.route}${r.status === 'unchanged' ? ', not changed' : ''}: ${r.note}`) : null
+  const rankWhy = s.rank_rides_per_scheduled_hour == null ? mark(s.rank_rides_per_scheduled_hour_reason) : null
   return (
-    <tr>
-      <th scope="row" className="text-left font-normal">
+    <tr key={r.route}>
+      <th scope="row" className="whitespace-nowrap text-left font-normal">
         <Link to={`/route/${encodeURIComponent(r.route)}`} className="no-underline" aria-label={`Open route ${r.route}`}>
           <RouteSign route={r.route} groupId={r.group_id ?? groupOf.get(r.route)} size="sm" /></Link>
-        {r.note && <span className="mt-0.5 block max-w-[28ch] text-xs text-ink-2">{r.status === 'unchanged' ? 'Not changed: ' : ''}{r.note}</span>}
+        {note != null && <sup className="ml-1 text-xs font-semibold" title={r.note ?? undefined}>{note}</sup>}
       </th>
       {cells}
       <td className="n whitespace-nowrap">
         {fmtRankMove(b.rank_rides_per_scheduled_hour, s.rank_rides_per_scheduled_hour)}
-        {s.rank_rides_per_scheduled_hour == null && <span className="block max-w-[24ch] text-xs text-ink-2">{s.rank_rides_per_scheduled_hour_reason}</span>}
+        {rankWhy != null && <sup className="ml-0.5 text-xs font-semibold">{rankWhy}</sup>}
       </td>
     </tr>
   )
@@ -382,7 +428,7 @@ function RatioChart({ rows }: { rows: ScenarioRow[] }) {
             <CartesianGrid stroke={RULE} vertical={false} />
             <XAxis dataKey="route" tick={{ fontSize: 11, fill: INK_2 }} interval={0} />
             <YAxis tick={{ fontSize: 11, fill: INK_2 }} width={44} tickFormatter={(x: number) => fmt(x)} />
-            <Tooltip formatter={(v) => fmt(Number(v), 1)} isAnimationActive={false} />
+            <Tooltip isAnimationActive={false} cursor={{ fill: RULE, opacity: 0.4 }} content={<RatioTip />} />
             <Bar dataKey="baseline" name="Baseline" fill={SLATE_RAMP[3]} maxBarSize={48} isAnimationActive={false} />
             <Bar dataKey="scenario" name="Scenario" fill="#FFFFFF" stroke={INK} strokeWidth={1.5} maxBarSize={48} isAnimationActive={false} />
           </BarChart>
@@ -393,6 +439,19 @@ function RatioChart({ rows }: { rows: ScenarioRow[] }) {
         <span><span className="mr-1.5 inline-block h-2.5 w-3.5 border-[1.5px] align-middle" style={{ borderColor: INK, background: '#FFFFFF' }} />Scenario</span>
       </p>
     </Panel>
+  )
+}
+
+/** Both values for the route under the pointer, written in ink (a white scenario bar would hide a coloured label). */
+function RatioTip({ active, payload }: { active?: boolean; payload?: readonly { payload?: { route: string; baseline: number; scenario: number } }[] }) {
+  const d = active && payload?.length ? payload[0]!.payload : undefined
+  if (!d) return null
+  return (
+    <div className="border border-rule-strong bg-panel px-2.5 py-1.5 text-xs text-ink shadow-sm">
+      <div className="mb-0.5 font-semibold">Route {d.route}</div>
+      <div>Baseline: <span className="num">{fmt(d.baseline, 1)}</span> rides per scheduled hour</div>
+      <div>Scenario: <span className="num">{fmt(d.scenario, 1)}</span> ({fmtChange((d.scenario - d.baseline) / d.baseline * 100)})</div>
+    </div>
   )
 }
 

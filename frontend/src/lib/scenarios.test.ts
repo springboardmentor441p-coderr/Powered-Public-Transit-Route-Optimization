@@ -88,6 +88,19 @@ describe('insights (computed from the response, never hard-coded)', () => {
     const s = insights(resp([row({}), zero]))
     expect(s.at(-1)).toBe('1 of 2 routes have no rides per scheduled hour to compare, shown as unavailable rather than 0 (no scheduled service on Sundays and holidays, so nothing to compare).')
   })
+  it('service added where there was none: one sentence, the reason said once', () => {
+    const why = 'no recorded rides on days without service, so demand there is unknown'
+    const added = row({ route: '1', status: 'service_added', note: why,
+                        baseline: side({ rides_per_day: null, trips_per_day: null, rides_per_scheduled_trip: null, rides_per_scheduled_hour: null,
+                                         rank_rides_per_scheduled_hour: null }),
+                        scenario: side({ rides_per_day: null, trips_per_day: 40, rides_per_scheduled_trip: null, rides_per_scheduled_hour: null,
+                                         rank_rides_per_scheduled_hour: null, reasons: { rides_per_trip: why, rides_per_hour: why } }) })
+    const r = resp([added])
+    r.scenario.baseline.daytype_label = 'Sundays and holidays'
+    const s = insights(r)
+    expect(s).toEqual([`Route 1 gets 40.0 scheduled trips per day on Sundays and holidays, where it had none. Its rides per scheduled trip and hour stay unavailable: ${why}.`])
+    expect(s.join(' ').split(why).length - 1).toBe(1)
+  })
   it('formats changes and rank moves', () => {
     expect(fromTo(35.6, 35.6)).toBe('stays at 35.6')
     expect(fromTo(null, 2)).toBeNull()

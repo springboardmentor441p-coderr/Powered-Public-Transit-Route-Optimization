@@ -117,7 +117,14 @@ export function insights(resp: ScenarioResponse): string[] {
     out.push('Nothing changes: the service change could not be applied to any route in this baseline (see the notes below).')
     return out
   }
-  if (rows.length === 1 || res.rows.length === 1) {
+  const single = rows.length === 1 || res.rows.length === 1
+  if (single && rows[0]!.status === 'service_added') {
+    // One sentence says what was added and why its ratios stay unknown; the reason is not repeated after it
+    const r = rows[0]!
+    out.push(`Route ${r.route} gets ${fmt(r.scenario.trips_per_day, 1)} scheduled trips per day on ${s.baseline.daytype_label}, where it had none. Its rides per scheduled trip and hour stay unavailable: ${r.scenario.reasons.rides_per_trip ?? 'no value'}.`)
+    return out
+  }
+  if (single) {
     const r = rows[0]!
     const ft = fromTo(r.baseline.rides_per_scheduled_hour, r.scenario.rides_per_scheduled_hour)
     const ftTrip = fromTo(r.baseline.rides_per_scheduled_trip, r.scenario.rides_per_scheduled_trip)
@@ -140,6 +147,7 @@ export function insights(resp: ScenarioResponse): string[] {
     out.push(up + down === 0 ? `No route in ${who} changes rank on rides per scheduled hour.`
       : `In ${who}, ${down} route${down === 1 ? '' : 's'} move${down === 1 ? 's' : ''} down and ${up} move${up === 1 ? 's' : ''} up the ranking on rides per scheduled hour.`)
   }
+  if (res.rows.length === 1) return out  // the route's own sentence already gave any reason
   const unknown = res.rows.filter(r => r.scenario.rides_per_scheduled_hour == null)
   if (unknown.length) {
     const reasons = new Map<string, number>()
@@ -148,8 +156,8 @@ export function insights(resp: ScenarioResponse): string[] {
     out.push(`${unknown.length} of ${res.rows.length} route${res.rows.length === 1 ? ' has' : 's have'} no rides per scheduled hour to compare, shown as unavailable rather than 0 (${n === unknown.length ? '' : `most often: `}${top}).`)
   }
   const added = res.rows.filter(r => r.status === 'service_added')
-  for (const r of added.slice(0, 3)) {
-    out.push(`Route ${r.route} gets ${fmt(r.scenario.trips_per_day, 1)} scheduled trips per day where it had none, but its rides per trip stay unknown: ${r.scenario.reasons.rides_per_trip}.`)
+  if (added.length) {  // their reason is already in the sentence above
+    out.push(`${added.map(r => `Route ${r.route}`).join(', ')} ${added.length === 1 ? 'gets' : 'get'} new scheduled trips where ${added.length === 1 ? 'it' : 'they'} had none; ${added.length === 1 ? 'its' : 'their'} ratios are among those unavailable.`)
   }
   return out
 }

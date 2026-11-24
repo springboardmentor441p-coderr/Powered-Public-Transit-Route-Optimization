@@ -59,6 +59,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--env", type=Path, default=REPO_ROOT / "backend" / ".env")
     ap.add_argument("--url-var", default="DATABASE_URL")
+    ap.add_argument("--out", type=Path, default=OUT, help="where to export (a test-database run must not overwrite the report)")
     args = ap.parse_args()
     url = read_env(args.env)[args.url_var]
     with open_write_conn(url) as conn:
@@ -79,8 +80,8 @@ def main() -> None:
             print(f"recomputed identically: {row['scenario_id']}  sha256 {chk['recomputed_sha256'][:16]}...")
             out.append({**summary(row), "recompute_identical": True})
         total = conn.execute("SELECT count(*) AS n FROM scenarios").fetchone()["n"]
-    OUT.write_text(json.dumps(_json(out), indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"{total} scenarios in this database; examples exported to {OUT.relative_to(REPO_ROOT)}")
+    args.out.write_text(json.dumps(_json(out), indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"{total} scenarios in this database; examples exported to {args.out}")
 
 
 if __name__ == "__main__":
