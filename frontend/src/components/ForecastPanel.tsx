@@ -48,7 +48,7 @@ function ReplayForecast({ route }: { route: string }) {
         const scored = model.filter(x => x.actual.revealed && x.actual.rides != null && x.prediction != null)
         const mae = scored.length ? scored.reduce((a, x) => a + Math.abs(x.actual.rides! - x.prediction!), 0) / scored.length : null
         return (
-          <Panel title={`Forecast, route ${route}`} purpose={`Historical replay · ${s.delay_assumption}.`}
+          <Panel title={`Forecast, route ${route}`} purpose="Historical replay"
                  aside={!s.complete && <button type="button" className="btn-secondary" disabled={r.busy} onClick={() => void r.act('advance')}>Advance one day</button>}
                  howToRead="Solid: recorded rides, shown only once their day is revealed. Dashed: the model's stored forecast, issued at the start of each day. Dotted: the 4-week average. The marked day is today: its forecast is visible, its actual is not yet.">
             {today ? <TodayFacts t={today} /> : <p className="mb-3 text-sm">{s.complete ? 'The replay is complete.' : `No forecast for route ${route} today (no scheduled service).`}</p>}

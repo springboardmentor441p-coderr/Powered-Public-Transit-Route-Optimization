@@ -106,7 +106,7 @@ function ModelFacts({ v, s }: { v: ReviewResponse; s: ReplayState }) {
     <p className="text-xs text-ink-2">
       Forecasts: {v.model.label}, model {v.model.model_version} (sha256 <span title={v.model.model_sha256} className="cursor-help border-b border-dotted border-ink-2">{v.model.model_sha256.slice(0, 12)}…</span>),
       trained on data to {fmtDate(s.model.trained_through)}, chosen on {fmtDate(s.model.chosen_on[0])} – {fmtDate(s.model.chosen_on[1])},
-      {' '}{s.model.frozen_note}. Each forecast is issued at the start of its day. Assumption: {s.delay_assumption} ({s.delay_note}).
+      {' '}{s.model.frozen_note}. Each forecast is issued at the start of its day.
     </p>
   )
 }

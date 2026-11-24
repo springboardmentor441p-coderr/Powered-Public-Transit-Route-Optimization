@@ -15,6 +15,7 @@ import { OneRoutePage } from './screens/OneRoutePage'
 import { SharedStopsPage } from './screens/SharedStopsPage'
 import { StartPage } from './screens/StartPage'
 import { StylePage } from './screens/StylePage'
+import { fmtDate } from './lib/dates'
 
 function NotBuilt() {
   return (
@@ -28,7 +29,8 @@ function NotBuilt() {
 export default function App() {
   // The data status in the top bar comes from the API, once per page load (and again if the cutoff changes).
   const coverage = useApi(o => api.coverage(o), 'coverage')
-  const dataThrough = coverage.status === 'ok' ? coverage.data.cutoff.permitted_through
+  const through = coverage.status === 'ok' ? coverage.data.cutoff.permitted_through : null
+  const dataThrough = coverage.status === 'ok' ? (through ? fmtDate(through) : <span className="text-xs font-normal">unavailable – no cutoff reported</span>)
     : coverage.status === 'loading' ? '…' : <span className="text-xs font-normal">unavailable – API not reachable</span>
   return (
     <ProvenanceProvider>

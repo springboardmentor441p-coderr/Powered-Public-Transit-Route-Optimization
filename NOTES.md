@@ -1700,3 +1700,17 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - frontend: vitest (107 tests), tsc, lint and build pass;
   - the replay click-through passes 20 of 20, and the historical click-through 7 of 7.
 - **Interview Q:** *"What's the strongest single piece of evidence?"* The leakage test. Change every future ride and the past forecasts stay bit-identical, while forecasts that do use those rides move. That shows future data can't reach a forecast, not just that the code was written not to use it.
+
+# Stage 8: Scenarios (spec 9.15, 9.16, 9.17.2–9.17.3, 9.19; stage table 9.18 row 8)
+
+> Spec row: "Service arithmetic and explicit demand stress → Saved baseline/scenario comparison with assumptions."
+
+## Step 96: Stage 7 polish (one assumption sentence, a readable top-bar date)
+- **Built:**
+  - The reporting-delay assumption now appears once in replay: in the replay bar. The Replay screen's model facts and the One route forecast panel no longer repeat it.
+  - The top bar's "Data to" date reads "31 May 2026" instead of "2026-05-31" (`fmtDate`). A missing cutoff reads "unavailable – no cutoff reported".
+- **Why:** the same sentence twice on one screen looks like two different rules. An ISO date is a field value, not words.
+- **Key concept:** *one fact, one place*. The replay bar is on every screen in replay, so every screen-level copy was a duplicate.
+- **Decisions:** the Sources drawer keeps its ISO cutoff. It is the data-details panel, where exact values belong.
+- **Results:** tsc, lint and vitest (107) pass.
+- **Interview Q:** *"Why does a duplicated sentence matter?"* Readers assume that repeated text means something new. One copy in a fixed place is easier to trust and to check.
