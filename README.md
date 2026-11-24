@@ -15,6 +15,7 @@ named ranking indicators, historical replay and service scenarios. The work foll
 | 5. Route groups and ranking | development-period route profiles, KMeans groups, three named rankings (demand, rides per trip, rides per hour) and route stop overlap | complete: 2 named groups (67 + 56 routes; silhouette 0.38, moderate separation); rankings for the full matched window and the development period, ties preserved, unranked rows kept with reasons; overlap for 8 timetable versions (corridor review only) | `reports/stage5_quality_report.md` |
 | 6. Application foundation | PostgreSQL import, a read-only FastAPI (9 endpoints, one cutoff rule enforced in SQL) and 7 React screens (Start, Closer look, One route, Alike, Shared stops, Compare, Data) | complete, historical-analysis mode only: 277 backend and 101 frontend tests pass; every screen reached by clicking and checked at 1366 and 1920 px. Replay (Stage 7) and Scenarios (Stage 8) come later | `reports/stage6_import_report.md`, `reports/stage6_application_report.md` |
 | 7. Replay | a server-side virtual clock over June–July 2026, forecasts stored before each day is revealed, every screen limited to revealed data, a Replay screen and a forecast panel | complete: stored forecasts reproduce Stage 4a's test MAE exactly (398.0 vs 421.2 for the 4-week average, on 6,542 route-days); changing every later ride leaves earlier forecasts bit-identical | `reports/stage7_replay_report.md` |
+| 8. Scenarios | service arithmetic (trips and trip-hours as a % or a new value per day) with demand held fixed, an explicit labelled demand assumption, re-ranking with the same rules, immutable saved scenarios with versions, and a Scenarios screen | complete: route 49 +20 % weekday trips takes rides per scheduled hour from 35.6 to 29.7 (rides unchanged); 3 saved examples recompute to identical hashes; checks run only on the test database | `reports/stage8_scenarios_report.md`, `reports/stage8_scenario_examples.json` |
 
 The step-by-step log of decisions is in `NOTES.md`. The test period (June-July 2026) is a reused holdout, not an untouched test.
 
@@ -111,6 +112,23 @@ Replay assumptions and supported dates:
 - Model: the frozen random forest on ride history (`stage4a-1.0.0`), trained to 2026-03-31 and chosen on April–May. It is never retrained in the replay. The 4-week average is stored alongside it for comparison only.
 - Route groups stay frozen at their 23 Nov 2025 – 31 Mar 2026 profile period.
 
+**Stage 8: service scenarios (needs Stage 7's tables)**
+
+Add the scenarios table, then save the three example scenarios. Run this once; a later run saves nothing and only re-checks them:
+```
+python -I backend\importer\import_stage8.py
+python -I backend\scenarios\save_examples.py
+```
+Restart the API after this step, then open **Scenarios** in the top bar (or **Create scenario** on One route).
+
+Scenario assumptions:
+- Demand is held fixed: adding service never adds riders. A change in rides is only ever an explicit, labelled "Scenario assumption" (for example −15 %), never a prediction.
+- Trip-hours change with trips at the baseline's mean duration per trip, which is shown and saved. Running-time effects are not modelled.
+- A route with no service on the chosen day type cannot be scaled by a %. Adding service there needs a number of trips per day, and its ratios stay unavailable (no rides were recorded without service).
+- Re-ranking uses the same rules as every ranking: at least 20 observed days of the day type, and ties share a rank. Route groups stay frozen.
+- In replay, a scenario uses revealed rides only (the session's cutoff), and can also start from the stored forecast for the replay day.
+- Saved scenarios are never changed or deleted (the database refuses it). Editing saves a new version, and recomputing gives the same hash.
+
 **Tests**
 ```
 python -m pytest
@@ -129,10 +147,20 @@ Optional layout and navigation checks, with both servers running (Playwright, de
 node scripts\clickthrough.mjs
 node scripts\screens.mjs <output folder> / /closer-look /route/22 /alike /shared-stops /compare?routes=49,X49 /data
 ```
-The replay click-through (switch to replay, reveal a day and a week, check every screen, jump to the end):
+The replay and scenario click-throughs create replay sessions and saved scenarios, which can never be deleted. So they refuse to run unless the API reads `routeranker_test`. Run them against a temporary API and Vite, never your own:
 ```
+:: terminal 1 (repo root)
+set ROUTERANKER_URL_VAR=TEST_DATABASE_URL
+.venv\Scripts\uvicorn backend.app.main:app --port 8010
+:: terminal 2 (frontend\)
+set ROUTERANKER_API=http://127.0.0.1:8010
+npx vite --port 5180
+:: terminal 3 (frontend\)
+set APP_URL=http://localhost:5180
 node scripts\replay_check.mjs <output folder>
+node scripts\scenario_check.mjs <output folder>
 ```
+`routeranker_test` must hold the data first. Run the Stage 6, 7 and 8 import commands with `--url-var TEST_DATABASE_URL`, and give `import_data.py` a `--report` path outside `reports\`. A full `python -m pytest` empties the test database again afterwards.
 
 ## Layout
 `data/` raw + processed (gitignored) · `analytics/` pipeline code · `artifacts/` fitted models · `backend/` FastAPI · `frontend/` React · `reports/` quality and evaluation reports

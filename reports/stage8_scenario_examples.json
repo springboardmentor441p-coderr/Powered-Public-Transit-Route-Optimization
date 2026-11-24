@@ -1,0 +1,1986 @@
+[
+ {
+  "scenario_id": "scn_4f6653a10a53fb03",
+  "name": "Route 49: 20 % more weekday trips, demand held fixed",
+  "version": 1,
+  "origin": "example",
+  "mode": "historical_analysis",
+  "cutoff": "2026-07-31",
+  "data_version": "cta_ref__r20261113__gtfs8__to20260731",
+  "group_version": "cta_ref__r20261113__gtfs8__to20260731/groups__dev20251123_20260331",
+  "baseline": {
+   "end": null,
+   "start": null,
+   "demand": "recorded",
+   "period": "full_matched_window",
+   "routes": [
+    "49"
+   ],
+   "daytype": "W",
+   "group_id": null
+  },
+  "inputs": {
+   "service": [
+    {
+     "trips": {
+      "how": "percent",
+      "value": 20.0
+     },
+     "routes": null,
+     "trip_hours": null
+    }
+   ],
+   "demand_stress": null
+  },
+  "assumptions": [
+   "Baseline: route 49 on weekdays in the full matched window (23 Nov 2025 – 31 Jul 2026), from recorded rides and the timetables that applied on the same days.",
+   "Demand is held fixed: recorded rides stay as they were, so adding service does not add riders.",
+   "Change 1: on route 49, scheduled trips change by +20 %.",
+   "Each trip keeps the baseline's mean duration (route 49: 85.8 minutes), so trip-hours change in proportion to trips.",
+   "Re-ranked with the usual rules: a route needs at least 20 observed days of this day type, ties share a rank, and routes below that stay unranked with their reason. Route groups are the frozen version fitted on the development period.",
+   "This is conditional planning arithmetic, not a forecast. It does not show reduced crowding, a ridership gain or a timetable that could actually be run.",
+   "Running-time effects (congestion, departure times, direction mix) are not modelled: each changed trip is assumed to take the baseline's mean time."
+  ],
+  "result_sha256": "6c33d568943ff3f177e9c6ad106aa272750b0afe42e47d78b2222c93e7cd1235",
+  "created_at": "2026-11-24T15:34:50.906754+05:30",
+  "routes": [
+   {
+    "route": "49",
+    "status": "changed",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 13766.514285714286,
+     "trips_per_day": 270.5542857142857,
+     "hours_per_day": 386.72252372,
+     "mean_trip_minutes": 85.76227636513401,
+     "rides_per_scheduled_trip": 50.882632479354555,
+     "rides_per_scheduled_hour": 35.59791178773363,
+     "rank_rides_per_scheduled_hour": 58,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 13766.514285714286,
+     "trips_per_day": 324.6651428571429,
+     "hours_per_day": 464.067028464,
+     "mean_trip_minutes": 85.762276365134,
+     "rides_per_scheduled_trip": 42.40219373279546,
+     "rides_per_scheduled_hour": 29.664926489778026,
+     "rank_rides_per_scheduled_hour": 86,
+     "reasons": {}
+    }
+   }
+  ],
+  "totals_selected": {
+   "routes": 1,
+   "left_out": [],
+   "hours_per_day": {
+    "baseline": 386.72252372,
+    "scenario": 464.067028464,
+    "change_percent": 19.999999999999986,
+    "routes_included": 1
+   },
+   "rides_per_day": {
+    "baseline": 13766.514285714286,
+    "scenario": 13766.514285714286,
+    "change_percent": 0.0,
+    "routes_included": 1
+   },
+   "trips_per_day": {
+    "baseline": 270.5542857142857,
+    "scenario": 324.6651428571429,
+    "change_percent": 20.000000000000018,
+    "routes_included": 1
+   },
+   "rides_per_scheduled_hour": {
+    "baseline": 35.59791178773363,
+    "scenario": 29.664926489778026,
+    "change_percent": -16.666666666666664,
+    "routes_included": 1
+   },
+   "rides_per_scheduled_trip": {
+    "baseline": 50.882632479354555,
+    "scenario": 42.40219373279546,
+    "change_percent": -16.66666666666667,
+    "routes_included": 1
+   }
+  },
+  "totals_network": {
+   "routes": 125,
+   "left_out": [],
+   "hours_per_day": {
+    "baseline": 16223.1879825729,
+    "scenario": 16300.5324873169,
+    "change_percent": 0.4767528110201534,
+    "routes_included": 125
+   },
+   "rides_per_day": {
+    "baseline": 614106.4998989516,
+    "scenario": 614106.4998989516,
+    "change_percent": 0.0,
+    "routes_included": 125
+   },
+   "trips_per_day": {
+    "baseline": 19021.80459770115,
+    "scenario": 19075.915454844006,
+    "change_percent": 0.2844675270683587,
+    "routes_included": 125
+   },
+   "rides_per_scheduled_hour": {
+    "baseline": 37.86962033629648,
+    "scenario": 37.68943036161882,
+    "change_percent": -0.47581669179016073,
+    "routes_included": 125
+   },
+   "rides_per_scheduled_trip": {
+    "baseline": 32.33844080037595,
+    "scenario": 32.2463376418885,
+    "change_percent": -0.28481013990747583,
+    "routes_included": 125
+   }
+  },
+  "other_rank_changes": 28,
+  "ranked_routes": {
+   "rides_per_scheduled_hour": {
+    "baseline": 125,
+    "scenario": 125
+   },
+   "rides_per_scheduled_trip": {
+    "baseline": 125,
+    "scenario": 125
+   }
+  },
+  "recompute_identical": true
+ },
+ {
+  "scenario_id": "scn_223d8238cd634c20",
+  "name": "Lower-demand group: rides assumed 15 % lower on weekdays",
+  "version": 1,
+  "origin": "example",
+  "mode": "historical_analysis",
+  "cutoff": "2026-07-31",
+  "data_version": "cta_ref__r20261113__gtfs8__to20260731",
+  "group_version": "cta_ref__r20261113__gtfs8__to20260731/groups__dev20251123_20260331",
+  "baseline": {
+   "end": null,
+   "start": null,
+   "demand": "recorded",
+   "period": "full_matched_window",
+   "routes": null,
+   "daytype": "W",
+   "group_id": 1
+  },
+  "inputs": {
+   "service": [],
+   "demand_stress": {
+    "scope": "baseline_routes",
+    "routes": null,
+    "percent": -15.0
+   }
+  },
+  "assumptions": [
+   "Baseline: the route group “Lower-demand routes, often with limited or no weekend service” (56 routes) on weekdays in the full matched window (23 Nov 2025 – 31 Jul 2026), from recorded rides and the timetables that applied on the same days.",
+   "Scenario assumption: rides fall by 15 % on the baseline routes. This is assumed demand, not a prediction; the recorded rides are kept alongside.",
+   "Every other route keeps its demand.",
+   "Re-ranked with the usual rules: a route needs at least 20 observed days of this day type, ties share a rank, and routes below that stay unranked with their reason. Route groups are the frozen version fitted on the development period.",
+   "This is conditional planning arithmetic, not a forecast. It does not show reduced crowding, a ridership gain or a timetable that could actually be run.",
+   "Running-time effects (congestion, departure times, direction mix) are not modelled: each changed trip is assumed to take the baseline's mean time."
+  ],
+  "result_sha256": "c2e0c1352ea938fb4d18bc018aee6c646f099fce5d95b292b21b4078832f8d90",
+  "created_at": "2026-11-24T15:34:51.322125+05:30",
+  "routes": [
+   {
+    "route": "1",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1127.08,
+     "trips_per_day": 59.0,
+     "hours_per_day": 32.984999702857145,
+     "mean_trip_minutes": 33.54406749443099,
+     "rides_per_scheduled_trip": 19.103050847457627,
+     "rides_per_scheduled_hour": 34.169471279466855,
+     "rank_rides_per_scheduled_hour": 64,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 958.0179999999999,
+     "trips_per_day": 59.0,
+     "hours_per_day": 32.984999702857145,
+     "mean_trip_minutes": 33.54406749443099,
+     "rides_per_scheduled_trip": 16.237593220338983,
+     "rides_per_scheduled_hour": 29.044050587546824,
+     "rank_rides_per_scheduled_hour": 79,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "2",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1767.9314285714286,
+     "trips_per_day": 60.325714285714284,
+     "hours_per_day": 52.848619308571436,
+     "mean_trip_minutes": 52.563275811310035,
+     "rides_per_scheduled_trip": 29.30643175144454,
+     "rides_per_scheduled_hour": 33.452745818180546,
+     "rank_rides_per_scheduled_hour": 68,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1502.7417142857141,
+     "trips_per_day": 60.325714285714284,
+     "hours_per_day": 52.848619308571436,
+     "mean_trip_minutes": 52.563275811310035,
+     "rides_per_scheduled_trip": 24.91046698872786,
+     "rides_per_scheduled_hour": 28.434833945453462,
+     "rank_rides_per_scheduled_hour": 81,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "7",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 4004.0114285714285,
+     "trips_per_day": 133.78285714285715,
+     "hours_per_day": 115.7109521542857,
+     "mean_trip_minutes": 51.89496829062019,
+     "rides_per_scheduled_trip": 29.929181616265165,
+     "rides_per_scheduled_hour": 34.60356477952574,
+     "rank_rides_per_scheduled_hour": 61,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 3403.409714285714,
+     "trips_per_day": 133.78285714285715,
+     "hours_per_day": 115.7109521542857,
+     "mean_trip_minutes": 51.89496829062019,
+     "rides_per_scheduled_trip": 25.439804373825385,
+     "rides_per_scheduled_hour": 29.413030062596874,
+     "rank_rides_per_scheduled_hour": 78,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "11",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 946.8,
+     "trips_per_day": 84.0,
+     "hours_per_day": 36.64207917142858,
+     "mean_trip_minutes": 26.172913693877554,
+     "rides_per_scheduled_trip": 11.271428571428572,
+     "rides_per_scheduled_hour": 25.839145087003175,
+     "rank_rides_per_scheduled_hour": 100,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 804.78,
+     "trips_per_day": 84.0,
+     "hours_per_day": 36.64207917142858,
+     "mean_trip_minutes": 26.172913693877554,
+     "rides_per_scheduled_trip": 9.580714285714286,
+     "rides_per_scheduled_hour": 21.9632733239527,
+     "rank_rides_per_scheduled_hour": 101,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "24",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1940.5485714285714,
+     "trips_per_day": 99.16571428571429,
+     "hours_per_day": 86.96930633142857,
+     "mean_trip_minutes": 52.62058986285582,
+     "rides_per_scheduled_trip": 19.56874495793477,
+     "rides_per_scheduled_hour": 22.313028047313573,
+     "rank_rides_per_scheduled_hour": 112,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1649.4662857142855,
+     "trips_per_day": 99.16571428571429,
+     "hours_per_day": 86.96930633142857,
+     "mean_trip_minutes": 52.62058986285582,
+     "rides_per_scheduled_trip": 16.633433214244555,
+     "rides_per_scheduled_hour": 18.966073840216534,
+     "rank_rides_per_scheduled_hour": 112,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "30",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 2211.4285714285716,
+     "trips_per_day": 113.66285714285715,
+     "hours_per_day": 99.94114293142856,
+     "mean_trip_minutes": 52.756623637826145,
+     "rides_per_scheduled_trip": 19.45603539289126,
+     "rides_per_scheduled_hour": 22.127309199834475,
+     "rank_rides_per_scheduled_hour": 113,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1879.7142857142858,
+     "trips_per_day": 113.66285714285715,
+     "hours_per_day": 99.94114293142856,
+     "mean_trip_minutes": 52.756623637826145,
+     "rides_per_scheduled_trip": 16.53763008395757,
+     "rides_per_scheduled_hour": 18.808212819859303,
+     "rank_rides_per_scheduled_hour": 113,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "31",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 545.0228571428571,
+     "trips_per_day": 55.0,
+     "hours_per_day": 21.425,
+     "mean_trip_minutes": 23.37272727272727,
+     "rides_per_scheduled_trip": 9.909506493506493,
+     "rides_per_scheduled_hour": 25.43863977329555,
+     "rank_rides_per_scheduled_hour": 102,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 463.26942857142853,
+     "trips_per_day": 55.0,
+     "hours_per_day": 21.425,
+     "mean_trip_minutes": 23.37272727272727,
+     "rides_per_scheduled_trip": 8.42308051948052,
+     "rides_per_scheduled_hour": 21.622843807301216,
+     "rank_rides_per_scheduled_hour": 102,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "37",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1723.4571428571428,
+     "trips_per_day": 91.73142857142857,
+     "hours_per_day": 56.32933340571429,
+     "mean_trip_minutes": 36.844079035694264,
+     "rides_per_scheduled_trip": 18.788076994954213,
+     "rides_per_scheduled_hour": 30.596086242382338,
+     "rank_rides_per_scheduled_hour": 84,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1464.9385714285713,
+     "trips_per_day": 91.73142857142857,
+     "hours_per_day": 56.32933340571429,
+     "mean_trip_minutes": 36.844079035694264,
+     "rides_per_scheduled_trip": 15.969865445711083,
+     "rides_per_scheduled_hour": 26.00667330602499,
+     "rank_rides_per_scheduled_hour": 89,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "39",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1315.8914285714286,
+     "trips_per_day": 94.0,
+     "hours_per_day": 63.683333,
+     "mean_trip_minutes": 40.6489359574468,
+     "rides_per_scheduled_trip": 13.998844984802432,
+     "rides_per_scheduled_hour": 20.66304269237021,
+     "rank_rides_per_scheduled_hour": 116,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1118.5077142857144,
+     "trips_per_day": 94.0,
+     "hours_per_day": 63.683333,
+     "mean_trip_minutes": 40.6489359574468,
+     "rides_per_scheduled_trip": 11.899018237082068,
+     "rides_per_scheduled_hour": 17.563586288514678,
+     "rank_rides_per_scheduled_hour": 116,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "43",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 736.8114285714286,
+     "trips_per_day": 112.0,
+     "hours_per_day": 38.37138098857143,
+     "mean_trip_minutes": 20.556096958163266,
+     "rides_per_scheduled_trip": 6.5786734693877555,
+     "rides_per_scheduled_hour": 19.202108696345363,
+     "rank_rides_per_scheduled_hour": 117,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 626.2897142857142,
+     "trips_per_day": 112.0,
+     "hours_per_day": 38.37138098857143,
+     "mean_trip_minutes": 20.556096958163266,
+     "rides_per_scheduled_trip": 5.591872448979592,
+     "rides_per_scheduled_hour": 16.321792391893556,
+     "rank_rides_per_scheduled_hour": 117,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "44",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 2510.8114285714287,
+     "trips_per_day": 140.16571428571427,
+     "hours_per_day": 93.07038113714286,
+     "mean_trip_minutes": 39.84014847486648,
+     "rides_per_scheduled_trip": 17.91316400994741,
+     "rides_per_scheduled_hour": 26.977556102103517,
+     "rank_rides_per_scheduled_hour": 96,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 2134.189714285714,
+     "trips_per_day": 140.16571428571427,
+     "hours_per_day": 93.07038113714286,
+     "mean_trip_minutes": 39.84014847486648,
+     "rides_per_scheduled_trip": 15.226189408455298,
+     "rides_per_scheduled_hour": 22.93092268678799,
+     "rank_rides_per_scheduled_hour": 98,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "48",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 677.1142857142858,
+     "trips_per_day": 64.86285714285714,
+     "hours_per_day": 24.519476302857143,
+     "mean_trip_minutes": 22.681217617831027,
+     "rides_per_scheduled_trip": 10.439168355210995,
+     "rides_per_scheduled_hour": 27.615364918515194,
+     "rank_rides_per_scheduled_hour": 94,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 575.5471428571428,
+     "trips_per_day": 64.86285714285714,
+     "hours_per_day": 24.519476302857143,
+     "mean_trip_minutes": 22.681217617831027,
+     "rides_per_scheduled_trip": 8.873293101929345,
+     "rides_per_scheduled_hour": 23.473060180737914,
+     "rank_rides_per_scheduled_hour": 97,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "51",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1042.0742857142857,
+     "trips_per_day": 98.0,
+     "hours_per_day": 39.891667,
+     "mean_trip_minutes": 24.423469591836735,
+     "rides_per_scheduled_trip": 10.6334110787172,
+     "rides_per_scheduled_hour": 26.12260564880093,
+     "rank_rides_per_scheduled_hour": 99,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 885.7631428571428,
+     "trips_per_day": 98.0,
+     "hours_per_day": 39.891667,
+     "mean_trip_minutes": 24.423469591836735,
+     "rides_per_scheduled_trip": 9.03839941690962,
+     "rides_per_scheduled_hour": 22.20421480148079,
+     "rank_rides_per_scheduled_hour": 100,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "57",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1654.5142857142857,
+     "trips_per_day": 126.0,
+     "hours_per_day": 45.376380725714284,
+     "mean_trip_minutes": 21.607800345578234,
+     "rides_per_scheduled_trip": 13.131065759637188,
+     "rides_per_scheduled_hour": 36.46201524346544,
+     "rank_rides_per_scheduled_hour": 56,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1406.337142857143,
+     "trips_per_day": 126.0,
+     "hours_per_day": 45.376380725714284,
+     "mean_trip_minutes": 21.607800345578234,
+     "rides_per_scheduled_trip": 11.16140589569161,
+     "rides_per_scheduled_hour": 30.992712956945624,
+     "rank_rides_per_scheduled_hour": 74,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "59",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 2431.137142857143,
+     "trips_per_day": 115.48571428571428,
+     "hours_per_day": 85.53499976,
+     "mean_trip_minutes": 44.43926261652648,
+     "rides_per_scheduled_trip": 21.051410192973776,
+     "rides_per_scheduled_hour": 28.42271759722447,
+     "rank_rides_per_scheduled_hour": 90,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 2066.466571428571,
+     "trips_per_day": 115.48571428571428,
+     "hours_per_day": 85.53499976,
+     "mean_trip_minutes": 44.43926261652648,
+     "rides_per_scheduled_trip": 17.893698664027706,
+     "rides_per_scheduled_hour": 24.159309957640797,
+     "rank_rides_per_scheduled_hour": 94,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "68",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 850.4457142857143,
+     "trips_per_day": 98.33142857142857,
+     "hours_per_day": 30.195095422857143,
+     "mean_trip_minutes": 18.42448291143654,
+     "rides_per_scheduled_trip": 8.6487680148768,
+     "rides_per_scheduled_hour": 28.16502820659882,
+     "rank_rides_per_scheduled_hour": 92,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 722.8788571428572,
+     "trips_per_day": 98.33142857142857,
+     "hours_per_day": 30.195095422857143,
+     "mean_trip_minutes": 18.42448291143654,
+     "rides_per_scheduled_trip": 7.351452812645282,
+     "rides_per_scheduled_hour": 23.940273975608996,
+     "rank_rides_per_scheduled_hour": 96,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "84",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 2807.2685714285712,
+     "trips_per_day": 138.66285714285715,
+     "hours_per_day": 79.96876205714285,
+     "mean_trip_minutes": 34.60281882469298,
+     "rides_per_scheduled_trip": 20.24528146377648,
+     "rides_per_scheduled_hour": 35.104564572633954,
+     "rank_rides_per_scheduled_hour": 60,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 2386.1782857142857,
+     "trips_per_day": 138.66285714285715,
+     "hours_per_day": 79.96876205714285,
+     "mean_trip_minutes": 34.60281882469298,
+     "rides_per_scheduled_trip": 17.208489244210007,
+     "rides_per_scheduled_hour": 29.838879886738862,
+     "rank_rides_per_scheduled_hour": 77,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "86",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1843.3485714285714,
+     "trips_per_day": 105.44,
+     "hours_per_day": 76.80723827999999,
+     "mean_trip_minutes": 43.7066985660091,
+     "rides_per_scheduled_trip": 17.482440927812704,
+     "rides_per_scheduled_hour": 23.9996725921672,
+     "rank_rides_per_scheduled_hour": 107,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1566.8462857142856,
+     "trips_per_day": 105.44,
+     "hours_per_day": 76.80723827999999,
+     "mean_trip_minutes": 43.7066985660091,
+     "rides_per_scheduled_trip": 14.860074788640796,
+     "rides_per_scheduled_hour": 20.39972170334212,
+     "rank_rides_per_scheduled_hour": 107,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "88",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 907.7485714285714,
+     "trips_per_day": 100.0,
+     "hours_per_day": 31.641667,
+     "mean_trip_minutes": 18.9850002,
+     "rides_per_scheduled_trip": 9.077485714285714,
+     "rides_per_scheduled_hour": 28.688392790069226,
+     "rank_rides_per_scheduled_hour": 89,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 771.5862857142857,
+     "trips_per_day": 100.0,
+     "hours_per_day": 31.641667,
+     "mean_trip_minutes": 18.9850002,
+     "rides_per_scheduled_trip": 7.715862857142858,
+     "rides_per_scheduled_hour": 24.385133871558846,
+     "rank_rides_per_scheduled_hour": 93,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "96",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 627.4457142857143,
+     "trips_per_day": 66.0,
+     "hours_per_day": 25.55,
+     "mean_trip_minutes": 23.22727272727273,
+     "rides_per_scheduled_trip": 9.506753246753247,
+     "rides_per_scheduled_hour": 24.55756220296338,
+     "rank_rides_per_scheduled_hour": 106,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 533.3288571428571,
+     "trips_per_day": 66.0,
+     "hours_per_day": 25.55,
+     "mean_trip_minutes": 23.22727272727273,
+     "rides_per_scheduled_trip": 8.08074025974026,
+     "rides_per_scheduled_hour": 20.87392787251887,
+     "rank_rides_per_scheduled_hour": 106,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "100",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 374.07428571428574,
+     "trips_per_day": 52.777142857142856,
+     "hours_per_day": 25.125761737142856,
+     "mean_trip_minutes": 28.56436750108272,
+     "rides_per_scheduled_trip": 7.087808575140754,
+     "rides_per_scheduled_hour": 14.888077409462177,
+     "rank_rides_per_scheduled_hour": 121,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 317.9631428571428,
+     "trips_per_day": 52.777142857142856,
+     "hours_per_day": 25.125761737142856,
+     "mean_trip_minutes": 28.56436750108272,
+     "rides_per_scheduled_trip": 6.0246372888696405,
+     "rides_per_scheduled_hour": 12.654865798042849,
+     "rank_rides_per_scheduled_hour": 121,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "103",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1430.8857142857144,
+     "trips_per_day": 129.27428571428572,
+     "hours_per_day": 63.655238188571424,
+     "mean_trip_minutes": 29.544269149980106,
+     "rides_per_scheduled_trip": 11.068602749414312,
+     "rides_per_scheduled_hour": 22.47867975997321,
+     "rank_rides_per_scheduled_hour": 110,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1216.2528571428572,
+     "trips_per_day": 129.27428571428572,
+     "hours_per_day": 63.655238188571424,
+     "mean_trip_minutes": 29.544269149980106,
+     "rides_per_scheduled_trip": 9.408312337002165,
+     "rides_per_scheduled_hour": 19.10687779597723,
+     "rank_rides_per_scheduled_hour": 110,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "106",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 940.6685714285715,
+     "trips_per_day": 134.3942857142857,
+     "hours_per_day": 39.69714298857143,
+     "mean_trip_minutes": 17.722692350014878,
+     "rides_per_scheduled_trip": 6.999319698966793,
+     "rides_per_scheduled_hour": 23.696127746507713,
+     "rank_rides_per_scheduled_hour": 108,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 799.5682857142856,
+     "trips_per_day": 134.3942857142857,
+     "hours_per_day": 39.69714298857143,
+     "mean_trip_minutes": 17.722692350014878,
+     "rides_per_scheduled_trip": 5.949421744121773,
+     "rides_per_scheduled_hour": 20.141708584531553,
+     "rank_rides_per_scheduled_hour": 108,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "108",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 648.4971428571429,
+     "trips_per_day": 71.61714285714285,
+     "hours_per_day": 28.989476417142857,
+     "mean_trip_minutes": 24.287042398468046,
+     "rides_per_scheduled_trip": 9.055054655708929,
+     "rides_per_scheduled_hour": 22.370088149424305,
+     "rank_rides_per_scheduled_hour": 111,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 551.2225714285714,
+     "trips_per_day": 71.61714285714285,
+     "hours_per_day": 28.989476417142857,
+     "mean_trip_minutes": 24.287042398468046,
+     "rides_per_scheduled_trip": 7.696796457352589,
+     "rides_per_scheduled_hour": 19.01457492701066,
+     "rank_rides_per_scheduled_hour": 111,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "111",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 2034.662857142857,
+     "trips_per_day": 140.0,
+     "hours_per_day": 72.133333,
+     "mean_trip_minutes": 30.91428557142857,
+     "rides_per_scheduled_trip": 14.53330612244898,
+     "rides_per_scheduled_hour": 28.20697134766887,
+     "rank_rides_per_scheduled_hour": 91,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1729.4634285714285,
+     "trips_per_day": 140.0,
+     "hours_per_day": 72.133333,
+     "mean_trip_minutes": 30.91428557142857,
+     "rides_per_scheduled_trip": 12.353310204081632,
+     "rides_per_scheduled_hour": 23.975925645518537,
+     "rank_rides_per_scheduled_hour": 95,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "112",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1129.3428571428572,
+     "trips_per_day": 133.77142857142857,
+     "hours_per_day": 62.80333324,
+     "mean_trip_minutes": 28.16894485348142,
+     "rides_per_scheduled_trip": 8.442332336608287,
+     "rides_per_scheduled_hour": 17.98221207188361,
+     "rank_rides_per_scheduled_hour": 118,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 959.9414285714286,
+     "trips_per_day": 133.77142857142857,
+     "hours_per_day": 62.80333324,
+     "mean_trip_minutes": 28.16894485348142,
+     "rides_per_scheduled_trip": 7.175982486117044,
+     "rides_per_scheduled_hour": 15.284880261101067,
+     "rank_rides_per_scheduled_hour": 118,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "115",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1699.2514285714285,
+     "trips_per_day": 142.89142857142858,
+     "hours_per_day": 73.51657142857144,
+     "mean_trip_minutes": 30.86955130768616,
+     "rides_per_scheduled_trip": 11.891905942573782,
+     "rides_per_scheduled_hour": 23.11385576818443,
+     "rank_rides_per_scheduled_hour": 109,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1444.3637142857142,
+     "trips_per_day": 142.89142857142858,
+     "hours_per_day": 73.51657142857144,
+     "mean_trip_minutes": 30.86955130768616,
+     "rides_per_scheduled_trip": 10.108120051187715,
+     "rides_per_scheduled_hour": 19.646777402956765,
+     "rank_rides_per_scheduled_hour": 109,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "120",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 885.6228571428571,
+     "trips_per_day": 73.0,
+     "hours_per_day": 21.490338428571427,
+     "mean_trip_minutes": 17.663291859099804,
+     "rides_per_scheduled_trip": 12.131819960861057,
+     "rides_per_scheduled_hour": 41.21027968388904,
+     "rank_rides_per_scheduled_hour": 33,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 752.7794285714285,
+     "trips_per_day": 73.0,
+     "hours_per_day": 21.490338428571427,
+     "mean_trip_minutes": 17.663291859099804,
+     "rides_per_scheduled_trip": 10.312046966731899,
+     "rides_per_scheduled_hour": 35.02873773130569,
+     "rank_rides_per_scheduled_hour": 55,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "121",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1122.3085714285714,
+     "trips_per_day": 76.0,
+     "hours_per_day": 25.415004737142855,
+     "mean_trip_minutes": 20.064477424060147,
+     "rides_per_scheduled_trip": 14.767218045112783,
+     "rides_per_scheduled_hour": 44.15929027108814,
+     "rank_rides_per_scheduled_hour": 16,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 953.9622857142857,
+     "trips_per_day": 76.0,
+     "hours_per_day": 25.415004737142855,
+     "mean_trip_minutes": 20.064477424060147,
+     "rides_per_scheduled_trip": 12.552135338345865,
+     "rides_per_scheduled_hour": 37.535396730424914,
+     "rank_rides_per_scheduled_hour": 46,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "124",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1190.9942857142858,
+     "trips_per_day": 82.46857142857142,
+     "hours_per_day": 31.242190365714283,
+     "mean_trip_minutes": 22.730252136917958,
+     "rides_per_scheduled_trip": 14.44179600886918,
+     "rides_per_scheduled_hour": 38.121343983016736,
+     "rank_rides_per_scheduled_hour": 48,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1012.3451428571428,
+     "trips_per_day": 82.46857142857142,
+     "hours_per_day": 31.242190365714283,
+     "mean_trip_minutes": 22.730252136917958,
+     "rides_per_scheduled_trip": 12.275526607538803,
+     "rides_per_scheduled_hour": 32.40314238556422,
+     "rank_rides_per_scheduled_hour": 66,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "125",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 529.9657142857143,
+     "trips_per_day": 51.0,
+     "hours_per_day": 24.483333,
+     "mean_trip_minutes": 28.80392117647059,
+     "rides_per_scheduled_trip": 10.391484593837536,
+     "rides_per_scheduled_hour": 21.645979094664696,
+     "rank_rides_per_scheduled_hour": 114,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 450.4708571428571,
+     "trips_per_day": 51.0,
+     "hours_per_day": 24.483333,
+     "mean_trip_minutes": 28.80392117647059,
+     "rides_per_scheduled_trip": 8.832761904761904,
+     "rides_per_scheduled_hour": 18.39908223046499,
+     "rank_rides_per_scheduled_hour": 114,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "134",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1795.6857142857143,
+     "trips_per_day": 45.78285714285714,
+     "hours_per_day": 30.35457156,
+     "mean_trip_minutes": 39.78070411632551,
+     "rides_per_scheduled_trip": 39.2217923115327,
+     "rides_per_scheduled_hour": 59.15701069067286,
+     "rank_rides_per_scheduled_hour": 1,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1526.3328571428572,
+     "trips_per_day": 45.78285714285714,
+     "hours_per_day": 30.35457156,
+     "mean_trip_minutes": 39.78070411632551,
+     "rides_per_scheduled_trip": 33.3385234648028,
+     "rides_per_scheduled_hour": 50.28345908707193,
+     "rank_rides_per_scheduled_hour": 5,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "135",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1841.2,
+     "trips_per_day": 50.0,
+     "hours_per_day": 40.21409557142857,
+     "mean_trip_minutes": 48.256914685714285,
+     "rides_per_scheduled_trip": 36.824,
+     "rides_per_scheduled_hour": 45.78494117142699,
+     "rank_rides_per_scheduled_hour": 12,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1565.02,
+     "trips_per_day": 50.0,
+     "hours_per_day": 40.21409557142857,
+     "mean_trip_minutes": 48.256914685714285,
+     "rides_per_scheduled_trip": 31.3004,
+     "rides_per_scheduled_hour": 38.91719999571294,
+     "rank_rides_per_scheduled_hour": 41,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "136",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1116.777142857143,
+     "trips_per_day": 36.21714285714286,
+     "hours_per_day": 34.269952491428576,
+     "mean_trip_minutes": 56.7741402903124,
+     "rides_per_scheduled_trip": 30.83559482486589,
+     "rides_per_scheduled_hour": 32.58764782753829,
+     "rank_rides_per_scheduled_hour": 72,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 949.2605714285714,
+     "trips_per_day": 36.21714285714286,
+     "hours_per_day": 34.269952491428576,
+     "mean_trip_minutes": 56.7741402903124,
+     "rides_per_scheduled_trip": 26.210255601136005,
+     "rides_per_scheduled_hour": 27.69950065340755,
+     "rank_rides_per_scheduled_hour": 83,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "143",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 971.7371428571429,
+     "trips_per_day": 36.0,
+     "hours_per_day": 22.983333,
+     "mean_trip_minutes": 38.305555,
+     "rides_per_scheduled_trip": 26.992698412698413,
+     "rides_per_scheduled_hour": 42.28007934519954,
+     "rank_rides_per_scheduled_hour": 26,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 825.9765714285714,
+     "trips_per_day": 36.0,
+     "hours_per_day": 22.983333,
+     "mean_trip_minutes": 38.305555,
+     "rides_per_scheduled_trip": 22.94379365079365,
+     "rides_per_scheduled_hour": 35.938067443419605,
+     "rank_rides_per_scheduled_hour": 52,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "148",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1351.7371428571428,
+     "trips_per_day": 45.434285714285714,
+     "hours_per_day": 36.59371428571429,
+     "mean_trip_minutes": 48.32524210791096,
+     "rides_per_scheduled_trip": 29.7514778015344,
+     "rides_per_scheduled_hour": 36.939052764721495,
+     "rank_rides_per_scheduled_hour": 53,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1148.9765714285713,
+     "trips_per_day": 45.434285714285714,
+     "hours_per_day": 36.59371428571429,
+     "mean_trip_minutes": 48.32524210791096,
+     "rides_per_scheduled_trip": 25.288756131304236,
+     "rides_per_scheduled_hour": 31.39819485001327,
+     "rank_rides_per_scheduled_hour": 72,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "156",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 4337.742857142857,
+     "trips_per_day": 127.34285714285714,
+     "hours_per_day": 95.59857129714285,
+     "mean_trip_minutes": 45.04307824186673,
+     "rides_per_scheduled_trip": 34.06349562485977,
+     "rides_per_scheduled_hour": 45.37455736299794,
+     "rank_rides_per_scheduled_hour": 13,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 3687.0814285714287,
+     "trips_per_day": 127.34285714285714,
+     "hours_per_day": 95.59857129714285,
+     "mean_trip_minutes": 45.04307824186673,
+     "rides_per_scheduled_trip": 28.953971281130805,
+     "rides_per_scheduled_hour": 38.568373758548255,
+     "rank_rides_per_scheduled_hour": 42,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "165",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 127.37714285714286,
+     "trips_per_day": 19.0,
+     "hours_per_day": 4.775,
+     "mean_trip_minutes": 15.078947368421057,
+     "rides_per_scheduled_trip": 6.70406015037594,
+     "rides_per_scheduled_hour": 26.675841436050856,
+     "rank_rides_per_scheduled_hour": 97,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 108.27057142857142,
+     "trips_per_day": 19.0,
+     "hours_per_day": 4.775,
+     "mean_trip_minutes": 15.078947368421057,
+     "rides_per_scheduled_trip": 5.698451127819548,
+     "rides_per_scheduled_hour": 22.674465220643228,
+     "rank_rides_per_scheduled_hour": 99,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "169",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 116.43103448275862,
+     "trips_per_day": 9.804597701149426,
+     "hours_per_day": 8.311590103448275,
+     "mean_trip_minutes": 50.86342361078545,
+     "rides_per_scheduled_trip": 11.87514654161782,
+     "rides_per_scheduled_hour": 14.008274353478313,
+     "rank_rides_per_scheduled_hour": 124,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 98.96637931034482,
+     "trips_per_day": 9.804597701149426,
+     "hours_per_day": 8.311590103448275,
+     "mean_trip_minutes": 50.86342361078545,
+     "rides_per_scheduled_trip": 10.093874560375145,
+     "rides_per_scheduled_hour": 11.907033200456564,
+     "rank_rides_per_scheduled_hour": 124,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "171",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 791.4742857142858,
+     "trips_per_day": 69.62857142857143,
+     "hours_per_day": 14.499476005714286,
+     "mean_trip_minutes": 12.494419208863357,
+     "rides_per_scheduled_trip": 11.367090685268773,
+     "rides_per_scheduled_hour": 54.5864061158047,
+     "rank_rides_per_scheduled_hour": 3,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 672.7531428571428,
+     "trips_per_day": 69.62857142857143,
+     "hours_per_day": 14.499476005714286,
+     "mean_trip_minutes": 12.494419208863357,
+     "rides_per_scheduled_trip": 9.662027082478458,
+     "rides_per_scheduled_hour": 46.39844519843399,
+     "rank_rides_per_scheduled_hour": 10,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "172",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1506.7828571428572,
+     "trips_per_day": 105.49714285714286,
+     "hours_per_day": 27.27009549714286,
+     "mean_trip_minutes": 15.509479077023077,
+     "rides_per_scheduled_trip": 14.28268876611418,
+     "rides_per_scheduled_hour": 55.25403669014381,
+     "rank_rides_per_scheduled_hour": 2,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1280.7654285714284,
+     "trips_per_day": 105.49714285714286,
+     "hours_per_day": 27.27009549714286,
+     "mean_trip_minutes": 15.509479077023077,
+     "rides_per_scheduled_trip": 12.140285451197052,
+     "rides_per_scheduled_hour": 46.965931186622235,
+     "rank_rides_per_scheduled_hour": 9,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "192",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 438.68,
+     "trips_per_day": 19.0,
+     "hours_per_day": 11.241475857142857,
+     "mean_trip_minutes": 35.49939744360903,
+     "rides_per_scheduled_trip": 23.088421052631578,
+     "rides_per_scheduled_hour": 39.02334582885412,
+     "rank_rides_per_scheduled_hour": 46,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 372.878,
+     "trips_per_day": 19.0,
+     "hours_per_day": 11.241475857142857,
+     "mean_trip_minutes": 35.49939744360903,
+     "rides_per_scheduled_trip": 19.62515789473684,
+     "rides_per_scheduled_hour": 33.169843954526,
+     "rank_rides_per_scheduled_hour": 63,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "201",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1238.8914285714286,
+     "trips_per_day": 76.0,
+     "hours_per_day": 49.833333,
+     "mean_trip_minutes": 39.342105000000004,
+     "rides_per_scheduled_trip": 16.301203007518797,
+     "rides_per_scheduled_hour": 24.86069772959855,
+     "rank_rides_per_scheduled_hour": 104,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1053.0577142857144,
+     "trips_per_day": 76.0,
+     "hours_per_day": 49.833333,
+     "mean_trip_minutes": 39.342105000000004,
+     "rides_per_scheduled_trip": 13.856022556390977,
+     "rides_per_scheduled_hour": 21.131593070158768,
+     "rank_rides_per_scheduled_hour": 104,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "206",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 315.4457142857143,
+     "trips_per_day": 22.10857142857143,
+     "hours_per_day": 10.50304736,
+     "mean_trip_minutes": 28.504005500129235,
+     "rides_per_scheduled_trip": 14.268027914189712,
+     "rides_per_scheduled_hour": 30.033732446743368,
+     "rank_rides_per_scheduled_hour": 86,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 268.1288571428571,
+     "trips_per_day": 22.10857142857143,
+     "hours_per_day": 10.50304736,
+     "mean_trip_minutes": 28.504005500129235,
+     "rides_per_scheduled_trip": 12.127823727061255,
+     "rides_per_scheduled_hour": 25.52867257973186,
+     "rank_rides_per_scheduled_hour": 90,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "X4",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 2708.8342857142857,
+     "trips_per_day": 69.0,
+     "hours_per_day": 86.87433329714285,
+     "mean_trip_minutes": 75.54289851925466,
+     "rides_per_scheduled_trip": 39.258467908902695,
+     "rides_per_scheduled_hour": 31.181065602530207,
+     "rank_rides_per_scheduled_hour": 81,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 2302.5091428571427,
+     "trips_per_day": 69.0,
+     "hours_per_day": 86.87433329714285,
+     "mean_trip_minutes": 75.54289851925466,
+     "rides_per_scheduled_trip": 33.36969772256729,
+     "rides_per_scheduled_hour": 26.503905762150676,
+     "rank_rides_per_scheduled_hour": 86,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "N5",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 267.1257142857143,
+     "trips_per_day": 19.24,
+     "hours_per_day": 15.627428274285714,
+     "mean_trip_minutes": 48.73418380754381,
+     "rides_per_scheduled_trip": 13.883872883872884,
+     "rides_per_scheduled_hour": 17.09338923828296,
+     "rank_rides_per_scheduled_hour": 119,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 227.05685714285713,
+     "trips_per_day": 19.24,
+     "hours_per_day": 15.627428274285714,
+     "mean_trip_minutes": 48.73418380754381,
+     "rides_per_scheduled_trip": 11.801291951291951,
+     "rides_per_scheduled_hour": 14.529380852540516,
+     "rank_rides_per_scheduled_hour": 119,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "53A",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 2683.6057142857144,
+     "trips_per_day": 172.66285714285715,
+     "hours_per_day": 108.58252399428571,
+     "mean_trip_minutes": 37.732211475377284,
+     "rides_per_scheduled_trip": 15.542460947842203,
+     "rides_per_scheduled_hour": 24.71489532170888,
+     "rank_rides_per_scheduled_hour": 105,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 2281.064857142857,
+     "trips_per_day": 172.66285714285715,
+     "hours_per_day": 108.58252399428571,
+     "mean_trip_minutes": 37.732211475377284,
+     "rides_per_scheduled_trip": 13.211091805665871,
+     "rides_per_scheduled_hour": 21.00766102345255,
+     "rank_rides_per_scheduled_hour": 105,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "54A",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 490.2,
+     "trips_per_day": 42.005714285714284,
+     "hours_per_day": 33.53252414285715,
+     "mean_trip_minutes": 47.897089307577204,
+     "rides_per_scheduled_trip": 11.669840837981226,
+     "rides_per_scheduled_hour": 14.618643019881903,
+     "rank_rides_per_scheduled_hour": 122,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 416.67,
+     "trips_per_day": 42.005714285714284,
+     "hours_per_day": 33.53252414285715,
+     "mean_trip_minutes": 47.897089307577204,
+     "rides_per_scheduled_trip": 9.919364712284043,
+     "rides_per_scheduled_hour": 12.425846566899617,
+     "rank_rides_per_scheduled_hour": 122,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "54B",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1894.84,
+     "trips_per_day": 114.66285714285715,
+     "hours_per_day": 75.09461886285715,
+     "mean_trip_minutes": 39.29500139838533,
+     "rides_per_scheduled_trip": 16.525316455696203,
+     "rides_per_scheduled_hour": 25.232700141410724,
+     "rank_rides_per_scheduled_hour": 103,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1610.614,
+     "trips_per_day": 114.66285714285715,
+     "hours_per_day": 75.09461886285715,
+     "mean_trip_minutes": 39.29500139838533,
+     "rides_per_scheduled_trip": 14.046518987341774,
+     "rides_per_scheduled_hour": 21.447795120199117,
+     "rank_rides_per_scheduled_hour": 103,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "55A",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 130.83428571428573,
+     "trips_per_day": 38.0,
+     "hours_per_day": 9.733333,
+     "mean_trip_minutes": 15.36842052631579,
+     "rides_per_scheduled_trip": 3.4430075187969926,
+     "rides_per_scheduled_hour": 13.441879129614255,
+     "rank_rides_per_scheduled_hour": 125,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 111.20914285714285,
+     "trips_per_day": 38.0,
+     "hours_per_day": 9.733333,
+     "mean_trip_minutes": 15.36842052631579,
+     "rides_per_scheduled_trip": 2.9265563909774435,
+     "rides_per_scheduled_hour": 11.425597260172117,
+     "rank_rides_per_scheduled_hour": 125,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "55N",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 365.19428571428574,
+     "trips_per_day": 80.0,
+     "hours_per_day": 22.308333,
+     "mean_trip_minutes": 16.73124975,
+     "rides_per_scheduled_trip": 4.564928571428571,
+     "rides_per_scheduled_hour": 16.37030815858297,
+     "rank_rides_per_scheduled_hour": 120,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 310.4151428571429,
+     "trips_per_day": 80.0,
+     "hours_per_day": 22.308333,
+     "mean_trip_minutes": 16.73124975,
+     "rides_per_scheduled_trip": 3.8801892857142857,
+     "rides_per_scheduled_hour": 13.914761934795523,
+     "rank_rides_per_scheduled_hour": 120,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "62H",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 687.1714285714286,
+     "trips_per_day": 76.0,
+     "hours_per_day": 31.766667,
+     "mean_trip_minutes": 25.078947631578945,
+     "rides_per_scheduled_trip": 9.041729323308271,
+     "rides_per_scheduled_hour": 21.631839077465337,
+     "rank_rides_per_scheduled_hour": 115,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 584.0957142857143,
+     "trips_per_day": 76.0,
+     "hours_per_day": 31.766667,
+     "mean_trip_minutes": 25.078947631578945,
+     "rides_per_scheduled_trip": 7.68546992481203,
+     "rides_per_scheduled_hour": 18.387063215845536,
+     "rank_rides_per_scheduled_hour": 115,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "63W",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1125.182857142857,
+     "trips_per_day": 117.77714285714286,
+     "hours_per_day": 36.42023828,
+     "mean_trip_minutes": 18.55380631410412,
+     "rides_per_scheduled_trip": 9.553490854398136,
+     "rides_per_scheduled_hour": 30.89443974782411,
+     "rank_rides_per_scheduled_hour": 82,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 956.4054285714285,
+     "trips_per_day": 117.77714285714286,
+     "hours_per_day": 36.42023828,
+     "mean_trip_minutes": 18.55380631410412,
+     "rides_per_scheduled_trip": 8.120467226238416,
+     "rides_per_scheduled_hour": 26.260273785650487,
+     "rank_rides_per_scheduled_hour": 88,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "81W",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 1408.4857142857143,
+     "trips_per_day": 88.0,
+     "hours_per_day": 44.0,
+     "mean_trip_minutes": 30.0,
+     "rides_per_scheduled_trip": 16.00551948051948,
+     "rides_per_scheduled_hour": 32.01103896103896,
+     "rank_rides_per_scheduled_hour": 76,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 1197.212857142857,
+     "trips_per_day": 88.0,
+     "hours_per_day": 44.0,
+     "mean_trip_minutes": 30.0,
+     "rides_per_scheduled_trip": 13.604691558441559,
+     "rides_per_scheduled_hour": 27.209383116883117,
+     "rank_rides_per_scheduled_hour": 84,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "85A",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 621.9485714285714,
+     "trips_per_day": 94.0,
+     "hours_per_day": 21.583333,
+     "mean_trip_minutes": 13.776595531914893,
+     "rides_per_scheduled_trip": 6.616474164133739,
+     "rides_per_scheduled_hour": 28.81615047261567,
+     "rank_rides_per_scheduled_hour": 88,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 528.6562857142857,
+     "trips_per_day": 94.0,
+     "hours_per_day": 21.583333,
+     "mean_trip_minutes": 13.776595531914893,
+     "rides_per_scheduled_trip": 5.624003039513677,
+     "rides_per_scheduled_hour": 24.493727901723318,
+     "rank_rides_per_scheduled_hour": 92,
+     "reasons": {}
+    }
+   },
+   {
+    "route": "111A",
+    "status": "demand_only",
+    "note": null,
+    "baseline": {
+     "rides_per_day": 332.52,
+     "trips_per_day": 82.0,
+     "hours_per_day": 23.066667,
+     "mean_trip_minutes": 16.878049024390243,
+     "rides_per_scheduled_trip": 4.055121951219512,
+     "rides_per_scheduled_hour": 14.41560672809817,
+     "rank_rides_per_scheduled_hour": 123,
+     "reasons": {}
+    },
+    "scenario": {
+     "rides_per_day": 282.642,
+     "trips_per_day": 82.0,
+     "hours_per_day": 23.066667,
+     "mean_trip_minutes": 16.878049024390243,
+     "rides_per_scheduled_trip": 3.446853658536585,
+     "rides_per_scheduled_hour": 12.253265718883444,
+     "rank_rides_per_scheduled_hour": 123,
+     "reasons": {}
+    }
+   }
+  ],
+  "totals_selected": {
+   "routes": 56,
+   "left_out": [],
+   "hours_per_day": {
+    "baseline": 2501.05179409202,
+    "scenario": 2501.05179409202,
+    "change_percent": 0.0,
+    "routes_included": 56
+   },
+   "rides_per_day": {
+    "baseline": 72323.07103448275,
+    "scenario": 61474.61037931034,
+    "change_percent": -15.000000000000002,
+    "routes_included": 56
+   },
+   "trips_per_day": {
+    "baseline": 4697.976026272578,
+    "scenario": 4697.976026272578,
+    "change_percent": 0.0,
+    "routes_included": 56
+   },
+   "rides_per_scheduled_hour": {
+    "baseline": 28.917345617828694,
+    "scenario": 24.57974377515439,
+    "change_percent": -14.999999999999996,
+    "routes_included": 56
+   },
+   "rides_per_scheduled_trip": {
+    "baseline": 15.394558807788492,
+    "scenario": 13.085374986620218,
+    "change_percent": -15.0,
+    "routes_included": 56
+   }
+  },
+  "totals_network": {
+   "routes": 125,
+   "left_out": [],
+   "hours_per_day": {
+    "baseline": 16223.1879825729,
+    "scenario": 16223.1879825729,
+    "change_percent": 0.0,
+    "routes_included": 125
+   },
+   "rides_per_day": {
+    "baseline": 614106.4998989516,
+    "scenario": 603258.0392437793,
+    "change_percent": -1.76654385793953,
+    "routes_included": 125
+   },
+   "trips_per_day": {
+    "baseline": 19021.80459770115,
+    "scenario": 19021.80459770115,
+    "change_percent": 0.0,
+    "routes_included": 125
+   },
+   "rides_per_scheduled_hour": {
+    "baseline": 37.86962033629648,
+    "scenario": 37.1990478800822,
+    "change_percent": -1.7707398443906879,
+    "routes_included": 125
+   },
+   "rides_per_scheduled_trip": {
+    "baseline": 32.33844080037595,
+    "scenario": 31.765811144068998,
+    "change_percent": -1.7707398443906854,
+    "routes_included": 125
+   }
+  },
+  "other_rank_changes": 68,
+  "ranked_routes": {
+   "rides_per_scheduled_hour": {
+    "baseline": 125,
+    "scenario": 125
+   },
+   "rides_per_scheduled_trip": {
+    "baseline": 125,
+    "scenario": 125
+   }
+  },
+  "recompute_identical": true
+ },
+ {
+  "scenario_id": "scn_105335ff18ed69ac",
+  "name": "Route 1: add 40 Sunday trips where there is no Sunday service",
+  "version": 1,
+  "origin": "example",
+  "mode": "historical_analysis",
+  "cutoff": "2026-07-31",
+  "data_version": "cta_ref__r20261113__gtfs8__to20260731",
+  "group_version": "cta_ref__r20261113__gtfs8__to20260731/groups__dev20251123_20260331",
+  "baseline": {
+   "end": null,
+   "start": null,
+   "demand": "recorded",
+   "period": "full_matched_window",
+   "routes": [
+    "1"
+   ],
+   "daytype": "U",
+   "group_id": null
+  },
+  "inputs": {
+   "service": [
+    {
+     "trips": {
+      "how": "per_day",
+      "value": 40.0
+     },
+     "routes": null,
+     "trip_hours": null
+    }
+   ],
+   "demand_stress": null
+  },
+  "assumptions": [
+   "Baseline: route 1 on Sundays and holidays in the full matched window (23 Nov 2025 – 31 Jul 2026), from recorded rides and the timetables that applied on the same days.",
+   "Demand is held fixed: recorded rides stay as they were, so adding service does not add riders.",
+   "Change 1: on route 1, scheduled trips are set to 40 per day.",
+   "Route 1: no recorded rides on days without service, so demand there is unknown; trip-hours need a stated value per day.",
+   "Re-ranked with the usual rules: a route needs at least 20 observed days of this day type, ties share a rank, and routes below that stay unranked with their reason. Route groups are the frozen version fitted on the development period.",
+   "This is conditional planning arithmetic, not a forecast. It does not show reduced crowding, a ridership gain or a timetable that could actually be run.",
+   "Running-time effects (congestion, departure times, direction mix) are not modelled: each changed trip is assumed to take the baseline's mean time."
+  ],
+  "result_sha256": "3ad414cde7e27fcdfa331eb3ec9aa313fd2ea65fa8c3c61aeae4e8a8445b2573",
+  "created_at": "2026-11-24T15:34:51.585682+05:30",
+  "routes": [
+   {
+    "route": "1",
+    "status": "service_added",
+    "note": "no recorded rides on days without service, so demand there is unknown; trip-hours need a stated value per day",
+    "baseline": {
+     "rides_per_day": null,
+     "trips_per_day": null,
+     "hours_per_day": null,
+     "mean_trip_minutes": null,
+     "rides_per_scheduled_trip": null,
+     "rides_per_scheduled_hour": null,
+     "rank_rides_per_scheduled_hour": null,
+     "reasons": {
+      "hours_per_day": "no scheduled service on Sundays and holidays, so nothing to compare",
+      "rides_per_day": "no scheduled service on Sundays and holidays, so nothing to compare",
+      "trips_per_day": "no scheduled service on Sundays and holidays, so nothing to compare",
+      "rides_per_hour": "no scheduled service on Sundays and holidays, so nothing to compare",
+      "rides_per_trip": "no scheduled service on Sundays and holidays, so nothing to compare"
+     }
+    },
+    "scenario": {
+     "rides_per_day": null,
+     "trips_per_day": 40.0,
+     "hours_per_day": null,
+     "mean_trip_minutes": null,
+     "rides_per_scheduled_trip": null,
+     "rides_per_scheduled_hour": null,
+     "rank_rides_per_scheduled_hour": null,
+     "reasons": {
+      "hours_per_day": "trip-hours need a stated value per day where there was no service",
+      "rides_per_day": "no recorded rides on days without service, so demand there is unknown",
+      "rides_per_hour": "no recorded rides on days without service, so demand there is unknown",
+      "rides_per_trip": "no recorded rides on days without service, so demand there is unknown"
+     }
+    }
+   }
+  ],
+  "totals_selected": {
+   "routes": 1,
+   "left_out": [
+    {
+     "route": "1",
+     "reason": "a value is unavailable on one side"
+    }
+   ],
+   "hours_per_day": {
+    "baseline": null,
+    "scenario": null,
+    "change_percent": null,
+    "routes_included": 0
+   },
+   "rides_per_day": {
+    "baseline": null,
+    "scenario": null,
+    "change_percent": null,
+    "routes_included": 0
+   },
+   "trips_per_day": {
+    "baseline": null,
+    "scenario": null,
+    "change_percent": null,
+    "routes_included": 0
+   },
+   "rides_per_scheduled_hour": {
+    "baseline": null,
+    "scenario": null,
+    "change_percent": null,
+    "routes_included": 0
+   },
+   "rides_per_scheduled_trip": {
+    "baseline": null,
+    "scenario": null,
+    "change_percent": null,
+    "routes_included": 0
+   }
+  },
+  "totals_network": {
+   "routes": 125,
+   "left_out": [
+    {
+     "route": "1",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "100",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "108",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "120",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "121",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "125",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "134",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "135",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "136",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "143",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "148",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "156",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "157",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "165",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "171",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "192",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "2",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "201",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "206",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "24",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "26",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "31",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "37",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "48",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "54A",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "55A",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "55N",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "59",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "62H",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "7",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "85A",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "86",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "96",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "X4",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "X49",
+     "reason": "a value is unavailable on one side"
+    },
+    {
+     "route": "X9",
+     "reason": "a value is unavailable on one side"
+    }
+   ],
+   "hours_per_day": {
+    "baseline": 9534.713902333333,
+    "scenario": 9534.713902333333,
+    "change_percent": 0.0,
+    "routes_included": 89
+   },
+   "rides_per_day": {
+    "baseline": 331693.08384146343,
+    "scenario": 331693.08384146343,
+    "change_percent": 0.0,
+    "routes_included": 89
+   },
+   "trips_per_day": {
+    "baseline": 11893.341463414634,
+    "scenario": 11893.341463414634,
+    "change_percent": 0.0,
+    "routes_included": 89
+   },
+   "rides_per_scheduled_hour": {
+    "baseline": 34.77430670077162,
+    "scenario": 34.77430670077162,
+    "change_percent": 0.0,
+    "routes_included": 89
+   },
+   "rides_per_scheduled_trip": {
+    "baseline": 27.948390216084203,
+    "scenario": 27.948390216084203,
+    "change_percent": 0.0,
+    "routes_included": 89
+   }
+  },
+  "other_rank_changes": 0,
+  "ranked_routes": {
+   "rides_per_scheduled_hour": {
+    "baseline": 86,
+    "scenario": 86
+   },
+   "rides_per_scheduled_trip": {
+    "baseline": 86,
+    "scenario": 86
+   }
+  },
+  "recompute_identical": true
+ }
+]

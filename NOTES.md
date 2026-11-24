@@ -1871,3 +1871,34 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - historical click-through: 8/8.
   - Screenshots at 1366 and 1920 are in the scratchpad, not committed.
 - **Interview Q:** *"How do you test an append-only system without polluting it?"* Test against a copy you're allowed to throw away, and make the test refuse to run anywhere else. The refusal is checked by asking the server, not by trusting a port number.
+
+## Step 102: Stage 8 evidence (`reports/stage8_scenarios_report.md`, saved examples, README)
+- **Built:**
+  - **`backend/scenarios/save_examples.py`** is the one deliberate writer of scenarios to the app database.
+    - It saves the three examples only if none exist; otherwise it only re-checks.
+    - It recomputes each one and requires an identical hash.
+    - It exports `reports/stage8_scenario_examples.json`.
+  - **The report:**
+    - a requirement → evidence table (S1–S18 plus your two rules);
+    - two worked examples and one edge case, with real numbers;
+    - test counts, limitations and reproduce commands.
+  - **README:** the Stage 8 status row, the two commands, the scenario assumptions, and how to run the browser checks on the test database.
+  - **The mentor page** is in `docs-private/` (not committed).
+- **Why:** the stage table's evidence is a "saved baseline/scenario comparison with assumptions", and spec 9.18 lists "saved scenario examples" as a deliverable.
+- **Key concept:** *check before you write to something permanent*.
+  - Before the one real run, the app database was counted (0 scenarios, 6 replay sessions) and the three calculations were dry-run on the read-only connection.
+  - After it, the database holds exactly 3 scenarios, all `origin = example`, each recomputed identically. The replay sessions are still 6.
+- **Decisions:**
+  - **Examples:**
+    1. route 49, +20 % weekday trips;
+    2. the lower-demand group with rides −15 % on weekdays (weekdays, so all 56 routes have values);
+    3. route 1 with 40 Sunday trips where it has no Sunday service (the structural-zero case).
+  - **Every claim in the report was re-read from the stored results before committing:**
+    - the 28 other routes move up exactly one place;
+    - all 32 group routes that move, move down;
+    - 68 other routes move up.
+- **Results:**
+  - Route 49: rides per scheduled hour 35.60 → 29.66 and per trip 50.88 → 42.40 (both −16.7 %); trips/day 270.6 → 324.7; hours/day 386.7 → 464.1 at 85.8 min per trip; rank 58 → 86 of 125.
+  - Group −15 %: rides/day 72,323.1 → 61,474.6 (exactly × 0.85 on every route); per hour 28.92 → 24.58; the network per hour 37.87 → 37.20.
+  - Full backend suite: **384 passed** (329 + 55 new) in 31 min.
+- **Interview Q:** *"Your scenario says route 49 gets worse with more buses. Would you show that to a planner?"* Yes, with the sentence that comes with it: rides per scheduled hour falls *because demand is held fixed*. It's the honest arithmetic of spreading the same riders over more service. Whether the extra buses are worth it depends on crowding and rider response, which this data can't measure. The tool says so instead of guessing.
