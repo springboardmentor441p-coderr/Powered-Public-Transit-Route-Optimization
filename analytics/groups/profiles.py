@@ -109,6 +109,15 @@ def utilization_profiles(matched: pd.DataFrame, period_name: str, start: str, en
     p.insert(0, "period_end", end)
     p.insert(0, "period_start", start)
     p.insert(0, "period_name", period_name)
+    return rank_views(p, gate)
+
+
+def rank_views(p: pd.DataFrame, gate: int) -> pd.DataFrame:
+    """The named rankings on a profile table (one row per route x day type): the ranking gate, each view's value
+    check and reason, then a descending rank within each day type, ties sharing the lowest rank. Ineligible rows stay,
+    unranked, with their reason. Shared by Stage 5's profiles and the Stage 8 scenario re-ranking, so both apply
+    exactly the same rules. Needs observed_days, scheduled_service_days, incomplete_duration_days and the view values."""
+    p = p.copy()
     p["ranking_min_observed_days"] = gate
     for rank_col, value_col in VIEWS.items():
         reason = pd.Series("", index=p.index, dtype="object")

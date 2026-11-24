@@ -1744,3 +1744,45 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - a replay row needs a session, and version 1 has no parent;
   - reset is refused outside the test database.
 - **Interview Q:** *"If a scenario can't be deleted, how do you fix a mistake?"* Save a new version that points back to the old one. The history shows exactly what was saved and when, which is the point of an audit trail.
+
+## Step 98: The scenario engine (`backend/scenarios/engine.py`, `service.py`; `rank_views` in `profiles.py`)
+- **Built:**
+  - **`engine.py`** (pure arithmetic, no database):
+    - validation;
+    - `apply_changes` (service lines and the demand stress);
+    - `compare` (baseline against scenario per route, with selected and network totals, re-ranked on both sides);
+    - the assumption sentences in plain words;
+    - an exact hash (`float.hex()` for every number).
+  - **`service.py`** loads the baseline through the cutoff, in SQL.
+    - **Recorded rides:** Stage 5's period profiles, the same call `/api/rankings` makes.
+    - **Predicted rides (replay only):** the stored model forecast for the replay day, with that day's forecast-time timetable.
+  - **`rank_views(p, gate)`** is extracted unchanged from `utilization_profiles`. Stage 5 and the scenarios now call the *same* ranking code (gate, reasons, ties).
+- **Why:** spec 9.15.1–9.15.3 sets the rules:
+  - demand is held fixed (or stressed explicitly);
+  - hours come only from a stated duration per trip;
+  - nonnegative trips and positive denominators;
+  - zero service means "unavailable", not 0.
+  Spec 9.12/9.7.2 sets the re-ranking rules.
+- **Key concept:** *demand held fixed*. If you add 20 % more buses but the same people ride, each bus carries fewer people: rides per trip divide by 1.2. The tool never pretends the new buses attract riders. That would need an elasticity, which the spec says a fitted association doesn't give us. A demand change is a separate, labelled "Scenario assumption".
+- **Decisions:**
+  - **Trip-hours follow trips** at the baseline mean duration (hours × new trips / old trips), so a 0 % change returns the baseline bit for bit. A trip-hours change alone keeps the trips and states the new implied duration.
+  - **Factors are `(100 + p) / 100`**, so +20 % is exactly 1.2 and −15 % exactly 0.85.
+  - **Structural zero** (no service of that day type):
+    - a % change is "not applied" with the reason, and a line with only such routes is refused;
+    - an explicit trips-per-day value adds service over that day type's dates, while rides and ratios stay "unknown".
+  - **Incomplete durations:** hours stay unavailable, and a trip-hours change is refused.
+  - **No timetable match** (e.g. 1001): service changes are refused, with the spec's reason.
+  - **Limits** (the spec sets none):
+    - service −100 % to +200 %;
+    - a new value 0–2,000 per day;
+    - stress −90 % to +100 %;
+    - 5 service lines and 150 routes (the largest group has 67).
+  - **Network totals** use only routes available on both sides, so both columns describe the same routes.
+- **Results:**
+  - 30 engine tests and Stage 5's 17 profile/integration tests pass (the extraction changed nothing).
+  - Real data, route 49, weekdays, full matched window, +20 % trips:
+    - trips/day 270.6 → 324.7, trip-hours/day 386.7 → 464.1 (85.8 min per trip, held);
+    - rides/day 13,766.5 (unchanged);
+    - rides per scheduled hour **35.6 → 29.7**, rank 58 → 86.
+  - The spec's illustrative table (1,000 rides, 50 → 60 trips at 40 min) reproduces 16.67 per trip and 25.00 per hour.
+- **Interview Q:** *"Why re-use the ranking code instead of writing a small sort?"* Two copies of a rule drift apart. With one function, the scenario's "rank 58 → 86" uses exactly the gate, reasons and ties of the published ranking, so the baseline rank always equals the Closer look rank.
