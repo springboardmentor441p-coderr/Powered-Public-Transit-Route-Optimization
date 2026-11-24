@@ -1,6 +1,6 @@
+import React, { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import React, { useState, useEffect, useRef } from 'react';
 import {
   Activity, Bus, Calendar, Clock, Compass, Database, GitCompare,
   Layers, Play, Pause, SkipForward, RotateCcw, Sliders, TrendingUp,
@@ -37,6 +37,78 @@ interface RankingRow {
   eligibility_reason: string;
   service_productivity_rank: number | null;
   cluster_label?: string;
+}
+
+
+type ChartPoint = { label: string; value: number; color?: string };
+
+function ChartPanel({ title, subtitle, children, className = '' }: { title: string; subtitle?: string; children: React.ReactNode; className?: string }) {
+  return (
+    <section className={`glass-panel rounded-2xl p-5 border border-slate-800/90 ${className}`}>
+      <div className="mb-4">
+        <h3 className="font-display text-sm font-bold text-white">{title}</h3>
+        {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function HorizontalBarChart({ data, suffix = '', maxItems = 8 }: { data: ChartPoint[]; suffix?: string; maxItems?: number }) {
+  const items = data.filter(d => Number.isFinite(d.value)).slice(0, maxItems);
+  const max = Math.max(1, ...items.map(d => d.value));
+  if (!items.length) return <p className="text-xs text-slate-500 py-8 text-center">No chart data available for this selection.</p>;
+  return (
+    <div className="space-y-3">
+      {items.map((d, i) => (
+        <div key={`${d.label}-${i}`} className="grid grid-cols-[92px_1fr_74px] items-center gap-3">
+          <span className="text-xs text-slate-300 truncate">{d.label}</span>
+          <div className="h-2.5 rounded-full bg-slate-800 overflow-hidden">
+            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.max(2, d.value / max * 100)}%`, background: d.color || 'linear-gradient(90deg,#06b6d4,#8b5cf6)' }} />
+          </div>
+          <span className="text-xs text-right font-semibold tabular-nums text-slate-200">{d.value.toLocaleString(undefined, { maximumFractionDigits: 1 })}{suffix}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TrendLineChart({ data, valueKey = 'rides', labelKey = 'service_date' }: { data: any[]; valueKey?: string; labelKey?: string }) {
+  const points = data.filter(d => Number.isFinite(Number(d?.[valueKey]))).slice(-30);
+  if (points.length < 2) return <p className="text-xs text-slate-500 py-8 text-center">More matched observations are needed to draw a trend.</p>;
+  const values = points.map(d => Number(d[valueKey]));
+  const min = Math.min(...values), max = Math.max(...values), span = Math.max(1, max - min);
+  const coords = values.map((v, i) => `${24 + i * (552 / (values.length - 1))},${150 - ((v - min) / span) * 112}`).join(' ');
+  const area = `24,150 ${coords} 576,150`;
+  return (
+    <div>
+      <svg viewBox="0 0 600 178" className="w-full h-44 overflow-visible" role="img" aria-label="Daily rides trend chart">
+        {[38, 94, 150].map(y => <line key={y} x1="24" x2="576" y1={y} y2={y} stroke="#263449" strokeDasharray="4 5" />)}
+        <polygon points={area} fill="url(#ridesFill)" opacity=".24" />
+        <defs><linearGradient id="ridesFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#22d3ee"/><stop offset="100%" stopColor="#22d3ee" stopOpacity="0"/></linearGradient></defs>
+        <polyline points={coords} fill="none" stroke="#22d3ee" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <text x="24" y="172" fill="#8494aa" fontSize="10">{String(points[0]?.[labelKey] || '').slice(5)}</text>
+        <text x="576" y="172" fill="#8494aa" fontSize="10" textAnchor="end">{String(points[points.length - 1]?.[labelKey] || '').slice(5)}</text>
+        <text x="24" y="14" fill="#9aabc0" fontSize="10">{Math.round(max).toLocaleString()} rides</text>
+        <text x="24" y="164" fill="#9aabc0" fontSize="10">{Math.round(min).toLocaleString()}</text>
+      </svg>
+      <p className="text-[11px] text-slate-500">Daily matched ridership • latest {points.length} observations</p>
+    </div>
+  );
+}
+
+function ComparisonBars({ labels, values, colors = ['#22d3ee', '#a78bfa'], suffix = '' }: { labels: string[]; values: number[]; colors?: string[]; suffix?: string }) {
+  const max = Math.max(1, ...values.filter(Number.isFinite));
+  return (
+    <div className="space-y-4">
+      {labels.map((label, i) => (
+        <div key={label}>
+          <div className="flex justify-between text-xs mb-1.5"><span className="text-slate-300">{label}</span><strong className="text-white tabular-nums">{Number.isFinite(values[i]) ? values[i].toLocaleString(undefined, { maximumFractionDigits: 2 }) : 'N/A'}{suffix}</strong></div>
+          <div className="h-4 rounded-full bg-slate-800 overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{ width: `${Number.isFinite(values[i]) ? Math.max(1, values[i] / max * 100) : 0}%`, background: colors[i % colors.length] }} /></div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function App() {
@@ -204,28 +276,65 @@ export default function App() {
   };
 
   // --- Leaflet Map Initialization for Route Detail ---
-  useEffect(() => {
-    if (activeTab !== 'detail' || !mapContainerRef.current || !(window as any).L) return;
-    const L = (window as any).L;
 
-    if (!leafletMapRef.current) {
-      leafletMapRef.current = L.map(mapContainerRef.current).setView([41.8781, -87.6298], 11);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap | CTA GTFS 2026-09'
-      }).addTo(leafletMapRef.current);
+// --- Leaflet Map Initialization for Route Detail ---
+useEffect(() => {
+  // Remove old map when leaving Route Intelligence
+  if (activeTab !== 'detail') {
+    if (leafletMapRef.current) {
+      leafletMapRef.current.remove();
+      leafletMapRef.current = null;
     }
+    return;
+  }
 
-    const map = leafletMapRef.current;
-    map.eachLayer((layer: any) => {
-      if (layer instanceof L.Polyline) map.removeLayer(layer);
+  if (!mapContainerRef.current) return;
+
+  // Initialize map only once
+  if (!leafletMapRef.current) {
+    leafletMapRef.current = L.map(mapContainerRef.current, {
+      zoomControl: true,
+      scrollWheelZoom: true
+    }).setView([41.8781, -87.6298], 11);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(leafletMapRef.current);
+  }
+
+  const map = leafletMapRef.current;
+
+  // Remove previous route line
+  if ((map as any)._routePolyline) {
+    map.removeLayer((map as any)._routePolyline);
+    (map as any)._routePolyline = null;
+  }
+
+  // Draw selected route
+  const coords = routeHistory?.shape_coordinates;
+
+  if (Array.isArray(coords) && coords.length > 0) {
+    const polyline = L.polyline(coords, {
+      color: '#22d3ee',
+      weight: 5,
+      opacity: 0.95,
+      lineCap: 'round'
+    }).addTo(map);
+
+    (map as any)._routePolyline = polyline;
+
+    map.fitBounds(polyline.getBounds(), {
+      padding: [30, 30]
     });
+  }
 
-    const coords = routeHistory?.shape_coordinates;
-    if (coords && coords.length > 0) {
-      const polyline = L.polyline(coords, { color: '#22d3ee', weight: 4, opacity: 0.9 }).addTo(map);
-      map.fitBounds(polyline.getBounds(), { padding: [24, 24] });
-    }
-  }, [activeTab, routeHistory]);
+  // Fix map dimensions after rendering
+  requestAnimationFrame(() => {
+    map.invalidateSize();
+  });
+
+}, [activeTab, routeHistory]);
 
   // --- Scenario Arithmetic Calculation (Section 9.15) ---
   const meanDurMins = scenBaselineTrips > 0 ? (scenBaselineHours * 60) / scenBaselineTrips : 40;
@@ -421,6 +530,16 @@ export default function App() {
               ))}
             </div>
 
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              <ChartPanel title="Route demand leaders" subtitle="Highest average daily rides in the current route dataset">
+                <HorizontalBarChart data={[...routes].sort((a,b) => b.avg_daily_rides-a.avg_daily_rides).slice(0,7).map(r => ({ label: `Route ${r.route}`, value: r.avg_daily_rides }))} suffix=" rides" />
+              </ChartPanel>
+              <ChartPanel title="Model quality at a glance" subtitle="XGBoost Option 2 evaluation metrics • reported test and validation values">
+                <ComparisonBars labels={['Test WAPE', 'Validation WAPE', 'Test R²', 'Validation R²']} values={[6.73,6.45,98.37,98.72]} colors={['#f59e0b','#fbbf24','#10b981','#34d399']} suffix="%" />
+                <p className="text-[11px] text-slate-500 mt-3">WAPE is an error metric (lower is better); R² is goodness-of-fit (higher is better).</p>
+              </ChartPanel>
+            </div>
+
             {/* Cluster Filter Pills */}
             <div className="glass-panel rounded-2xl p-5">
               <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
@@ -526,6 +645,13 @@ export default function App() {
               </div>
             </div>
 
+            <ChartPanel title="Top route productivity" subtitle="Top 8 eligible routes by the selected planner indicator">
+              <HorizontalBarChart
+                data={[...rankings].filter(r => r.is_eligible).sort((a,b) => Number(b[rankingMetric as keyof RankingRow] || 0)-Number(a[rankingMetric as keyof RankingRow] || 0)).map(r => ({ label: `Route ${r.route}`, value: Number(r[rankingMetric as keyof RankingRow] || 0) }))}
+                suffix={rankingMetric === 'rides_per_scheduled_hour' ? ' rides/hr' : ''}
+                maxItems={8}
+              />
+            </ChartPanel>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -575,8 +701,8 @@ export default function App() {
             SCREEN 3: ROUTE DETAIL & INTERACTIVE LEAFLET MAP
            ========================================================= */}
         {activeTab === 'detail' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-            <div className="lg:col-span-2 glass-panel rounded-2xl p-5 flex flex-col min-h-[680px]">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 glass-panel rounded-2xl p-5 flex flex-col">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <h2 className="font-display text-base font-bold text-white">Route {selectedRoute} Geography & Alignment</h2>
@@ -596,13 +722,19 @@ export default function App() {
               </div>
               <div
                 ref={mapContainerRef}
-                className="w-full flex-1 min-h-[560px] h-[65vh] rounded-xl border border-slate-700/80 z-10"
-                style={{ minHeight: '560px' }}
+                className="w-full h-[600px] rounded-xl border border-slate-700/80 z-10"
+                style={{ minHeight: '600px' }}
               />
             </div>
 
+            <div className="lg:col-span-2">
+              <ChartPanel title={`Route ${selectedRoute} ridership trend`} subtitle="Historical matched daily boardings; this chart uses the observations already loaded for the selected route">
+                <TrendLineChart data={routeHistory?.history || []} />
+              </ChartPanel>
+            </div>
+
             {/* Recent Observations Panel */}
-            <div className="glass-panel rounded-2xl p-5 flex flex-col justify-between min-h-[680px]">
+            <div className="glass-panel rounded-2xl p-5 flex flex-col justify-between">
               <div>
                 <h3 className="font-display text-base font-bold text-white mb-1">Recent Matched Observations</h3>
                 <p className="text-xs text-slate-400 mb-4">Exact route/date join against dated GTFS archives</p>
@@ -687,6 +819,25 @@ export default function App() {
                 </p>
               </div>
             </div>
+            <ChartPanel title="Service productivity comparison" subtitle="Side-by-side rides per scheduled hour for the two selected routes">
+              <ComparisonBars
+                labels={[`Route ${selectedRoute}`, `Route ${compareRouteB}`]}
+                values={[
+                  Number(compareData?.route_a?.profile?.rides_per_scheduled_hour),
+                  Number(compareData?.route_b?.profile?.rides_per_scheduled_hour)
+                ]}
+              />
+              <div className="grid grid-cols-2 gap-3 mt-5">
+                <div className="rounded-xl bg-slate-900/70 border border-slate-800 p-3">
+                  <p className="text-[11px] text-slate-400">Shared stops</p>
+                  <p className="text-xl font-bold text-fuchsia-300">{compareData?.overlap?.shared_stop_count ?? '—'}</p>
+                </div>
+                <div className="rounded-xl bg-slate-900/70 border border-slate-800 p-3">
+                  <p className="text-[11px] text-slate-400">Jaccard overlap</p>
+                  <p className="text-xl font-bold text-fuchsia-300">{compareData?.overlap?.jaccard_overlap != null ? `${(compareData.overlap.jaccard_overlap*100).toFixed(1)}%` : '—'}</p>
+                </div>
+              </div>
+            </ChartPanel>
           </div>
         )}
 
@@ -765,6 +916,14 @@ export default function App() {
                 <p className="text-xs text-slate-400 mt-1">Anti-leakage gate enforced by backend</p>
               </div>
             </div>
+            <ChartPanel title="Replay demand and schedule snapshot" subtitle="Forecast output for the selected virtual date; actual outcome remains withheld until permitted by the replay policy">
+              <ComparisonBars
+                labels={['Predicted daily rides', 'Scheduled trips/day']}
+                values={[Number(replayForecast?.predicted_rides), Number(replayForecast?.scheduled_trips)]}
+                colors={['#22d3ee','#a78bfa']}
+              />
+              <p className="text-[11px] text-slate-500 mt-3">Different units are shown as separate labelled indicators; bar lengths are relative only and should not be compared across units.</p>
+            </ChartPanel>
           </div>
         )}
 
@@ -871,6 +1030,13 @@ export default function App() {
                 <strong>Interpretation Limit:</strong> Conditional arithmetic only. Does not verify vehicle/crew availability or measure real-time onboard occupancy.
               </div>
             </div>
+            <ChartPanel title="Baseline vs proposed service" subtitle="Visual impact of the current scenario sliders">
+              <ComparisonBars labels={['Baseline trips/day', 'Proposed trips/day']} values={[scenBaselineTrips, scenProposedTrips]} colors={['#64748b','#22d3ee']} suffix=" trips" />
+              <div className="mt-5">
+                <ComparisonBars labels={['Baseline daily rides', 'Scenario daily rides']} values={[scenBaselineRides, stressedRides]} colors={['#64748b','#d946ef']} suffix=" rides" />
+              </div>
+              <p className="text-[11px] text-slate-500 mt-3">Scenario values update live as you adjust the controls. This is conditional arithmetic, not a verified operational forecast.</p>
+            </ChartPanel>
           </div>
         )}
 
@@ -925,6 +1091,14 @@ export default function App() {
                 </div>
               </div>
             </div>
+            <ChartPanel title="Data quality and model performance" subtitle="Key audit figures from the existing project metadata">
+              <ComparisonBars
+                labels={['Matched route/date observations (thousands)', 'Unmatched rides/schedule rows (hundreds)', 'Test R² (%)', 'Test WAPE (%)']}
+                values={[28.374, 4.24, 98.37, 6.73]}
+                colors={['#22d3ee','#f59e0b','#10b981','#a78bfa']}
+              />
+              <p className="text-[11px] text-slate-500 mt-3">Units differ by metric; labels explicitly identify the scaling. Existing audit values are unchanged.</p>
+            </ChartPanel>
           </div>
         )}
       </main>

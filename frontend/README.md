@@ -30,3 +30,7 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+
+
+## Visual analytics additions
+Added lightweight SVG charts to Network Overview, Productivity Rankings, Route Intelligence, Route Comparison, Historical Replay, Scenario Simulator, and Data & Coverage. Charts read existing frontend/backend state and do not add or alter API calls, calculations, models, or stored data.
