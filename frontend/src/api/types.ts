@@ -303,3 +303,64 @@ export type ReviewResponse = Envelope & {
   review: { meaning: string; date: ISODate | null; rows: ReviewRow[]; counts: { routes: number; ranked: number } }
   misses: { meaning: string; gate: number; gate_label: string; rows: MissRow[]; counts: { routes: number; ranked: number } }
 }
+
+// ---- Stage 8: scenarios (POST /api/scenarios/calculate, POST/GET /api/scenarios, GET .../recompute)
+export type ScenarioChange = { how: 'percent' | 'per_day'; value: number }
+export type ScenarioServiceLine = { routes: string[] | null; trips: ScenarioChange | null; trip_hours: ScenarioChange | null }
+export type ScenarioStress = { percent: number; scope: 'baseline_routes' | 'network' | 'routes'; routes: string[] | null }
+export type ScenarioDemand = 'recorded' | 'predicted'
+export type ScenarioBaselineRequest = {
+  routes: string[] | null; group_id: number | null; period: PeriodName | null; start?: ISODate | null; end?: ISODate | null
+  daytype: DayType | null; demand: ScenarioDemand
+}
+export type ScenarioRequest = { baseline: ScenarioBaselineRequest; service: ScenarioServiceLine[]; demand_stress: ScenarioStress | null }
+
+export type ScenarioSide = {
+  days: number; rides_per_day: number | null; trips_per_day: number | null; hours_per_day: number | null
+  mean_trip_minutes: number | null; rides_per_scheduled_trip: number | null; rides_per_scheduled_hour: number | null
+  rides_sum: number | null; scheduled_trips_sum: number | null; scheduled_hours_sum: number | null
+  reasons: Partial<Record<'rides_per_day' | 'trips_per_day' | 'hours_per_day' | 'rides_per_trip' | 'rides_per_hour', string>>
+  rank_rides_per_scheduled_trip: number | null; rank_rides_per_scheduled_trip_reason: string | null
+  rank_rides_per_scheduled_hour: number | null; rank_rides_per_scheduled_hour_reason: string | null
+}
+export type ScenarioMeasure = 'rides_per_day' | 'trips_per_day' | 'hours_per_day' | 'rides_per_scheduled_trip' | 'rides_per_scheduled_hour'
+export type ScenarioRow = {
+  route: string; group_id: number | null
+  status: 'changed' | 'unchanged' | 'service_added' | 'demand_only'; note: string | null
+  demand_assumed: boolean; structural_zero: boolean
+  baseline: ScenarioSide; scenario: ScenarioSide
+  change_percent: Record<ScenarioMeasure, number | null>
+  rank_change: { rides_per_scheduled_trip: number | null; rides_per_scheduled_hour: number | null }
+}
+export type ScenarioTotal = { baseline: number | null; scenario: number | null; routes_included: number; change_percent: number | null }
+export type ScenarioTotals = Record<ScenarioMeasure, ScenarioTotal> & { routes: number; left_out: { route: string; reason: string }[] }
+export type ScenarioResult = {
+  rows: ScenarioRow[]; totals: { selected: ScenarioTotals; network: ScenarioTotals }
+  other_rank_changes: { route: string; rank_before: number; rank_after: number }[]
+  ranked_routes: { rides_per_scheduled_trip: { baseline: number; scenario: number }; rides_per_scheduled_hour: { baseline: number; scenario: number } }
+  units: Units; ranking: { min_observed_days: number; reference_min_observed_days: number; ties: string; direction: string }
+}
+export type ScenarioBaseline = {
+  request: ScenarioBaselineRequest; routes: string[]
+  group: { group_id: number; group_name: string; group_version: string } | null
+  demand: ScenarioDemand; demand_label: string; daytype: DayType | null; daytype_label: string
+  period: { name: string; label: string; start: ISODate; end: ISODate; clipped_to_cutoff: boolean }
+  days_of_daytype: number; sentence: string; ranking_sentence: string
+}
+export type ScenarioAssumption = { kind: string; text: string }
+export type ScenarioVersions = { data_version: string; group_version: string | null; forecast_run_id: string | null; model_version: string | null }
+export type Scenario = {
+  baseline: ScenarioBaseline; inputs: { service: ScenarioServiceLine[]; demand_stress: ScenarioStress | null }
+  assumptions: ScenarioAssumption[]; result?: ScenarioResult; result_sha256: string; versions: ScenarioVersions
+  cutoff: ISODate; virtual_date: ISODate | null; saved: boolean
+  // saved scenarios only
+  scenario_id?: string; lineage_id?: string; version?: number; parent_scenario_id?: string | null; name?: string
+  origin?: 'planner' | 'example'; mode?: 'historical_analysis' | 'historical_replay'; session_id?: string | null
+  saved_at?: string | null
+}
+export type ScenarioEnvelope = Envelope & { label: string; note: string; spec_reference: string }
+export type ScenarioResponse = ScenarioEnvelope & { scenario: Scenario & { result: ScenarioResult }; created?: boolean
+                                                    lineage?: { scenario_id: string; version: number; name: string }[] }
+export type ScenarioListResponse = ScenarioEnvelope & { count: number; scenarios: Scenario[] }
+export type RecomputeResponse = ScenarioEnvelope & { scenario_id: string; check: { stored_sha256: string; recomputed_sha256: string
+                                                                                   stored_json_sha256: string; same_versions: boolean; identical: boolean } }

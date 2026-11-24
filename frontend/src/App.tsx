@@ -11,6 +11,7 @@ import { CloserLookPage } from './screens/CloserLookPage'
 import { ComparePage } from './screens/ComparePage'
 import { DataPage } from './screens/DataPage'
 import { ReplayPage } from './screens/ReplayPage'
+import { ScenariosPage } from './screens/ScenariosPage'
 import { OneRoutePage } from './screens/OneRoutePage'
 import { SharedStopsPage } from './screens/SharedStopsPage'
 import { StartPage } from './screens/StartPage'
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="/alike" element={<AlikePage />} />
           <Route path="/shared-stops" element={<SharedStopsPage />} />
           <Route path="/compare" element={<ComparePage />} />
+          <Route path="/scenarios" element={<ScenariosPage />} />
           <Route path="/replay" element={<ReplayPage />} />
           <Route path="/data" element={<DataPage />} />
           <Route path="/style" element={<StylePage />} />

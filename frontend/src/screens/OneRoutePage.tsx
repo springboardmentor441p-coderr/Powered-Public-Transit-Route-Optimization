@@ -119,6 +119,8 @@ function RouteBody({ route, info }: { route: string; info: RouteRow | undefined 
               : <>Ungrouped{info?.ungrouped_reason ? ` – ${info.ungrouped_reason}` : groups.status === 'ok' && !groups.data.available ? ` – ${groups.data.reason}` : ''}</>}
           </div>
         </div>
+        <Link to={`/scenarios?routes=${encodeURIComponent(route)}`} className="btn-secondary ml-auto no-underline"
+              aria-label={`Create a scenario for route ${route}`}>Create scenario</Link>
       </div>
 
       {windowHistory.status === 'ok' && allRanks && (

@@ -6,7 +6,8 @@
 // later date in SQL. The client never sends a replay date and never filters data itself.
 import type {
   CompareResponse, Coverage, DayType, ForecastsResponse, ModelsResponse, ReplayState, ReviewResponse, GroupsResponse, HistoryResponse, MapLinesResponse, OverlapResponse,
-  PeriodName, RankingMetric, RankingResponse, RoutesResponse, TrendResponse,
+  PeriodName, RankingMetric, RankingResponse, RecomputeResponse, RoutesResponse, ScenarioListResponse, ScenarioRequest,
+  ScenarioResponse, TrendResponse,
 } from './types'
 
 export type ApiOptions = { cutoff?: string | null; session?: string | null; dataVersion?: string | null; signal?: AbortSignal }
@@ -139,4 +140,19 @@ export const replay = {
   get: (id: string, signal?: AbortSignal) => apiGet<ReplayState>(`/api/replays/${encodeURIComponent(id)}`, {}, { signal }),
   control: (id: string, action: ReplayAction, extra: { days?: number; to?: string; speed_seconds?: number; start_date?: string } = {}) =>
     apiSend<ReplayState>('POST', `/api/replays/${encodeURIComponent(id)}/control`, { action, ...extra }),
+}
+
+// ---- Stage 8: scenarios. Calculate and save are POSTs that DO carry the scope (in replay, the session): the backend
+// takes the baseline's cutoff from the stored session. Saved scenarios can only be added, never changed or deleted.
+const scoped = (path: string, o?: ApiOptions) => buildUrl(path, {}, { session: o?.session, dataVersion: o?.dataVersion })
+
+export const scenarios = {
+  calculate: (body: ScenarioRequest, o?: ApiOptions) =>
+    apiSend<ScenarioResponse>('POST', scoped('/api/scenarios/calculate', o), body, o?.signal),
+  save: (body: ScenarioRequest & { name: string; revises?: string | null }, o?: ApiOptions) =>
+    apiSend<ScenarioResponse>('POST', scoped('/api/scenarios', o), body, o?.signal),
+  list: (o?: ApiOptions) => apiGet<ScenarioListResponse>('/api/scenarios', {}, o),
+  get: (id: string, o?: ApiOptions) => apiGet<ScenarioResponse>(`/api/scenarios/${encodeURIComponent(id)}`, {}, o),
+  recompute: (id: string, o?: ApiOptions) =>
+    apiGet<RecomputeResponse>(`/api/scenarios/${encodeURIComponent(id)}/recompute`, {}, o),
 }

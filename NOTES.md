@@ -1817,3 +1817,27 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - replay: no later date in any JSON, a later range refused, a client cutoff refused, hidden from an earlier session, identical after advancing a week;
   - predicted demand keeps the stored forecast.
 - **Interview Q:** *"What stops someone changing a saved scenario through the API?"* There is no endpoint for it. The id is derived from the content, and the database trigger refuses UPDATE and DELETE even from psql. The only way forward is a new version that points to the old one.
+
+## Step 100: The Scenarios screen (`/scenarios`, `screens/ScenariosPage.tsx`, `lib/scenarios.ts`)
+- **Built:**
+  - **A sentence builder:**
+    - it reads "[Increase] [scheduled trips] on [route 49] by [20] % on [weekdays] in [the full matched window], using [recorded rides].";
+    - Decrease, Set (a new value per day) and Keep are the other verbs;
+    - the baseline is routes or a frozen route group;
+    - in replay, "the stored forecast for the replay day" is offered as the demand.
+  - **The demand line:** a separate, marked "Scenario assumption" block: "Assume rides [fall] by [15] % on [these routes | every route in the network]". With no assumption it says "Demand is held fixed".
+  - **Insight sentences:** computed from the response, e.g. "On route 49, rides per scheduled hour falls from 35.6 to 29.7 because demand is held fixed while scheduled trip-hours rise by 20.0 %."
+  - **An assumptions box** with the API's sentences, word for word, plus the versions and the result's sha256.
+  - **The comparison table:** baseline → scenario per route and for the network, with rank changes and links that open each route. Routes with nothing to compare on either side are listed once, by reason.
+  - **A bar chart** (baseline solid, scenario outlined) with a key and a "How to read this" line.
+  - **Save** with a suggested name.
+  - **A saved list:** open a scenario to see its stored result, "Recalculate and compare", "Make a new version".
+  - **A "Create scenario" button** on One route.
+- **Why:** spec 9.16.2 ("change service or stress assumption → baseline/scenario table, deltas and saved assumptions"), spec 9.16.3 (the button on route detail), and spec 9.16.4 steps 5–7.
+- **Key concept:** *the assumption must look different from the data*. The demand line sits in its own marked box, and changed rides carry the word "assumed". A reader can never mistake an assumed −15 % for something the model predicted.
+- **Decisions:**
+  - **Builder state lives in the page address**, so `/scenarios?routes=49` (from One route) or a shared link rebuilds the scenario.
+  - **The chart uses no group colours**, because colour means group: baseline is slate, scenario is outlined.
+  - **The first screenshot review** showed 32 rows of "unavailable – … → unavailable – …" for a group on Sundays. Those routes are now one line ("32 routes not in the table – no scheduled service on Sundays and holidays, so nothing to compare"), still with links, still never 0.
+- **Results:** tsc, lint, vitest (116 tests, 9 new for `lib/scenarios.ts`) and build pass.
+- **Interview Q:** *"Why is the insight sentence computed in the browser rather than sent by the API?"* The API sends numbers and plain facts. The page decides which comparison matters for this view (one route, or a group's totals) and words it. Every number in the sentence is read from the response, so it can't go stale.
