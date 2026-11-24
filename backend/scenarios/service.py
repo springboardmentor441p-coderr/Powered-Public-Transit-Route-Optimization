@@ -203,7 +203,10 @@ def calculate(conn: psycopg.Connection, v: dict, cutoff: date | None, req: dict,
                    "sharing a rank; the minimum-days rule for period rankings does not apply to a single day.")
     if gv is not None:
         ranking += " Route groups are the frozen version fitted on the development period."
-    baseline = {"routes": selected, "group": group, "demand": demand, "demand_label": BASIS_LABELS[demand],
+    request = {"routes": None if group else selected, "group_id": group["group_id"] if group else None,
+               "period": b.get("period"), "start": b.get("start"), "end": b.get("end"),
+               "daytype": b.get("daytype"), "demand": demand}
+    baseline = {"request": request, "routes": selected, "group": group, "demand": demand, "demand_label": BASIS_LABELS[demand],
                 "daytype": None if demand == "predicted" else meta["daytype"],
                 "daytype_label": "the replay day" if demand == "predicted" else DAYTYPE_WORDS[meta["daytype"]],
                 "period": p, "days_of_daytype": meta["days_of_daytype"],
