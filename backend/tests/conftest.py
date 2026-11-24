@@ -90,3 +90,11 @@ def reset(c: psycopg.Connection) -> None:
 
 def counts(c: psycopg.Connection) -> dict[str, int]:
     return {t: c.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for t in TABLES}
+
+
+@pytest.fixture
+def stage8(conn, stage7):
+    """routeranker_test with the Stage 8 scenarios table (created once, empty at the start of the session)."""
+    from backend.importer.import_stage8 import create_stage8_schema
+    create_stage8_schema(conn)
+    return conn

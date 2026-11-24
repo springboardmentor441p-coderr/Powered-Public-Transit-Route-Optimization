@@ -1714,3 +1714,33 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
 - **Decisions:** the Sources drawer keeps its ISO cutoff. It is the data-details panel, where exact values belong.
 - **Results:** tsc, lint and vitest (107) pass.
 - **Interview Q:** *"Why does a duplicated sentence matter?"* Readers assume that repeated text means something new. One copy in a fixed place is easier to trust and to check.
+
+## Step 97: The scenarios table (`backend/db/schema_stage8.sql`, `backend/importer/import_stage8.py`)
+- **Built:**
+  - One new table, `scenarios`, purely additive (no Stage 6 or 7 table changed). Each row holds:
+    - name, version, lineage and parent;
+    - origin (`planner` or `example`);
+    - mode, with the replay session and replay day;
+    - the cutoff it used;
+    - the data, group, forecast-run and model versions;
+    - the baseline, inputs, plain-words assumptions and result (JSON), plus the result's sha256 and the creation time.
+  - A trigger refuses every UPDATE and DELETE.
+  - The installer runs once and refuses if the Stage 7 tables are missing. It is applied to both `routeranker` and `routeranker_test`.
+  - `reset_test_scenarios` empties the table, and refuses on any database except `routeranker_test`.
+- **Why:**
+  - Spec 9.15.2 asks to save the scenario id, the versions, the changed values, the units, the duration and demand assumptions and the outputs, and to keep scenarios apart from observed tables and forecast evaluation.
+  - You asked for immutability: an edit is a new version.
+- **Key concept:** *immutable in the database, not just in the code*. Forecasts (Stage 7) are protected by keys and by the writer. Scenarios go one step further: even a hand-written `UPDATE` in psql fails. Think of it like a signed paper form: you can file a corrected copy, but you can't rub out the original.
+- **Decisions:**
+  - **No clutter in the app database (your rule):**
+    - automated checks never write to `routeranker`;
+    - pytest uses `routeranker_test` only;
+    - the Playwright checks will run against a temporary API pointed at `routeranker_test`.
+  - `TRUNCATE` is the test-only reset: it doesn't fire the row trigger, and the function checks the database name first.
+  - Before Stage 8 checks, `routeranker` held 0 scenarios and 6 replay sessions (from earlier Stage 7 work, kept as audit evidence).
+- **Results:** 4 schema tests pass:
+  - a second install changes nothing;
+  - UPDATE and DELETE are refused and the row is unchanged;
+  - a replay row needs a session, and version 1 has no parent;
+  - reset is refused outside the test database.
+- **Interview Q:** *"If a scenario can't be deleted, how do you fix a mistake?"* Save a new version that points back to the old one. The history shows exactly what was saved and when, which is the point of an audit trail.
