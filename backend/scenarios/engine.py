@@ -311,7 +311,7 @@ def _side(v: dict, scenario: bool, ranks: pd.DataFrame, r: str, extra_reason: st
     reasons = {}
     base_reason = extra_reason or v["unavailable_reason"]
     if base_reason is None and v["structural_zero"] and not (scenario and v["status"] == "service_added"):
-        base_reason = f"no scheduled service on {v['daytype_words']} (none to compare)"
+        base_reason = f"no scheduled service on {v['daytype_words']}, so nothing to compare"
     if R is None:
         reasons["rides_per_day"] = base_reason or (NO_RIDES_ADDED if v["status"] == "service_added" else
                                                    "no recorded rides on these days")

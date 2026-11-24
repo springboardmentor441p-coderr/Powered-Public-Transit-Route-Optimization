@@ -1786,3 +1786,34 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
     - rides per scheduled hour **35.6 → 29.7**, rank 58 → 86.
   - The spec's illustrative table (1,000 rides, 50 → 60 trips at 40 min) reproduces 16.67 per trip and 25.00 per hour.
 - **Interview Q:** *"Why re-use the ranking code instead of writing a small sort?"* Two copies of a rule drift apart. With one function, the scenario's "rank 58 → 86" uses exactly the gate, reasons and ties of the published ranking, so the baseline rank always equals the Closer look rank.
+
+## Step 99: The scenarios API (`routers/scenarios.py`, `backend/scenarios/store.py`)
+- **Built:**
+  - `POST /api/scenarios/calculate`: calculate only, on the read-only connection; nothing is saved.
+  - `POST /api/scenarios`: validate, calculate and save (201). Saving the identical scenario again returns the stored row (200) and rewrites nothing.
+  - `GET /api/scenarios`: list the saved scenarios.
+  - `GET /api/scenarios/{id}`: the stored result, plus the other versions of that scenario.
+  - `GET /api/scenarios/{id}/recompute`: re-run with the **stored** cutoff, replay day and versions, then compare the hashes.
+  - An edit is `revises: <id>`, which gives a new row with version + 1 in the same lineage. There is no PUT or DELETE (405).
+  - **Scenario id:** `"scn_" + sha256` of the name, inputs, baseline, versions, cutoff, session and parent.
+- **Why:** spec 9.17.3 says `POST /api/scenarios` must "validate assumptions, calculate and save scenario", and spec 9.17.2 makes a scenario a stored entity with its baseline, changes, assumptions and outputs.
+- **Key concept:** *a scenario carries its own cutoff*. In replay, the cutoff comes from the session at the moment of saving. Recomputing later, even after the replay has moved on a week, uses that stored cutoff, so the result is bit-identical. It's like a dated photograph, not a live camera.
+- **Decisions:**
+  - **Replay visibility:**
+    - with `?session=`, only replay scenarios whose cutoff and replay day are not later than the session's are listed or returned; anything else is 404;
+    - the computer's save time is left out in replay (it is not a replay date and must not look like data);
+    - historical analysis lists everything.
+  - **Predicted demand** (replay only) uses the stored model forecast for the replay day, so the scenario records the forecast run and model version.
+  - **Unknown fields** (e.g. an "elasticity") are refused (422), so no hidden demand response can slip in.
+- **Results:** 21 API tests pass on `routeranker_test`:
+  - route 49's baseline equals `/api/rankings` (value and rank);
+  - 0 % equals the baseline;
+  - group 1 on Sundays at −15 % gives rides × 0.85 exactly, with structural zeros shown unavailable;
+  - 1001 refused;
+  - 9 invalid inputs refused with their reasons;
+  - plain-words texts;
+  - save is idempotent, immutable and recomputes identically;
+  - edit → v2 with v1 unchanged;
+  - replay: no later date in any JSON, a later range refused, a client cutoff refused, hidden from an earlier session, identical after advancing a week;
+  - predicted demand keeps the stored forecast.
+- **Interview Q:** *"What stops someone changing a saved scenario through the API?"* There is no endpoint for it. The id is derived from the content, and the database trigger refuses UPDATE and DELETE even from psql. The only way forward is a new version that points to the old one.
