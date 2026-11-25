@@ -105,14 +105,23 @@ export default function App() {
   }, [daytype]);
 
   useEffect(() => {
-    if (!replay) return;
-    const vDate = new Date(replay.current_virtual_date);
+    const virtualDate = replay?.current_virtual_date || "2026-06-03";
+    const vDate = new Date(virtualDate);
     vDate.setDate(vDate.getDate() - 1);
     const cutoff = vDate.toISOString().slice(0, 10);
 
     fetchRouteHistory(selectedRoute, cutoff).then(setHistoryData).catch(() => {});
-    requestForecast(selectedRoute, replay.current_virtual_date, replay.current_virtual_date).then(setForecast).catch(() => {});
-  }, [selectedRoute, replay]);
+    requestForecast(selectedRoute, virtualDate, virtualDate).then(setForecast).catch(() => {});
+  }, [selectedRoute, replay?.current_virtual_date]);
+
+  useEffect(() => {
+    runServiceScenario({
+      route: selectedRoute,
+      service_date: "2026-06-03",
+      proposed_trips: proposedTrips,
+      demand_multiplier: demandMult,
+    }).then(setScenarioOut).catch(() => {});
+  }, [selectedRoute]);
 
   useEffect(() => {
     compareRoutes(selectedRoute, compareRouteB, daytype).then(setComparison).catch(() => {});
@@ -264,7 +273,10 @@ export default function App() {
   const activeBroadcasts = broadcasts.filter((b) => b.active);
   const unacknowledgedAlerts = alerts.filter((a) => !a.acknowledged);
 
-  const selectedDemandProfile = demandProfiles.find((d) => d.route === selectedDemandRoute) || demandProfiles[0];
+  const selectedDemandProfile =
+    demandProfiles.find((d) => String(d.route) === String(selectedRoute)) ||
+    demandProfiles.find((d) => String(d.route) === String(selectedDemandRoute)) ||
+    demandProfiles[0];
 
   const navItems: { id: Tab; label: string; icon: React.ReactNode; badge?: number; highlight?: boolean }[] = [
     { id: "overview", label: "Network Overview", icon: <Activity size={16} /> },
@@ -629,10 +641,60 @@ export default function App() {
                 </div>
               )}
 
+              {/* Active Route Specific Optimization Suggestion Banner */}
+              {optResult?.recommendations && (() => {
+                const activeRec = optResult.recommendations.find((r: any) => String(r.route) === String(selectedRoute));
+                if (!activeRec) return null;
+                const isInc = activeRec.action === "increase";
+                const isDec = activeRec.action === "decrease";
+                return (
+                  <div className="bg-gradient-to-r from-teal-950/40 via-slate-900 to-slate-950 border border-teal-500/40 rounded-xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-teal-500/20 text-teal-300 rounded-lg">
+                        <Sparkles size={22} />
+                      </div>
+                      <div>
+                        <div className="text-[11px] text-teal-400 font-bold uppercase tracking-wider">Active Route Optimization Proposal</div>
+                        <div className="text-base font-bold text-white mt-0.5">Route {activeRec.route} — {activeRec.cluster_label}</div>
+                        <div className="text-xs text-slate-300 mt-1 max-w-xl">{activeRec.reason}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-5 text-xs bg-slate-950/80 px-4 py-2.5 rounded-lg border border-slate-800">
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase">Baseline Trips</span>
+                        <span className="text-base font-bold text-slate-300 font-mono">{activeRec.baseline_trips}</span>
+                      </div>
+                      <div className="text-slate-600 font-bold">→</div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase">Recommended</span>
+                        <span className="text-base font-bold text-teal-400 font-mono">{activeRec.recommended_trips}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase">Delta</span>
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold font-mono inline-block mt-0.5 ${
+                          isInc ? "bg-emerald-500/20 text-emerald-300 border border-emerald-600/40" :
+                          (isDec ? "bg-amber-500/20 text-amber-300 border border-amber-600/40" : "bg-slate-800 text-slate-400")
+                        }`}>
+                          {activeRec.trips_delta > 0 ? `+${activeRec.trips_delta}` : activeRec.trips_delta} trips
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase">Projected Density</span>
+                        <span className="text-base font-bold text-white font-mono">{activeRec.projected_rides_per_hour} r/hr</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Optimization Route Recommendations Table */}
               {optResult?.recommendations && (
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-white">Route-by-Route Recommended Allocations:</h3>
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-semibold text-white">Route-by-Route Recommended Allocations:</h3>
+                    <span className="text-xs text-slate-400">Click any route row to select and inspect</span>
+                  </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs text-left bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
                       <thead className="bg-slate-900 text-slate-400 uppercase text-[10px]">
@@ -651,9 +713,22 @@ export default function App() {
                         {optResult.recommendations.map((rec: any) => {
                           const isInc = rec.action === "increase";
                           const isDec = rec.action === "decrease";
+                          const isSelected = String(rec.route) === String(selectedRoute);
                           return (
-                            <tr key={rec.route} className="hover:bg-slate-900/40">
-                              <td className="px-4 py-3 font-bold text-white">Route {rec.route}</td>
+                            <tr
+                              key={rec.route}
+                              onClick={() => {
+                                setSelectedRoute(String(rec.route));
+                                setSelectedDemandRoute(String(rec.route));
+                              }}
+                              className={`cursor-pointer transition ${
+                                isSelected ? "bg-teal-950/50 border-l-4 border-l-teal-400 font-semibold" : "hover:bg-slate-900/40"
+                              }`}
+                            >
+                              <td className="px-4 py-3 font-bold text-white flex items-center gap-1.5">
+                                {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>}
+                                Route {rec.route}
+                              </td>
                               <td className="px-4 py-3 text-slate-400">{rec.cluster_label}</td>
                               <td className="px-4 py-3 font-mono">{rec.baseline_trips}</td>
                               <td className="px-4 py-3 font-mono font-bold text-white">{rec.recommended_trips}</td>
@@ -702,8 +777,12 @@ export default function App() {
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-400">Inspect Route:</span>
                   <select
-                    value={selectedDemandRoute}
-                    onChange={(e) => setSelectedDemandRoute(e.target.value)}
+                    value={selectedRoute}
+                    onChange={(e) => {
+                      const nr = e.target.value;
+                      setSelectedRoute(nr);
+                      setSelectedDemandRoute(nr);
+                    }}
                     className="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white"
                   >
                     {demandProfiles.map((d) => (
@@ -799,9 +878,12 @@ export default function App() {
                       {demandProfiles.map((p) => (
                         <tr
                           key={p.route}
-                          onClick={() => setSelectedDemandRoute(p.route)}
+                          onClick={() => {
+                            setSelectedRoute(p.route);
+                            setSelectedDemandRoute(p.route);
+                          }}
                           className={`cursor-pointer hover:bg-slate-800/40 transition ${
-                            p.route === selectedDemandRoute ? "bg-teal-950/20" : ""
+                            String(p.route) === String(selectedRoute) ? "bg-teal-950/40 border-l-4 border-l-teal-400 font-semibold" : ""
                           }`}
                         >
                           <td className="px-4 py-3 font-bold text-white">Route {p.route}</td>
@@ -1004,17 +1086,32 @@ export default function App() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
-                  {rankings.map((row) => (
-                    <tr key={row.route} className="hover:bg-slate-800/40">
-                      <td className="px-4 py-3 font-mono">{row.service_productivity_metric_rank ?? "—"}</td>
-                      <td className="px-4 py-3 font-semibold">Route {row.route}</td>
-                      <td className="px-4 py-3">{row.observed_dates}</td>
-                      <td className="px-4 py-3">{Math.round(row.mean_daily_rides).toLocaleString()}</td>
-                      <td className="px-4 py-3">{row.rides_per_scheduled_trip?.toFixed(2) ?? "N/A"}</td>
-                      <td className="px-4 py-3 text-teal-400 font-semibold">{row.rides_per_scheduled_hour?.toFixed(2) ?? "N/A"}</td>
-                      <td className="px-4 py-3 text-xs text-slate-400">{row.eligibility_reason}</td>
-                    </tr>
-                  ))}
+                  {rankings.map((row) => {
+                    const isSelected = String(row.route) === String(selectedRoute);
+                    return (
+                      <tr
+                        key={row.route}
+                        onClick={() => {
+                          setSelectedRoute(String(row.route));
+                          setSelectedDemandRoute(String(row.route));
+                        }}
+                        className={`cursor-pointer transition ${
+                          isSelected ? "bg-teal-950/50 border-l-4 border-l-teal-400 font-semibold" : "hover:bg-slate-800/40"
+                        }`}
+                      >
+                        <td className="px-4 py-3 font-mono">{row.service_productivity_metric_rank ?? "—"}</td>
+                        <td className="px-4 py-3 font-semibold text-white flex items-center gap-1.5">
+                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>}
+                          Route {row.route}
+                        </td>
+                        <td className="px-4 py-3">{row.observed_dates}</td>
+                        <td className="px-4 py-3">{Math.round(row.mean_daily_rides).toLocaleString()}</td>
+                        <td className="px-4 py-3">{row.rides_per_scheduled_trip?.toFixed(2) ?? "N/A"}</td>
+                        <td className="px-4 py-3 text-teal-400 font-semibold">{row.rides_per_scheduled_hour?.toFixed(2) ?? "N/A"}</td>
+                        <td className="px-4 py-3 text-xs text-slate-400">{row.eligibility_reason}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -1319,16 +1416,36 @@ export default function App() {
                     ? "border-rose-700 bg-rose-950/20 text-rose-300"
                     : (isHigh ? "border-amber-700 bg-amber-950/20 text-amber-300" : "border-slate-800 bg-slate-950 text-slate-300");
 
+                  const isSelected = String(r.route) === String(selectedRoute);
                   return (
-                    <div key={r.route} className={`border rounded-xl p-4 space-y-3 transition ${colorClass}`}>
+                    <div
+                      key={r.route}
+                      onClick={() => {
+                        setSelectedRoute(String(r.route));
+                        setSelectedDemandRoute(String(r.route));
+                      }}
+                      className={`border rounded-xl p-4 space-y-3 transition cursor-pointer ${colorClass} ${
+                        isSelected ? "ring-2 ring-teal-400 shadow-teal-900/40 shadow-lg scale-[1.02]" : ""
+                      }`}
+                    >
                       <div className="flex items-center justify-between">
-                        <div className="text-base font-bold text-white">Route {r.route}</div>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                          isCritical ? "bg-rose-500/20 text-rose-300 border border-rose-600" :
-                          (isHigh ? "bg-amber-500/20 text-amber-300 border border-amber-600" : "bg-teal-500/20 text-teal-300 border border-teal-600")
-                        }`}>
-                          {isCritical ? "Critical Congestion" : (isHigh ? "High Volume" : "Moderate Load")}
-                        </span>
+                        <div className="text-base font-bold text-white flex items-center gap-1.5">
+                          {isSelected && <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>}
+                          Route {r.route}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          {isSelected && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-teal-500/20 text-teal-300 border border-teal-500/40">
+                              Active
+                            </span>
+                          )}
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            isCritical ? "bg-rose-500/20 text-rose-300 border border-rose-600" :
+                            (isHigh ? "bg-amber-500/20 text-amber-300 border border-amber-600" : "bg-teal-500/20 text-teal-300 border border-teal-600")
+                          }`}>
+                            {isCritical ? "Critical Congestion" : (isHigh ? "High Volume" : "Moderate Load")}
+                          </span>
+                        </div>
                       </div>
 
                       <div>
