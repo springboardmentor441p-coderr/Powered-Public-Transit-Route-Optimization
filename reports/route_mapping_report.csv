@@ -1,0 +1,1505 @@
+ridership_route,snapshot_id,gtfs_route_short_name,gtfs_route_id,gtfs_route_long_name,gtfs_route_type,mapping_method,match_candidates_count,match_status
+1,mdb-389-202511230128,1,1,Bronzeville/Union Station,3,exact_route_short_name,1,exact_match
+1,mdb-389-202512190112,1,1,Bronzeville/Union Station,3,exact_route_short_name,1,exact_match
+1,mdb-389-202601080131,1,1,Bronzeville/Union Station,3,exact_route_short_name,1,exact_match
+1,mdb-389-202602100132,1,1,Bronzeville/Union Station,3,exact_route_short_name,1,exact_match
+1,mdb-389-202603260020,1,1,Bronzeville/Union Station,3,exact_route_short_name,1,exact_match
+1,mdb-389-202604240144,1,1,Bronzeville/Union Station,3,exact_route_short_name,1,exact_match
+1,mdb-389-202605300003,1,1,Bronzeville/Union Station,3,exact_route_short_name,1,exact_match
+1,mdb-389-202607110020,1,1,Bronzeville/Union Station,3,exact_route_short_name,1,exact_match
+10,mdb-389-202511230128,,,,,none,0,unmatched
+10,mdb-389-202512190112,,,,,none,0,unmatched
+10,mdb-389-202601080131,,,,,none,0,unmatched
+10,mdb-389-202602100132,,,,,none,0,unmatched
+10,mdb-389-202603260020,,,,,none,0,unmatched
+10,mdb-389-202604240144,,,,,none,0,unmatched
+10,mdb-389-202605300003,10,10,Obama Presidential Center/Museum of Science & Industry Express,3,exact_route_short_name,1,exact_match
+10,mdb-389-202607110020,10,10,Obama Presidential Center/Museum of Science & Industry Express,3,exact_route_short_name,1,exact_match
+100,mdb-389-202511230128,100,100,Jeffery Manor Express,3,exact_route_short_name,1,exact_match
+100,mdb-389-202512190112,100,100,Jeffery Manor Express,3,exact_route_short_name,1,exact_match
+100,mdb-389-202601080131,100,100,Jeffery Manor Express,3,exact_route_short_name,1,exact_match
+100,mdb-389-202602100132,100,100,Jeffery Manor Express,3,exact_route_short_name,1,exact_match
+100,mdb-389-202603260020,100,100,Jeffery Manor Express,3,exact_route_short_name,1,exact_match
+100,mdb-389-202604240144,100,100,Jeffery Manor Express,3,exact_route_short_name,1,exact_match
+100,mdb-389-202605300003,100,100,Jeffery Manor Express,3,exact_route_short_name,1,exact_match
+100,mdb-389-202607110020,100,100,Jeffery Manor Express,3,exact_route_short_name,1,exact_match
+1001,mdb-389-202511230128,,,,,none,0,unmatched
+1001,mdb-389-202512190112,,,,,none,0,unmatched
+1001,mdb-389-202601080131,,,,,none,0,unmatched
+1001,mdb-389-202602100132,,,,,none,0,unmatched
+1001,mdb-389-202603260020,,,,,none,0,unmatched
+1001,mdb-389-202604240144,,,,,none,0,unmatched
+1001,mdb-389-202605300003,,,,,none,0,unmatched
+1001,mdb-389-202607110020,,,,,none,0,unmatched
+1002,mdb-389-202511230128,,,,,none,0,unmatched
+1002,mdb-389-202512190112,,,,,none,0,unmatched
+1002,mdb-389-202601080131,,,,,none,0,unmatched
+1002,mdb-389-202602100132,,,,,none,0,unmatched
+1002,mdb-389-202603260020,,,,,none,0,unmatched
+1002,mdb-389-202604240144,,,,,none,0,unmatched
+1002,mdb-389-202605300003,,,,,none,0,unmatched
+1002,mdb-389-202607110020,,,,,none,0,unmatched
+103,mdb-389-202511230128,103,103,West 103rd,3,exact_route_short_name,1,exact_match
+103,mdb-389-202512190112,103,103,West 103rd,3,exact_route_short_name,1,exact_match
+103,mdb-389-202601080131,103,103,West 103rd,3,exact_route_short_name,1,exact_match
+103,mdb-389-202602100132,103,103,West 103rd,3,exact_route_short_name,1,exact_match
+103,mdb-389-202603260020,103,103,West 103rd,3,exact_route_short_name,1,exact_match
+103,mdb-389-202604240144,103,103,West 103rd,3,exact_route_short_name,1,exact_match
+103,mdb-389-202605300003,103,103,West 103rd,3,exact_route_short_name,1,exact_match
+103,mdb-389-202607110020,103,103,West 103rd,3,exact_route_short_name,1,exact_match
+106,mdb-389-202511230128,106,106,East 103rd,3,exact_route_short_name,1,exact_match
+106,mdb-389-202512190112,106,106,East 103rd,3,exact_route_short_name,1,exact_match
+106,mdb-389-202601080131,106,106,East 103rd,3,exact_route_short_name,1,exact_match
+106,mdb-389-202602100132,106,106,East 103rd,3,exact_route_short_name,1,exact_match
+106,mdb-389-202603260020,106,106,East 103rd,3,exact_route_short_name,1,exact_match
+106,mdb-389-202604240144,106,106,East 103rd,3,exact_route_short_name,1,exact_match
+106,mdb-389-202605300003,106,106,East 103rd,3,exact_route_short_name,1,exact_match
+106,mdb-389-202607110020,106,106,East 103rd,3,exact_route_short_name,1,exact_match
+108,mdb-389-202511230128,108,108,Halsted/95th,3,exact_route_short_name,1,exact_match
+108,mdb-389-202512190112,108,108,Halsted/95th,3,exact_route_short_name,1,exact_match
+108,mdb-389-202601080131,108,108,Halsted/95th,3,exact_route_short_name,1,exact_match
+108,mdb-389-202602100132,108,108,Halsted/95th,3,exact_route_short_name,1,exact_match
+108,mdb-389-202603260020,108,108,Halsted/95th,3,exact_route_short_name,1,exact_match
+108,mdb-389-202604240144,108,108,Halsted/95th,3,exact_route_short_name,1,exact_match
+108,mdb-389-202605300003,108,108,Halsted/95th,3,exact_route_short_name,1,exact_match
+108,mdb-389-202607110020,108,108,Halsted/95th,3,exact_route_short_name,1,exact_match
+11,mdb-389-202511230128,11,11,Lincoln,3,exact_route_short_name,1,exact_match
+11,mdb-389-202512190112,11,11,Lincoln,3,exact_route_short_name,1,exact_match
+11,mdb-389-202601080131,11,11,Lincoln,3,exact_route_short_name,1,exact_match
+11,mdb-389-202602100132,11,11,Lincoln,3,exact_route_short_name,1,exact_match
+11,mdb-389-202603260020,11,11,Lincoln,3,exact_route_short_name,1,exact_match
+11,mdb-389-202604240144,11,11,Lincoln,3,exact_route_short_name,1,exact_match
+11,mdb-389-202605300003,11,11,Lincoln,3,exact_route_short_name,1,exact_match
+11,mdb-389-202607110020,11,11,Lincoln,3,exact_route_short_name,1,exact_match
+111,mdb-389-202511230128,111,111,111th/King Drive,3,exact_route_short_name,1,exact_match
+111,mdb-389-202512190112,111,111,111th/King Drive,3,exact_route_short_name,1,exact_match
+111,mdb-389-202601080131,111,111,111th/King Drive,3,exact_route_short_name,1,exact_match
+111,mdb-389-202602100132,111,111,111th/King Drive,3,exact_route_short_name,1,exact_match
+111,mdb-389-202603260020,111,111,111th/King Drive,3,exact_route_short_name,1,exact_match
+111,mdb-389-202604240144,111,111,111th/King Drive,3,exact_route_short_name,1,exact_match
+111,mdb-389-202605300003,111,111,111th/King Drive,3,exact_route_short_name,1,exact_match
+111,mdb-389-202607110020,111,111,111th/King Drive,3,exact_route_short_name,1,exact_match
+111A,mdb-389-202511230128,111A,111A,Pullman Shuttle,3,exact_route_short_name,1,exact_match
+111A,mdb-389-202512190112,111A,111A,Pullman Shuttle,3,exact_route_short_name,1,exact_match
+111A,mdb-389-202601080131,111A,111A,Pullman Shuttle,3,exact_route_short_name,1,exact_match
+111A,mdb-389-202602100132,111A,111A,Pullman Shuttle,3,exact_route_short_name,1,exact_match
+111A,mdb-389-202603260020,111A,111A,Pullman Shuttle,3,exact_route_short_name,1,exact_match
+111A,mdb-389-202604240144,111A,111A,Pullman Shuttle,3,exact_route_short_name,1,exact_match
+111A,mdb-389-202605300003,111A,111A,Pullman Shuttle,3,exact_route_short_name,1,exact_match
+111A,mdb-389-202607110020,111A,111A,Pullman Shuttle,3,exact_route_short_name,1,exact_match
+112,mdb-389-202511230128,112,112,Vincennes/111th,3,exact_route_short_name,1,exact_match
+112,mdb-389-202512190112,112,112,Vincennes/111th,3,exact_route_short_name,1,exact_match
+112,mdb-389-202601080131,112,112,Vincennes/111th,3,exact_route_short_name,1,exact_match
+112,mdb-389-202602100132,112,112,Vincennes/111th,3,exact_route_short_name,1,exact_match
+112,mdb-389-202603260020,112,112,Vincennes/111th,3,exact_route_short_name,1,exact_match
+112,mdb-389-202604240144,112,112,Vincennes/111th,3,exact_route_short_name,1,exact_match
+112,mdb-389-202605300003,112,112,Vincennes/111th,3,exact_route_short_name,1,exact_match
+112,mdb-389-202607110020,112,112,Vincennes/111th,3,exact_route_short_name,1,exact_match
+115,mdb-389-202511230128,115,115,Pullman/115th,3,exact_route_short_name,1,exact_match
+115,mdb-389-202512190112,115,115,Pullman/115th,3,exact_route_short_name,1,exact_match
+115,mdb-389-202601080131,115,115,Pullman/115th,3,exact_route_short_name,1,exact_match
+115,mdb-389-202602100132,115,115,Pullman/115th,3,exact_route_short_name,1,exact_match
+115,mdb-389-202603260020,115,115,Pullman/115th,3,exact_route_short_name,1,exact_match
+115,mdb-389-202604240144,115,115,Pullman/115th,3,exact_route_short_name,1,exact_match
+115,mdb-389-202605300003,115,115,Pullman/115th,3,exact_route_short_name,1,exact_match
+115,mdb-389-202607110020,115,115,Pullman/115th,3,exact_route_short_name,1,exact_match
+119,mdb-389-202511230128,119,119,Michigan/119th,3,exact_route_short_name,1,exact_match
+119,mdb-389-202512190112,119,119,Michigan/119th,3,exact_route_short_name,1,exact_match
+119,mdb-389-202601080131,119,119,Michigan/119th,3,exact_route_short_name,1,exact_match
+119,mdb-389-202602100132,119,119,Michigan/119th,3,exact_route_short_name,1,exact_match
+119,mdb-389-202603260020,119,119,Michigan/119th,3,exact_route_short_name,1,exact_match
+119,mdb-389-202604240144,119,119,Michigan/119th,3,exact_route_short_name,1,exact_match
+119,mdb-389-202605300003,119,119,Michigan/119th,3,exact_route_short_name,1,exact_match
+119,mdb-389-202607110020,119,119,Michigan/119th,3,exact_route_short_name,1,exact_match
+12,mdb-389-202511230128,12,12,Roosevelt,3,exact_route_short_name,1,exact_match
+12,mdb-389-202512190112,12,12,Roosevelt,3,exact_route_short_name,1,exact_match
+12,mdb-389-202601080131,12,12,Roosevelt,3,exact_route_short_name,1,exact_match
+12,mdb-389-202602100132,12,12,Roosevelt,3,exact_route_short_name,1,exact_match
+12,mdb-389-202603260020,12,12,Roosevelt,3,exact_route_short_name,1,exact_match
+12,mdb-389-202604240144,12,12,Roosevelt,3,exact_route_short_name,1,exact_match
+12,mdb-389-202605300003,12,12,Roosevelt,3,exact_route_short_name,1,exact_match
+12,mdb-389-202607110020,12,12,Roosevelt,3,exact_route_short_name,1,exact_match
+120,mdb-389-202511230128,120,120,Ogilvie/Streeterville Express,3,exact_route_short_name,1,exact_match
+120,mdb-389-202512190112,120,120,Ogilvie/Streeterville Express,3,exact_route_short_name,1,exact_match
+120,mdb-389-202601080131,120,120,Ogilvie/Streeterville Express,3,exact_route_short_name,1,exact_match
+120,mdb-389-202602100132,120,120,Ogilvie/Streeterville Express,3,exact_route_short_name,1,exact_match
+120,mdb-389-202603260020,120,120,Ogilvie/Streeterville Express,3,exact_route_short_name,1,exact_match
+120,mdb-389-202604240144,120,120,Ogilvie/Streeterville Express,3,exact_route_short_name,1,exact_match
+120,mdb-389-202605300003,120,120,Ogilvie/Streeterville Express,3,exact_route_short_name,1,exact_match
+120,mdb-389-202607110020,120,120,Ogilvie/Streeterville Express,3,exact_route_short_name,1,exact_match
+121,mdb-389-202511230128,121,121,Union/Streeterville Express,3,exact_route_short_name,1,exact_match
+121,mdb-389-202512190112,121,121,Union/Streeterville Express,3,exact_route_short_name,1,exact_match
+121,mdb-389-202601080131,121,121,Union/Streeterville Express,3,exact_route_short_name,1,exact_match
+121,mdb-389-202602100132,121,121,Union/Streeterville Express,3,exact_route_short_name,1,exact_match
+121,mdb-389-202603260020,121,121,Union/Streeterville Express,3,exact_route_short_name,1,exact_match
+121,mdb-389-202604240144,121,121,Union/Streeterville Express,3,exact_route_short_name,1,exact_match
+121,mdb-389-202605300003,121,121,Union/Streeterville Express,3,exact_route_short_name,1,exact_match
+121,mdb-389-202607110020,121,121,Union/Streeterville Express,3,exact_route_short_name,1,exact_match
+122,mdb-389-202511230128,,,,,none,0,unmatched
+122,mdb-389-202512190112,,,,,none,0,unmatched
+122,mdb-389-202601080131,,,,,none,0,unmatched
+122,mdb-389-202602100132,,,,,none,0,unmatched
+122,mdb-389-202603260020,,,,,none,0,unmatched
+122,mdb-389-202604240144,,,,,none,0,unmatched
+122,mdb-389-202605300003,,,,,none,0,unmatched
+122,mdb-389-202607110020,,,,,none,0,unmatched
+123,mdb-389-202511230128,,,,,none,0,unmatched
+123,mdb-389-202512190112,,,,,none,0,unmatched
+123,mdb-389-202601080131,,,,,none,0,unmatched
+123,mdb-389-202602100132,,,,,none,0,unmatched
+123,mdb-389-202603260020,,,,,none,0,unmatched
+123,mdb-389-202604240144,,,,,none,0,unmatched
+123,mdb-389-202605300003,,,,,none,0,unmatched
+123,mdb-389-202607110020,,,,,none,0,unmatched
+124,mdb-389-202511230128,124,124,Navy Pier,3,exact_route_short_name,1,exact_match
+124,mdb-389-202512190112,124,124,Navy Pier,3,exact_route_short_name,1,exact_match
+124,mdb-389-202601080131,124,124,Navy Pier,3,exact_route_short_name,1,exact_match
+124,mdb-389-202602100132,124,124,Navy Pier,3,exact_route_short_name,1,exact_match
+124,mdb-389-202603260020,124,124,Navy Pier,3,exact_route_short_name,1,exact_match
+124,mdb-389-202604240144,124,124,Navy Pier,3,exact_route_short_name,1,exact_match
+124,mdb-389-202605300003,124,124,Navy Pier,3,exact_route_short_name,1,exact_match
+124,mdb-389-202607110020,124,124,Navy Pier,3,exact_route_short_name,1,exact_match
+125,mdb-389-202511230128,125,125,Water Tower Express,3,exact_route_short_name,1,exact_match
+125,mdb-389-202512190112,125,125,Water Tower Express,3,exact_route_short_name,1,exact_match
+125,mdb-389-202601080131,125,125,Water Tower Express,3,exact_route_short_name,1,exact_match
+125,mdb-389-202602100132,125,125,Water Tower Express,3,exact_route_short_name,1,exact_match
+125,mdb-389-202603260020,125,125,Water Tower Express,3,exact_route_short_name,1,exact_match
+125,mdb-389-202604240144,125,125,Water Tower Express,3,exact_route_short_name,1,exact_match
+125,mdb-389-202605300003,125,125,Water Tower Express,3,exact_route_short_name,1,exact_match
+125,mdb-389-202607110020,125,125,Water Tower Express,3,exact_route_short_name,1,exact_match
+126,mdb-389-202511230128,126,126,Jackson,3,exact_route_short_name,1,exact_match
+126,mdb-389-202512190112,126,126,Jackson,3,exact_route_short_name,1,exact_match
+126,mdb-389-202601080131,126,126,Jackson,3,exact_route_short_name,1,exact_match
+126,mdb-389-202602100132,126,126,Jackson,3,exact_route_short_name,1,exact_match
+126,mdb-389-202603260020,126,126,Jackson,3,exact_route_short_name,1,exact_match
+126,mdb-389-202604240144,126,126,Jackson,3,exact_route_short_name,1,exact_match
+126,mdb-389-202605300003,126,126,Jackson,3,exact_route_short_name,1,exact_match
+126,mdb-389-202607110020,126,126,Jackson,3,exact_route_short_name,1,exact_match
+127,mdb-389-202511230128,,,,,none,0,unmatched
+127,mdb-389-202512190112,,,,,none,0,unmatched
+127,mdb-389-202601080131,,,,,none,0,unmatched
+127,mdb-389-202602100132,,,,,none,0,unmatched
+127,mdb-389-202603260020,,,,,none,0,unmatched
+127,mdb-389-202604240144,,,,,none,0,unmatched
+127,mdb-389-202605300003,,,,,none,0,unmatched
+127,mdb-389-202607110020,,,,,none,0,unmatched
+128,mdb-389-202511230128,,,,,none,0,unmatched
+128,mdb-389-202512190112,,,,,none,0,unmatched
+128,mdb-389-202601080131,,,,,none,0,unmatched
+128,mdb-389-202602100132,,,,,none,0,unmatched
+128,mdb-389-202603260020,,,,,none,0,unmatched
+128,mdb-389-202604240144,,,,,none,0,unmatched
+128,mdb-389-202605300003,,,,,none,0,unmatched
+128,mdb-389-202607110020,,,,,none,0,unmatched
+129,mdb-389-202511230128,,,,,none,0,unmatched
+129,mdb-389-202512190112,,,,,none,0,unmatched
+129,mdb-389-202601080131,,,,,none,0,unmatched
+129,mdb-389-202602100132,,,,,none,0,unmatched
+129,mdb-389-202603260020,,,,,none,0,unmatched
+129,mdb-389-202604240144,,,,,none,0,unmatched
+129,mdb-389-202605300003,,,,,none,0,unmatched
+129,mdb-389-202607110020,,,,,none,0,unmatched
+130,mdb-389-202511230128,,,,,none,0,unmatched
+130,mdb-389-202512190112,,,,,none,0,unmatched
+130,mdb-389-202601080131,,,,,none,0,unmatched
+130,mdb-389-202602100132,,,,,none,0,unmatched
+130,mdb-389-202603260020,,,,,none,0,unmatched
+130,mdb-389-202604240144,,,,,none,0,unmatched
+130,mdb-389-202605300003,130,130,Museum Campus,3,exact_route_short_name,1,exact_match
+130,mdb-389-202607110020,130,130,Museum Campus,3,exact_route_short_name,1,exact_match
+132,mdb-389-202511230128,,,,,none,0,unmatched
+132,mdb-389-202512190112,,,,,none,0,unmatched
+132,mdb-389-202601080131,,,,,none,0,unmatched
+132,mdb-389-202602100132,,,,,none,0,unmatched
+132,mdb-389-202603260020,,,,,none,0,unmatched
+132,mdb-389-202604240144,,,,,none,0,unmatched
+132,mdb-389-202605300003,,,,,none,0,unmatched
+132,mdb-389-202607110020,,,,,none,0,unmatched
+134,mdb-389-202511230128,134,134,Stockton/LaSalle Express,3,exact_route_short_name,1,exact_match
+134,mdb-389-202512190112,134,134,Stockton/LaSalle Express,3,exact_route_short_name,1,exact_match
+134,mdb-389-202601080131,134,134,Stockton/LaSalle Express,3,exact_route_short_name,1,exact_match
+134,mdb-389-202602100132,134,134,Stockton/LaSalle Express,3,exact_route_short_name,1,exact_match
+134,mdb-389-202603260020,134,134,Stockton/LaSalle Express,3,exact_route_short_name,1,exact_match
+134,mdb-389-202604240144,134,134,Stockton/LaSalle Express,3,exact_route_short_name,1,exact_match
+134,mdb-389-202605300003,134,134,Stockton/LaSalle Express,3,exact_route_short_name,1,exact_match
+134,mdb-389-202607110020,134,134,Stockton/LaSalle Express,3,exact_route_short_name,1,exact_match
+135,mdb-389-202511230128,135,135,Clarendon/LaSalle Express,3,exact_route_short_name,1,exact_match
+135,mdb-389-202512190112,135,135,Clarendon/LaSalle Express,3,exact_route_short_name,1,exact_match
+135,mdb-389-202601080131,135,135,Clarendon/LaSalle Express,3,exact_route_short_name,1,exact_match
+135,mdb-389-202602100132,135,135,Clarendon/LaSalle Express,3,exact_route_short_name,1,exact_match
+135,mdb-389-202603260020,135,135,Clarendon/LaSalle Express,3,exact_route_short_name,1,exact_match
+135,mdb-389-202604240144,135,135,Clarendon/LaSalle Express,3,exact_route_short_name,1,exact_match
+135,mdb-389-202605300003,135,135,Clarendon/LaSalle Express,3,exact_route_short_name,1,exact_match
+135,mdb-389-202607110020,135,135,Clarendon/LaSalle Express,3,exact_route_short_name,1,exact_match
+136,mdb-389-202511230128,136,136,Sheridan/LaSalle Express,3,exact_route_short_name,1,exact_match
+136,mdb-389-202512190112,136,136,Sheridan/LaSalle Express,3,exact_route_short_name,1,exact_match
+136,mdb-389-202601080131,136,136,Sheridan/LaSalle Express,3,exact_route_short_name,1,exact_match
+136,mdb-389-202602100132,136,136,Sheridan/LaSalle Express,3,exact_route_short_name,1,exact_match
+136,mdb-389-202603260020,136,136,Sheridan/LaSalle Express,3,exact_route_short_name,1,exact_match
+136,mdb-389-202604240144,136,136,Sheridan/LaSalle Express,3,exact_route_short_name,1,exact_match
+136,mdb-389-202605300003,136,136,Sheridan/LaSalle Express,3,exact_route_short_name,1,exact_match
+136,mdb-389-202607110020,136,136,Sheridan/LaSalle Express,3,exact_route_short_name,1,exact_match
+137,mdb-389-202511230128,,,,,none,0,unmatched
+137,mdb-389-202512190112,,,,,none,0,unmatched
+137,mdb-389-202601080131,,,,,none,0,unmatched
+137,mdb-389-202602100132,,,,,none,0,unmatched
+137,mdb-389-202603260020,,,,,none,0,unmatched
+137,mdb-389-202604240144,,,,,none,0,unmatched
+137,mdb-389-202605300003,,,,,none,0,unmatched
+137,mdb-389-202607110020,,,,,none,0,unmatched
+14,mdb-389-202511230128,,,,,none,0,unmatched
+14,mdb-389-202512190112,,,,,none,0,unmatched
+14,mdb-389-202601080131,,,,,none,0,unmatched
+14,mdb-389-202602100132,,,,,none,0,unmatched
+14,mdb-389-202603260020,,,,,none,0,unmatched
+14,mdb-389-202604240144,,,,,none,0,unmatched
+14,mdb-389-202605300003,,,,,none,0,unmatched
+14,mdb-389-202607110020,,,,,none,0,unmatched
+143,mdb-389-202511230128,143,143,Stockton/Michigan Express,3,exact_route_short_name,1,exact_match
+143,mdb-389-202512190112,143,143,Stockton/Michigan Express,3,exact_route_short_name,1,exact_match
+143,mdb-389-202601080131,143,143,Stockton/Michigan Express,3,exact_route_short_name,1,exact_match
+143,mdb-389-202602100132,143,143,Stockton/Michigan Express,3,exact_route_short_name,1,exact_match
+143,mdb-389-202603260020,143,143,Stockton/Michigan Express,3,exact_route_short_name,1,exact_match
+143,mdb-389-202604240144,143,143,Stockton/Michigan Express,3,exact_route_short_name,1,exact_match
+143,mdb-389-202605300003,143,143,Stockton/Michigan Express,3,exact_route_short_name,1,exact_match
+143,mdb-389-202607110020,143,143,Stockton/Michigan Express,3,exact_route_short_name,1,exact_match
+144,mdb-389-202511230128,,,,,none,0,unmatched
+144,mdb-389-202512190112,,,,,none,0,unmatched
+144,mdb-389-202601080131,,,,,none,0,unmatched
+144,mdb-389-202602100132,,,,,none,0,unmatched
+144,mdb-389-202603260020,,,,,none,0,unmatched
+144,mdb-389-202604240144,,,,,none,0,unmatched
+144,mdb-389-202605300003,,,,,none,0,unmatched
+144,mdb-389-202607110020,,,,,none,0,unmatched
+145,mdb-389-202511230128,,,,,none,0,unmatched
+145,mdb-389-202512190112,,,,,none,0,unmatched
+145,mdb-389-202601080131,,,,,none,0,unmatched
+145,mdb-389-202602100132,,,,,none,0,unmatched
+145,mdb-389-202603260020,,,,,none,0,unmatched
+145,mdb-389-202604240144,,,,,none,0,unmatched
+145,mdb-389-202605300003,,,,,none,0,unmatched
+145,mdb-389-202607110020,,,,,none,0,unmatched
+146,mdb-389-202511230128,146,146,Inner Lake Shore/Michigan Express,3,exact_route_short_name,1,exact_match
+146,mdb-389-202512190112,146,146,Inner Lake Shore/Michigan Express,3,exact_route_short_name,1,exact_match
+146,mdb-389-202601080131,146,146,Inner Lake Shore/Michigan Express,3,exact_route_short_name,1,exact_match
+146,mdb-389-202602100132,146,146,Inner Lake Shore/Michigan Express,3,exact_route_short_name,1,exact_match
+146,mdb-389-202603260020,146,146,Inner Lake Shore/Michigan Express,3,exact_route_short_name,1,exact_match
+146,mdb-389-202604240144,146,146,Inner Lake Shore/Michigan Express,3,exact_route_short_name,1,exact_match
+146,mdb-389-202605300003,146,146,Inner Lake Shore/Michigan Express,3,exact_route_short_name,1,exact_match
+146,mdb-389-202607110020,146,146,Inner Lake Shore/Michigan Express,3,exact_route_short_name,1,exact_match
+147,mdb-389-202511230128,147,147,Outer DuSable Lake Shore Express,3,exact_route_short_name,1,exact_match
+147,mdb-389-202512190112,147,147,Outer DuSable Lake Shore Express,3,exact_route_short_name,1,exact_match
+147,mdb-389-202601080131,147,147,Outer DuSable Lake Shore Express,3,exact_route_short_name,1,exact_match
+147,mdb-389-202602100132,147,147,Outer DuSable Lake Shore Express,3,exact_route_short_name,1,exact_match
+147,mdb-389-202603260020,147,147,Outer DuSable Lake Shore Express,3,exact_route_short_name,1,exact_match
+147,mdb-389-202604240144,147,147,Outer DuSable Lake Shore Express,3,exact_route_short_name,1,exact_match
+147,mdb-389-202605300003,147,147,Outer DuSable Lake Shore Express,3,exact_route_short_name,1,exact_match
+147,mdb-389-202607110020,147,147,Outer DuSable Lake Shore Express,3,exact_route_short_name,1,exact_match
+148,mdb-389-202511230128,148,148,Clarendon/Michigan Express,3,exact_route_short_name,1,exact_match
+148,mdb-389-202512190112,148,148,Clarendon/Michigan Express,3,exact_route_short_name,1,exact_match
+148,mdb-389-202601080131,148,148,Clarendon/Michigan Express,3,exact_route_short_name,1,exact_match
+148,mdb-389-202602100132,148,148,Clarendon/Michigan Express,3,exact_route_short_name,1,exact_match
+148,mdb-389-202603260020,148,148,Clarendon/Michigan Express,3,exact_route_short_name,1,exact_match
+148,mdb-389-202604240144,148,148,Clarendon/Michigan Express,3,exact_route_short_name,1,exact_match
+148,mdb-389-202605300003,148,148,Clarendon/Michigan Express,3,exact_route_short_name,1,exact_match
+148,mdb-389-202607110020,148,148,Clarendon/Michigan Express,3,exact_route_short_name,1,exact_match
+15,mdb-389-202511230128,15,15,Jeffery Local,3,exact_route_short_name,1,exact_match
+15,mdb-389-202512190112,15,15,Jeffery Local,3,exact_route_short_name,1,exact_match
+15,mdb-389-202601080131,15,15,Jeffery Local,3,exact_route_short_name,1,exact_match
+15,mdb-389-202602100132,15,15,Jeffery Local,3,exact_route_short_name,1,exact_match
+15,mdb-389-202603260020,15,15,Jeffery Local,3,exact_route_short_name,1,exact_match
+15,mdb-389-202604240144,15,15,Jeffery Local,3,exact_route_short_name,1,exact_match
+15,mdb-389-202605300003,15,15,Jeffery Local,3,exact_route_short_name,1,exact_match
+15,mdb-389-202607110020,15,15,Jeffery Local,3,exact_route_short_name,1,exact_match
+151,mdb-389-202511230128,151,151,Sheridan,3,exact_route_short_name,1,exact_match
+151,mdb-389-202512190112,151,151,Sheridan,3,exact_route_short_name,1,exact_match
+151,mdb-389-202601080131,151,151,Sheridan,3,exact_route_short_name,1,exact_match
+151,mdb-389-202602100132,151,151,Sheridan,3,exact_route_short_name,1,exact_match
+151,mdb-389-202603260020,151,151,Sheridan,3,exact_route_short_name,1,exact_match
+151,mdb-389-202604240144,151,151,Sheridan,3,exact_route_short_name,1,exact_match
+151,mdb-389-202605300003,151,151,Sheridan,3,exact_route_short_name,1,exact_match
+151,mdb-389-202607110020,151,151,Sheridan,3,exact_route_short_name,1,exact_match
+152,mdb-389-202511230128,152,152,Addison,3,exact_route_short_name,1,exact_match
+152,mdb-389-202512190112,152,152,Addison,3,exact_route_short_name,1,exact_match
+152,mdb-389-202601080131,152,152,Addison,3,exact_route_short_name,1,exact_match
+152,mdb-389-202602100132,152,152,Addison,3,exact_route_short_name,1,exact_match
+152,mdb-389-202603260020,152,152,Addison,3,exact_route_short_name,1,exact_match
+152,mdb-389-202604240144,152,152,Addison,3,exact_route_short_name,1,exact_match
+152,mdb-389-202605300003,152,152,Addison,3,exact_route_short_name,1,exact_match
+152,mdb-389-202607110020,152,152,Addison,3,exact_route_short_name,1,exact_match
+154,mdb-389-202511230128,,,,,none,0,unmatched
+154,mdb-389-202512190112,,,,,none,0,unmatched
+154,mdb-389-202601080131,,,,,none,0,unmatched
+154,mdb-389-202602100132,,,,,none,0,unmatched
+154,mdb-389-202603260020,,,,,none,0,unmatched
+154,mdb-389-202604240144,,,,,none,0,unmatched
+154,mdb-389-202605300003,,,,,none,0,unmatched
+154,mdb-389-202607110020,,,,,none,0,unmatched
+155,mdb-389-202511230128,155,155,Devon,3,exact_route_short_name,1,exact_match
+155,mdb-389-202512190112,155,155,Devon,3,exact_route_short_name,1,exact_match
+155,mdb-389-202601080131,155,155,Devon,3,exact_route_short_name,1,exact_match
+155,mdb-389-202602100132,155,155,Devon,3,exact_route_short_name,1,exact_match
+155,mdb-389-202603260020,155,155,Devon,3,exact_route_short_name,1,exact_match
+155,mdb-389-202604240144,155,155,Devon,3,exact_route_short_name,1,exact_match
+155,mdb-389-202605300003,155,155,Devon,3,exact_route_short_name,1,exact_match
+155,mdb-389-202607110020,155,155,Devon,3,exact_route_short_name,1,exact_match
+156,mdb-389-202511230128,156,156,LaSalle,3,exact_route_short_name,1,exact_match
+156,mdb-389-202512190112,156,156,LaSalle,3,exact_route_short_name,1,exact_match
+156,mdb-389-202601080131,156,156,LaSalle,3,exact_route_short_name,1,exact_match
+156,mdb-389-202602100132,156,156,LaSalle,3,exact_route_short_name,1,exact_match
+156,mdb-389-202603260020,156,156,LaSalle,3,exact_route_short_name,1,exact_match
+156,mdb-389-202604240144,156,156,LaSalle,3,exact_route_short_name,1,exact_match
+156,mdb-389-202605300003,156,156,LaSalle,3,exact_route_short_name,1,exact_match
+156,mdb-389-202607110020,156,156,LaSalle,3,exact_route_short_name,1,exact_match
+157,mdb-389-202511230128,157,157,Streeterville/Taylor,3,exact_route_short_name,1,exact_match
+157,mdb-389-202512190112,157,157,Streeterville/Taylor,3,exact_route_short_name,1,exact_match
+157,mdb-389-202601080131,157,157,Streeterville/Taylor,3,exact_route_short_name,1,exact_match
+157,mdb-389-202602100132,157,157,Streeterville/Taylor,3,exact_route_short_name,1,exact_match
+157,mdb-389-202603260020,157,157,Streeterville/Taylor,3,exact_route_short_name,1,exact_match
+157,mdb-389-202604240144,157,157,Streeterville/Taylor,3,exact_route_short_name,1,exact_match
+157,mdb-389-202605300003,157,157,Streeterville/Taylor,3,exact_route_short_name,1,exact_match
+157,mdb-389-202607110020,157,157,Streeterville/Taylor,3,exact_route_short_name,1,exact_match
+165,mdb-389-202511230128,165,165,West 65th,3,exact_route_short_name,1,exact_match
+165,mdb-389-202512190112,165,165,West 65th,3,exact_route_short_name,1,exact_match
+165,mdb-389-202601080131,165,165,West 65th,3,exact_route_short_name,1,exact_match
+165,mdb-389-202602100132,165,165,West 65th,3,exact_route_short_name,1,exact_match
+165,mdb-389-202603260020,165,165,West 65th,3,exact_route_short_name,1,exact_match
+165,mdb-389-202604240144,165,165,West 65th,3,exact_route_short_name,1,exact_match
+165,mdb-389-202605300003,165,165,West 65th,3,exact_route_short_name,1,exact_match
+165,mdb-389-202607110020,165,165,West 65th,3,exact_route_short_name,1,exact_match
+168,mdb-389-202511230128,,,,,none,0,unmatched
+168,mdb-389-202512190112,,,,,none,0,unmatched
+168,mdb-389-202601080131,,,,,none,0,unmatched
+168,mdb-389-202602100132,,,,,none,0,unmatched
+168,mdb-389-202603260020,,,,,none,0,unmatched
+168,mdb-389-202604240144,,,,,none,0,unmatched
+168,mdb-389-202605300003,,,,,none,0,unmatched
+168,mdb-389-202607110020,,,,,none,0,unmatched
+169,mdb-389-202511230128,169,169,69th/UPS Express,3,exact_route_short_name,1,exact_match
+169,mdb-389-202512190112,169,169,69th/UPS Express,3,exact_route_short_name,1,exact_match
+169,mdb-389-202601080131,169,169,69th/UPS Express,3,exact_route_short_name,1,exact_match
+169,mdb-389-202602100132,169,169,69th/UPS Express,3,exact_route_short_name,1,exact_match
+169,mdb-389-202603260020,169,169,69th/UPS Express,3,exact_route_short_name,1,exact_match
+169,mdb-389-202604240144,169,169,69th/UPS Express,3,exact_route_short_name,1,exact_match
+169,mdb-389-202605300003,169,169,69th/UPS Express,3,exact_route_short_name,1,exact_match
+169,mdb-389-202607110020,169,169,69th/UPS Express,3,exact_route_short_name,1,exact_match
+17,mdb-389-202511230128,,,,,none,0,unmatched
+17,mdb-389-202512190112,,,,,none,0,unmatched
+17,mdb-389-202601080131,,,,,none,0,unmatched
+17,mdb-389-202602100132,,,,,none,0,unmatched
+17,mdb-389-202603260020,,,,,none,0,unmatched
+17,mdb-389-202604240144,,,,,none,0,unmatched
+17,mdb-389-202605300003,,,,,none,0,unmatched
+17,mdb-389-202607110020,,,,,none,0,unmatched
+170,mdb-389-202511230128,,,,,none,0,unmatched
+170,mdb-389-202512190112,,,,,none,0,unmatched
+170,mdb-389-202601080131,,,,,none,0,unmatched
+170,mdb-389-202602100132,,,,,none,0,unmatched
+170,mdb-389-202603260020,,,,,none,0,unmatched
+170,mdb-389-202604240144,,,,,none,0,unmatched
+170,mdb-389-202605300003,,,,,none,0,unmatched
+170,mdb-389-202607110020,,,,,none,0,unmatched
+171,mdb-389-202511230128,171,171,U. of Chicago/Hyde Park,3,exact_route_short_name,1,exact_match
+171,mdb-389-202512190112,171,171,U. of Chicago/Hyde Park,3,exact_route_short_name,1,exact_match
+171,mdb-389-202601080131,171,171,U. of Chicago/Hyde Park,3,exact_route_short_name,1,exact_match
+171,mdb-389-202602100132,171,171,U. of Chicago/Hyde Park,3,exact_route_short_name,1,exact_match
+171,mdb-389-202603260020,171,171,U. of Chicago/Hyde Park,3,exact_route_short_name,1,exact_match
+171,mdb-389-202604240144,171,171,U. of Chicago/Hyde Park,3,exact_route_short_name,1,exact_match
+171,mdb-389-202605300003,171,171,U. of Chicago/Hyde Park,3,exact_route_short_name,1,exact_match
+171,mdb-389-202607110020,171,171,U. of Chicago/Hyde Park,3,exact_route_short_name,1,exact_match
+172,mdb-389-202511230128,172,172,U. of Chicago/Kenwood,3,exact_route_short_name,1,exact_match
+172,mdb-389-202512190112,172,172,U. of Chicago/Kenwood,3,exact_route_short_name,1,exact_match
+172,mdb-389-202601080131,172,172,U. of Chicago/Kenwood,3,exact_route_short_name,1,exact_match
+172,mdb-389-202602100132,172,172,U. of Chicago/Kenwood,3,exact_route_short_name,1,exact_match
+172,mdb-389-202603260020,172,172,U. of Chicago/Kenwood,3,exact_route_short_name,1,exact_match
+172,mdb-389-202604240144,172,172,U. of Chicago/Kenwood,3,exact_route_short_name,1,exact_match
+172,mdb-389-202605300003,172,172,U. of Chicago/Kenwood,3,exact_route_short_name,1,exact_match
+172,mdb-389-202607110020,172,172,U. of Chicago/Kenwood,3,exact_route_short_name,1,exact_match
+173,mdb-389-202511230128,,,,,none,0,unmatched
+173,mdb-389-202512190112,,,,,none,0,unmatched
+173,mdb-389-202601080131,,,,,none,0,unmatched
+173,mdb-389-202602100132,,,,,none,0,unmatched
+173,mdb-389-202603260020,,,,,none,0,unmatched
+173,mdb-389-202604240144,,,,,none,0,unmatched
+173,mdb-389-202605300003,,,,,none,0,unmatched
+173,mdb-389-202607110020,,,,,none,0,unmatched
+174,mdb-389-202511230128,,,,,none,0,unmatched
+174,mdb-389-202512190112,,,,,none,0,unmatched
+174,mdb-389-202601080131,,,,,none,0,unmatched
+174,mdb-389-202602100132,,,,,none,0,unmatched
+174,mdb-389-202603260020,,,,,none,0,unmatched
+174,mdb-389-202604240144,,,,,none,0,unmatched
+174,mdb-389-202605300003,,,,,none,0,unmatched
+174,mdb-389-202607110020,,,,,none,0,unmatched
+18,mdb-389-202511230128,18,18,16th/18th,3,exact_route_short_name,1,exact_match
+18,mdb-389-202512190112,18,18,16th/18th,3,exact_route_short_name,1,exact_match
+18,mdb-389-202601080131,18,18,16th/18th,3,exact_route_short_name,1,exact_match
+18,mdb-389-202602100132,18,18,16th/18th,3,exact_route_short_name,1,exact_match
+18,mdb-389-202603260020,18,18,16th/18th,3,exact_route_short_name,1,exact_match
+18,mdb-389-202604240144,18,18,16th/18th,3,exact_route_short_name,1,exact_match
+18,mdb-389-202605300003,18,18,16th/18th,3,exact_route_short_name,1,exact_match
+18,mdb-389-202607110020,18,18,16th/18th,3,exact_route_short_name,1,exact_match
+19,mdb-389-202511230128,,,,,none,0,unmatched
+19,mdb-389-202512190112,,,,,none,0,unmatched
+19,mdb-389-202601080131,,,,,none,0,unmatched
+19,mdb-389-202602100132,,,,,none,0,unmatched
+19,mdb-389-202603260020,,,,,none,0,unmatched
+19,mdb-389-202604240144,,,,,none,0,unmatched
+19,mdb-389-202605300003,,,,,none,0,unmatched
+19,mdb-389-202607110020,,,,,none,0,unmatched
+192,mdb-389-202511230128,192,192,University of Chicago Hospitals Express,3,exact_route_short_name,1,exact_match
+192,mdb-389-202512190112,192,192,University of Chicago Hospitals Express,3,exact_route_short_name,1,exact_match
+192,mdb-389-202601080131,192,192,University of Chicago Hospitals Express,3,exact_route_short_name,1,exact_match
+192,mdb-389-202602100132,192,192,University of Chicago Hospitals Express,3,exact_route_short_name,1,exact_match
+192,mdb-389-202603260020,192,192,University of Chicago Hospitals Express,3,exact_route_short_name,1,exact_match
+192,mdb-389-202604240144,192,192,University of Chicago Hospitals Express,3,exact_route_short_name,1,exact_match
+192,mdb-389-202605300003,192,192,University of Chicago Hospitals Express,3,exact_route_short_name,1,exact_match
+192,mdb-389-202607110020,192,192,University of Chicago Hospitals Express,3,exact_route_short_name,1,exact_match
+2,mdb-389-202511230128,2,2,Hyde Park Express,3,exact_route_short_name,1,exact_match
+2,mdb-389-202512190112,2,2,Hyde Park Express,3,exact_route_short_name,1,exact_match
+2,mdb-389-202601080131,2,2,Hyde Park Express,3,exact_route_short_name,1,exact_match
+2,mdb-389-202602100132,2,2,Hyde Park Express,3,exact_route_short_name,1,exact_match
+2,mdb-389-202603260020,2,2,Hyde Park Express,3,exact_route_short_name,1,exact_match
+2,mdb-389-202604240144,2,2,Hyde Park Express,3,exact_route_short_name,1,exact_match
+2,mdb-389-202605300003,2,2,Hyde Park Express,3,exact_route_short_name,1,exact_match
+2,mdb-389-202607110020,2,2,Hyde Park Express,3,exact_route_short_name,1,exact_match
+20,mdb-389-202511230128,20,20,Madison,3,exact_route_short_name,1,exact_match
+20,mdb-389-202512190112,20,20,Madison,3,exact_route_short_name,1,exact_match
+20,mdb-389-202601080131,20,20,Madison,3,exact_route_short_name,1,exact_match
+20,mdb-389-202602100132,20,20,Madison,3,exact_route_short_name,1,exact_match
+20,mdb-389-202603260020,20,20,Madison,3,exact_route_short_name,1,exact_match
+20,mdb-389-202604240144,20,20,Madison,3,exact_route_short_name,1,exact_match
+20,mdb-389-202605300003,20,20,Madison,3,exact_route_short_name,1,exact_match
+20,mdb-389-202607110020,20,20,Madison,3,exact_route_short_name,1,exact_match
+200,mdb-389-202511230128,,,,,none,0,unmatched
+200,mdb-389-202512190112,,,,,none,0,unmatched
+200,mdb-389-202601080131,,,,,none,0,unmatched
+200,mdb-389-202602100132,,,,,none,0,unmatched
+200,mdb-389-202603260020,,,,,none,0,unmatched
+200,mdb-389-202604240144,,,,,none,0,unmatched
+200,mdb-389-202605300003,,,,,none,0,unmatched
+200,mdb-389-202607110020,,,,,none,0,unmatched
+201,mdb-389-202511230128,201,201,Central/Ridge,3,exact_route_short_name,1,exact_match
+201,mdb-389-202512190112,201,201,Central/Ridge,3,exact_route_short_name,1,exact_match
+201,mdb-389-202601080131,201,201,Central/Ridge,3,exact_route_short_name,1,exact_match
+201,mdb-389-202602100132,201,201,Central/Ridge,3,exact_route_short_name,1,exact_match
+201,mdb-389-202603260020,201,201,Central/Ridge,3,exact_route_short_name,1,exact_match
+201,mdb-389-202604240144,201,201,Central/Ridge,3,exact_route_short_name,1,exact_match
+201,mdb-389-202605300003,201,201,Central/Ridge,3,exact_route_short_name,1,exact_match
+201,mdb-389-202607110020,201,201,Central/Ridge,3,exact_route_short_name,1,exact_match
+202,mdb-389-202511230128,,,,,none,0,unmatched
+202,mdb-389-202512190112,,,,,none,0,unmatched
+202,mdb-389-202601080131,,,,,none,0,unmatched
+202,mdb-389-202602100132,,,,,none,0,unmatched
+202,mdb-389-202603260020,,,,,none,0,unmatched
+202,mdb-389-202604240144,,,,,none,0,unmatched
+202,mdb-389-202605300003,,,,,none,0,unmatched
+202,mdb-389-202607110020,,,,,none,0,unmatched
+203,mdb-389-202511230128,,,,,none,0,unmatched
+203,mdb-389-202512190112,,,,,none,0,unmatched
+203,mdb-389-202601080131,,,,,none,0,unmatched
+203,mdb-389-202602100132,,,,,none,0,unmatched
+203,mdb-389-202603260020,,,,,none,0,unmatched
+203,mdb-389-202604240144,,,,,none,0,unmatched
+203,mdb-389-202605300003,,,,,none,0,unmatched
+203,mdb-389-202607110020,,,,,none,0,unmatched
+204,mdb-389-202511230128,,,,,none,0,unmatched
+204,mdb-389-202512190112,,,,,none,0,unmatched
+204,mdb-389-202601080131,,,,,none,0,unmatched
+204,mdb-389-202602100132,,,,,none,0,unmatched
+204,mdb-389-202603260020,,,,,none,0,unmatched
+204,mdb-389-202604240144,,,,,none,0,unmatched
+204,mdb-389-202605300003,,,,,none,0,unmatched
+204,mdb-389-202607110020,,,,,none,0,unmatched
+205,mdb-389-202511230128,,,,,none,0,unmatched
+205,mdb-389-202512190112,,,,,none,0,unmatched
+205,mdb-389-202601080131,,,,,none,0,unmatched
+205,mdb-389-202602100132,,,,,none,0,unmatched
+205,mdb-389-202603260020,,,,,none,0,unmatched
+205,mdb-389-202604240144,,,,,none,0,unmatched
+205,mdb-389-202605300003,,,,,none,0,unmatched
+205,mdb-389-202607110020,,,,,none,0,unmatched
+206,mdb-389-202511230128,206,206,Evanston Circulator,3,exact_route_short_name,1,exact_match
+206,mdb-389-202512190112,206,206,Evanston Circulator,3,exact_route_short_name,1,exact_match
+206,mdb-389-202601080131,206,206,Evanston Circulator,3,exact_route_short_name,1,exact_match
+206,mdb-389-202602100132,206,206,Evanston Circulator,3,exact_route_short_name,1,exact_match
+206,mdb-389-202603260020,206,206,Evanston Circulator,3,exact_route_short_name,1,exact_match
+206,mdb-389-202604240144,206,206,Evanston Circulator,3,exact_route_short_name,1,exact_match
+206,mdb-389-202605300003,206,206,Evanston Circulator,3,exact_route_short_name,1,exact_match
+206,mdb-389-202607110020,206,206,Evanston Circulator,3,exact_route_short_name,1,exact_match
+21,mdb-389-202511230128,21,21,Cermak,3,exact_route_short_name,1,exact_match
+21,mdb-389-202512190112,21,21,Cermak,3,exact_route_short_name,1,exact_match
+21,mdb-389-202601080131,21,21,Cermak,3,exact_route_short_name,1,exact_match
+21,mdb-389-202602100132,21,21,Cermak,3,exact_route_short_name,1,exact_match
+21,mdb-389-202603260020,21,21,Cermak,3,exact_route_short_name,1,exact_match
+21,mdb-389-202604240144,21,21,Cermak,3,exact_route_short_name,1,exact_match
+21,mdb-389-202605300003,21,21,Cermak,3,exact_route_short_name,1,exact_match
+21,mdb-389-202607110020,21,21,Cermak,3,exact_route_short_name,1,exact_match
+22,mdb-389-202511230128,22,22,Clark,3,exact_route_short_name,1,exact_match
+22,mdb-389-202512190112,22,22,Clark,3,exact_route_short_name,1,exact_match
+22,mdb-389-202601080131,22,22,Clark,3,exact_route_short_name,1,exact_match
+22,mdb-389-202602100132,22,22,Clark,3,exact_route_short_name,1,exact_match
+22,mdb-389-202603260020,22,22,Clark,3,exact_route_short_name,1,exact_match
+22,mdb-389-202604240144,22,22,Clark,3,exact_route_short_name,1,exact_match
+22,mdb-389-202605300003,22,22,Clark,3,exact_route_short_name,1,exact_match
+22,mdb-389-202607110020,22,22,Clark,3,exact_route_short_name,1,exact_match
+24,mdb-389-202511230128,24,24,Wentworth,3,exact_route_short_name,1,exact_match
+24,mdb-389-202512190112,24,24,Wentworth,3,exact_route_short_name,1,exact_match
+24,mdb-389-202601080131,24,24,Wentworth,3,exact_route_short_name,1,exact_match
+24,mdb-389-202602100132,24,24,Wentworth,3,exact_route_short_name,1,exact_match
+24,mdb-389-202603260020,24,24,Wentworth,3,exact_route_short_name,1,exact_match
+24,mdb-389-202604240144,24,24,Wentworth,3,exact_route_short_name,1,exact_match
+24,mdb-389-202605300003,24,24,Wentworth,3,exact_route_short_name,1,exact_match
+24,mdb-389-202607110020,24,24,Wentworth,3,exact_route_short_name,1,exact_match
+25,mdb-389-202511230128,,,,,none,0,unmatched
+25,mdb-389-202512190112,,,,,none,0,unmatched
+25,mdb-389-202601080131,,,,,none,0,unmatched
+25,mdb-389-202602100132,,,,,none,0,unmatched
+25,mdb-389-202603260020,,,,,none,0,unmatched
+25,mdb-389-202604240144,,,,,none,0,unmatched
+25,mdb-389-202605300003,,,,,none,0,unmatched
+25,mdb-389-202607110020,,,,,none,0,unmatched
+26,mdb-389-202511230128,26,26,South Shore Express,3,exact_route_short_name,1,exact_match
+26,mdb-389-202512190112,26,26,South Shore Express,3,exact_route_short_name,1,exact_match
+26,mdb-389-202601080131,26,26,South Shore Express,3,exact_route_short_name,1,exact_match
+26,mdb-389-202602100132,26,26,South Shore Express,3,exact_route_short_name,1,exact_match
+26,mdb-389-202603260020,26,26,South Shore Express,3,exact_route_short_name,1,exact_match
+26,mdb-389-202604240144,26,26,South Shore Express,3,exact_route_short_name,1,exact_match
+26,mdb-389-202605300003,26,26,South Shore Express,3,exact_route_short_name,1,exact_match
+26,mdb-389-202607110020,26,26,South Shore Express,3,exact_route_short_name,1,exact_match
+27,mdb-389-202511230128,,,,,none,0,unmatched
+27,mdb-389-202512190112,,,,,none,0,unmatched
+27,mdb-389-202601080131,,,,,none,0,unmatched
+27,mdb-389-202602100132,,,,,none,0,unmatched
+27,mdb-389-202603260020,,,,,none,0,unmatched
+27,mdb-389-202604240144,,,,,none,0,unmatched
+27,mdb-389-202605300003,,,,,none,0,unmatched
+27,mdb-389-202607110020,,,,,none,0,unmatched
+28,mdb-389-202511230128,28,28,Stony Island,3,exact_route_short_name,1,exact_match
+28,mdb-389-202512190112,28,28,Stony Island,3,exact_route_short_name,1,exact_match
+28,mdb-389-202601080131,28,28,Stony Island,3,exact_route_short_name,1,exact_match
+28,mdb-389-202602100132,28,28,Stony Island,3,exact_route_short_name,1,exact_match
+28,mdb-389-202603260020,28,28,Stony Island,3,exact_route_short_name,1,exact_match
+28,mdb-389-202604240144,28,28,Stony Island,3,exact_route_short_name,1,exact_match
+28,mdb-389-202605300003,28,28,Stony Island,3,exact_route_short_name,1,exact_match
+28,mdb-389-202607110020,28,28,Stony Island,3,exact_route_short_name,1,exact_match
+29,mdb-389-202511230128,29,29,State,3,exact_route_short_name,1,exact_match
+29,mdb-389-202512190112,29,29,State,3,exact_route_short_name,1,exact_match
+29,mdb-389-202601080131,29,29,State,3,exact_route_short_name,1,exact_match
+29,mdb-389-202602100132,29,29,State,3,exact_route_short_name,1,exact_match
+29,mdb-389-202603260020,29,29,State,3,exact_route_short_name,1,exact_match
+29,mdb-389-202604240144,29,29,State,3,exact_route_short_name,1,exact_match
+29,mdb-389-202605300003,29,29,State,3,exact_route_short_name,1,exact_match
+29,mdb-389-202607110020,29,29,State,3,exact_route_short_name,1,exact_match
+290,mdb-389-202511230128,,,,,none,0,unmatched
+290,mdb-389-202512190112,,,,,none,0,unmatched
+290,mdb-389-202601080131,,,,,none,0,unmatched
+290,mdb-389-202602100132,,,,,none,0,unmatched
+290,mdb-389-202603260020,,,,,none,0,unmatched
+290,mdb-389-202604240144,,,,,none,0,unmatched
+290,mdb-389-202605300003,,,,,none,0,unmatched
+290,mdb-389-202607110020,,,,,none,0,unmatched
+290S,mdb-389-202511230128,,,,,none,0,unmatched
+290S,mdb-389-202512190112,,,,,none,0,unmatched
+290S,mdb-389-202601080131,,,,,none,0,unmatched
+290S,mdb-389-202602100132,,,,,none,0,unmatched
+290S,mdb-389-202603260020,,,,,none,0,unmatched
+290S,mdb-389-202604240144,,,,,none,0,unmatched
+290S,mdb-389-202605300003,,,,,none,0,unmatched
+290S,mdb-389-202607110020,,,,,none,0,unmatched
+3,mdb-389-202511230128,3,3,King Drive,3,exact_route_short_name,1,exact_match
+3,mdb-389-202512190112,3,3,King Drive,3,exact_route_short_name,1,exact_match
+3,mdb-389-202601080131,3,3,King Drive,3,exact_route_short_name,1,exact_match
+3,mdb-389-202602100132,3,3,King Drive,3,exact_route_short_name,1,exact_match
+3,mdb-389-202603260020,3,3,King Drive,3,exact_route_short_name,1,exact_match
+3,mdb-389-202604240144,3,3,King Drive,3,exact_route_short_name,1,exact_match
+3,mdb-389-202605300003,3,3,King Drive,3,exact_route_short_name,1,exact_match
+3,mdb-389-202607110020,3,3,King Drive,3,exact_route_short_name,1,exact_match
+30,mdb-389-202511230128,30,30,South Chicago,3,exact_route_short_name,1,exact_match
+30,mdb-389-202512190112,30,30,South Chicago,3,exact_route_short_name,1,exact_match
+30,mdb-389-202601080131,30,30,South Chicago,3,exact_route_short_name,1,exact_match
+30,mdb-389-202602100132,30,30,South Chicago,3,exact_route_short_name,1,exact_match
+30,mdb-389-202603260020,30,30,South Chicago,3,exact_route_short_name,1,exact_match
+30,mdb-389-202604240144,30,30,South Chicago,3,exact_route_short_name,1,exact_match
+30,mdb-389-202605300003,30,30,South Chicago,3,exact_route_short_name,1,exact_match
+30,mdb-389-202607110020,30,30,South Chicago,3,exact_route_short_name,1,exact_match
+31,mdb-389-202511230128,31,31,31st,3,exact_route_short_name,1,exact_match
+31,mdb-389-202512190112,31,31,31st,3,exact_route_short_name,1,exact_match
+31,mdb-389-202601080131,31,31,31st,3,exact_route_short_name,1,exact_match
+31,mdb-389-202602100132,31,31,31st,3,exact_route_short_name,1,exact_match
+31,mdb-389-202603260020,31,31,31st,3,exact_route_short_name,1,exact_match
+31,mdb-389-202604240144,31,31,31st,3,exact_route_short_name,1,exact_match
+31,mdb-389-202605300003,31,31,31st,3,exact_route_short_name,1,exact_match
+31,mdb-389-202607110020,31,31,31st,3,exact_route_short_name,1,exact_match
+33,mdb-389-202511230128,,,,,none,0,unmatched
+33,mdb-389-202512190112,,,,,none,0,unmatched
+33,mdb-389-202601080131,,,,,none,0,unmatched
+33,mdb-389-202602100132,,,,,none,0,unmatched
+33,mdb-389-202603260020,,,,,none,0,unmatched
+33,mdb-389-202604240144,,,,,none,0,unmatched
+33,mdb-389-202605300003,,,,,none,0,unmatched
+33,mdb-389-202607110020,,,,,none,0,unmatched
+34,mdb-389-202511230128,34,34,South Michigan,3,exact_route_short_name,1,exact_match
+34,mdb-389-202512190112,34,34,South Michigan,3,exact_route_short_name,1,exact_match
+34,mdb-389-202601080131,34,34,South Michigan,3,exact_route_short_name,1,exact_match
+34,mdb-389-202602100132,34,34,South Michigan,3,exact_route_short_name,1,exact_match
+34,mdb-389-202603260020,34,34,South Michigan,3,exact_route_short_name,1,exact_match
+34,mdb-389-202604240144,34,34,South Michigan,3,exact_route_short_name,1,exact_match
+34,mdb-389-202605300003,34,34,South Michigan,3,exact_route_short_name,1,exact_match
+34,mdb-389-202607110020,34,34,South Michigan,3,exact_route_short_name,1,exact_match
+35,mdb-389-202511230128,35,35,31st/35th,3,exact_route_short_name,1,exact_match
+35,mdb-389-202512190112,35,35,31st/35th,3,exact_route_short_name,1,exact_match
+35,mdb-389-202601080131,35,35,31st/35th,3,exact_route_short_name,1,exact_match
+35,mdb-389-202602100132,35,35,31st/35th,3,exact_route_short_name,1,exact_match
+35,mdb-389-202603260020,35,35,31st/35th,3,exact_route_short_name,1,exact_match
+35,mdb-389-202604240144,35,35,31st/35th,3,exact_route_short_name,1,exact_match
+35,mdb-389-202605300003,35,35,31st/35th,3,exact_route_short_name,1,exact_match
+35,mdb-389-202607110020,35,35,31st/35th,3,exact_route_short_name,1,exact_match
+36,mdb-389-202511230128,36,36,Broadway,3,exact_route_short_name,1,exact_match
+36,mdb-389-202512190112,36,36,Broadway,3,exact_route_short_name,1,exact_match
+36,mdb-389-202601080131,36,36,Broadway,3,exact_route_short_name,1,exact_match
+36,mdb-389-202602100132,36,36,Broadway,3,exact_route_short_name,1,exact_match
+36,mdb-389-202603260020,36,36,Broadway,3,exact_route_short_name,1,exact_match
+36,mdb-389-202604240144,36,36,Broadway,3,exact_route_short_name,1,exact_match
+36,mdb-389-202605300003,36,36,Broadway,3,exact_route_short_name,1,exact_match
+36,mdb-389-202607110020,36,36,Broadway,3,exact_route_short_name,1,exact_match
+37,mdb-389-202511230128,37,37,Sedgwick,3,exact_route_short_name,1,exact_match
+37,mdb-389-202512190112,37,37,Sedgwick,3,exact_route_short_name,1,exact_match
+37,mdb-389-202601080131,37,37,Sedgwick,3,exact_route_short_name,1,exact_match
+37,mdb-389-202602100132,37,37,Sedgwick,3,exact_route_short_name,1,exact_match
+37,mdb-389-202603260020,37,37,Sedgwick,3,exact_route_short_name,1,exact_match
+37,mdb-389-202604240144,37,37,Sedgwick,3,exact_route_short_name,1,exact_match
+37,mdb-389-202605300003,37,37,Sedgwick,3,exact_route_short_name,1,exact_match
+37,mdb-389-202607110020,37,37,Sedgwick,3,exact_route_short_name,1,exact_match
+38,mdb-389-202511230128,,,,,none,0,unmatched
+38,mdb-389-202512190112,,,,,none,0,unmatched
+38,mdb-389-202601080131,,,,,none,0,unmatched
+38,mdb-389-202602100132,,,,,none,0,unmatched
+38,mdb-389-202603260020,,,,,none,0,unmatched
+38,mdb-389-202604240144,,,,,none,0,unmatched
+38,mdb-389-202605300003,,,,,none,0,unmatched
+38,mdb-389-202607110020,,,,,none,0,unmatched
+39,mdb-389-202511230128,39,39,Pershing,3,exact_route_short_name,1,exact_match
+39,mdb-389-202512190112,39,39,Pershing,3,exact_route_short_name,1,exact_match
+39,mdb-389-202601080131,39,39,Pershing,3,exact_route_short_name,1,exact_match
+39,mdb-389-202602100132,39,39,Pershing,3,exact_route_short_name,1,exact_match
+39,mdb-389-202603260020,39,39,Pershing,3,exact_route_short_name,1,exact_match
+39,mdb-389-202604240144,39,39,Pershing,3,exact_route_short_name,1,exact_match
+39,mdb-389-202605300003,39,39,Pershing,3,exact_route_short_name,1,exact_match
+39,mdb-389-202607110020,39,39,Pershing,3,exact_route_short_name,1,exact_match
+4,mdb-389-202511230128,4,4,Cottage Grove,3,exact_route_short_name,1,exact_match
+4,mdb-389-202512190112,4,4,Cottage Grove,3,exact_route_short_name,1,exact_match
+4,mdb-389-202601080131,4,4,Cottage Grove,3,exact_route_short_name,1,exact_match
+4,mdb-389-202602100132,4,4,Cottage Grove,3,exact_route_short_name,1,exact_match
+4,mdb-389-202603260020,4,4,Cottage Grove,3,exact_route_short_name,1,exact_match
+4,mdb-389-202604240144,4,4,Cottage Grove,3,exact_route_short_name,1,exact_match
+4,mdb-389-202605300003,4,4,Cottage Grove,3,exact_route_short_name,1,exact_match
+4,mdb-389-202607110020,4,4,Cottage Grove,3,exact_route_short_name,1,exact_match
+40,mdb-389-202511230128,,,,,none,0,unmatched
+40,mdb-389-202512190112,,,,,none,0,unmatched
+40,mdb-389-202601080131,,,,,none,0,unmatched
+40,mdb-389-202602100132,,,,,none,0,unmatched
+40,mdb-389-202603260020,,,,,none,0,unmatched
+40,mdb-389-202604240144,,,,,none,0,unmatched
+40,mdb-389-202605300003,,,,,none,0,unmatched
+40,mdb-389-202607110020,,,,,none,0,unmatched
+43,mdb-389-202511230128,43,43,43rd,3,exact_route_short_name,1,exact_match
+43,mdb-389-202512190112,43,43,43rd,3,exact_route_short_name,1,exact_match
+43,mdb-389-202601080131,43,43,43rd,3,exact_route_short_name,1,exact_match
+43,mdb-389-202602100132,43,43,43rd,3,exact_route_short_name,1,exact_match
+43,mdb-389-202603260020,43,43,43rd,3,exact_route_short_name,1,exact_match
+43,mdb-389-202604240144,43,43,43rd,3,exact_route_short_name,1,exact_match
+43,mdb-389-202605300003,43,43,43rd,3,exact_route_short_name,1,exact_match
+43,mdb-389-202607110020,43,43,43rd,3,exact_route_short_name,1,exact_match
+44,mdb-389-202511230128,44,44,Wallace/Racine,3,exact_route_short_name,1,exact_match
+44,mdb-389-202512190112,44,44,Wallace/Racine,3,exact_route_short_name,1,exact_match
+44,mdb-389-202601080131,44,44,Wallace/Racine,3,exact_route_short_name,1,exact_match
+44,mdb-389-202602100132,44,44,Wallace/Racine,3,exact_route_short_name,1,exact_match
+44,mdb-389-202603260020,44,44,Wallace/Racine,3,exact_route_short_name,1,exact_match
+44,mdb-389-202604240144,44,44,Wallace/Racine,3,exact_route_short_name,1,exact_match
+44,mdb-389-202605300003,44,44,Wallace/Racine,3,exact_route_short_name,1,exact_match
+44,mdb-389-202607110020,44,44,Wallace/Racine,3,exact_route_short_name,1,exact_match
+47,mdb-389-202511230128,47,47,47th,3,exact_route_short_name,1,exact_match
+47,mdb-389-202512190112,47,47,47th,3,exact_route_short_name,1,exact_match
+47,mdb-389-202601080131,47,47,47th,3,exact_route_short_name,1,exact_match
+47,mdb-389-202602100132,47,47,47th,3,exact_route_short_name,1,exact_match
+47,mdb-389-202603260020,47,47,47th,3,exact_route_short_name,1,exact_match
+47,mdb-389-202604240144,47,47,47th,3,exact_route_short_name,1,exact_match
+47,mdb-389-202605300003,47,47,47th,3,exact_route_short_name,1,exact_match
+47,mdb-389-202607110020,47,47,47th,3,exact_route_short_name,1,exact_match
+48,mdb-389-202511230128,48,48,South Damen,3,exact_route_short_name,1,exact_match
+48,mdb-389-202512190112,48,48,South Damen,3,exact_route_short_name,1,exact_match
+48,mdb-389-202601080131,48,48,South Damen,3,exact_route_short_name,1,exact_match
+48,mdb-389-202602100132,48,48,South Damen,3,exact_route_short_name,1,exact_match
+48,mdb-389-202603260020,48,48,South Damen,3,exact_route_short_name,1,exact_match
+48,mdb-389-202604240144,48,48,South Damen,3,exact_route_short_name,1,exact_match
+48,mdb-389-202605300003,48,48,South Damen,3,exact_route_short_name,1,exact_match
+48,mdb-389-202607110020,48,48,South Damen,3,exact_route_short_name,1,exact_match
+49,mdb-389-202511230128,49,49,Western,3,exact_route_short_name,1,exact_match
+49,mdb-389-202512190112,49,49,Western,3,exact_route_short_name,1,exact_match
+49,mdb-389-202601080131,49,49,Western,3,exact_route_short_name,1,exact_match
+49,mdb-389-202602100132,49,49,Western,3,exact_route_short_name,1,exact_match
+49,mdb-389-202603260020,49,49,Western,3,exact_route_short_name,1,exact_match
+49,mdb-389-202604240144,49,49,Western,3,exact_route_short_name,1,exact_match
+49,mdb-389-202605300003,49,49,Western,3,exact_route_short_name,1,exact_match
+49,mdb-389-202607110020,49,49,Western,3,exact_route_short_name,1,exact_match
+49A,mdb-389-202511230128,,,,,none,0,unmatched
+49A,mdb-389-202512190112,,,,,none,0,unmatched
+49A,mdb-389-202601080131,,,,,none,0,unmatched
+49A,mdb-389-202602100132,,,,,none,0,unmatched
+49A,mdb-389-202603260020,,,,,none,0,unmatched
+49A,mdb-389-202604240144,,,,,none,0,unmatched
+49A,mdb-389-202605300003,,,,,none,0,unmatched
+49A,mdb-389-202607110020,,,,,none,0,unmatched
+49B,mdb-389-202511230128,49B,49B,North Western,3,exact_route_short_name,1,exact_match
+49B,mdb-389-202512190112,49B,49B,North Western,3,exact_route_short_name,1,exact_match
+49B,mdb-389-202601080131,49B,49B,North Western,3,exact_route_short_name,1,exact_match
+49B,mdb-389-202602100132,49B,49B,North Western,3,exact_route_short_name,1,exact_match
+49B,mdb-389-202603260020,49B,49B,North Western,3,exact_route_short_name,1,exact_match
+49B,mdb-389-202604240144,49B,49B,North Western,3,exact_route_short_name,1,exact_match
+49B,mdb-389-202605300003,49B,49B,North Western,3,exact_route_short_name,1,exact_match
+49B,mdb-389-202607110020,49B,49B,North Western,3,exact_route_short_name,1,exact_match
+5,mdb-389-202511230128,,,,,none,0,unmatched
+5,mdb-389-202512190112,,,,,none,0,unmatched
+5,mdb-389-202601080131,,,,,none,0,unmatched
+5,mdb-389-202602100132,,,,,none,0,unmatched
+5,mdb-389-202603260020,,,,,none,0,unmatched
+5,mdb-389-202604240144,,,,,none,0,unmatched
+5,mdb-389-202605300003,,,,,none,0,unmatched
+5,mdb-389-202607110020,,,,,none,0,unmatched
+50,mdb-389-202511230128,50,50,Damen,3,exact_route_short_name,1,exact_match
+50,mdb-389-202512190112,50,50,Damen,3,exact_route_short_name,1,exact_match
+50,mdb-389-202601080131,50,50,Damen,3,exact_route_short_name,1,exact_match
+50,mdb-389-202602100132,50,50,Damen,3,exact_route_short_name,1,exact_match
+50,mdb-389-202603260020,50,50,Damen,3,exact_route_short_name,1,exact_match
+50,mdb-389-202604240144,50,50,Damen,3,exact_route_short_name,1,exact_match
+50,mdb-389-202605300003,50,50,Damen,3,exact_route_short_name,1,exact_match
+50,mdb-389-202607110020,50,50,Damen,3,exact_route_short_name,1,exact_match
+51,mdb-389-202511230128,51,51,51st,3,exact_route_short_name,1,exact_match
+51,mdb-389-202512190112,51,51,51st,3,exact_route_short_name,1,exact_match
+51,mdb-389-202601080131,51,51,51st,3,exact_route_short_name,1,exact_match
+51,mdb-389-202602100132,51,51,51st,3,exact_route_short_name,1,exact_match
+51,mdb-389-202603260020,51,51,51st,3,exact_route_short_name,1,exact_match
+51,mdb-389-202604240144,51,51,51st,3,exact_route_short_name,1,exact_match
+51,mdb-389-202605300003,51,51,51st,3,exact_route_short_name,1,exact_match
+51,mdb-389-202607110020,51,51,51st,3,exact_route_short_name,1,exact_match
+52,mdb-389-202511230128,52,52,Kedzie,3,exact_route_short_name,1,exact_match
+52,mdb-389-202512190112,52,52,Kedzie,3,exact_route_short_name,1,exact_match
+52,mdb-389-202601080131,52,52,Kedzie,3,exact_route_short_name,1,exact_match
+52,mdb-389-202602100132,52,52,Kedzie,3,exact_route_short_name,1,exact_match
+52,mdb-389-202603260020,52,52,Kedzie,3,exact_route_short_name,1,exact_match
+52,mdb-389-202604240144,52,52,Kedzie,3,exact_route_short_name,1,exact_match
+52,mdb-389-202605300003,52,52,Kedzie,3,exact_route_short_name,1,exact_match
+52,mdb-389-202607110020,52,52,Kedzie,3,exact_route_short_name,1,exact_match
+52A,mdb-389-202511230128,52A,52A,South Kedzie,3,exact_route_short_name,1,exact_match
+52A,mdb-389-202512190112,52A,52A,South Kedzie,3,exact_route_short_name,1,exact_match
+52A,mdb-389-202601080131,52A,52A,South Kedzie,3,exact_route_short_name,1,exact_match
+52A,mdb-389-202602100132,52A,52A,South Kedzie,3,exact_route_short_name,1,exact_match
+52A,mdb-389-202603260020,52A,52A,South Kedzie,3,exact_route_short_name,1,exact_match
+52A,mdb-389-202604240144,52A,52A,South Kedzie,3,exact_route_short_name,1,exact_match
+52A,mdb-389-202605300003,52A,52A,South Kedzie,3,exact_route_short_name,1,exact_match
+52A,mdb-389-202607110020,52A,52A,South Kedzie,3,exact_route_short_name,1,exact_match
+53,mdb-389-202511230128,53,53,Pulaski,3,exact_route_short_name,1,exact_match
+53,mdb-389-202512190112,53,53,Pulaski,3,exact_route_short_name,1,exact_match
+53,mdb-389-202601080131,53,53,Pulaski,3,exact_route_short_name,1,exact_match
+53,mdb-389-202602100132,53,53,Pulaski,3,exact_route_short_name,1,exact_match
+53,mdb-389-202603260020,53,53,Pulaski,3,exact_route_short_name,1,exact_match
+53,mdb-389-202604240144,53,53,Pulaski,3,exact_route_short_name,1,exact_match
+53,mdb-389-202605300003,53,53,Pulaski,3,exact_route_short_name,1,exact_match
+53,mdb-389-202607110020,53,53,Pulaski,3,exact_route_short_name,1,exact_match
+53A,mdb-389-202511230128,53A,53A,South Pulaski,3,exact_route_short_name,1,exact_match
+53A,mdb-389-202512190112,53A,53A,South Pulaski,3,exact_route_short_name,1,exact_match
+53A,mdb-389-202601080131,53A,53A,South Pulaski,3,exact_route_short_name,1,exact_match
+53A,mdb-389-202602100132,53A,53A,South Pulaski,3,exact_route_short_name,1,exact_match
+53A,mdb-389-202603260020,53A,53A,South Pulaski,3,exact_route_short_name,1,exact_match
+53A,mdb-389-202604240144,53A,53A,South Pulaski,3,exact_route_short_name,1,exact_match
+53A,mdb-389-202605300003,53A,53A,South Pulaski,3,exact_route_short_name,1,exact_match
+53A,mdb-389-202607110020,53A,53A,South Pulaski,3,exact_route_short_name,1,exact_match
+53AL,mdb-389-202511230128,,,,,none,0,unmatched
+53AL,mdb-389-202512190112,,,,,none,0,unmatched
+53AL,mdb-389-202601080131,,,,,none,0,unmatched
+53AL,mdb-389-202602100132,,,,,none,0,unmatched
+53AL,mdb-389-202603260020,,,,,none,0,unmatched
+53AL,mdb-389-202604240144,,,,,none,0,unmatched
+53AL,mdb-389-202605300003,,,,,none,0,unmatched
+53AL,mdb-389-202607110020,,,,,none,0,unmatched
+54,mdb-389-202511230128,54,54,Cicero,3,exact_route_short_name,1,exact_match
+54,mdb-389-202512190112,54,54,Cicero,3,exact_route_short_name,1,exact_match
+54,mdb-389-202601080131,54,54,Cicero,3,exact_route_short_name,1,exact_match
+54,mdb-389-202602100132,54,54,Cicero,3,exact_route_short_name,1,exact_match
+54,mdb-389-202603260020,54,54,Cicero,3,exact_route_short_name,1,exact_match
+54,mdb-389-202604240144,54,54,Cicero,3,exact_route_short_name,1,exact_match
+54,mdb-389-202605300003,54,54,Cicero,3,exact_route_short_name,1,exact_match
+54,mdb-389-202607110020,54,54,Cicero,3,exact_route_short_name,1,exact_match
+54A,mdb-389-202511230128,54A,54A,North Cicero/Skokie Blvd.,3,exact_route_short_name,1,exact_match
+54A,mdb-389-202512190112,54A,54A,North Cicero/Skokie Blvd.,3,exact_route_short_name,1,exact_match
+54A,mdb-389-202601080131,54A,54A,North Cicero/Skokie Blvd.,3,exact_route_short_name,1,exact_match
+54A,mdb-389-202602100132,54A,54A,North Cicero/Skokie Blvd.,3,exact_route_short_name,1,exact_match
+54A,mdb-389-202603260020,54A,54A,North Cicero/Skokie Blvd.,3,exact_route_short_name,1,exact_match
+54A,mdb-389-202604240144,54A,54A,North Cicero/Skokie Blvd.,3,exact_route_short_name,1,exact_match
+54A,mdb-389-202605300003,54A,54A,North Cicero/Skokie Blvd.,3,exact_route_short_name,1,exact_match
+54A,mdb-389-202607110020,54A,54A,North Cicero/Skokie Blvd.,3,exact_route_short_name,1,exact_match
+54B,mdb-389-202511230128,54B,54B,South Cicero,3,exact_route_short_name,1,exact_match
+54B,mdb-389-202512190112,54B,54B,South Cicero,3,exact_route_short_name,1,exact_match
+54B,mdb-389-202601080131,54B,54B,South Cicero,3,exact_route_short_name,1,exact_match
+54B,mdb-389-202602100132,54B,54B,South Cicero,3,exact_route_short_name,1,exact_match
+54B,mdb-389-202603260020,54B,54B,South Cicero,3,exact_route_short_name,1,exact_match
+54B,mdb-389-202604240144,54B,54B,South Cicero,3,exact_route_short_name,1,exact_match
+54B,mdb-389-202605300003,54B,54B,South Cicero,3,exact_route_short_name,1,exact_match
+54B,mdb-389-202607110020,54B,54B,South Cicero,3,exact_route_short_name,1,exact_match
+55,mdb-389-202511230128,55,55,Garfield,3,exact_route_short_name,1,exact_match
+55,mdb-389-202512190112,55,55,Garfield,3,exact_route_short_name,1,exact_match
+55,mdb-389-202601080131,55,55,Garfield,3,exact_route_short_name,1,exact_match
+55,mdb-389-202602100132,55,55,Garfield,3,exact_route_short_name,1,exact_match
+55,mdb-389-202603260020,55,55,Garfield,3,exact_route_short_name,1,exact_match
+55,mdb-389-202604240144,55,55,Garfield,3,exact_route_short_name,1,exact_match
+55,mdb-389-202605300003,55,55,Garfield,3,exact_route_short_name,1,exact_match
+55,mdb-389-202607110020,55,55,Garfield,3,exact_route_short_name,1,exact_match
+55A,mdb-389-202511230128,55A,55A,55th/Austin,3,exact_route_short_name,1,exact_match
+55A,mdb-389-202512190112,55A,55A,55th/Austin,3,exact_route_short_name,1,exact_match
+55A,mdb-389-202601080131,55A,55A,55th/Austin,3,exact_route_short_name,1,exact_match
+55A,mdb-389-202602100132,55A,55A,55th/Austin,3,exact_route_short_name,1,exact_match
+55A,mdb-389-202603260020,55A,55A,55th/Austin,3,exact_route_short_name,1,exact_match
+55A,mdb-389-202604240144,55A,55A,55th/Austin,3,exact_route_short_name,1,exact_match
+55A,mdb-389-202605300003,55A,55A,55th/Austin,3,exact_route_short_name,1,exact_match
+55A,mdb-389-202607110020,55A,55A,55th/Austin,3,exact_route_short_name,1,exact_match
+55N,mdb-389-202511230128,55N,55N,55th/Narragansett,3,exact_route_short_name,1,exact_match
+55N,mdb-389-202512190112,55N,55N,55th/Narragansett,3,exact_route_short_name,1,exact_match
+55N,mdb-389-202601080131,55N,55N,55th/Narragansett,3,exact_route_short_name,1,exact_match
+55N,mdb-389-202602100132,55N,55N,55th/Narragansett,3,exact_route_short_name,1,exact_match
+55N,mdb-389-202603260020,55N,55N,55th/Narragansett,3,exact_route_short_name,1,exact_match
+55N,mdb-389-202604240144,55N,55N,55th/Narragansett,3,exact_route_short_name,1,exact_match
+55N,mdb-389-202605300003,55N,55N,55th/Narragansett,3,exact_route_short_name,1,exact_match
+55N,mdb-389-202607110020,55N,55N,55th/Narragansett,3,exact_route_short_name,1,exact_match
+56,mdb-389-202511230128,56,56,Milwaukee,3,exact_route_short_name,1,exact_match
+56,mdb-389-202512190112,56,56,Milwaukee,3,exact_route_short_name,1,exact_match
+56,mdb-389-202601080131,56,56,Milwaukee,3,exact_route_short_name,1,exact_match
+56,mdb-389-202602100132,56,56,Milwaukee,3,exact_route_short_name,1,exact_match
+56,mdb-389-202603260020,56,56,Milwaukee,3,exact_route_short_name,1,exact_match
+56,mdb-389-202604240144,56,56,Milwaukee,3,exact_route_short_name,1,exact_match
+56,mdb-389-202605300003,56,56,Milwaukee,3,exact_route_short_name,1,exact_match
+56,mdb-389-202607110020,56,56,Milwaukee,3,exact_route_short_name,1,exact_match
+56A,mdb-389-202511230128,,,,,none,0,unmatched
+56A,mdb-389-202512190112,,,,,none,0,unmatched
+56A,mdb-389-202601080131,,,,,none,0,unmatched
+56A,mdb-389-202602100132,,,,,none,0,unmatched
+56A,mdb-389-202603260020,,,,,none,0,unmatched
+56A,mdb-389-202604240144,,,,,none,0,unmatched
+56A,mdb-389-202605300003,,,,,none,0,unmatched
+56A,mdb-389-202607110020,,,,,none,0,unmatched
+57,mdb-389-202511230128,57,57,Laramie,3,exact_route_short_name,1,exact_match
+57,mdb-389-202512190112,57,57,Laramie,3,exact_route_short_name,1,exact_match
+57,mdb-389-202601080131,57,57,Laramie,3,exact_route_short_name,1,exact_match
+57,mdb-389-202602100132,57,57,Laramie,3,exact_route_short_name,1,exact_match
+57,mdb-389-202603260020,57,57,Laramie,3,exact_route_short_name,1,exact_match
+57,mdb-389-202604240144,57,57,Laramie,3,exact_route_short_name,1,exact_match
+57,mdb-389-202605300003,57,57,Laramie,3,exact_route_short_name,1,exact_match
+57,mdb-389-202607110020,57,57,Laramie,3,exact_route_short_name,1,exact_match
+59,mdb-389-202511230128,59,59,59th/61st,3,exact_route_short_name,1,exact_match
+59,mdb-389-202512190112,59,59,59th/61st,3,exact_route_short_name,1,exact_match
+59,mdb-389-202601080131,59,59,59th/61st,3,exact_route_short_name,1,exact_match
+59,mdb-389-202602100132,59,59,59th/61st,3,exact_route_short_name,1,exact_match
+59,mdb-389-202603260020,59,59,59th/61st,3,exact_route_short_name,1,exact_match
+59,mdb-389-202604240144,59,59,59th/61st,3,exact_route_short_name,1,exact_match
+59,mdb-389-202605300003,59,59,59th/61st,3,exact_route_short_name,1,exact_match
+59,mdb-389-202607110020,59,59,59th/61st,3,exact_route_short_name,1,exact_match
+6,mdb-389-202511230128,6,6,Jackson Park Express,3,exact_route_short_name,1,exact_match
+6,mdb-389-202512190112,6,6,Jackson Park Express,3,exact_route_short_name,1,exact_match
+6,mdb-389-202601080131,6,6,Jackson Park Express,3,exact_route_short_name,1,exact_match
+6,mdb-389-202602100132,6,6,Jackson Park Express,3,exact_route_short_name,1,exact_match
+6,mdb-389-202603260020,6,6,Jackson Park Express,3,exact_route_short_name,1,exact_match
+6,mdb-389-202604240144,6,6,Jackson Park Express,3,exact_route_short_name,1,exact_match
+6,mdb-389-202605300003,6,6,Jackson Park Express,3,exact_route_short_name,1,exact_match
+6,mdb-389-202607110020,6,6,Jackson Park Express,3,exact_route_short_name,1,exact_match
+60,mdb-389-202511230128,60,60,Blue Island/26th,3,exact_route_short_name,1,exact_match
+60,mdb-389-202512190112,60,60,Blue Island/26th,3,exact_route_short_name,1,exact_match
+60,mdb-389-202601080131,60,60,Blue Island/26th,3,exact_route_short_name,1,exact_match
+60,mdb-389-202602100132,60,60,Blue Island/26th,3,exact_route_short_name,1,exact_match
+60,mdb-389-202603260020,60,60,Blue Island/26th,3,exact_route_short_name,1,exact_match
+60,mdb-389-202604240144,60,60,Blue Island/26th,3,exact_route_short_name,1,exact_match
+60,mdb-389-202605300003,60,60,Blue Island/26th,3,exact_route_short_name,1,exact_match
+60,mdb-389-202607110020,60,60,Blue Island/26th,3,exact_route_short_name,1,exact_match
+62,mdb-389-202511230128,62,62,Archer,3,exact_route_short_name,1,exact_match
+62,mdb-389-202512190112,62,62,Archer,3,exact_route_short_name,1,exact_match
+62,mdb-389-202601080131,62,62,Archer,3,exact_route_short_name,1,exact_match
+62,mdb-389-202602100132,62,62,Archer,3,exact_route_short_name,1,exact_match
+62,mdb-389-202603260020,62,62,Archer,3,exact_route_short_name,1,exact_match
+62,mdb-389-202604240144,62,62,Archer,3,exact_route_short_name,1,exact_match
+62,mdb-389-202605300003,62,62,Archer,3,exact_route_short_name,1,exact_match
+62,mdb-389-202607110020,62,62,Archer,3,exact_route_short_name,1,exact_match
+62H,mdb-389-202511230128,62H,62H,Archer/Harlem,3,exact_route_short_name,1,exact_match
+62H,mdb-389-202512190112,62H,62H,Archer/Harlem,3,exact_route_short_name,1,exact_match
+62H,mdb-389-202601080131,62H,62H,Archer/Harlem,3,exact_route_short_name,1,exact_match
+62H,mdb-389-202602100132,62H,62H,Archer/Harlem,3,exact_route_short_name,1,exact_match
+62H,mdb-389-202603260020,62H,62H,Archer/Harlem,3,exact_route_short_name,1,exact_match
+62H,mdb-389-202604240144,62H,62H,Archer/Harlem,3,exact_route_short_name,1,exact_match
+62H,mdb-389-202605300003,62H,62H,Archer/Harlem,3,exact_route_short_name,1,exact_match
+62H,mdb-389-202607110020,62H,62H,Archer/Harlem,3,exact_route_short_name,1,exact_match
+63,mdb-389-202511230128,63,63,63rd,3,exact_route_short_name,1,exact_match
+63,mdb-389-202512190112,63,63,63rd,3,exact_route_short_name,1,exact_match
+63,mdb-389-202601080131,63,63,63rd,3,exact_route_short_name,1,exact_match
+63,mdb-389-202602100132,63,63,63rd,3,exact_route_short_name,1,exact_match
+63,mdb-389-202603260020,63,63,63rd,3,exact_route_short_name,1,exact_match
+63,mdb-389-202604240144,63,63,63rd,3,exact_route_short_name,1,exact_match
+63,mdb-389-202605300003,63,63,63rd,3,exact_route_short_name,1,exact_match
+63,mdb-389-202607110020,63,63,63rd,3,exact_route_short_name,1,exact_match
+63W,mdb-389-202511230128,63W,63W,West 63rd,3,exact_route_short_name,1,exact_match
+63W,mdb-389-202512190112,63W,63W,West 63rd,3,exact_route_short_name,1,exact_match
+63W,mdb-389-202601080131,63W,63W,West 63rd,3,exact_route_short_name,1,exact_match
+63W,mdb-389-202602100132,63W,63W,West 63rd,3,exact_route_short_name,1,exact_match
+63W,mdb-389-202603260020,63W,63W,West 63rd,3,exact_route_short_name,1,exact_match
+63W,mdb-389-202604240144,63W,63W,West 63rd,3,exact_route_short_name,1,exact_match
+63W,mdb-389-202605300003,63W,63W,West 63rd,3,exact_route_short_name,1,exact_match
+63W,mdb-389-202607110020,63W,63W,West 63rd,3,exact_route_short_name,1,exact_match
+64,mdb-389-202511230128,,,,,none,0,unmatched
+64,mdb-389-202512190112,,,,,none,0,unmatched
+64,mdb-389-202601080131,,,,,none,0,unmatched
+64,mdb-389-202602100132,,,,,none,0,unmatched
+64,mdb-389-202603260020,,,,,none,0,unmatched
+64,mdb-389-202604240144,,,,,none,0,unmatched
+64,mdb-389-202605300003,,,,,none,0,unmatched
+64,mdb-389-202607110020,,,,,none,0,unmatched
+642,mdb-389-202511230128,,,,,none,0,unmatched
+642,mdb-389-202512190112,,,,,none,0,unmatched
+642,mdb-389-202601080131,,,,,none,0,unmatched
+642,mdb-389-202602100132,,,,,none,0,unmatched
+642,mdb-389-202603260020,,,,,none,0,unmatched
+642,mdb-389-202604240144,,,,,none,0,unmatched
+642,mdb-389-202605300003,,,,,none,0,unmatched
+642,mdb-389-202607110020,,,,,none,0,unmatched
+643,mdb-389-202511230128,,,,,none,0,unmatched
+643,mdb-389-202512190112,,,,,none,0,unmatched
+643,mdb-389-202601080131,,,,,none,0,unmatched
+643,mdb-389-202602100132,,,,,none,0,unmatched
+643,mdb-389-202603260020,,,,,none,0,unmatched
+643,mdb-389-202604240144,,,,,none,0,unmatched
+643,mdb-389-202605300003,,,,,none,0,unmatched
+643,mdb-389-202607110020,,,,,none,0,unmatched
+65,mdb-389-202511230128,65,65,Grand,3,exact_route_short_name,1,exact_match
+65,mdb-389-202512190112,65,65,Grand,3,exact_route_short_name,1,exact_match
+65,mdb-389-202601080131,65,65,Grand,3,exact_route_short_name,1,exact_match
+65,mdb-389-202602100132,65,65,Grand,3,exact_route_short_name,1,exact_match
+65,mdb-389-202603260020,65,65,Grand,3,exact_route_short_name,1,exact_match
+65,mdb-389-202604240144,65,65,Grand,3,exact_route_short_name,1,exact_match
+65,mdb-389-202605300003,65,65,Grand,3,exact_route_short_name,1,exact_match
+65,mdb-389-202607110020,65,65,Grand,3,exact_route_short_name,1,exact_match
+66,mdb-389-202511230128,66,66,Chicago,3,exact_route_short_name,1,exact_match
+66,mdb-389-202512190112,66,66,Chicago,3,exact_route_short_name,1,exact_match
+66,mdb-389-202601080131,66,66,Chicago,3,exact_route_short_name,1,exact_match
+66,mdb-389-202602100132,66,66,Chicago,3,exact_route_short_name,1,exact_match
+66,mdb-389-202603260020,66,66,Chicago,3,exact_route_short_name,1,exact_match
+66,mdb-389-202604240144,66,66,Chicago,3,exact_route_short_name,1,exact_match
+66,mdb-389-202605300003,66,66,Chicago,3,exact_route_short_name,1,exact_match
+66,mdb-389-202607110020,66,66,Chicago,3,exact_route_short_name,1,exact_match
+67,mdb-389-202511230128,67,67,67th/69th/71st,3,exact_route_short_name,1,exact_match
+67,mdb-389-202512190112,67,67,67th/69th/71st,3,exact_route_short_name,1,exact_match
+67,mdb-389-202601080131,67,67,67th/69th/71st,3,exact_route_short_name,1,exact_match
+67,mdb-389-202602100132,67,67,67th/69th/71st,3,exact_route_short_name,1,exact_match
+67,mdb-389-202603260020,67,67,67th/69th/71st,3,exact_route_short_name,1,exact_match
+67,mdb-389-202604240144,67,67,67th/69th/71st,3,exact_route_short_name,1,exact_match
+67,mdb-389-202605300003,67,67,67th/69th/71st,3,exact_route_short_name,1,exact_match
+67,mdb-389-202607110020,67,67,67th/69th/71st,3,exact_route_short_name,1,exact_match
+68,mdb-389-202511230128,68,68,Northwest Highway,3,exact_route_short_name,1,exact_match
+68,mdb-389-202512190112,68,68,Northwest Highway,3,exact_route_short_name,1,exact_match
+68,mdb-389-202601080131,68,68,Northwest Highway,3,exact_route_short_name,1,exact_match
+68,mdb-389-202602100132,68,68,Northwest Highway,3,exact_route_short_name,1,exact_match
+68,mdb-389-202603260020,68,68,Northwest Highway,3,exact_route_short_name,1,exact_match
+68,mdb-389-202604240144,68,68,Northwest Highway,3,exact_route_short_name,1,exact_match
+68,mdb-389-202605300003,68,68,Northwest Highway,3,exact_route_short_name,1,exact_match
+68,mdb-389-202607110020,68,68,Northwest Highway,3,exact_route_short_name,1,exact_match
+69,mdb-389-202511230128,,,,,none,0,unmatched
+69,mdb-389-202512190112,,,,,none,0,unmatched
+69,mdb-389-202601080131,,,,,none,0,unmatched
+69,mdb-389-202602100132,,,,,none,0,unmatched
+69,mdb-389-202603260020,,,,,none,0,unmatched
+69,mdb-389-202604240144,,,,,none,0,unmatched
+69,mdb-389-202605300003,,,,,none,0,unmatched
+69,mdb-389-202607110020,,,,,none,0,unmatched
+69BR,mdb-389-202511230128,,,,,none,0,unmatched
+69BR,mdb-389-202512190112,,,,,none,0,unmatched
+69BR,mdb-389-202601080131,,,,,none,0,unmatched
+69BR,mdb-389-202602100132,,,,,none,0,unmatched
+69BR,mdb-389-202603260020,,,,,none,0,unmatched
+69BR,mdb-389-202604240144,,,,,none,0,unmatched
+69BR,mdb-389-202605300003,,,,,none,0,unmatched
+69BR,mdb-389-202607110020,,,,,none,0,unmatched
+7,mdb-389-202511230128,7,7,Harrison,3,exact_route_short_name,1,exact_match
+7,mdb-389-202512190112,7,7,Harrison,3,exact_route_short_name,1,exact_match
+7,mdb-389-202601080131,7,7,Harrison,3,exact_route_short_name,1,exact_match
+7,mdb-389-202602100132,7,7,Harrison,3,exact_route_short_name,1,exact_match
+7,mdb-389-202603260020,7,7,Harrison,3,exact_route_short_name,1,exact_match
+7,mdb-389-202604240144,7,7,Harrison,3,exact_route_short_name,1,exact_match
+7,mdb-389-202605300003,7,7,Harrison,3,exact_route_short_name,1,exact_match
+7,mdb-389-202607110020,7,7,Harrison,3,exact_route_short_name,1,exact_match
+70,mdb-389-202511230128,70,70,Division,3,exact_route_short_name,1,exact_match
+70,mdb-389-202512190112,70,70,Division,3,exact_route_short_name,1,exact_match
+70,mdb-389-202601080131,70,70,Division,3,exact_route_short_name,1,exact_match
+70,mdb-389-202602100132,70,70,Division,3,exact_route_short_name,1,exact_match
+70,mdb-389-202603260020,70,70,Division,3,exact_route_short_name,1,exact_match
+70,mdb-389-202604240144,70,70,Division,3,exact_route_short_name,1,exact_match
+70,mdb-389-202605300003,70,70,Division,3,exact_route_short_name,1,exact_match
+70,mdb-389-202607110020,70,70,Division,3,exact_route_short_name,1,exact_match
+71,mdb-389-202511230128,71,71,71st/South Shore,3,exact_route_short_name,1,exact_match
+71,mdb-389-202512190112,71,71,71st/South Shore,3,exact_route_short_name,1,exact_match
+71,mdb-389-202601080131,71,71,71st/South Shore,3,exact_route_short_name,1,exact_match
+71,mdb-389-202602100132,71,71,71st/South Shore,3,exact_route_short_name,1,exact_match
+71,mdb-389-202603260020,71,71,71st/South Shore,3,exact_route_short_name,1,exact_match
+71,mdb-389-202604240144,71,71,71st/South Shore,3,exact_route_short_name,1,exact_match
+71,mdb-389-202605300003,71,71,71st/South Shore,3,exact_route_short_name,1,exact_match
+71,mdb-389-202607110020,71,71,71st/South Shore,3,exact_route_short_name,1,exact_match
+72,mdb-389-202511230128,72,72,North,3,exact_route_short_name,1,exact_match
+72,mdb-389-202512190112,72,72,North,3,exact_route_short_name,1,exact_match
+72,mdb-389-202601080131,72,72,North,3,exact_route_short_name,1,exact_match
+72,mdb-389-202602100132,72,72,North,3,exact_route_short_name,1,exact_match
+72,mdb-389-202603260020,72,72,North,3,exact_route_short_name,1,exact_match
+72,mdb-389-202604240144,72,72,North,3,exact_route_short_name,1,exact_match
+72,mdb-389-202605300003,72,72,North,3,exact_route_short_name,1,exact_match
+72,mdb-389-202607110020,72,72,North,3,exact_route_short_name,1,exact_match
+73,mdb-389-202511230128,73,73,Armitage,3,exact_route_short_name,1,exact_match
+73,mdb-389-202512190112,73,73,Armitage,3,exact_route_short_name,1,exact_match
+73,mdb-389-202601080131,73,73,Armitage,3,exact_route_short_name,1,exact_match
+73,mdb-389-202602100132,73,73,Armitage,3,exact_route_short_name,1,exact_match
+73,mdb-389-202603260020,73,73,Armitage,3,exact_route_short_name,1,exact_match
+73,mdb-389-202604240144,73,73,Armitage,3,exact_route_short_name,1,exact_match
+73,mdb-389-202605300003,73,73,Armitage,3,exact_route_short_name,1,exact_match
+73,mdb-389-202607110020,73,73,Armitage,3,exact_route_short_name,1,exact_match
+74,mdb-389-202511230128,74,74,Fullerton,3,exact_route_short_name,1,exact_match
+74,mdb-389-202512190112,74,74,Fullerton,3,exact_route_short_name,1,exact_match
+74,mdb-389-202601080131,74,74,Fullerton,3,exact_route_short_name,1,exact_match
+74,mdb-389-202602100132,74,74,Fullerton,3,exact_route_short_name,1,exact_match
+74,mdb-389-202603260020,74,74,Fullerton,3,exact_route_short_name,1,exact_match
+74,mdb-389-202604240144,74,74,Fullerton,3,exact_route_short_name,1,exact_match
+74,mdb-389-202605300003,74,74,Fullerton,3,exact_route_short_name,1,exact_match
+74,mdb-389-202607110020,74,74,Fullerton,3,exact_route_short_name,1,exact_match
+75,mdb-389-202511230128,75,75,74th/75th,3,exact_route_short_name,1,exact_match
+75,mdb-389-202512190112,75,75,74th/75th,3,exact_route_short_name,1,exact_match
+75,mdb-389-202601080131,75,75,74th/75th,3,exact_route_short_name,1,exact_match
+75,mdb-389-202602100132,75,75,74th/75th,3,exact_route_short_name,1,exact_match
+75,mdb-389-202603260020,75,75,74th/75th,3,exact_route_short_name,1,exact_match
+75,mdb-389-202604240144,75,75,74th/75th,3,exact_route_short_name,1,exact_match
+75,mdb-389-202605300003,75,75,74th/75th,3,exact_route_short_name,1,exact_match
+75,mdb-389-202607110020,75,75,74th/75th,3,exact_route_short_name,1,exact_match
+76,mdb-389-202511230128,76,76,Diversey,3,exact_route_short_name,1,exact_match
+76,mdb-389-202512190112,76,76,Diversey,3,exact_route_short_name,1,exact_match
+76,mdb-389-202601080131,76,76,Diversey,3,exact_route_short_name,1,exact_match
+76,mdb-389-202602100132,76,76,Diversey,3,exact_route_short_name,1,exact_match
+76,mdb-389-202603260020,76,76,Diversey,3,exact_route_short_name,1,exact_match
+76,mdb-389-202604240144,76,76,Diversey,3,exact_route_short_name,1,exact_match
+76,mdb-389-202605300003,76,76,Diversey,3,exact_route_short_name,1,exact_match
+76,mdb-389-202607110020,76,76,Diversey,3,exact_route_short_name,1,exact_match
+77,mdb-389-202511230128,77,77,Belmont,3,exact_route_short_name,1,exact_match
+77,mdb-389-202512190112,77,77,Belmont,3,exact_route_short_name,1,exact_match
+77,mdb-389-202601080131,77,77,Belmont,3,exact_route_short_name,1,exact_match
+77,mdb-389-202602100132,77,77,Belmont,3,exact_route_short_name,1,exact_match
+77,mdb-389-202603260020,77,77,Belmont,3,exact_route_short_name,1,exact_match
+77,mdb-389-202604240144,77,77,Belmont,3,exact_route_short_name,1,exact_match
+77,mdb-389-202605300003,77,77,Belmont,3,exact_route_short_name,1,exact_match
+77,mdb-389-202607110020,77,77,Belmont,3,exact_route_short_name,1,exact_match
+78,mdb-389-202511230128,78,78,Montrose,3,exact_route_short_name,1,exact_match
+78,mdb-389-202512190112,78,78,Montrose,3,exact_route_short_name,1,exact_match
+78,mdb-389-202601080131,78,78,Montrose,3,exact_route_short_name,1,exact_match
+78,mdb-389-202602100132,78,78,Montrose,3,exact_route_short_name,1,exact_match
+78,mdb-389-202603260020,78,78,Montrose,3,exact_route_short_name,1,exact_match
+78,mdb-389-202604240144,78,78,Montrose,3,exact_route_short_name,1,exact_match
+78,mdb-389-202605300003,78,78,Montrose,3,exact_route_short_name,1,exact_match
+78,mdb-389-202607110020,78,78,Montrose,3,exact_route_short_name,1,exact_match
+79,mdb-389-202511230128,79,79,79th,3,exact_route_short_name,1,exact_match
+79,mdb-389-202512190112,79,79,79th,3,exact_route_short_name,1,exact_match
+79,mdb-389-202601080131,79,79,79th,3,exact_route_short_name,1,exact_match
+79,mdb-389-202602100132,79,79,79th,3,exact_route_short_name,1,exact_match
+79,mdb-389-202603260020,79,79,79th,3,exact_route_short_name,1,exact_match
+79,mdb-389-202604240144,79,79,79th,3,exact_route_short_name,1,exact_match
+79,mdb-389-202605300003,79,79,79th,3,exact_route_short_name,1,exact_match
+79,mdb-389-202607110020,79,79,79th,3,exact_route_short_name,1,exact_match
+8,mdb-389-202511230128,8,8,Halsted,3,exact_route_short_name,1,exact_match
+8,mdb-389-202512190112,8,8,Halsted,3,exact_route_short_name,1,exact_match
+8,mdb-389-202601080131,8,8,Halsted,3,exact_route_short_name,1,exact_match
+8,mdb-389-202602100132,8,8,Halsted,3,exact_route_short_name,1,exact_match
+8,mdb-389-202603260020,8,8,Halsted,3,exact_route_short_name,1,exact_match
+8,mdb-389-202604240144,8,8,Halsted,3,exact_route_short_name,1,exact_match
+8,mdb-389-202605300003,8,8,Halsted,3,exact_route_short_name,1,exact_match
+8,mdb-389-202607110020,8,8,Halsted,3,exact_route_short_name,1,exact_match
+80,mdb-389-202511230128,80,80,Irving Park,3,exact_route_short_name,1,exact_match
+80,mdb-389-202512190112,80,80,Irving Park,3,exact_route_short_name,1,exact_match
+80,mdb-389-202601080131,80,80,Irving Park,3,exact_route_short_name,1,exact_match
+80,mdb-389-202602100132,80,80,Irving Park,3,exact_route_short_name,1,exact_match
+80,mdb-389-202603260020,80,80,Irving Park,3,exact_route_short_name,1,exact_match
+80,mdb-389-202604240144,80,80,Irving Park,3,exact_route_short_name,1,exact_match
+80,mdb-389-202605300003,80,80,Irving Park,3,exact_route_short_name,1,exact_match
+80,mdb-389-202607110020,80,80,Irving Park,3,exact_route_short_name,1,exact_match
+81,mdb-389-202511230128,81,81,Lawrence,3,exact_route_short_name,1,exact_match
+81,mdb-389-202512190112,81,81,Lawrence,3,exact_route_short_name,1,exact_match
+81,mdb-389-202601080131,81,81,Lawrence,3,exact_route_short_name,1,exact_match
+81,mdb-389-202602100132,81,81,Lawrence,3,exact_route_short_name,1,exact_match
+81,mdb-389-202603260020,81,81,Lawrence,3,exact_route_short_name,1,exact_match
+81,mdb-389-202604240144,81,81,Lawrence,3,exact_route_short_name,1,exact_match
+81,mdb-389-202605300003,81,81,Lawrence,3,exact_route_short_name,1,exact_match
+81,mdb-389-202607110020,81,81,Lawrence,3,exact_route_short_name,1,exact_match
+81W,mdb-389-202511230128,81W,81W,West Lawrence,3,exact_route_short_name,1,exact_match
+81W,mdb-389-202512190112,81W,81W,West Lawrence,3,exact_route_short_name,1,exact_match
+81W,mdb-389-202601080131,81W,81W,West Lawrence,3,exact_route_short_name,1,exact_match
+81W,mdb-389-202602100132,81W,81W,West Lawrence,3,exact_route_short_name,1,exact_match
+81W,mdb-389-202603260020,81W,81W,West Lawrence,3,exact_route_short_name,1,exact_match
+81W,mdb-389-202604240144,81W,81W,West Lawrence,3,exact_route_short_name,1,exact_match
+81W,mdb-389-202605300003,81W,81W,West Lawrence,3,exact_route_short_name,1,exact_match
+81W,mdb-389-202607110020,81W,81W,West Lawrence,3,exact_route_short_name,1,exact_match
+82,mdb-389-202511230128,82,82,Kimball/Homan,3,exact_route_short_name,1,exact_match
+82,mdb-389-202512190112,82,82,Kimball/Homan,3,exact_route_short_name,1,exact_match
+82,mdb-389-202601080131,82,82,Kimball/Homan,3,exact_route_short_name,1,exact_match
+82,mdb-389-202602100132,82,82,Kimball/Homan,3,exact_route_short_name,1,exact_match
+82,mdb-389-202603260020,82,82,Kimball/Homan,3,exact_route_short_name,1,exact_match
+82,mdb-389-202604240144,82,82,Kimball/Homan,3,exact_route_short_name,1,exact_match
+82,mdb-389-202605300003,82,82,Kimball/Homan,3,exact_route_short_name,1,exact_match
+82,mdb-389-202607110020,82,82,Kimball/Homan,3,exact_route_short_name,1,exact_match
+84,mdb-389-202511230128,84,84,Peterson,3,exact_route_short_name,1,exact_match
+84,mdb-389-202512190112,84,84,Peterson,3,exact_route_short_name,1,exact_match
+84,mdb-389-202601080131,84,84,Peterson,3,exact_route_short_name,1,exact_match
+84,mdb-389-202602100132,84,84,Peterson,3,exact_route_short_name,1,exact_match
+84,mdb-389-202603260020,84,84,Peterson,3,exact_route_short_name,1,exact_match
+84,mdb-389-202604240144,84,84,Peterson,3,exact_route_short_name,1,exact_match
+84,mdb-389-202605300003,84,84,Peterson,3,exact_route_short_name,1,exact_match
+84,mdb-389-202607110020,84,84,Peterson,3,exact_route_short_name,1,exact_match
+85,mdb-389-202511230128,85,85,Central,3,exact_route_short_name,1,exact_match
+85,mdb-389-202512190112,85,85,Central,3,exact_route_short_name,1,exact_match
+85,mdb-389-202601080131,85,85,Central,3,exact_route_short_name,1,exact_match
+85,mdb-389-202602100132,85,85,Central,3,exact_route_short_name,1,exact_match
+85,mdb-389-202603260020,85,85,Central,3,exact_route_short_name,1,exact_match
+85,mdb-389-202604240144,85,85,Central,3,exact_route_short_name,1,exact_match
+85,mdb-389-202605300003,85,85,Central,3,exact_route_short_name,1,exact_match
+85,mdb-389-202607110020,85,85,Central,3,exact_route_short_name,1,exact_match
+85A,mdb-389-202511230128,85A,85A,North Central,3,exact_route_short_name,1,exact_match
+85A,mdb-389-202512190112,85A,85A,North Central,3,exact_route_short_name,1,exact_match
+85A,mdb-389-202601080131,85A,85A,North Central,3,exact_route_short_name,1,exact_match
+85A,mdb-389-202602100132,85A,85A,North Central,3,exact_route_short_name,1,exact_match
+85A,mdb-389-202603260020,85A,85A,North Central,3,exact_route_short_name,1,exact_match
+85A,mdb-389-202604240144,85A,85A,North Central,3,exact_route_short_name,1,exact_match
+85A,mdb-389-202605300003,85A,85A,North Central,3,exact_route_short_name,1,exact_match
+85A,mdb-389-202607110020,85A,85A,North Central,3,exact_route_short_name,1,exact_match
+86,mdb-389-202511230128,86,86,Narragansett/Ridgeland,3,exact_route_short_name,1,exact_match
+86,mdb-389-202512190112,86,86,Narragansett/Ridgeland,3,exact_route_short_name,1,exact_match
+86,mdb-389-202601080131,86,86,Narragansett/Ridgeland,3,exact_route_short_name,1,exact_match
+86,mdb-389-202602100132,86,86,Narragansett/Ridgeland,3,exact_route_short_name,1,exact_match
+86,mdb-389-202603260020,86,86,Narragansett/Ridgeland,3,exact_route_short_name,1,exact_match
+86,mdb-389-202604240144,86,86,Narragansett/Ridgeland,3,exact_route_short_name,1,exact_match
+86,mdb-389-202605300003,86,86,Narragansett/Ridgeland,3,exact_route_short_name,1,exact_match
+86,mdb-389-202607110020,86,86,Narragansett/Ridgeland,3,exact_route_short_name,1,exact_match
+87,mdb-389-202511230128,87,87,87th,3,exact_route_short_name,1,exact_match
+87,mdb-389-202512190112,87,87,87th,3,exact_route_short_name,1,exact_match
+87,mdb-389-202601080131,87,87,87th,3,exact_route_short_name,1,exact_match
+87,mdb-389-202602100132,87,87,87th,3,exact_route_short_name,1,exact_match
+87,mdb-389-202603260020,87,87,87th,3,exact_route_short_name,1,exact_match
+87,mdb-389-202604240144,87,87,87th,3,exact_route_short_name,1,exact_match
+87,mdb-389-202605300003,87,87,87th,3,exact_route_short_name,1,exact_match
+87,mdb-389-202607110020,87,87,87th,3,exact_route_short_name,1,exact_match
+88,mdb-389-202511230128,88,88,Higgins,3,exact_route_short_name,1,exact_match
+88,mdb-389-202512190112,88,88,Higgins,3,exact_route_short_name,1,exact_match
+88,mdb-389-202601080131,88,88,Higgins,3,exact_route_short_name,1,exact_match
+88,mdb-389-202602100132,88,88,Higgins,3,exact_route_short_name,1,exact_match
+88,mdb-389-202603260020,88,88,Higgins,3,exact_route_short_name,1,exact_match
+88,mdb-389-202604240144,88,88,Higgins,3,exact_route_short_name,1,exact_match
+88,mdb-389-202605300003,88,88,Higgins,3,exact_route_short_name,1,exact_match
+88,mdb-389-202607110020,88,88,Higgins,3,exact_route_short_name,1,exact_match
+8A,mdb-389-202511230128,8A,8A,South Halsted,3,exact_route_short_name,1,exact_match
+8A,mdb-389-202512190112,8A,8A,South Halsted,3,exact_route_short_name,1,exact_match
+8A,mdb-389-202601080131,8A,8A,South Halsted,3,exact_route_short_name,1,exact_match
+8A,mdb-389-202602100132,8A,8A,South Halsted,3,exact_route_short_name,1,exact_match
+8A,mdb-389-202603260020,8A,8A,South Halsted,3,exact_route_short_name,1,exact_match
+8A,mdb-389-202604240144,8A,8A,South Halsted,3,exact_route_short_name,1,exact_match
+8A,mdb-389-202605300003,8A,8A,South Halsted,3,exact_route_short_name,1,exact_match
+8A,mdb-389-202607110020,8A,8A,South Halsted,3,exact_route_short_name,1,exact_match
+9,mdb-389-202511230128,9,9,Ashland,3,exact_route_short_name,1,exact_match
+9,mdb-389-202512190112,9,9,Ashland,3,exact_route_short_name,1,exact_match
+9,mdb-389-202601080131,9,9,Ashland,3,exact_route_short_name,1,exact_match
+9,mdb-389-202602100132,9,9,Ashland,3,exact_route_short_name,1,exact_match
+9,mdb-389-202603260020,9,9,Ashland,3,exact_route_short_name,1,exact_match
+9,mdb-389-202604240144,9,9,Ashland,3,exact_route_short_name,1,exact_match
+9,mdb-389-202605300003,9,9,Ashland,3,exact_route_short_name,1,exact_match
+9,mdb-389-202607110020,9,9,Ashland,3,exact_route_short_name,1,exact_match
+90,mdb-389-202511230128,90,90,Harlem,3,exact_route_short_name,1,exact_match
+90,mdb-389-202512190112,90,90,Harlem,3,exact_route_short_name,1,exact_match
+90,mdb-389-202601080131,90,90,Harlem,3,exact_route_short_name,1,exact_match
+90,mdb-389-202602100132,90,90,Harlem,3,exact_route_short_name,1,exact_match
+90,mdb-389-202603260020,90,90,Harlem,3,exact_route_short_name,1,exact_match
+90,mdb-389-202604240144,90,90,Harlem,3,exact_route_short_name,1,exact_match
+90,mdb-389-202605300003,90,90,Harlem,3,exact_route_short_name,1,exact_match
+90,mdb-389-202607110020,90,90,Harlem,3,exact_route_short_name,1,exact_match
+90N,mdb-389-202511230128,,,,,none,0,unmatched
+90N,mdb-389-202512190112,,,,,none,0,unmatched
+90N,mdb-389-202601080131,,,,,none,0,unmatched
+90N,mdb-389-202602100132,,,,,none,0,unmatched
+90N,mdb-389-202603260020,,,,,none,0,unmatched
+90N,mdb-389-202604240144,,,,,none,0,unmatched
+90N,mdb-389-202605300003,,,,,none,0,unmatched
+90N,mdb-389-202607110020,,,,,none,0,unmatched
+91,mdb-389-202511230128,91,91,Austin,3,exact_route_short_name,1,exact_match
+91,mdb-389-202512190112,91,91,Austin,3,exact_route_short_name,1,exact_match
+91,mdb-389-202601080131,91,91,Austin,3,exact_route_short_name,1,exact_match
+91,mdb-389-202602100132,91,91,Austin,3,exact_route_short_name,1,exact_match
+91,mdb-389-202603260020,91,91,Austin,3,exact_route_short_name,1,exact_match
+91,mdb-389-202604240144,91,91,Austin,3,exact_route_short_name,1,exact_match
+91,mdb-389-202605300003,91,91,Austin,3,exact_route_short_name,1,exact_match
+91,mdb-389-202607110020,91,91,Austin,3,exact_route_short_name,1,exact_match
+92,mdb-389-202511230128,92,92,Foster,3,exact_route_short_name,1,exact_match
+92,mdb-389-202512190112,92,92,Foster,3,exact_route_short_name,1,exact_match
+92,mdb-389-202601080131,92,92,Foster,3,exact_route_short_name,1,exact_match
+92,mdb-389-202602100132,92,92,Foster,3,exact_route_short_name,1,exact_match
+92,mdb-389-202603260020,92,92,Foster,3,exact_route_short_name,1,exact_match
+92,mdb-389-202604240144,92,92,Foster,3,exact_route_short_name,1,exact_match
+92,mdb-389-202605300003,92,92,Foster,3,exact_route_short_name,1,exact_match
+92,mdb-389-202607110020,92,92,Foster,3,exact_route_short_name,1,exact_match
+93,mdb-389-202511230128,93,93,California/Dodge,3,exact_route_short_name,1,exact_match
+93,mdb-389-202512190112,93,93,California/Dodge,3,exact_route_short_name,1,exact_match
+93,mdb-389-202601080131,93,93,California/Dodge,3,exact_route_short_name,1,exact_match
+93,mdb-389-202602100132,93,93,California/Dodge,3,exact_route_short_name,1,exact_match
+93,mdb-389-202603260020,93,93,California/Dodge,3,exact_route_short_name,1,exact_match
+93,mdb-389-202604240144,93,93,California/Dodge,3,exact_route_short_name,1,exact_match
+93,mdb-389-202605300003,93,93,California/Dodge,3,exact_route_short_name,1,exact_match
+93,mdb-389-202607110020,93,93,California/Dodge,3,exact_route_short_name,1,exact_match
+94,mdb-389-202511230128,94,94,California,3,exact_route_short_name,1,exact_match
+94,mdb-389-202512190112,94,94,California,3,exact_route_short_name,1,exact_match
+94,mdb-389-202601080131,94,94,California,3,exact_route_short_name,1,exact_match
+94,mdb-389-202602100132,94,94,California,3,exact_route_short_name,1,exact_match
+94,mdb-389-202603260020,94,94,California,3,exact_route_short_name,1,exact_match
+94,mdb-389-202604240144,94,94,California,3,exact_route_short_name,1,exact_match
+94,mdb-389-202605300003,94,94,California,3,exact_route_short_name,1,exact_match
+94,mdb-389-202607110020,94,94,California,3,exact_route_short_name,1,exact_match
+95,mdb-389-202511230128,95,95,95th,3,exact_route_short_name,1,exact_match
+95,mdb-389-202512190112,95,95,95th,3,exact_route_short_name,1,exact_match
+95,mdb-389-202601080131,95,95,95th,3,exact_route_short_name,1,exact_match
+95,mdb-389-202602100132,95,95,95th,3,exact_route_short_name,1,exact_match
+95,mdb-389-202603260020,95,95,95th,3,exact_route_short_name,1,exact_match
+95,mdb-389-202604240144,95,95,95th,3,exact_route_short_name,1,exact_match
+95,mdb-389-202605300003,95,95,95th,3,exact_route_short_name,1,exact_match
+95,mdb-389-202607110020,95,95,95th,3,exact_route_short_name,1,exact_match
+95E,mdb-389-202511230128,,,,,none,0,unmatched
+95E,mdb-389-202512190112,,,,,none,0,unmatched
+95E,mdb-389-202601080131,,,,,none,0,unmatched
+95E,mdb-389-202602100132,,,,,none,0,unmatched
+95E,mdb-389-202603260020,,,,,none,0,unmatched
+95E,mdb-389-202604240144,,,,,none,0,unmatched
+95E,mdb-389-202605300003,,,,,none,0,unmatched
+95E,mdb-389-202607110020,,,,,none,0,unmatched
+95W,mdb-389-202511230128,,,,,none,0,unmatched
+95W,mdb-389-202512190112,,,,,none,0,unmatched
+95W,mdb-389-202601080131,,,,,none,0,unmatched
+95W,mdb-389-202602100132,,,,,none,0,unmatched
+95W,mdb-389-202603260020,,,,,none,0,unmatched
+95W,mdb-389-202604240144,,,,,none,0,unmatched
+95W,mdb-389-202605300003,,,,,none,0,unmatched
+95W,mdb-389-202607110020,,,,,none,0,unmatched
+96,mdb-389-202511230128,96,96,Lunt,3,exact_route_short_name,1,exact_match
+96,mdb-389-202512190112,96,96,Lunt,3,exact_route_short_name,1,exact_match
+96,mdb-389-202601080131,96,96,Lunt,3,exact_route_short_name,1,exact_match
+96,mdb-389-202602100132,96,96,Lunt,3,exact_route_short_name,1,exact_match
+96,mdb-389-202603260020,96,96,Lunt,3,exact_route_short_name,1,exact_match
+96,mdb-389-202604240144,96,96,Lunt,3,exact_route_short_name,1,exact_match
+96,mdb-389-202605300003,96,96,Lunt,3,exact_route_short_name,1,exact_match
+96,mdb-389-202607110020,96,96,Lunt,3,exact_route_short_name,1,exact_match
+97,mdb-389-202511230128,97,97,Skokie,3,exact_route_short_name,1,exact_match
+97,mdb-389-202512190112,97,97,Skokie,3,exact_route_short_name,1,exact_match
+97,mdb-389-202601080131,97,97,Skokie,3,exact_route_short_name,1,exact_match
+97,mdb-389-202602100132,97,97,Skokie,3,exact_route_short_name,1,exact_match
+97,mdb-389-202603260020,97,97,Skokie,3,exact_route_short_name,1,exact_match
+97,mdb-389-202604240144,97,97,Skokie,3,exact_route_short_name,1,exact_match
+97,mdb-389-202605300003,97,97,Skokie,3,exact_route_short_name,1,exact_match
+97,mdb-389-202607110020,97,97,Skokie,3,exact_route_short_name,1,exact_match
+992,mdb-389-202511230128,,,,,none,0,unmatched
+992,mdb-389-202512190112,,,,,none,0,unmatched
+992,mdb-389-202601080131,,,,,none,0,unmatched
+992,mdb-389-202602100132,,,,,none,0,unmatched
+992,mdb-389-202603260020,,,,,none,0,unmatched
+992,mdb-389-202604240144,,,,,none,0,unmatched
+992,mdb-389-202605300003,,,,,none,0,unmatched
+992,mdb-389-202607110020,,,,,none,0,unmatched
+999,mdb-389-202511230128,,,,,none,0,unmatched
+999,mdb-389-202512190112,,,,,none,0,unmatched
+999,mdb-389-202601080131,,,,,none,0,unmatched
+999,mdb-389-202602100132,,,,,none,0,unmatched
+999,mdb-389-202603260020,,,,,none,0,unmatched
+999,mdb-389-202604240144,,,,,none,0,unmatched
+999,mdb-389-202605300003,,,,,none,0,unmatched
+999,mdb-389-202607110020,,,,,none,0,unmatched
+J14,mdb-389-202511230128,J14,J14,Jeffery Jump,3,exact_route_short_name,1,exact_match
+J14,mdb-389-202512190112,J14,J14,Jeffery Jump,3,exact_route_short_name,1,exact_match
+J14,mdb-389-202601080131,J14,J14,Jeffery Jump,3,exact_route_short_name,1,exact_match
+J14,mdb-389-202602100132,J14,J14,Jeffery Jump,3,exact_route_short_name,1,exact_match
+J14,mdb-389-202603260020,J14,J14,Jeffery Jump,3,exact_route_short_name,1,exact_match
+J14,mdb-389-202604240144,J14,J14,Jeffery Jump,3,exact_route_short_name,1,exact_match
+J14,mdb-389-202605300003,J14,J14,Jeffery Jump,3,exact_route_short_name,1,exact_match
+J14,mdb-389-202607110020,J14,J14,Jeffery Jump,3,exact_route_short_name,1,exact_match
+N201,mdb-389-202511230128,,,,,none,0,unmatched
+N201,mdb-389-202512190112,,,,,none,0,unmatched
+N201,mdb-389-202601080131,,,,,none,0,unmatched
+N201,mdb-389-202602100132,,,,,none,0,unmatched
+N201,mdb-389-202603260020,,,,,none,0,unmatched
+N201,mdb-389-202604240144,,,,,none,0,unmatched
+N201,mdb-389-202605300003,,,,,none,0,unmatched
+N201,mdb-389-202607110020,,,,,none,0,unmatched
+N5,mdb-389-202511230128,N5,N5,South Shore Night Bus,3,exact_route_short_name,1,exact_match
+N5,mdb-389-202512190112,N5,N5,South Shore Night Bus,3,exact_route_short_name,1,exact_match
+N5,mdb-389-202601080131,N5,N5,South Shore Night Bus,3,exact_route_short_name,1,exact_match
+N5,mdb-389-202602100132,N5,N5,South Shore Night Bus,3,exact_route_short_name,1,exact_match
+N5,mdb-389-202603260020,N5,N5,South Shore Night Bus,3,exact_route_short_name,1,exact_match
+N5,mdb-389-202604240144,N5,N5,South Shore Night Bus,3,exact_route_short_name,1,exact_match
+N5,mdb-389-202605300003,N5,N5,South Shore Night Bus,3,exact_route_short_name,1,exact_match
+N5,mdb-389-202607110020,N5,N5,South Shore Night Bus,3,exact_route_short_name,1,exact_match
+R22,mdb-389-202511230128,,,,,none,0,unmatched
+R22,mdb-389-202512190112,,,,,none,0,unmatched
+R22,mdb-389-202601080131,,,,,none,0,unmatched
+R22,mdb-389-202602100132,,,,,none,0,unmatched
+R22,mdb-389-202603260020,,,,,none,0,unmatched
+R22,mdb-389-202604240144,,,,,none,0,unmatched
+R22,mdb-389-202605300003,,,,,none,0,unmatched
+R22,mdb-389-202607110020,,,,,none,0,unmatched
+R39,mdb-389-202511230128,,,,,none,0,unmatched
+R39,mdb-389-202512190112,,,,,none,0,unmatched
+R39,mdb-389-202601080131,,,,,none,0,unmatched
+R39,mdb-389-202602100132,,,,,none,0,unmatched
+R39,mdb-389-202603260020,,,,,none,0,unmatched
+R39,mdb-389-202604240144,,,,,none,0,unmatched
+R39,mdb-389-202605300003,,,,,none,0,unmatched
+R39,mdb-389-202607110020,,,,,none,0,unmatched
+R55,mdb-389-202511230128,,,,,none,0,unmatched
+R55,mdb-389-202512190112,,,,,none,0,unmatched
+R55,mdb-389-202601080131,,,,,none,0,unmatched
+R55,mdb-389-202602100132,,,,,none,0,unmatched
+R55,mdb-389-202603260020,,,,,none,0,unmatched
+R55,mdb-389-202604240144,,,,,none,0,unmatched
+R55,mdb-389-202605300003,,,,,none,0,unmatched
+R55,mdb-389-202607110020,,,,,none,0,unmatched
+R63,mdb-389-202511230128,,,,,none,0,unmatched
+R63,mdb-389-202512190112,,,,,none,0,unmatched
+R63,mdb-389-202601080131,,,,,none,0,unmatched
+R63,mdb-389-202602100132,,,,,none,0,unmatched
+R63,mdb-389-202603260020,,,,,none,0,unmatched
+R63,mdb-389-202604240144,,,,,none,0,unmatched
+R63,mdb-389-202605300003,,,,,none,0,unmatched
+R63,mdb-389-202607110020,,,,,none,0,unmatched
+R69,mdb-389-202511230128,,,,,none,0,unmatched
+R69,mdb-389-202512190112,,,,,none,0,unmatched
+R69,mdb-389-202601080131,,,,,none,0,unmatched
+R69,mdb-389-202602100132,,,,,none,0,unmatched
+R69,mdb-389-202603260020,,,,,none,0,unmatched
+R69,mdb-389-202604240144,,,,,none,0,unmatched
+R69,mdb-389-202605300003,,,,,none,0,unmatched
+R69,mdb-389-202607110020,,,,,none,0,unmatched
+R79,mdb-389-202511230128,,,,,none,0,unmatched
+R79,mdb-389-202512190112,,,,,none,0,unmatched
+R79,mdb-389-202601080131,,,,,none,0,unmatched
+R79,mdb-389-202602100132,,,,,none,0,unmatched
+R79,mdb-389-202603260020,,,,,none,0,unmatched
+R79,mdb-389-202604240144,,,,,none,0,unmatched
+R79,mdb-389-202605300003,,,,,none,0,unmatched
+R79,mdb-389-202607110020,,,,,none,0,unmatched
+R87,mdb-389-202511230128,,,,,none,0,unmatched
+R87,mdb-389-202512190112,,,,,none,0,unmatched
+R87,mdb-389-202601080131,,,,,none,0,unmatched
+R87,mdb-389-202602100132,,,,,none,0,unmatched
+R87,mdb-389-202603260020,,,,,none,0,unmatched
+R87,mdb-389-202604240144,,,,,none,0,unmatched
+R87,mdb-389-202605300003,,,,,none,0,unmatched
+R87,mdb-389-202607110020,,,,,none,0,unmatched
+R95,mdb-389-202511230128,,,,,none,0,unmatched
+R95,mdb-389-202512190112,,,,,none,0,unmatched
+R95,mdb-389-202601080131,,,,,none,0,unmatched
+R95,mdb-389-202602100132,,,,,none,0,unmatched
+R95,mdb-389-202603260020,,,,,none,0,unmatched
+R95,mdb-389-202604240144,,,,,none,0,unmatched
+R95,mdb-389-202605300003,,,,,none,0,unmatched
+R95,mdb-389-202607110020,,,,,none,0,unmatched
+X20,mdb-389-202511230128,,,,,none,0,unmatched
+X20,mdb-389-202512190112,,,,,none,0,unmatched
+X20,mdb-389-202601080131,,,,,none,0,unmatched
+X20,mdb-389-202602100132,,,,,none,0,unmatched
+X20,mdb-389-202603260020,,,,,none,0,unmatched
+X20,mdb-389-202604240144,,,,,none,0,unmatched
+X20,mdb-389-202605300003,,,,,none,0,unmatched
+X20,mdb-389-202607110020,,,,,none,0,unmatched
+X21,mdb-389-202511230128,,,,,none,0,unmatched
+X21,mdb-389-202512190112,,,,,none,0,unmatched
+X21,mdb-389-202601080131,,,,,none,0,unmatched
+X21,mdb-389-202602100132,,,,,none,0,unmatched
+X21,mdb-389-202603260020,,,,,none,0,unmatched
+X21,mdb-389-202604240144,,,,,none,0,unmatched
+X21,mdb-389-202605300003,,,,,none,0,unmatched
+X21,mdb-389-202607110020,,,,,none,0,unmatched
+X28,mdb-389-202511230128,,,,,none,0,unmatched
+X28,mdb-389-202512190112,,,,,none,0,unmatched
+X28,mdb-389-202601080131,,,,,none,0,unmatched
+X28,mdb-389-202602100132,,,,,none,0,unmatched
+X28,mdb-389-202603260020,,,,,none,0,unmatched
+X28,mdb-389-202604240144,,,,,none,0,unmatched
+X28,mdb-389-202605300003,,,,,none,0,unmatched
+X28,mdb-389-202607110020,,,,,none,0,unmatched
+X3,mdb-389-202511230128,,,,,none,0,unmatched
+X3,mdb-389-202512190112,,,,,none,0,unmatched
+X3,mdb-389-202601080131,,,,,none,0,unmatched
+X3,mdb-389-202602100132,,,,,none,0,unmatched
+X3,mdb-389-202603260020,,,,,none,0,unmatched
+X3,mdb-389-202604240144,,,,,none,0,unmatched
+X3,mdb-389-202605300003,,,,,none,0,unmatched
+X3,mdb-389-202607110020,,,,,none,0,unmatched
+X4,mdb-389-202511230128,X4,X4,Cottage Grove Express,3,exact_route_short_name,1,exact_match
+X4,mdb-389-202512190112,X4,X4,Cottage Grove Express,3,exact_route_short_name,1,exact_match
+X4,mdb-389-202601080131,X4,X4,Cottage Grove Express,3,exact_route_short_name,1,exact_match
+X4,mdb-389-202602100132,X4,X4,Cottage Grove Express,3,exact_route_short_name,1,exact_match
+X4,mdb-389-202603260020,X4,X4,Cottage Grove Express,3,exact_route_short_name,1,exact_match
+X4,mdb-389-202604240144,X4,X4,Cottage Grove Express,3,exact_route_short_name,1,exact_match
+X4,mdb-389-202605300003,X4,X4,Cottage Grove Express,3,exact_route_short_name,1,exact_match
+X4,mdb-389-202607110020,X4,X4,Cottage Grove Express,3,exact_route_short_name,1,exact_match
+X49,mdb-389-202511230128,X49,X49,Western Express,3,exact_route_short_name,1,exact_match
+X49,mdb-389-202512190112,X49,X49,Western Express,3,exact_route_short_name,1,exact_match
+X49,mdb-389-202601080131,X49,X49,Western Express,3,exact_route_short_name,1,exact_match
+X49,mdb-389-202602100132,X49,X49,Western Express,3,exact_route_short_name,1,exact_match
+X49,mdb-389-202603260020,X49,X49,Western Express,3,exact_route_short_name,1,exact_match
+X49,mdb-389-202604240144,X49,X49,Western Express,3,exact_route_short_name,1,exact_match
+X49,mdb-389-202605300003,X49,X49,Western Express,3,exact_route_short_name,1,exact_match
+X49,mdb-389-202607110020,X49,X49,Western Express,3,exact_route_short_name,1,exact_match
+X54,mdb-389-202511230128,,,,,none,0,unmatched
+X54,mdb-389-202512190112,,,,,none,0,unmatched
+X54,mdb-389-202601080131,,,,,none,0,unmatched
+X54,mdb-389-202602100132,,,,,none,0,unmatched
+X54,mdb-389-202603260020,,,,,none,0,unmatched
+X54,mdb-389-202604240144,,,,,none,0,unmatched
+X54,mdb-389-202605300003,,,,,none,0,unmatched
+X54,mdb-389-202607110020,,,,,none,0,unmatched
+X55,mdb-389-202511230128,,,,,none,0,unmatched
+X55,mdb-389-202512190112,,,,,none,0,unmatched
+X55,mdb-389-202601080131,,,,,none,0,unmatched
+X55,mdb-389-202602100132,,,,,none,0,unmatched
+X55,mdb-389-202603260020,,,,,none,0,unmatched
+X55,mdb-389-202604240144,,,,,none,0,unmatched
+X55,mdb-389-202605300003,,,,,none,0,unmatched
+X55,mdb-389-202607110020,,,,,none,0,unmatched
+X80,mdb-389-202511230128,,,,,none,0,unmatched
+X80,mdb-389-202512190112,,,,,none,0,unmatched
+X80,mdb-389-202601080131,,,,,none,0,unmatched
+X80,mdb-389-202602100132,,,,,none,0,unmatched
+X80,mdb-389-202603260020,,,,,none,0,unmatched
+X80,mdb-389-202604240144,,,,,none,0,unmatched
+X80,mdb-389-202605300003,,,,,none,0,unmatched
+X80,mdb-389-202607110020,,,,,none,0,unmatched
+X9,mdb-389-202511230128,X9,X9,Ashland Express,3,exact_route_short_name,1,exact_match
+X9,mdb-389-202512190112,X9,X9,Ashland Express,3,exact_route_short_name,1,exact_match
+X9,mdb-389-202601080131,X9,X9,Ashland Express,3,exact_route_short_name,1,exact_match
+X9,mdb-389-202602100132,X9,X9,Ashland Express,3,exact_route_short_name,1,exact_match
+X9,mdb-389-202603260020,X9,X9,Ashland Express,3,exact_route_short_name,1,exact_match
+X9,mdb-389-202604240144,X9,X9,Ashland Express,3,exact_route_short_name,1,exact_match
+X9,mdb-389-202605300003,X9,X9,Ashland Express,3,exact_route_short_name,1,exact_match
+X9,mdb-389-202607110020,X9,X9,Ashland Express,3,exact_route_short_name,1,exact_match
+X98,mdb-389-202511230128,,,,,none,0,unmatched
+X98,mdb-389-202512190112,,,,,none,0,unmatched
+X98,mdb-389-202601080131,,,,,none,0,unmatched
+X98,mdb-389-202602100132,,,,,none,0,unmatched
+X98,mdb-389-202603260020,,,,,none,0,unmatched
+X98,mdb-389-202604240144,,,,,none,0,unmatched
+X98,mdb-389-202605300003,,,,,none,0,unmatched
+X98,mdb-389-202607110020,,,,,none,0,unmatched
+X99,mdb-389-202511230128,,,,,none,0,unmatched
+X99,mdb-389-202512190112,,,,,none,0,unmatched
+X99,mdb-389-202601080131,,,,,none,0,unmatched
+X99,mdb-389-202602100132,,,,,none,0,unmatched
+X99,mdb-389-202603260020,,,,,none,0,unmatched
+X99,mdb-389-202604240144,,,,,none,0,unmatched
+X99,mdb-389-202605300003,,,,,none,0,unmatched
+X99,mdb-389-202607110020,,,,,none,0,unmatched

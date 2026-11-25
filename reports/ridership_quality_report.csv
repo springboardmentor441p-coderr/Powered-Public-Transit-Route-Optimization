@@ -1,0 +1,21 @@
+metric,value
+Raw Total Records,1124170
+Clean Ingested Records,1124170
+Quarantined Records,0
+Duplicate Primary Keys,0
+Null Values (All Columns),0
+Distinct Route Identifiers,188
+Minimum Date,2001-01-01
+Maximum Date,2026-08-31
+Total Cumulative Ridership,"6,537,621,660"
+Average Daily Route Rides,5815.51
+Minimum Daily Route Rides,0
+Maximum Daily Route Rides,45177
+Genuine Zero-Ride Records,36
+Weekday Records (W),"865,376 (77.0%)"
+Saturday Records (A),"127,570 (11.3%)"
+Sunday/Holiday Records (U),"131,224 (11.7%)"
+Raw File Size,32.27 MB
+Clean Parquet Size (ZSTD),2.82 MB
+Clean CSV Size,32.42 MB
+Raw SHA-256 Checksum,92e8ac49be18bd689dcb4d42694c4be22248368a2bc23688a880d5d239f056d0

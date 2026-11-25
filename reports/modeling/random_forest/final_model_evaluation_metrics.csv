@@ -1,0 +1,4 @@
+tier,partition,date_range,expected_rows,rows_evaluated,prediction_coverage_pct,features,pred_mat_mb_est,eval_duration_sec,rf_wape,rf_mae,rf_rmse,rf_r2,baseline_b_wape,baseline_b_mae,baseline_b_rmse,baseline_b_r2,delta_wape,delta_mae,delta_rmse,delta_r2
+1,Test (GTFS Era),2025-11-23 to 2026-07-31,28798,28798,100.0,160,17.58,0.688,8.5279,402.1843,701.5721,0.9756,12.0843,569.9065,1081.9301,0.9421,-3.5564,-167.7221,-380.3579,0.0336
+1,August Holdout,2026-08-01 to 2026-08-31,3566,3566,100.0,160,2.18,0.277,8.1985,399.5392,709.6592,0.9761,10.8486,528.6903,904.3451,0.9612,-2.6502,-129.151,-194.6859,0.0149
+2,Test,2026-05-30 to 2026-07-31,7293,7293,100.0,169,4.7,0.31,8.1013,394.5119,671.5884,0.9788,10.1194,492.7877,863.0518,0.965,-2.0181,-98.2758,-191.4634,0.0138

@@ -1,0 +1,6 @@
+tier,partition,total_rows,calendar_t7_count,calendar_t7_pct,recent_28d_count,recent_28d_pct,historical_mean_count,historical_mean_pct,unavailable_count,unavailable_pct
+1,Tier 1 Validation,37786,37533,99.33,227,0.6,25,0.07,1,0.0
+1,Tier 1 Test,28798,28552,99.15,229,0.8,17,0.06,0,0.0
+1,Tier 1 August Holdout,3566,3554,99.66,8,0.22,4,0.11,0,0.0
+2,Tier 2 Validation,4117,4090,99.34,19,0.46,7,0.17,1,0.02
+2,Tier 2 Test,7293,7201,98.74,90,1.23,2,0.03,0,0.0

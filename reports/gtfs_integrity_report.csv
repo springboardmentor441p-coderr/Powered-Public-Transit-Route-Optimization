@@ -1,0 +1,9 @@
+archive_id,date_label,zip_crc_valid,sha256_match,extracted_file_count,required_files_present,missing_required_files,shapes_present,status,notes
+mdb-389-202511230128,"November 23, 2025",True,True,11,True,None,True,VALID,"Exact SHA-256 match, CRC passed, all 8 required GTFS files present"
+mdb-389-202512190112,"December 19, 2025",True,True,11,True,None,True,VALID,"Exact SHA-256 match, CRC passed, all 8 required GTFS files present"
+mdb-389-202601080131,"January 8, 2026",True,True,11,True,None,True,VALID,"Exact SHA-256 match, CRC passed, all 8 required GTFS files present"
+mdb-389-202602100132,"February 10, 2026",True,True,11,True,None,True,VALID,"Exact SHA-256 match, CRC passed, all 8 required GTFS files present"
+mdb-389-202603260020,"March 26, 2026",True,True,11,True,None,True,VALID,"Exact SHA-256 match, CRC passed, all 8 required GTFS files present"
+mdb-389-202604240144,"April 24, 2026",True,True,11,True,None,True,VALID,"Exact SHA-256 match, CRC passed, all 8 required GTFS files present"
+mdb-389-202605300003,"May 30, 2026",True,True,11,True,None,True,VALID,"Exact SHA-256 match, CRC passed, all 8 required GTFS files present"
+mdb-389-202607110020,"July 11, 2026",True,True,11,True,None,True,VALID,"Exact SHA-256 match, CRC passed, all 8 required GTFS files present"

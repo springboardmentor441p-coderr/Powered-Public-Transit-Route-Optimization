@@ -1,0 +1,3 @@
+tier,partition,model_name,expected_rows,rows_evaluated,prediction_coverage_pct,mae,rmse,r2,wape
+1,Validation,Random Forest Regressor (Tier 1),37786,37786,100.0,359.0223,636.0254,0.98,7.5097
+2,Validation,Random Forest Regressor (Tier 2),4117,4117,100.0,304.499,503.7297,0.9891,5.8669
