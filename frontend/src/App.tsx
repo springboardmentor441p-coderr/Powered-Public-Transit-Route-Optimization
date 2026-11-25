@@ -68,6 +68,8 @@ export default function App() {
   const [optResult, setOptResult] = useState<any>(null);
   const [optLoading, setOptLoading] = useState(false);
   const [planApplied, setPlanApplied] = useState(false);
+  const [deployedRoutes, setDeployedRoutes] = useState<string[]>([]);
+  const [planAppliedMessage, setPlanAppliedMessage] = useState<string | null>(null);
 
   // 2. Route Demand State
   const [demandProfiles, setDemandProfiles] = useState<any[]>([]);
@@ -172,17 +174,19 @@ export default function App() {
     if (!optResult?.recommendations) return;
     try {
       const activeChanges = optResult.recommendations.filter((r: any) => r.trips_delta !== 0);
-      for (const rec of activeChanges.slice(0, 4)) {
+      const routesToDeploy = activeChanges.length > 0 ? activeChanges : optResult.recommendations.slice(0, 4);
+      for (const rec of routesToDeploy) {
         await createScheduleUpdate({
-          route: rec.route,
+          route: String(rec.route),
           service_date: optResult.target_date || "2026-06-03",
           new_scheduled_trips: rec.recommended_trips,
           reason: `AI Route Optimizer: ${rec.reason}`,
         });
       }
       setPlanApplied(true);
+      setDeployedRoutes(routesToDeploy.map((r: any) => String(r.route)));
+      setPlanAppliedMessage(`Optimized schedules deployed to live transit dispatch for ${routesToDeploy.length} routes! Timetables are now updated.`);
       loadAlertsAndBroadcasts();
-      alert(`Optimized schedule deployed successfully for ${activeChanges.length} routes!`);
     } catch (err: any) {
       alert("Deployment requires Admin or Operator role: " + err.message);
     }
@@ -539,10 +543,52 @@ export default function App() {
                     }`}
                   >
                     <Check size={14} />
-                    {planApplied ? "Plan Deployed!" : "Apply Optimized Plan"}
+                    {planApplied ? "Plan Deployed & Live!" : "Apply Optimized Plan"}
                   </button>
                 </div>
               </div>
+
+              {/* Deployed Plan Confirmation Banner */}
+              {planApplied && (
+                <div className="bg-emerald-950/40 border-2 border-emerald-500/60 rounded-xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+                  <div className="flex items-center gap-3.5">
+                    <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl">
+                      <CheckCircle size={28} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-white flex items-center gap-2">
+                        <span>AI Optimization Plan Successfully Deployed to Network Dispatch!</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 font-mono font-bold tracking-wider">
+                          LIVE IN DISPATCH
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+                        {planAppliedMessage || "Timetables successfully applied to transit dispatch. Bus frequency, headway intervals, and corridor fleet limits are now live."}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      onClick={() => setTab("scenarios")}
+                      className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-white transition flex items-center gap-1.5"
+                    >
+                      <Sliders size={13} />
+                      Simulate Scenarios
+                    </button>
+                    <button
+                      onClick={() => {
+                        setPlanApplied(false);
+                        setDeployedRoutes([]);
+                        setPlanAppliedMessage(null);
+                      }}
+                      className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-amber-300 transition flex items-center gap-1.5"
+                    >
+                      <RotateCcw size={13} />
+                      Reset / Edit Plan
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Optimization Parameters Controls */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-950 border border-slate-800/90 rounded-xl p-4 text-xs">
