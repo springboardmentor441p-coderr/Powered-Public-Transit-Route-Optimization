@@ -9,6 +9,8 @@ class HealthCheckResponse(BaseModel):
     project: str = Field(default="AI_RouteRanker", description="Project name")
     version: str = Field(default="0.1.0", description="API version")
     environment: str = Field(default="development", description="Current environment")
+    data_ready: bool = Field(default=True, description="True when all required DuckDB and artifact files exist")
+    missing_artifacts_count: int = Field(default=0, ge=0, description="Count of missing required runtime artifacts")
     timestamp: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         description="UTC timestamp of the health check"
