@@ -77,6 +77,16 @@ class Settings(BaseSettings):
     RIDERSHIP_DEFAULT_END_DATE: str = "2026-08-31"
     RIDERSHIP_MAX_DAILY_SPAN_DAYS: int = 366
 
+    # Private Runtime Data Hydration (Hugging Face Dataset)
+    HF_HYDRATION_ENABLED: bool = False
+    HF_DATASET_REPO_ID: str = ""
+    HF_DATASET_REVISION: str = "main"
+    HF_TOKEN: Union[str, None] = None
+    HF_CACHE_DIR: Union[Path, None] = None
+    HYDRATION_MAX_RETRIES: int = 3
+    HYDRATION_RETRY_DELAY_SECONDS: float = 2.0
+    HYDRATION_STARTUP_MODE: str = "background"
+
     # Pagination & Validation Limits
     DEFAULT_PAGE_LIMIT: int = 25
     MAX_PAGE_LIMIT: int = 150

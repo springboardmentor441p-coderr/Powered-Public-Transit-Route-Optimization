@@ -1,9 +1,25 @@
-from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.core.config import settings
-from app.core.exceptions import register_exception_handlers
+from app.core.exceptions import _build_error_payload, register_exception_handlers
+from app.core.hydration import RuntimeDataHydrator
 from app.api.endpoints import router as health_router
 from app.api.v1.router import api_v1_router
+
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    """Hydrate private runtime artifacts at startup when HF_HYDRATION_ENABLED is True."""
+    hydrator: RuntimeDataHydrator = application.state.hydrator
+    if settings.HF_HYDRATION_ENABLED:
+        if settings.HYDRATION_STARTUP_MODE.lower() == "sync":
+            hydrator.hydrate_sync()
+        else:
+            hydrator.start_background()
+    yield
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -12,7 +28,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
+app.state.hydrator = RuntimeDataHydrator(settings)
 
 # Register global RFC 7807-style exception handlers
 register_exception_handlers(app)
@@ -25,6 +43,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def guard_runtime_hydration(request: Request, call_next):
+    """Block /api/v1/* requests while private runtime data hydration is incomplete or failed."""
+    if request.url.path.startswith(settings.API_V1_PREFIX):
+        hydrator: RuntimeDataHydrator = request.app.state.hydrator
+        if hydrator.is_blocking_requests():
+            snap = hydrator.snapshot()
+            detail = (
+                f"Runtime data hydration failed: {snap.last_error}"
+                if snap.status == "failed"
+                else f"Runtime data is warming up ({snap.verified_files}/{snap.total_files} files verified)."
+            )
+            payload = _build_error_payload(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                code="RUNTIME_DATA_NOT_READY",
+                title="Service Unavailable",
+                detail=detail,
+                instance=str(request.url.path),
+                details={"hydration_status": snap.status},
+            )
+            return JSONResponse(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                content=payload,
+                headers={"Retry-After": "5"},
+            )
+    return await call_next(request)
 
 # Register legacy health API routes with prefix /api
 app.include_router(health_router, prefix="/api")
