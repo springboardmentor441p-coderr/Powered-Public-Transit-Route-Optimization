@@ -1946,3 +1946,16 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - If the start fails, the screens that depend on it are skipped for that width, with one FAIL line, rather than producing a cascade of confusing failures.
 - **Results:** all three scripts pass `node --check`. They run against the test database in the Stage 9 fresh-setup run (Step 110).
 - **Interview Q:** *"How do you fix a flaky UI test without just raising the timeout?"* Find what the test should really be waiting for (here, the server's answer to one click), wait for exactly that, and make a failure say what it saw instead. A longer timeout only hides a race.
+
+## Step 105: A test for the saved-examples script (`backend/tests/test_save_examples.py`)
+- **Built:** five tests that run `backend/scenarios/save_examples.py` itself (its `main()`, with real arguments) on `routeranker_test`:
+  1. the first run saves the three examples, recomputes each identically, and exports three entries, each with a hash and its assumptions;
+  2. a second run saves nothing, the scenario count is unchanged, and the hashes are the same;
+  3. the test database reproduces the **committed** export: the same scenario ids and result hashes as `reports/stage8_scenario_examples.json`, which was made on the app database;
+  4. the committed report is only the default `--out`, and a run with `--out` leaves it byte-identical;
+  5. with only `TEST_DATABASE_URL` in the `.env`, asking for the app database fails before any connection is made.
+- **Why:** the script is the one deliberate writer of scenarios to the app database, and saved scenarios can never be deleted. Its "save once, then only re-check" rule deserved its own proof.
+- **Key concept:** *test the script the way it is run*. The test calls the same `main()` with the same flags as the README command, so it also checks the argument handling, the `.env` reading and the export. The temporary `.env` names only the test database, so even a mistake in the test can't reach the app database.
+- **Decisions:** each test starts and ends with `reset_test_scenarios`. That helper refuses to run outside `routeranker_test`, so the tests never depend on each other's leftovers.
+- **Results:** 5 passed in 2 min 36 s (most of it the one-time test-database load).
+- **Interview Q:** *"Why test a one-off script?"* Because it writes to something permanent. A one-off that runs twice by accident is exactly the case to prove, and here the proof is that the second run changes nothing.
