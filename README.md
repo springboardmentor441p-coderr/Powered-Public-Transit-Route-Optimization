@@ -63,27 +63,42 @@ git push origin your-name
 # RouteRanker — CTA Transit Planning, Replay & Demand Forecasting
 
 RouteRanker is an interactive transit-analytics dashboard and replay simulator for Chicago Transit Authority (CTA) bus routes. It combines historical daily ridership (2001–2026) with reconstructed GTFS schedule snapshots to support non-leaking historical replay, route-level demand forecasting, corridor productivity ranking, and conditional "what-if" service modeling.
+Features
 
-## Features
+    Integrity & Ingestion (01–02): Verifies raw source checksums (SHA-256) and normalizes boardings data with type contracts and zero-boarding preservation.
 
-- **Non-Leaking Historical Replay:** Steps day-by-day through a replay window while enforcing a configurable reporting delay (e.g., recorded boardings available only through `T - 1`).
-- **Route Demand Forecasting (`rf-service-v1`):** Generates daily boarding forecasts using exact historical same-weekday lags (`1d`, `7d`, `14d`, `21d`, `28d`) and scheduled GTFS service inputs (`scheduled_trips`, `scheduled_service_hours`).
-- **Review Priorities & Corridor Clustering:** Ranks routes by service productivity (`rides / scheduled hour`) across Weekday (`W`), Saturday (`A`), and Sunday/Holiday (`U`) schedules and groups routes into operational corridor clusters.
-- **Conditional Service Scenario Simulator (What-If):** Models proposed trip frequency adjustments and demand stress percentages against baseline route profiles.
+    Schedule Parsing & Corridor Geometry (03–04): Uses DuckDB for bounded-memory GTFS schedule parsing and computes pairwise Jaccard corridor overlap and stop containment.
 
-## Project Structure
+    Leakage-Safe Feature Engineering & Modeling (05–06): Builds historical same-weekday lags (t-1, t-7, t-14, etc.) with strict reporting-delay cutoffs and evaluates models chronologically across Train/Validation/Test splits.
 
-```text
+    Productivity Ranking, Clustering & Scenarios (07): Computes route efficiency metrics (rides / scheduled hour, rides / scheduled trip), KMeans corridor clusters, review tiers, and frequency/demand scenario comparisons.
+
+    API & Interactive Frontend: Exposes FastAPI endpoints for coverage, routes, rankings, forecasts, and scenarios alongside a React + TypeScript + Leaflet + Recharts planning workspace.
+
+Project Structure
+Plaintext
+
 route-ranker/
-├── analytics/                  # Data reconstruction, feature engineering, training & clustering scripts
-│   ├── step2_reconstruct.py    # GTFS schedule expansion & ridership alignment
-│   ├── step3_features.py       # Exact lag generation & train/validation/test split assignment
-│   ├── step4_train_models.py   # Demand forecasting model training
-│   └── step5_profiles_clustering.py # Route productivity metrics & corridor clustering
-├── backend/                    # FastAPI REST API for replay sessions, forecasts, rankings & scenarios
-│   └── main.py
-├── frontend/                   # React + TypeScript + Vite + Recharts dashboard
+├── analytics/
+│   ├── 01_source_register.py               # SHA-256 integrity verification on raw inputs
+│   ├── 02_clean_boardings.py               # Type contracts & zero-boarding preservation
+│   ├── 03_parse_gtfs_schedule.py           # DuckDB bounded-memory schedule parser (routes, trips, stops)
+│   ├── 04_route_structure_and_overlap.py   # Pairwise Jaccard corridor overlap & containment
+│   ├── 05_feature_engineering.py           # Leakage-safe calendar features & historical lags
+│   ├── 06_train_evaluate_models.py         # Chronological out-of-time Train/Val/Test evaluation
+│   └── 07_route_productivity_ranking.py    # Productivity ratios, KMeans clustering & review tiers
+├── backend/
+│   └── main.py                             # FastAPI routes (/api/health, /api/data/coverage, /api/routes, /api/rankings, /api/forecasts, /api/scenarios)
+├── frontend/
 │   └── src/
-│       └── App.tsx
-└── data/                       # Raw and processed CTA ridership & GTFS datasets
-
+│       └── App.tsx                         # Network overview, Leaflet route map, replay bar, explorer, comparison, evaluation & scenarios
+└── data/
+    └── processed/                          # Parquet analytical tables (gitignored for repo size limits)
+        ├── boardings_clean.parquet
+        ├── gtfs_routes_clean.parquet
+        ├── route_scheduled_service.parquet
+        ├── route_structure.parquet
+        ├── route_overlap.parquet
+        ├── model_features.parquet
+        ├── model_predictions_test.parquet
+        └── productivity_rankings.parquet
