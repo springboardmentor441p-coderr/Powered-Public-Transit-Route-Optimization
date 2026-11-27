@@ -13,7 +13,7 @@ These steps take a fresh clone to the running app. Commands are for **Windows CM
 
 ## 2. Get the code
 ```
-git clone https://github.com/springboardmentor441p-coder/Powered-Public-Transit-Route-Optimization.git
+git clone https://github.com/springboardmentor441p-coderr/Powered-Public-Transit-Route-Optimization.git
 cd Powered-Public-Transit-Route-Optimization
 git checkout tayyaba-haroon
 ```

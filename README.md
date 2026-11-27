@@ -168,7 +168,7 @@ Step by step, with troubleshooting: [docs/SETUP.md](docs/SETUP.md). In short, us
 **Prerequisites:** Git, Python 3.12, Node.js 22 with npm, PostgreSQL 17, and about 2 GB of free disk for data.
 
 ```
-git clone https://github.com/springboardmentor441p-coder/Powered-Public-Transit-Route-Optimization.git
+git clone https://github.com/springboardmentor441p-coderr/Powered-Public-Transit-Route-Optimization.git
 cd Powered-Public-Transit-Route-Optimization
 git checkout tayyaba-haroon
 

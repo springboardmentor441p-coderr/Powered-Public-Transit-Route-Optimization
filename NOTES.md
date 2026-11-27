@@ -2039,3 +2039,11 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - frontend: vitest 117 passed, tsc, lint and build clean;
   - figures: 22 of 22 match.
 - **Interview Q:** *"Your model wins on only 29 of 61 days. Is it actually better?"* Over all 6,542 route-days its average miss is 5.5 % lower, on exactly the same rows as the baseline, and it was chosen before the test was scored. But day-to-day noise is large, so the honest summary is "modestly better over a period, not every day", and the report says exactly that.
+
+## Step 110: Clone URL corrected in the setup instructions
+- **Built:** the `git clone` line in README "Setup" and in `docs/SETUP.md` now uses `springboardmentor441p-coderr` (two r's), the address `origin` actually pushes to. The one-r address had been copied from the earlier README.
+- **Why:** a fresh-setup guide is only right if its first command works.
+- **Key concept:** *take facts from the source*. The remote's own address (`git remote -v`) is the authority, not an older copy of the docs.
+- **Decisions:** the Contributing Guidelines section is kept exactly as it is, including its own clone line.
+- **Results:** 2 lines changed. The Contributing section is byte-identical to before.
+- **Interview Q:** *"How did a wrong URL get into the docs?"* It was copied from older text instead of read from `git remote -v`. Reading it from the source avoids that.
