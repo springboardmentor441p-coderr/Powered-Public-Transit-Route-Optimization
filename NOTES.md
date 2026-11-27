@@ -1977,3 +1977,26 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - Sections are scrolled to start 64 px below the top so the sticky top bar doesn't cover their headings.
 - **Results:** 10 screenshots, 48–161 KB each.
 - **Interview Q:** *"Why not full-page screenshots?"* A README reader looks at the first screen of each page. A window-sized image stays readable at README width and small enough to load quickly; the full pages are covered by the layout checks instead.
+
+## Step 107: Every figure re-checked, then the README and the docs written
+- **Built:**
+  - **A number check** (scratchpad script, `python -I`, read-only database connection). It compares each figure the docs quote with its source: 22 of 22 match.
+    - model results: 345.47 / 360.36 on validation and 398.01 / 421.15 on test, on the same 6,560 and 6,542 route-days;
+    - the replay recomputed from the stored forecasts: 398.0115 / 421.1546, WAPE 7.67 / 8.12 %, 29 of 61 days, 14,036 rows, 476 unavailable per method;
+    - the 9 source checksums;
+    - the 74-day delay (newest raw ride 2026-08-31, downloaded 2026-11-13);
+    - the saved examples' ids and hashes against the committed export;
+    - route 49: 35.6 → 29.7, rank 58 → 86.
+  - **`README.md`**, rewritten as the project's front page: summary and demo video, objectives, key results, an architecture diagram, technologies with pinned versions, data sources with checksums, the 9 stages, the screens with screenshots, supported dates and assumptions, setup, pipeline commands, the 5-minute demo path, testing, limitations, structure. The repository's Contributing section is kept unchanged at the end.
+  - **`docs/SETUP.md`**: step-by-step setup and a troubleshooting table that quotes the app's real error messages.
+  - **`docs/ARCHITECTURE.md`**: layers, data flow, endpoints, the cutoff rule, the replay clock and the scenario engine.
+  - **`docs/DATA_DICTIONARY.md`**: raw files, processed tables, database tables and forecasting features.
+  - **`docs/INTEGRATION_WALKTHROUGH.md`**: every stage and screen, with the command and what to check.
+- **Why:** spec 9.18 row 9 ("setup, integration walkthrough, evaluation report and limitations") and the request for detailed project documentation.
+- **Key concept:** *a document is only as good as its numbers*. Every figure was traced to a report or recomputed from the database before it was written. Anything that couldn't be traced was left out.
+- **Decisions:**
+  - The README stays short and links to the docs for depth. The stage commands stay in the README, because spec 9.17.5 asks for the import, training, API and frontend commands there.
+  - The 5-minute demo path never presses Save, and never leaves Play running.
+  - The docs describe only the project.
+- **Results:** the docs are committed. The evaluation report follows after the fresh-setup run and the final test run, so it can quote their results.
+- **Interview Q:** *"How do you keep documentation from going stale?"* Quote numbers from generated reports, not memory. Re-run a check that compares the docs with their sources before each release, and write down which source each number came from.
