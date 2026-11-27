@@ -1959,3 +1959,21 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
 - **Decisions:** each test starts and ends with `reset_test_scenarios`. That helper refuses to run outside `routeranker_test`, so the tests never depend on each other's leftovers.
 - **Results:** 5 passed in 2 min 36 s (most of it the one-time test-database load).
 - **Interview Q:** *"Why test a one-off script?"* Because it writes to something permanent. A one-off that runs twice by accident is exactly the case to prove, and here the proof is that the second run changes nothing.
+
+## Step 106: README screenshots (`frontend/scripts/doc_screenshots.mjs`, `docs/screenshots/`)
+- **Built:**
+  - **`doc_screenshots.mjs`** takes ten 1600 × 1000 px screenshots of the window (not the full page):
+    - Start, Closer look, One route (22), Alike, Shared stops, Compare (49 and X49);
+    - Scenarios, with the saved route 49 example opened from the list, never saved;
+    - Data, scrolled to the forecast model card;
+    - Replay on 8 Jun 2026 and at the end.
+  - It accepts shot names, so one screen can be retaken without repeating the replay.
+  - ffmpeg reduced each PNG to 256 colours. The largest is now 161 KB (Shared stops, with its map); before, it was 288 KB.
+- **Why:** the README shows each screen next to the one sentence that describes it.
+- **Key concept:** *a screenshot is evidence, so check it*. Each image was opened and read before it was kept. The replay shots show the same numbers as the Stage 7 report: 755 route-days, 395.0 vs 409.5, 3 of 7 days on 8 Jun; 6,542 route-days, 398.0 vs 421.2, 29 of 61 days at the end.
+- **Decisions:**
+  - The shots ran on the app database through a temporary API on 8010 and Vite on 5180, both stopped afterwards.
+  - The replay is the only part that writes. It made one session, then pressed Reset, which made a second clean session on 1 Jun, paused. Replay sessions went from 17 to 19 and scenarios stayed at 3, checked before and after.
+  - Sections are scrolled to start 64 px below the top so the sticky top bar doesn't cover their headings.
+- **Results:** 10 screenshots, 48–161 KB each.
+- **Interview Q:** *"Why not full-page screenshots?"* A README reader looks at the first screen of each page. A window-sized image stays readable at README width and small enough to load quickly; the full pages are covered by the layout checks instead.
