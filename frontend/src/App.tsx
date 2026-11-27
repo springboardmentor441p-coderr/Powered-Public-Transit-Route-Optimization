@@ -40,33 +40,33 @@ interface RankingRow {
 }
 
 
-type ChartPoint = { label: string; value: number; color?: string };
+type ChartDatum = { label: string; value: number; color?: string };
 
 function ChartPanel({ title, subtitle, children, className = '' }: { title: string; subtitle?: string; children: React.ReactNode; className?: string }) {
   return (
-    <section className={`glass-panel rounded-2xl p-5 border border-slate-800/90 ${className}`}>
+    <section className={`glass-panel rounded-2xl border border-slate-800/90 p-5 ${className}`}>
       <div className="mb-4">
         <h3 className="font-display text-sm font-bold text-white">{title}</h3>
-        {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
+        {subtitle && <p className="mt-1 text-xs text-slate-400">{subtitle}</p>}
       </div>
       {children}
     </section>
   );
 }
 
-function HorizontalBarChart({ data, suffix = '', maxItems = 8 }: { data: ChartPoint[]; suffix?: string; maxItems?: number }) {
+function HorizontalBarChart({ data, suffix = '', maxItems = 8 }: { data: ChartDatum[]; suffix?: string; maxItems?: number }) {
   const items = data.filter(d => Number.isFinite(d.value)).slice(0, maxItems);
   const max = Math.max(1, ...items.map(d => d.value));
-  if (!items.length) return <p className="text-xs text-slate-500 py-8 text-center">No chart data available for this selection.</p>;
+  if (!items.length) return <p className="py-8 text-center text-xs text-slate-500">No chart data available for this selection.</p>;
   return (
     <div className="space-y-3">
       {items.map((d, i) => (
-        <div key={`${d.label}-${i}`} className="grid grid-cols-[92px_1fr_74px] items-center gap-3">
-          <span className="text-xs text-slate-300 truncate">{d.label}</span>
-          <div className="h-2.5 rounded-full bg-slate-800 overflow-hidden">
-            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.max(2, d.value / max * 100)}%`, background: d.color || 'linear-gradient(90deg,#06b6d4,#8b5cf6)' }} />
+        <div key={`${d.label}-${i}`} className="grid grid-cols-[100px_1fr_76px] items-center gap-3">
+          <span className="truncate text-xs text-slate-300">{d.label}</span>
+          <div className="h-3 overflow-hidden rounded-full bg-slate-800">
+            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.max(1, d.value / max * 100)}%`, background: d.color || 'linear-gradient(90deg,#06b6d4,#8b5cf6)' }} />
           </div>
-          <span className="text-xs text-right font-semibold tabular-nums text-slate-200">{d.value.toLocaleString(undefined, { maximumFractionDigits: 1 })}{suffix}</span>
+          <span className="text-right text-xs font-semibold tabular-nums text-slate-200">{d.value.toLocaleString(undefined, { maximumFractionDigits: 1 })}{suffix}</span>
         </div>
       ))}
     </div>
@@ -75,24 +75,28 @@ function HorizontalBarChart({ data, suffix = '', maxItems = 8 }: { data: ChartPo
 
 function TrendLineChart({ data, valueKey = 'rides', labelKey = 'service_date' }: { data: any[]; valueKey?: string; labelKey?: string }) {
   const points = data.filter(d => Number.isFinite(Number(d?.[valueKey]))).slice(-30);
-  if (points.length < 2) return <p className="text-xs text-slate-500 py-8 text-center">More matched observations are needed to draw a trend.</p>;
+  if (points.length < 2) return <p className="py-8 text-center text-xs text-slate-500">At least two matched observations are needed to draw this trend.</p>;
   const values = points.map(d => Number(d[valueKey]));
   const min = Math.min(...values), max = Math.max(...values), span = Math.max(1, max - min);
-  const coords = values.map((v, i) => `${24 + i * (552 / (values.length - 1))},${150 - ((v - min) / span) * 112}`).join(' ');
-  const area = `24,150 ${coords} 576,150`;
+  const coords = values.map((v, i) => `${24 + i * (552 / (values.length - 1))},${145 - ((v - min) / span) * 105}`).join(' ');
+  const area = `24,145 ${coords} 576,145`;
   return (
     <div>
-      <svg viewBox="0 0 600 178" className="w-full h-44 overflow-visible" role="img" aria-label="Daily rides trend chart">
-        {[38, 94, 150].map(y => <line key={y} x1="24" x2="576" y1={y} y2={y} stroke="#263449" strokeDasharray="4 5" />)}
-        <polygon points={area} fill="url(#ridesFill)" opacity=".24" />
-        <defs><linearGradient id="ridesFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#22d3ee"/><stop offset="100%" stopColor="#22d3ee" stopOpacity="0"/></linearGradient></defs>
+      <svg viewBox="0 0 600 174" className="h-44 w-full overflow-visible" role="img" aria-label="Historical daily ridership trend">
+        {[40, 92, 145].map(y => <line key={y} x1="24" x2="576" y1={y} y2={y} stroke="#263449" strokeDasharray="4 5" />)}
+        <defs><linearGradient id="routeTrendFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#22d3ee" stopOpacity=".35"/><stop offset="100%" stopColor="#22d3ee" stopOpacity="0"/></linearGradient></defs>
+        <polygon points={area} fill="url(#routeTrendFill)" />
         <polyline points={coords} fill="none" stroke="#22d3ee" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-        <text x="24" y="172" fill="#8494aa" fontSize="10">{String(points[0]?.[labelKey] || '').slice(5)}</text>
-        <text x="576" y="172" fill="#8494aa" fontSize="10" textAnchor="end">{String(points[points.length - 1]?.[labelKey] || '').slice(5)}</text>
-        <text x="24" y="14" fill="#9aabc0" fontSize="10">{Math.round(max).toLocaleString()} rides</text>
-        <text x="24" y="164" fill="#9aabc0" fontSize="10">{Math.round(min).toLocaleString()}</text>
+        {values.map((v, i) => {
+          const cx = 24 + i * (552 / (values.length - 1));
+          const cy = 145 - ((v - min) / span) * 105;
+          return <circle key={i} cx={cx} cy={cy} r="4" fill="#22d3ee" stroke="#0b1424" strokeWidth="2"><title>{`${points[i]?.[labelKey] || 'Date'}: ${v.toLocaleString()} rides`}</title></circle>;
+        })}
+        <text x="24" y="18" fill="#a5b4c8" fontSize="11">{Math.round(max).toLocaleString()} rides</text>
+        <text x="24" y="165" fill="#8494aa" fontSize="10">{String(points[0]?.[labelKey] || '').slice(5)}</text>
+        <text x="576" y="165" fill="#8494aa" fontSize="10" textAnchor="end">{String(points[points.length - 1]?.[labelKey] || '').slice(5)}</text>
       </svg>
-      <p className="text-[11px] text-slate-500">Daily matched ridership • latest {points.length} observations</p>
+      <p className="text-[11px] text-slate-500">Latest {points.length} matched observations • Daily boardings</p>
     </div>
   );
 }
@@ -103,12 +107,89 @@ function ComparisonBars({ labels, values, colors = ['#22d3ee', '#a78bfa'], suffi
     <div className="space-y-4">
       {labels.map((label, i) => (
         <div key={label}>
-          <div className="flex justify-between text-xs mb-1.5"><span className="text-slate-300">{label}</span><strong className="text-white tabular-nums">{Number.isFinite(values[i]) ? values[i].toLocaleString(undefined, { maximumFractionDigits: 2 }) : 'N/A'}{suffix}</strong></div>
-          <div className="h-4 rounded-full bg-slate-800 overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{ width: `${Number.isFinite(values[i]) ? Math.max(1, values[i] / max * 100) : 0}%`, background: colors[i % colors.length] }} /></div>
+          <div className="mb-1.5 flex justify-between gap-3 text-xs"><span className="text-slate-300">{label}</span><strong className="tabular-nums text-white">{Number.isFinite(values[i]) ? values[i].toLocaleString(undefined, { maximumFractionDigits: 2 }) : 'N/A'}{suffix}</strong></div>
+          <div className="h-4 overflow-hidden rounded-full bg-slate-800"><div className="h-full rounded-full transition-all duration-500" style={{ width: `${Number.isFinite(values[i]) ? Math.max(1, values[i] / max * 100) : 0}%`, background: colors[i % colors.length] }} /></div>
         </div>
       ))}
     </div>
   );
+}
+
+
+
+const CLUSTER_PALETTE: Record<number, string> = {
+  0: '#38bdf8', 1: '#a78bfa', 2: '#34d399', 3: '#f59e0b'
+};
+
+function ClusterDonutChart({ routes }: { routes: RouteSummary[] }) {
+  const groups = [0, 1, 2, 3].map(id => ({
+    id,
+    label: ({ 0: 'Local Feeders', 1: 'High-Density Trunks', 2: 'Urban Connectors', 3: 'Weekend Outliers' } as Record<number, string>)[id],
+    count: routes.filter(r => r.cluster === id).length,
+    color: CLUSTER_PALETTE[id]
+  }));
+  const total = groups.reduce((sum, g) => sum + g.count, 0);
+  let cursor = 0;
+  const stops = groups.map(g => {
+    const start = cursor;
+    cursor += total ? (g.count / total) * 100 : 0;
+    return `${g.color} ${start}% ${cursor}%`;
+  }).join(', ');
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-6">
+      <div className="relative h-40 w-40 shrink-0 rounded-full" style={{ background: total ? `conic-gradient(${stops})` : '#263449' }}>
+        <div className="absolute inset-5 rounded-full bg-[#0b1424] flex flex-col items-center justify-center">
+          <strong className="text-3xl text-white">{total}</strong>
+          <span className="text-[10px] tracking-widest text-slate-400">ROUTES</span>
+        </div>
+      </div>
+      <div className="w-full flex-1 space-y-3">
+        {groups.map(g => <div key={g.id} className="flex items-center justify-between gap-3 text-xs">
+          <span className="flex items-center gap-2 text-slate-300"><i className="h-2.5 w-2.5 rounded-full" style={{ background: g.color }} />{g.label}</span>
+          <strong className="text-white">{g.count} <span className="text-slate-500">({total ? (g.count / total * 100).toFixed(1) : '0.0'}%)</span></strong>
+        </div>)}
+      </div>
+    </div>
+  );
+}
+
+function MetricBar({ label, value, max = 100, color, helper }: { label: string; value: number; max?: number; color: string; helper: string }) {
+  const width = Math.max(0, Math.min(100, (value / max) * 100));
+  return <div className="space-y-1.5">
+    <div className="flex items-center justify-between gap-3 text-xs"><span className="text-slate-300">{label}</span><strong className="text-white tabular-nums">{value.toFixed(2)}%</strong></div>
+    <div className="h-3 overflow-hidden rounded-full bg-slate-800"><div className="h-full rounded-full transition-all" style={{ width: `${width}%`, background: color }} /></div>
+    <p className="text-[10px] text-slate-500">{helper}</p>
+  </div>;
+}
+
+function DemandSupplyScatter({ routes, selectedRoute, onSelect }: { routes: RouteSummary[]; selectedRoute: string; onSelect: (route: string) => void }) {
+  const w = 700, h = 310, left = 66, right = 24, top = 20, bottom = 48;
+  const maxX = Math.max(1, ...routes.map(r => Number(r.avg_trips_per_day) || 0)) * 1.08;
+  const maxY = Math.max(1, ...routes.map(r => Number(r.avg_daily_rides) || 0)) * 1.08;
+  const px = (v: number) => left + (v / maxX) * (w - left - right);
+  const py = (v: number) => h - bottom - (v / maxY) * (h - top - bottom);
+  return <div className="w-full overflow-x-auto">
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full min-w-[500px]" role="img" aria-label="Demand versus scheduled supply scatter plot">
+      {[0,1,2,3,4].map(i => { const yy = top + i * (h-top-bottom)/4; return <line key={i} x1={left} x2={w-right} y1={yy} y2={yy} stroke="#263449" strokeDasharray="4 5" />; })}
+      {routes.map(r => <circle key={r.route} cx={px(Number(r.avg_trips_per_day)||0)} cy={py(Number(r.avg_daily_rides)||0)} r={r.route === selectedRoute ? 8 : 5}
+        fill={CLUSTER_PALETTE[r.cluster] || '#94a3b8'} stroke={r.route === selectedRoute ? '#fff' : '#0b1424'} strokeWidth={r.route === selectedRoute ? 2.5 : 1}
+        opacity={r.route === selectedRoute ? 1 : .8} style={{ cursor: 'pointer' }} onClick={() => onSelect(r.route)}>
+        <title>{`Route ${r.route} | ${Number(r.avg_trips_per_day).toFixed(1)} scheduled trips/day | ${Math.round(r.avg_daily_rides).toLocaleString()} mean rides/day | Cluster ${r.cluster}`}</title>
+      </circle>)}
+      <line x1={left} x2={w-right} y1={h-bottom} y2={h-bottom} stroke="#64748b" />
+      <line x1={left} x2={left} y1={top} y2={h-bottom} stroke="#64748b" />
+      <text x={(left+w-right)/2} y={h-8} textAnchor="middle" fill="#94a3b8" fontSize="11">Scheduled Trips / Day</text>
+      <text transform={`translate(15 ${(h+top-bottom)/2}) rotate(-90)`} textAnchor="middle" fill="#94a3b8" fontSize="11">Mean Daily Rides</text>
+    </svg>
+    <div className="mt-2 flex flex-wrap gap-3">{[0,1,2,3].map(id => <span key={id} className="flex items-center gap-1.5 text-[10px] text-slate-400"><i className="h-2 w-2 rounded-full" style={{ background: CLUSTER_PALETTE[id] }} />Cluster {id}</span>)}</div>
+    <p className="mt-2 text-[10px] text-slate-500">Click a point to select that route across the dashboard. Hover for route values.</p>
+  </div>;
+}
+
+function ForecastTrailChart({ entries }: { entries: any[] }) {
+  const rows = [...entries].reverse().slice(-12);
+  if (!rows.length) return <p className="py-6 text-center text-xs text-slate-500">Advance the replay by +1 Day to build the forecast trail.</p>;
+  return <HorizontalBarChart data={rows.map((item, i) => ({ label: String(item.target_date || `Forecast ${i+1}`), value: Number(item.predicted_rides) || 0, color: i === rows.length - 1 ? '#22d3ee' : '#64748b' }))} maxItems={12} suffix=" rides" />;
 }
 
 export default function App() {
@@ -276,65 +357,33 @@ export default function App() {
   };
 
   // --- Leaflet Map Initialization for Route Detail ---
+  useEffect(() => {
+    if (activeTab !== 'detail' || !mapContainerRef.current) return;
 
-// --- Leaflet Map Initialization for Route Detail ---
-useEffect(() => {
-  // Remove old map when leaving Route Intelligence
-  if (activeTab !== 'detail') {
-    if (leafletMapRef.current) {
-      leafletMapRef.current.remove();
-      leafletMapRef.current = null;
+    if (!leafletMapRef.current) {
+      leafletMapRef.current = L.map(mapContainerRef.current).setView([41.8781, -87.6298], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap | CTA GTFS 2026-09'
+      }).addTo(leafletMapRef.current);
     }
-    return;
-  }
 
-  if (!mapContainerRef.current) return;
-
-  // Initialize map only once
-  if (!leafletMapRef.current) {
-    leafletMapRef.current = L.map(mapContainerRef.current, {
-      zoomControl: true,
-      scrollWheelZoom: true
-    }).setView([41.8781, -87.6298], 11);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-      maxZoom: 19
-    }).addTo(leafletMapRef.current);
-  }
-
-  const map = leafletMapRef.current;
-
-  // Remove previous route line
-  if ((map as any)._routePolyline) {
-    map.removeLayer((map as any)._routePolyline);
-    (map as any)._routePolyline = null;
-  }
-
-  // Draw selected route
-  const coords = routeHistory?.shape_coordinates;
-
-  if (Array.isArray(coords) && coords.length > 0) {
-    const polyline = L.polyline(coords, {
-      color: '#22d3ee',
-      weight: 5,
-      opacity: 0.95,
-      lineCap: 'round'
-    }).addTo(map);
-
-    (map as any)._routePolyline = polyline;
-
-    map.fitBounds(polyline.getBounds(), {
-      padding: [30, 30]
+    const map = leafletMapRef.current;
+    map.eachLayer((layer: any) => {
+      if (layer instanceof L.Polyline) map.removeLayer(layer);
     });
-  }
 
-  // Fix map dimensions after rendering
+    const coords = routeHistory?.shape_coordinates;
+    if (coords && coords.length > 0) {
+      const polyline = L.polyline(coords, { color: '#22d3ee', weight: 4, opacity: 0.9 }).addTo(map);
+      map.fitBounds(polyline.getBounds(), { padding: [24, 24] });
+    }
+  }, [activeTab, routeHistory]);
+
+  if (leafletMapRef.current) {
   requestAnimationFrame(() => {
-    map.invalidateSize();
+    leafletMapRef.current?.invalidateSize();
   });
-
-}, [activeTab, routeHistory]);
+}
 
   // --- Scenario Arithmetic Calculation (Section 9.15) ---
   const meanDurMins = scenBaselineTrips > 0 ? (scenBaselineHours * 60) / scenBaselineTrips : 40;
@@ -384,7 +433,7 @@ useEffect(() => {
     : routes.filter(r => r.cluster === clusterFilter);
 
   return (
-    <div className="min-h-screen bg-[#070B14] bg-grid-pattern text-slate-100 flex flex-row app-shell">
+    <div className="min-h-screen bg-[#060913] bg-grid-pattern text-slate-100 flex flex-col">
       {/* Toast Notification */}
       {toast && (
         <div className={`fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl glass-panel border flex items-center gap-3 shadow-2xl transition-all ${
@@ -396,25 +445,25 @@ useEffect(() => {
       )}
 
       {/* Top Navigation & Global Provenance Bar (Section 9.16.1) */}
-      <header className="sidebar sticky top-0 z-40 border-r border-slate-800/90 px-5 py-6 flex flex-col">
-        <div className="sidebar-brand flex flex-col items-start gap-6">
+      <header className="sticky top-0 z-40 glass-panel border-b border-cyan-500/20 px-6 py-3">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
               <Bus className="w-5 h-5 text-slate-950" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-display font-extrabold text-xl tracking-wide text-white">Route<span className="text-cyan-400">Ranker</span></h1>
+                <h1 className="font-display font-bold text-lg tracking-wide text-white">ROUTERANKER</h1>
                 <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-400/30">
                   CTA v3.8
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 mt-1">CHICAGO TRANSIT INTELLIGENCE</p>
+              <p className="text-xs text-slate-400">Chicago Transit Authority • Daily Demand & Scheduled Service</p>
             </div>
           </div>
 
           {/* Global Selectors */}
-          <div className="sidebar-controls flex flex-col items-stretch gap-3 w-full">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-700/70 rounded-lg px-3 py-1.5">
               <Compass className="w-4 h-4 text-cyan-400" />
               <label className="text-xs text-slate-400">Route:</label>
@@ -431,7 +480,7 @@ useEffect(() => {
               </select>
             </div>
 
-            <div className="flex flex-wrap rounded-lg bg-slate-900/90 p-1 border border-slate-700/70">
+            <div className="flex rounded-lg bg-slate-900/90 p-1 border border-slate-700/70">
               {(['W', 'A', 'U'] as const).map(dt => (
                 <button
                   key={dt}
@@ -447,27 +496,18 @@ useEffect(() => {
               ))}
             </div>
 
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs border ${
-              backendOnline
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-            }`}>
-              <span className={`w-2 h-2 rounded-full ${backendOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-              {backendOnline ? 'API Connected' : 'Offline Reference'}
-            </div>
           </div>
         </div>
 
         {/* Screen Navigation Tabs (Section 9.16.2) */}
-        <div className="sidebar-section-label mt-9 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">Workspace</div>
-        <nav className="sidebar-nav flex flex-col gap-1">
+        <nav className="max-w-7xl mx-auto mt-3 pt-2 border-t border-slate-800/80 flex gap-1 overflow-x-auto">
           {[
             { id: 'overview', label: 'Network Overview', icon: Activity },
-            { id: 'rankings', label: 'Productivity Rankings', icon: TrendingUp },
-            { id: 'detail', label: 'Route Intelligence', icon: Compass },
-            { id: 'compare', label: 'Route Comparison', icon: GitCompare },
-            { id: 'replay', label: 'Historical Replay', icon: Play },
-            { id: 'scenarios', label: 'Scenario Simulator', icon: Sliders },
+            { id: 'rankings', label: 'Review Priorities', icon: TrendingUp },
+            { id: 'detail', label: 'Route Detail & Map', icon: Compass },
+            { id: 'compare', label: 'Compare Routes', icon: GitCompare },
+            { id: 'replay', label: 'Forecast & Replay', icon: Play },
+            { id: 'scenarios', label: 'Service Scenarios', icon: Sliders },
             { id: 'coverage', label: 'Data & Coverage', icon: Database },
           ].map(tab => {
             const Icon = tab.icon;
@@ -482,24 +522,16 @@ useEffect(() => {
                     : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5" />
                 {tab.label}
               </button>
             );
           })}
         </nav>
-        <div className="sidebar-footer mt-auto pt-6 border-t border-slate-800/80">
-          <div className="flex items-center gap-2 text-xs text-slate-500"><span className="w-2 h-2 rounded-full bg-cyan-400" /> RouteRanker Analytics</div>
-          <p className="text-[10px] text-slate-600 mt-2">CTA DATA • GTFS + HISTORICAL RIDERSHIP</p>
-        </div>
       </header>
 
       {/* Main Content Container */}
-      <main className="main-content flex-1 min-w-0 w-full px-7 py-7 space-y-6">
-        <div className="page-heading flex flex-wrap items-end justify-between gap-4">
-          <div><p className="text-[11px] uppercase tracking-[0.22em] text-cyan-400 font-bold">Transit intelligence platform</p><h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white mt-1">{({ overview: 'Network overview', rankings: 'Productivity rankings', detail: 'Route intelligence', compare: 'Route comparison', replay: 'Historical replay', scenarios: 'Scenario simulator', coverage: 'Data & coverage' } as Record<ScreenTab, string>)[activeTab]}</h2><p className="text-sm text-slate-500 mt-1">Explore demand patterns, scheduled service and network performance.</p></div>
-          <div className="text-xs text-slate-500 border border-slate-800 bg-slate-900/60 rounded-lg px-3 py-2">Chicago Transit Authority <span className="text-slate-700 mx-1">/</span> Research workspace</div>
-        </div>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-6 space-y-6">
         {/* Provenance Banner (Section 9.13.3) */}
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 rounded-xl bg-slate-900/70 border border-slate-800 text-xs text-slate-400">
           <div className="flex items-center gap-4">
@@ -530,13 +562,27 @@ useEffect(() => {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              <ChartPanel title="Route demand leaders" subtitle="Highest average daily rides in the current route dataset">
-                <HorizontalBarChart data={[...routes].sort((a,b) => b.avg_daily_rides-a.avg_daily_rides).slice(0,7).map(r => ({ label: `Route ${r.route}`, value: r.avg_daily_rides }))} suffix=" rides" />
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+              <ChartPanel title="Route Demand Leaders" subtitle="Top 8 routes ranked by mean daily ridership; selected route is highlighted">
+                <HorizontalBarChart data={[...routes].sort((a, b) => b.avg_daily_rides - a.avg_daily_rides).slice(0, 8).map(r => ({ label: `Route ${r.route}${r.route === selectedRoute ? ' ★' : ''}`, value: r.avg_daily_rides, color: r.route === selectedRoute ? '#22d3ee' : '#64748b' }))} suffix=" rides" />
               </ChartPanel>
-              <ChartPanel title="Model quality at a glance" subtitle="XGBoost Option 2 evaluation metrics • reported test and validation values">
-                <ComparisonBars labels={['Test WAPE', 'Validation WAPE', 'Test R²', 'Validation R²']} values={[6.73,6.45,98.37,98.72]} colors={['#f59e0b','#fbbf24','#10b981','#34d399']} suffix="%" />
-                <p className="text-[11px] text-slate-500 mt-3">WAPE is an error metric (lower is better); R² is goodness-of-fit (higher is better).</p>
+              <ChartPanel title="KMeans Cluster Distribution" subtitle="Live breakdown calculated from the route summaries loaded from the API">
+                <ClusterDonutChart routes={routes} />
+              </ChartPanel>
+              <ChartPanel title="XGBoost Model Accuracy Gauges" subtitle="Reported Option 2 evaluation metrics; WAPE is lower-is-better">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="space-y-5">
+                    <MetricBar label="Test WAPE" value={6.73} max={10} color="#22d3ee" helper="6.73% reported test error" />
+                    <MetricBar label="Validation WAPE" value={6.45} max={10} color="#a78bfa" helper="6.45% reported validation error" />
+                  </div>
+                  <div className="space-y-5">
+                    <MetricBar label="Test R²" value={98.37} color="#34d399" helper="98.37% test fit" />
+                    <MetricBar label="Validation R²" value={98.72} color="#f472b6" helper="98.72% validation fit" />
+                  </div>
+                </div>
+              </ChartPanel>
+              <ChartPanel title="Interactive Demand vs Supply" subtitle="Each point represents a route. X = scheduled trips/day; Y = mean daily rides.">
+                <DemandSupplyScatter routes={routes} selectedRoute={selectedRoute} onSelect={setSelectedRoute} />
               </ChartPanel>
             </div>
 
@@ -645,13 +691,10 @@ useEffect(() => {
               </div>
             </div>
 
-            <ChartPanel title="Top route productivity" subtitle="Top 8 eligible routes by the selected planner indicator">
-              <HorizontalBarChart
-                data={[...rankings].filter(r => r.is_eligible).sort((a,b) => Number(b[rankingMetric as keyof RankingRow] || 0)-Number(a[rankingMetric as keyof RankingRow] || 0)).map(r => ({ label: `Route ${r.route}`, value: Number(r[rankingMetric as keyof RankingRow] || 0) }))}
-                suffix={rankingMetric === 'rides_per_scheduled_hour' ? ' rides/hr' : ''}
-                maxItems={8}
-              />
+            <ChartPanel title="Top 8 Eligible Routes" subtitle={`Eligible routes ranked by ${rankingMetric.replaceAll('_', ' ')} • ${dayType === 'W' ? 'Weekday' : dayType === 'A' ? 'Saturday' : 'Sunday / Holiday'}`}>
+              <HorizontalBarChart data={[...rankings].filter(r => r.is_eligible).sort((a, b) => Number(b[rankingMetric as keyof RankingRow] || 0) - Number(a[rankingMetric as keyof RankingRow] || 0)).slice(0, 8).map((r, i) => ({ label: `Route ${r.route}${r.route === selectedRoute ? ' ★' : ''}`, value: Number(r[rankingMetric as keyof RankingRow] || 0), color: r.route === selectedRoute ? '#22d3ee' : i === 0 ? '#34d399' : '#64748b' }))} suffix={rankingMetric === 'total_rides' ? ' rides' : ''} />
             </ChartPanel>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -720,17 +763,7 @@ useEffect(() => {
                   </div>
                 )}
               </div>
-              <div
-                ref={mapContainerRef}
-                className="w-full h-[600px] rounded-xl border border-slate-700/80 z-10"
-                style={{ minHeight: '600px' }}
-              />
-            </div>
-
-            <div className="lg:col-span-2">
-              <ChartPanel title={`Route ${selectedRoute} ridership trend`} subtitle="Historical matched daily boardings; this chart uses the observations already loaded for the selected route">
-                <TrendLineChart data={routeHistory?.history || []} />
-              </ChartPanel>
+              <div ref={mapContainerRef} className="w-full h-80 rounded-xl border border-slate-700/80 z-10" />
             </div>
 
             {/* Recent Observations Panel */}
@@ -761,6 +794,12 @@ useEffect(() => {
               </button>
             </div>
           </div>
+        )}
+
+        {activeTab === 'detail' && (
+          <ChartPanel title={`Route ${selectedRoute} ridership trend`} subtitle="Historical matched daily boardings from the selected route history">
+            <TrendLineChart data={routeHistory?.history || []} />
+          </ChartPanel>
         )}
 
         {/* =========================================================
@@ -819,24 +858,17 @@ useEffect(() => {
                 </p>
               </div>
             </div>
-            <ChartPanel title="Service productivity comparison" subtitle="Side-by-side rides per scheduled hour for the two selected routes">
-              <ComparisonBars
-                labels={[`Route ${selectedRoute}`, `Route ${compareRouteB}`]}
-                values={[
-                  Number(compareData?.route_a?.profile?.rides_per_scheduled_hour),
-                  Number(compareData?.route_b?.profile?.rides_per_scheduled_hour)
-                ]}
-              />
-              <div className="grid grid-cols-2 gap-3 mt-5">
-                <div className="rounded-xl bg-slate-900/70 border border-slate-800 p-3">
-                  <p className="text-[11px] text-slate-400">Shared stops</p>
-                  <p className="text-xl font-bold text-fuchsia-300">{compareData?.overlap?.shared_stop_count ?? '—'}</p>
-                </div>
-                <div className="rounded-xl bg-slate-900/70 border border-slate-800 p-3">
-                  <p className="text-[11px] text-slate-400">Jaccard overlap</p>
-                  <p className="text-xl font-bold text-fuchsia-300">{compareData?.overlap?.jaccard_overlap != null ? `${(compareData.overlap.jaccard_overlap*100).toFixed(1)}%` : '—'}</p>
-                </div>
-              </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <ChartPanel title="Service productivity comparison" subtitle="Rides carried per scheduled service hour">
+                <ComparisonBars labels={[`Route ${selectedRoute}`, `Route ${compareRouteB}`]} values={[Number(compareData?.route_a?.profile?.rides_per_scheduled_hour), Number(compareData?.route_b?.profile?.rides_per_scheduled_hour)]} suffix=" rides/hr" />
+              </ChartPanel>
+              <ChartPanel title="Total ridership comparison" subtitle="Matched total rides for the selected day type">
+                <ComparisonBars labels={[`Route ${selectedRoute}`, `Route ${compareRouteB}`]} values={[Number(compareData?.route_a?.profile?.total_rides), Number(compareData?.route_b?.profile?.total_rides)]} colors={['#22d3ee', '#a78bfa']} suffix=" rides" />
+              </ChartPanel>
+            </div>
+            <ChartPanel title="Shared-stop overlap" subtitle="Structural overlap between the two route stop sets">
+              <ComparisonBars labels={['Jaccard overlap', 'Smaller-route overlap']} values={[Number(compareData?.overlap?.jaccard_overlap ?? 0) * 100, Number(compareData?.overlap?.smaller_route_overlap ?? 0) * 100]} colors={['#d946ef', '#8b5cf6']} suffix="%" />
             </ChartPanel>
           </div>
         )}
@@ -916,14 +948,16 @@ useEffect(() => {
                 <p className="text-xs text-slate-400 mt-1">Anti-leakage gate enforced by backend</p>
               </div>
             </div>
-            <ChartPanel title="Replay demand and schedule snapshot" subtitle="Forecast output for the selected virtual date; actual outcome remains withheld until permitted by the replay policy">
-              <ComparisonBars
-                labels={['Predicted daily rides', 'Scheduled trips/day']}
-                values={[Number(replayForecast?.predicted_rides), Number(replayForecast?.scheduled_trips)]}
-                colors={['#22d3ee','#a78bfa']}
-              />
-              <p className="text-[11px] text-slate-500 mt-3">Different units are shown as separate labelled indicators; bar lengths are relative only and should not be compared across units.</p>
-            </ChartPanel>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <ChartPanel title="Replay Demand & Schedule" subtitle="Predicted rides and matched scheduled trips for the current virtual date">
+                <ComparisonBars labels={['Predicted daily rides', 'Scheduled trips/day']} values={[Number(replayForecast?.predicted_rides), Number(replayForecast?.scheduled_trips)]} colors={['#22d3ee', '#a78bfa']} />
+                <p className="mt-3 text-[10px] text-slate-500">Different units are shown together for a compact operational snapshot; compare values within each metric, not as a common scale.</p>
+              </ChartPanel>
+              <ChartPanel title="Session Forecast Trail" subtitle="Forecasts recorded as the replay advances through virtual dates">
+                <ForecastTrailChart entries={replayLog} />
+              </ChartPanel>
+            </div>
           </div>
         )}
 
@@ -1024,19 +1058,20 @@ useEffect(() => {
                     </tr>
                   </tbody>
                 </table>
+                <div className="mt-6 border-t border-slate-800 pt-5">
+                  <h4 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-300">Visual scenario comparison</h4>
+                  <div className="space-y-5">
+                    <ComparisonBars labels={['Baseline rides', 'Scenario rides']} values={[scenBaselineRides, stressedRides]} colors={['#64748b', '#22d3ee']} />
+                    <ComparisonBars labels={['Baseline trips', 'Proposed trips']} values={[scenBaselineTrips, scenProposedTrips]} colors={['#64748b', '#a78bfa']} />
+                    <ComparisonBars labels={['Baseline rides / trip', 'Proposed rides / trip']} values={[Number(baseRidesPerTrip), Number(scenRidesPerTrip)]} colors={['#f59e0b', '#34d399']} suffix=" rides/trip" />
+                  </div>
+                </div>
               </div>
 
               <div className="mt-4 p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] text-slate-400">
                 <strong>Interpretation Limit:</strong> Conditional arithmetic only. Does not verify vehicle/crew availability or measure real-time onboard occupancy.
               </div>
             </div>
-            <ChartPanel title="Baseline vs proposed service" subtitle="Visual impact of the current scenario sliders">
-              <ComparisonBars labels={['Baseline trips/day', 'Proposed trips/day']} values={[scenBaselineTrips, scenProposedTrips]} colors={['#64748b','#22d3ee']} suffix=" trips" />
-              <div className="mt-5">
-                <ComparisonBars labels={['Baseline daily rides', 'Scenario daily rides']} values={[scenBaselineRides, stressedRides]} colors={['#64748b','#d946ef']} suffix=" rides" />
-              </div>
-              <p className="text-[11px] text-slate-500 mt-3">Scenario values update live as you adjust the controls. This is conditional arithmetic, not a verified operational forecast.</p>
-            </ChartPanel>
           </div>
         )}
 
@@ -1091,13 +1126,24 @@ useEffect(() => {
                 </div>
               </div>
             </div>
-            <ChartPanel title="Data quality and model performance" subtitle="Key audit figures from the existing project metadata">
-              <ComparisonBars
-                labels={['Matched route/date observations (thousands)', 'Unmatched rides/schedule rows (hundreds)', 'Test R² (%)', 'Test WAPE (%)']}
-                values={[28.374, 4.24, 98.37, 6.73]}
-                colors={['#22d3ee','#f59e0b','#10b981','#a78bfa']}
-              />
-              <p className="text-[11px] text-slate-500 mt-3">Units differ by metric; labels explicitly identify the scaling. Existing audit values are unchanged.</p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <ChartPanel title="Data reconciliation exceptions" subtitle="Rows retained as exceptions rather than silently converted to zero">
+                <HorizontalBarChart data={[{ label: 'Schedule only', value: 24, color: '#f59e0b' }, { label: 'Rides only', value: 424, color: '#f97316' }]} suffix=" rows" />
+              </ChartPanel>
+              <ChartPanel title="Model evaluation metrics" subtitle="Reported validation and test metrics from the current model contract">
+                <ComparisonBars labels={['Validation R²', 'Test R²']} values={[98.72, 98.37]} colors={['#34d399', '#22d3ee']} suffix="%" />
+                <div className="mt-5">
+                  <ComparisonBars labels={['Validation WAPE', 'Test WAPE']} values={[6.45, 6.73]} colors={['#a78bfa', '#f472b6']} suffix="%" />
+                </div>
+              </ChartPanel>
+            </div>
+            <ChartPanel title="Audit Volume Overview" subtitle="Matched observations compared with retained reconciliation exceptions">
+              <HorizontalBarChart data={[
+                { label: 'Matched rows', value: 28374, color: '#34d399' },
+                { label: 'Schedule only', value: 24, color: '#f59e0b' },
+                { label: 'Rides only', value: 424, color: '#f97316' }
+              ]} suffix=" rows" maxItems={3} />
             </ChartPanel>
           </div>
         )}
