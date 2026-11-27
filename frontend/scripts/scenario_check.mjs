@@ -13,11 +13,11 @@
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { chromium } from 'playwright'
+import { TIMEOUT, enterReplay, finish, replayControl, tally, waitIdle as settle } from './checklib.mjs'
 
 const out = process.argv[2]
 if (!out) { console.error('usage: node scripts/scenario_check.mjs <screenshot folder>'); process.exit(2) }
 const BASE = process.env.APP_URL ?? 'http://localhost:5173'
-const TIMEOUT = 60_000
 const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 }
 
 const db = await fetch(`${BASE}/api/health/database`).then(r => r.json()).catch(() => null)
@@ -27,14 +27,10 @@ if (db?.database !== 'routeranker_test') {
 }
 mkdirSync(out, { recursive: true })
 
-let failed = 0
-const fail = msg => { failed++; console.log('FAIL', msg) }
-const ok = msg => console.log('ok  ', msg)
+const t = tally()
+const fail = t.fail, ok = t.ok
 const seen = (page, text) => page.getByText(text).first().waitFor({ timeout: TIMEOUT }).then(() => true, () => false)
-async function waitIdle(page) {
-  await page.waitForFunction(() => !document.querySelector('[aria-busy]'), null, { timeout: TIMEOUT }).catch(() => {})
-  await page.waitForTimeout(400)
-}
+const waitIdle = page => settle(page, 400)
 async function pageDates(page) {
   const text = await page.evaluate(() => {
     const clone = document.body.cloneNode(true)
@@ -111,90 +107,105 @@ async function examples(page, width) {
   }
 }
 
-const browser = await chromium.launch()
-for (const width of [1366, 1920]) {
-  const page = await browser.newPage({ viewport: { width, height: 900 } })
-  const errors = []
-  page.on('pageerror', e => errors.push(String(e)))
-  await examples(page, width)
-  await page.goto(BASE + '/scenarios?routes=1&daytype=U&verb=set&amount=40')
-  await expect(page, 'Route 1 gets 40.0 scheduled trips per day on Sundays and holidays', `${width} route 1 Sunday builder`)
-  await waitIdle(page)
-  await tablesFit(page, `${width} route 1 Sunday builder`)
-  const said = (await page.locator('[data-insight]').first().textContent()) ?? ''
-  if ((said.match(/no recorded rides on days without service/g) ?? []).length === 1) ok(`${width} route 1: the reason is said once above the table`)
-  else fail(`${width} route 1: the reason appears ${(said.match(/no recorded rides on days without service/g) ?? []).length} times in the insight`)
+let browser
+try {
+  browser = await chromium.launch()
+  for (const width of [1366, 1920]) {
+    const page = await browser.newPage({ viewport: { width, height: 900 } })
+    const errors = []
+    page.on('pageerror', e => errors.push(String(e)))
+    console.log(`..   ${width}: saved examples`)
+    await t.step(`${width} saved examples`, () => examples(page, width))
 
-  // ---------------------------------------------------------------- historical analysis
-  await page.goto(BASE + '/')
-  await page.getByText('The network over time').waitFor({ timeout: TIMEOUT })
-  if (await page.getByRole('button', { name: 'Historical analysis' }).getAttribute('aria-pressed') === 'false')
-    await page.getByRole('button', { name: 'Historical analysis' }).click()
-  await page.getByRole('link', { name: 'Scenarios', exact: true }).first().click()
-  await expect(page, 'Choose a route or a route group to start.', `${width} historical: empty builder`)
-  await page.getByLabel('Add a route or a group').selectOption('49')
-  await expect(page, 'On route 49, rides per scheduled hour falls from', `${width} historical: route 49 +20 % insight`)
-  await expect(page, 'because demand is held fixed', `${width} historical: demand held fixed is said`)
-  await waitIdle(page)
-  await page.screenshot({ path: join(out, `scenarios_route49_${width}.png`), fullPage: true })
-  const name = `Route 49 check ${width}`
-  await page.getByLabel('Name').fill(name)
-  await save(page, `${width} historical save`)
-  await openSavedAndRecheck(page, name, `${width} historical`)
-  // clicking a route opens it
-  await page.getByRole('link', { name: 'Open route 49' }).first().click()
-  if (await page.waitForURL(/\/route\/49$/, { timeout: TIMEOUT }).then(() => true, () => false)) ok(`${width} clicking route 49 opens it`)
-  else fail(`${width} clicking route 49 did not open it`)
-  await page.getByRole('link', { name: 'Create a scenario for route 49' }).click()
-  await expect(page, 'On route 49, rides per scheduled hour', `${width} One route → Create scenario`)
+    console.log(`..   ${width}: route 1 Sunday builder`)
+    await t.step(`${width} route 1 Sunday builder`, async () => {
+      await page.goto(BASE + '/scenarios?routes=1&daytype=U&verb=set&amount=40')
+      await expect(page, 'Route 1 gets 40.0 scheduled trips per day on Sundays and holidays', `${width} route 1 Sunday builder`)
+      await waitIdle(page)
+      await tablesFit(page, `${width} route 1 Sunday builder`)
+      const said = (await page.locator('[data-insight]').first().textContent()) ?? ''
+      const n = (said.match(/no recorded rides on days without service/g) ?? []).length
+      if (n === 1) ok(`${width} route 1: the reason is said once above the table`)
+      else fail(`${width} route 1: the reason appears ${n} times in the insight`)
+    })
 
-  await page.goto(BASE + '/scenarios?group=1&daytype=U&verb=keep&stress=-15')
-  await expect(page, 'Across the group', `${width} historical: group −15 % demand assumption insight`)
-  await expect(page, 'because rides are assumed to fall by 15.0 %', `${width} historical: the stress is named as an assumption`)
-  await expect(page, 'shown as unavailable rather than 0', `${width} historical: structural zeros shown as unavailable`)
-  await waitIdle(page)
-  await page.screenshot({ path: join(out, `scenarios_group_stress_${width}.png`), fullPage: true })
+    // ---------------------------------------------------------------- historical analysis
+    console.log(`..   ${width}: historical analysis`)
+    await t.step(`${width} historical`, async () => {
+      await page.goto(BASE + '/')
+      await page.getByText('The network over time').waitFor({ timeout: TIMEOUT })
+      if (await page.getByRole('button', { name: 'Historical analysis' }).getAttribute('aria-pressed') === 'false')
+        await page.getByRole('button', { name: 'Historical analysis' }).click()
+      await page.getByRole('link', { name: 'Scenarios', exact: true }).first().click()
+      await expect(page, 'Choose a route or a route group to start.', `${width} historical: empty builder`)
+      await page.getByLabel('Add a route or a group').selectOption('49')
+      await expect(page, 'On route 49, rides per scheduled hour falls from', `${width} historical: route 49 +20 % insight`)
+      await expect(page, 'because demand is held fixed', `${width} historical: demand held fixed is said`)
+      await waitIdle(page)
+      await page.screenshot({ path: join(out, `scenarios_route49_${width}.png`), fullPage: true })
+      const name = `Route 49 check ${width}`
+      await page.getByLabel('Name').fill(name)
+      await save(page, `${width} historical save`)
+      await openSavedAndRecheck(page, name, `${width} historical`)
+      // clicking a route opens it
+      await page.getByRole('link', { name: 'Open route 49' }).first().click()
+      if (await page.waitForURL(/\/route\/49$/, { timeout: TIMEOUT }).then(() => true, () => false)) ok(`${width} clicking route 49 opens it`)
+      else fail(`${width} clicking route 49 did not open it`)
+      await page.getByRole('link', { name: 'Create a scenario for route 49' }).click()
+      await expect(page, 'On route 49, rides per scheduled hour', `${width} One route → Create scenario`)
 
-  // ---------------------------------------------------------------- historical replay
-  await page.goto(BASE + '/')
-  await page.getByText('The network over time').waitFor({ timeout: TIMEOUT })
-  await page.getByRole('button', { name: 'Historical replay' }).click()
-  await page.getByText('Replay day: 1 Jun 2026').waitFor({ timeout: TIMEOUT })
-  await page.getByRole('button', { name: 'Next week' }).click()
-  await page.getByText('Replay day: 8 Jun 2026 · data revealed to 7 Jun 2026').waitFor({ timeout: TIMEOUT })
-  const limit = Date.UTC(2026, 5, 8)
-  await page.goto(BASE + '/scenarios?group=1&verb=keep&stress=-15')
-  await expect(page, 'Across the group', `${width} replay: group demand assumption`)
-  await waitIdle(page)
-  const rName = `Replay group check ${width}`
-  await page.getByLabel('Name').fill(rName)
-  await save(page, `${width} replay save`)
-  await expect(page, 'saved on replay day 8 Jun 2026', `${width} replay: saved on the replay day`)
-  await waitIdle(page)
-  let later = (await pageDates(page)).filter(([, t]) => t > limit).map(([s]) => s)
-  if (later.length) fail(`${width} replay: dates after the replay day: ${[...new Set(later)].slice(0, 6).join(', ')}`)
-  else ok(`${width} replay: no visible date after 8 Jun 2026`)
-  if (await page.getByText(`Route 49 check ${width}`).count()) fail(`${width} replay: a historical scenario is listed in replay`)
-  else ok(`${width} replay: historical scenarios are not listed`)
-  await page.screenshot({ path: join(out, `scenarios_replay_group_${width}.png`), fullPage: true })
+      await page.goto(BASE + '/scenarios?group=1&daytype=U&verb=keep&stress=-15')
+      await expect(page, 'Across the group', `${width} historical: group −15 % demand assumption insight`)
+      await expect(page, 'because rides are assumed to fall by 15.0 %', `${width} historical: the stress is named as an assumption`)
+      await expect(page, 'shown as unavailable rather than 0', `${width} historical: structural zeros shown as unavailable`)
+      await waitIdle(page)
+      await page.screenshot({ path: join(out, `scenarios_group_stress_${width}.png`), fullPage: true })
+    })
 
-  await page.goto(BASE + '/scenarios?routes=22&demand=predicted')
-  await expect(page, 'On route 22, rides per scheduled hour', `${width} replay: +20 % trips on the replay day's forecast`)
-  await waitIdle(page)
-  later = (await pageDates(page)).filter(([, t]) => t > limit).map(([s]) => s)
-  if (later.length) fail(`${width} replay predicted: dates after the replay day: ${[...new Set(later)].slice(0, 6).join(', ')}`)
-  else ok(`${width} replay predicted: no visible date after 8 Jun 2026`)
-  await page.screenshot({ path: join(out, `scenarios_replay_predicted_${width}.png`), fullPage: true })
+    // ---------------------------------------------------------------- historical replay
+    console.log(`..   ${width}: historical replay`)
+    await t.step(`${width} replay`, async () => {
+      await page.goto(BASE + '/')
+      await page.getByText('The network over time').waitFor({ timeout: TIMEOUT })
+      await enterReplay(page, 'Replay day: 1 Jun 2026 · data revealed to 31 May 2026')
+      await replayControl(page, 'Next week', 'Replay day: 8 Jun 2026 · data revealed to 7 Jun 2026')
+      ok(`${width} replay: started on 1 Jun, Next week → 8 Jun 2026`)
+      const limit = Date.UTC(2026, 5, 8)
+      await page.goto(BASE + '/scenarios?group=1&verb=keep&stress=-15')
+      await expect(page, 'Across the group', `${width} replay: group demand assumption`)
+      await waitIdle(page)
+      const rName = `Replay group check ${width}`
+      await page.getByLabel('Name').fill(rName)
+      await save(page, `${width} replay save`)
+      await expect(page, 'saved on replay day 8 Jun 2026', `${width} replay: saved on the replay day`)
+      await waitIdle(page)
+      let later = (await pageDates(page)).filter(([, d]) => d > limit).map(([s]) => s)
+      if (later.length) fail(`${width} replay: dates after the replay day: ${[...new Set(later)].slice(0, 6).join(', ')}`)
+      else ok(`${width} replay: no visible date after 8 Jun 2026`)
+      if (await page.getByText(`Route 49 check ${width}`).count()) fail(`${width} replay: a historical scenario is listed in replay`)
+      else ok(`${width} replay: historical scenarios are not listed`)
+      await page.screenshot({ path: join(out, `scenarios_replay_group_${width}.png`), fullPage: true })
 
-  await page.getByRole('button', { name: 'Next day' }).click()
-  await page.getByText('Replay day: 9 Jun 2026').waitFor({ timeout: TIMEOUT })
-  await waitIdle(page)
-  await openSavedAndRecheck(page, rName, `${width} replay after Next day`)
-  await page.getByRole('button', { name: 'Historical analysis' }).click()
-  await page.getByText('The network over time').first().waitFor({ timeout: 5_000 }).catch(() => {})
+      await page.goto(BASE + '/scenarios?routes=22&demand=predicted')
+      await expect(page, 'On route 22, rides per scheduled hour', `${width} replay: +20 % trips on the replay day's forecast`)
+      await waitIdle(page)
+      later = (await pageDates(page)).filter(([, d]) => d > limit).map(([s]) => s)
+      if (later.length) fail(`${width} replay predicted: dates after the replay day: ${[...new Set(later)].slice(0, 6).join(', ')}`)
+      else ok(`${width} replay predicted: no visible date after 8 Jun 2026`)
+      await page.screenshot({ path: join(out, `scenarios_replay_predicted_${width}.png`), fullPage: true })
 
-  for (const e of errors) fail(`${width} page error: ${e}`)
-  await page.close()
+      await replayControl(page, 'Next day', 'Replay day: 9 Jun 2026 · data revealed to 8 Jun 2026')
+      await waitIdle(page)
+      await openSavedAndRecheck(page, rName, `${width} replay after Next day`)
+      await page.getByRole('button', { name: 'Historical analysis' }).click()
+      await page.getByText('The network over time').first().waitFor({ timeout: 5_000 }).catch(() => {})
+    })
+
+    for (const e of errors) fail(`${width} page error: ${e}`)
+    await page.close()
+  }
+} catch (e) {
+  fail(`unexpected: ${String(e?.message ?? e).split('\n')[0]}`)
+} finally {
+  await finish(browser, t)
 }
-await browser.close()
-process.exit(failed ? 1 : 0)

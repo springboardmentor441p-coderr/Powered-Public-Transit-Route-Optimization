@@ -4,10 +4,14 @@
 // The replay bar's own text (the supported range, e.g. "1 Jun 2026 – 31 Jul 2026") is not scanned: it is the
 // session's configuration, not data.
 //
+// Each replay control waits for the server's answer and then for the exact new headline (scripts/checklib.mjs), so a
+// slow answer is waited for and a wrong day is reported, instead of a timeout ending the run.
+//
 //   node scripts/replay_check.mjs <screenshot folder>        (APP_URL defaults to http://localhost:5173)
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { chromium } from 'playwright'
+import { TIMEOUT, enterReplay, finish, replayControl, tally, waitIdle } from './checklib.mjs'
 
 const out = process.argv[2]
 if (!out) { console.error('usage: node scripts/replay_check.mjs <screenshot folder>'); process.exit(2) }
@@ -19,7 +23,6 @@ if (db?.database !== 'routeranker_test') {
   process.exit(2)
 }
 mkdirSync(out, { recursive: true })
-const TIMEOUT = 60_000
 const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 }
 const SCREENS = [
   ['Start', 'The network over time'], ['Closer look', 'Ranked routes:'], ['One route', 'Choose one of'],
@@ -42,58 +45,59 @@ async function pageDates(page) {
   return found
 }
 
-async function waitIdle(page) {
-  await page.waitForFunction(() => !document.querySelector('[aria-busy]'), null, { timeout: TIMEOUT }).catch(() => {})
-  await page.waitForTimeout(500)
-}
-
-const browser = await chromium.launch()
-let failed = 0
-const fail = msg => { failed++; console.log('FAIL', msg) }
-for (const width of [1366, 1920]) {
-  const page = await browser.newPage({ viewport: { width, height: 900 } })
-  const errors = []
-  page.on('pageerror', e => errors.push(String(e)))
-  await page.goto(BASE + '/')
-  await page.getByText('The network over time').waitFor({ timeout: TIMEOUT })
-  await page.getByRole('button', { name: 'Historical replay' }).click()
-  const head = page.locator('[aria-label="Replay controls"] [aria-live]')
-  await head.waitFor({ timeout: TIMEOUT })
-  const h0 = await head.textContent()
-  if (h0 !== 'Replay day: 1 Jun 2026 · data revealed to 31 May 2026') fail(`${width}: start headline "${h0}"`)
-  await page.getByRole('button', { name: 'Next day' }).click()
-  await page.getByText('Replay day: 2 Jun 2026').waitFor({ timeout: TIMEOUT })
-  await page.getByRole('button', { name: 'Next week' }).click()
-  await page.getByText('Replay day: 9 Jun 2026 · data revealed to 8 Jun 2026').waitFor({ timeout: TIMEOUT })
-  const limit = Date.UTC(2026, 5, 9)        // the replay day itself may appear (today's forecasts); nothing later
-  for (const [tab, marker] of SCREENS) {
-    await page.getByRole('link', { name: tab, exact: true }).first().click()
-    const ok = await page.getByText(marker).first().waitFor({ timeout: TIMEOUT }).then(() => true, () => false)
-    if (!ok) { fail(`${width} ${tab}: "${marker}" did not appear`); continue }
-    await waitIdle(page)
-    const later = (await pageDates(page)).filter(([, t]) => t > limit).map(([s]) => s)
-    if (later.length) fail(`${width} ${tab}: dates after the revealed day: ${[...new Set(later)].slice(0, 6).join(', ')}`)
-    else console.log(`ok   ${width} ${tab}: no date after 9 Jun 2026`)
-    await page.screenshot({ path: join(out, `replay_${tab.replace(/\s+/g, '_').toLowerCase()}_${width}.png`), fullPage: true })
+const t = tally()
+let browser
+try {
+  browser = await chromium.launch()
+  for (const width of [1366, 1920]) {
+    const page = await browser.newPage({ viewport: { width, height: 900 } })
+    const errors = []
+    page.on('pageerror', e => errors.push(String(e)))
+    console.log(`..   ${width}: opening Start and switching to Historical replay`)
+    const ready = await t.step(`${width} start`, async () => {
+      await page.goto(BASE + '/')
+      await page.getByText('The network over time').waitFor({ timeout: TIMEOUT })
+      await enterReplay(page, 'Replay day: 1 Jun 2026 · data revealed to 31 May 2026')
+      t.ok(`${width} start headline: "Replay day: 1 Jun 2026 · data revealed to 31 May 2026"`)
+      await replayControl(page, 'Next day', 'Replay day: 2 Jun 2026 · data revealed to 1 Jun 2026')
+      t.ok(`${width} Next day → 2 Jun 2026`)
+      await replayControl(page, 'Next week', 'Replay day: 9 Jun 2026 · data revealed to 8 Jun 2026')
+      t.ok(`${width} Next week → 9 Jun 2026`)
+      return true
+    })
+    if (!ready) { await page.close(); continue }          // later steps depend on the replay being on 9 Jun
+    const limit = Date.UTC(2026, 5, 9)        // the replay day itself may appear (today's forecasts); nothing later
+    for (const [tab, marker] of SCREENS) {
+      await t.step(`${width} ${tab}`, async () => {
+        await page.getByRole('link', { name: tab, exact: true }).first().click()
+        await page.getByText(marker).first().waitFor({ timeout: TIMEOUT })
+        await waitIdle(page)
+        const later = (await pageDates(page)).filter(([, d]) => d > limit).map(([s]) => s)
+        if (later.length) t.fail(`${width} ${tab}: dates after the revealed day: ${[...new Set(later)].slice(0, 6).join(', ')}`)
+        else t.ok(`${width} ${tab}: no date after 9 Jun 2026`)
+        await page.screenshot({ path: join(out, `replay_${tab.replace(/\s+/g, '_').toLowerCase()}_${width}.png`), fullPage: true })
+      })
+    }
+    // One route with its forecast panel (route 22), reached by clicking a sign on the route picker
+    await t.step(`${width} One route 22`, async () => {
+      await page.getByRole('link', { name: 'One route', exact: true }).first().click()
+      await page.getByRole('link', { name: 'Open route 22' }).first().click()
+      await page.getByText('Forecast, route 22').first().waitFor({ timeout: TIMEOUT })
+      await waitIdle(page)
+      const later = (await pageDates(page)).filter(([, d]) => d > limit).map(([s]) => s)
+      if (later.length) t.fail(`${width} route 22: dates after the revealed day: ${[...new Set(later)].slice(0, 6).join(', ')}`)
+      else t.ok(`${width} route 22 with forecast panel: no date after 9 Jun 2026`)
+      await page.screenshot({ path: join(out, `replay_route_22_${width}.png`), fullPage: true })
+    })
+    await t.step(`${width} jump to end`, async () => {
+      await replayControl(page, 'Jump to end', 'Replay complete · data revealed to 31 Jul 2026')
+      t.ok(`${width} jump to end: "Replay complete · data revealed to 31 Jul 2026"`)
+    })
+    for (const e of errors) t.fail(`${width} page error: ${e}`)
+    await page.close()
   }
-  // One route with its forecast panel (route 22), reached by clicking a sign on the route picker
-  await page.getByRole('link', { name: 'One route', exact: true }).first().click()
-  await page.getByRole('link', { name: 'Open route 22' }).first().click()
-  const panel = await page.getByText('Forecast, route 22').first().waitFor({ timeout: TIMEOUT }).then(() => true, () => false)
-  if (!panel) fail(`${width} One route 22: forecast panel did not appear`)
-  else {
-    await waitIdle(page)
-    const later = (await pageDates(page)).filter(([, t]) => t > limit).map(([s]) => s)
-    if (later.length) fail(`${width} route 22: dates after the revealed day: ${[...new Set(later)].slice(0, 6).join(', ')}`)
-    else console.log(`ok   ${width} route 22 with forecast panel: no date after 9 Jun 2026`)
-    await page.screenshot({ path: join(out, `replay_route_22_${width}.png`), fullPage: true })
-  }
-  await page.getByRole('button', { name: 'Jump to end' }).click()
-  const done = await page.getByText('Replay complete · data revealed to 31 Jul 2026').waitFor({ timeout: TIMEOUT }).then(() => true, () => false)
-  if (!done) fail(`${width}: completion message did not appear`)
-  else console.log(`ok   ${width} jump to end: "Replay complete · data revealed to 31 Jul 2026"`)
-  for (const e of errors) fail(`${width} page error: ${e}`)
-  await page.close()
+} catch (e) {
+  t.fail(`unexpected: ${String(e?.message ?? e).split('\n')[0]}`)
+} finally {
+  await finish(browser, t)
 }
-await browser.close()
-process.exit(failed ? 1 : 0)

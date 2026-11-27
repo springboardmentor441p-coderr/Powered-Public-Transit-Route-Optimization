@@ -1927,3 +1927,22 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
     - one click-through run printed nothing, for an unknown reason.
   - The temporary servers are stopped.
 - **Interview Q:** *"Why not just show the reason in each cell?"* Ten copies of the same sentence hide the numbers they explain and break the layout. A numbered note keeps every reason visible exactly once, and a missing value still never reads as 0.
+
+## Step 104: Stage 9 begins. Browser checks wait for the right thing (`scripts/checklib.mjs`)
+- **Built:**
+  - **`frontend/scripts/checklib.mjs`**, a small helper shared by the three browser checks.
+    - `replayControl(page, "Next week", "Replay day: 9 Jun 2026 · …")` waits until that button is enabled, clicks it, waits for the server's answer to *that* click (`POST …/control`), then waits for the replay headline to show the expected day.
+    - `enterReplay` does the same for the new session (`POST /api/replays`).
+    - `tally().step(label, fn)` turns any error inside one step into one `FAIL label: …` line, and the run carries on with the next screen.
+    - `finish()` closes the browser in every case and sets `process.exitCode` instead of calling `process.exit()`.
+  - `replay_check.mjs`, `scenario_check.mjs` and `clickthrough.mjs` use it. Each prints a progress line (`..   1366: historical replay`) before every part.
+  - `clickthrough.mjs` first checks that an API answers, and says so if none does.
+- **Why:** the two flakes from Step 103.
+  1. *"Timed out waiting for the replay to reach 8 Jun."* The old check clicked and then looked for matching text anywhere on the page. Nothing confirmed the click had reached the server, and the first timeout threw, which ended the whole run.
+  2. *"The click-through printed nothing."* `process.exit()` can end Node before buffered output is written when the output goes to a pipe, and an early error had no line of its own.
+- **Key concept:** *wait for the cause, not a symptom*. "Some text appeared" is a symptom that might come from elsewhere on the page. "The server answered this click, and the headline now names this day" is the cause itself. Like waiting for the kettle's click, not for steam.
+- **Decisions:**
+  - A replay click is never retried. Retrying could advance the clock twice, so a wrong day is reported instead, including what the headline said and any error the bar showed.
+  - If the start fails, the screens that depend on it are skipped for that width, with one FAIL line, rather than producing a cascade of confusing failures.
+- **Results:** all three scripts pass `node --check`. They run against the test database in the Stage 9 fresh-setup run (Step 110).
+- **Interview Q:** *"How do you fix a flaky UI test without just raising the timeout?"* Find what the test should really be waiting for (here, the server's answer to one click), wait for exactly that, and make a failure say what it saw instead. A longer timeout only hides a race.
