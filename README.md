@@ -1,177 +1,352 @@
-# 🚌 RouteRanker – AI-Powered Public Transit Route Optimisation
+# RouteRanker: AI-Powered Public Transit Route Optimisation (MTA Hourly Bus Demand, Route Ranking & Schedule Optimisation)
 
-RouteRanker analyses **hourly bus ridership** and service data to find inefficient bus routes,
-recommend fixes (frequency changes, merges, splits), and predict the **best route for any date and time
-(IST)**, explaining *why* it is best and validating it against the alternatives.
-
-It ships as a **Streamlit dashboard** (11 pages) plus a **FastAPI REST backend**, both running on localhost.
-
-![Architecture](reports/figures/architecture_diagram.png)
+**Author:** Sahithi Priya  
+**Program:** Infosys Springboard Virtual Internship  
+**Domain:** Transit Data Engineering, Unsupervised Route Profiling, Performance Classification & Hourly Demand Forecasting  
 
 ---
 
-## ✨ Features
+## 1. Executive Summary
 
-| Page | What you get |
-|---|---|
-| **Network Overview** | KPIs, route map coloured by segment / predicted status / borough / type, today's forecast curve |
-| **Best Route Today (Live)** | Pick a date & time in **IST** → real-time/date-specific prediction, winning route, *why it wins*, radar & score comparison, hourly forecast, **back-test validation** against other routes. Journey mode (stop A → stop B) |
-| **Productivity Ranking** | League table (forecast date or historical), top/bottom routes, efficiency vs comfort, CSV export |
-| **Route Comparison** | 2–6 routes side by side: forecasts, occupancy, speed, frequency, history, weekday profile |
-| **Historical Replay** | Animated hour-by-hour map of any past day, actual vs forecast |
-| **EDA Insights** | Hourly curves, route density heatmaps, distributions, correlations, outliers, overlaps |
-| **Scenario Simulator** | What-if: demand %, frequency multiplier, speed (bus lanes), vehicle size → current vs simulated loads |
-| **Optimisation Actions** | Increase / reduce / rebalance frequency, merge, split – with network impact |
-| **Model Performance** | KMeans/DBSCAN quality, RF vs XGBoost classifier, XGBoost vs RF forecaster vs baseline |
-| **Data & Coverage** | Sources, granularity, completeness, live freshness check, **GTFS upload analyser** (e.g. Indian city feeds) |
-| **Pipeline & Architecture** | Architecture + pipeline diagrams, stage timings |
+**RouteRanker** is an end-to-end transit analytics, route-ranking and schedule-optimisation platform built on real-world **MTA (New York City) hourly bus ridership** and **GTFS-derived schedule, route, stop and speed data** from the NY Open Data portal.
 
-All forecast timestamps are shown in **IST (Asia/Kolkata)**; the model converts them to the bus network's local time.
+It reconciles **4,354,344 raw hourly ridership records** with scheduled service, operating speeds, reliability and fare-evasion rates into an hourly **route x clock-hour** analytical table. On top of that it runs **K-Means + DBSCAN route clustering**, a **Random Forest / XGBoost performance classifier** (Underutilized / Balanced / Overcrowded), a **Random Forest / XGBoost hourly demand forecaster**, a **RouteRank scoring engine** that picks the best route for any date and time in **IST** and explains why, a **frequency optimiser**, a **what-if scenario simulator**, and an **11-page Streamlit dashboard + FastAPI REST backend**.
+
+### Key Performance Highlights
+* **Analytical dataset (hourly granularity):** **3,370,080** route-hour observations across **413 calendar days** and **340 active routes** (`2025-10-01` to `2026-11-17`), **425.7 million** boardings.
+* **Demand forecasting (Random Forest, selected):** **13.35% WAPE**, **R² 0.964**, MAE **18.4** boardings per route-hour on a strict 28-day chronological hold-out. The seasonal-profile baseline scores **20.15% WAPE**, R² 0.921.
+* **Performance classification (XGBoost, selected):** **88.7% accuracy**, **0.871 macro-F1**, **91.4% balanced accuracy** across Underutilized / Balanced / Overcrowded.
+* **Structural network segmentation:** K-Means (**k = 7**, silhouette 0.216) groups the 340 routes into 7 operational segments. DBSCAN flags **13 atypical routes** as density outliers.
+* **Optimisation impact (hold-out period):** overcrowded route-hours **13.0% → 0.0%**, underutilised route-hours **21.8% → 10.8%**, balanced route-hours **65.3% → 89.2%**. The trade-off is **+12.4% vehicle-hours**.
+* **Best-route validation:** on the Flatbush Av → Atlantic Av corridor (11 direct routes), the recommended route **B46** ranked **#1 on actual ridership in 6 of 6** previous same-weekday back-tests.
 
 ---
 
-## 📊 Data
+## 2. System Architecture & Data Engineering Flowcharts
 
-**Granularity: HOURLY** – one row per route per clock hour (daily = sum of hours).
+### 2.1 End-to-End Pipeline Architecture
+**Architecture type:** a layered **modular monolith**. A batch ML pipeline (offline training) feeds a shared **service layer** (`RouteRankerService`), which serves two presentation channels: a **Streamlit dashboard** and a **FastAPI REST API**. Storage is file-based (Parquet, joblib, JSON), so the whole system runs on a laptop.
 
-| Dataset (data.ny.gov) | ID | Used for |
-|---|---|---|
-| MTA Bus Hourly Ridership: Beginning 2025 | `gxb3-akrn` | target – boardings per route per hour |
-| MTA Bus Schedules: 2026 (GTFS-derived) | `4fnn-qsea` | trips per route per hour, route length, stops |
-| MTA Bus Route Segment Speeds: Beginning 2025 | `kufs-yh3x` | hourly speed per route / weekday |
-| MTA Bus Speeds: Beginning 2015 | `cudb-vcni` | fallback speed |
-| MTA Bus Wait Assessment | `v4z4-2h6n` | reliability |
-| MTA Bus Fare Evasion | `uv5h-dfhp` | paid → total rider correction |
-| MTA Bus Routes / Stops (GTFS routes, shapes, stops) | `bzwk-3hb4`, `2ucp-7wg5` | names, geometry, stop overlap |
+```mermaid
+flowchart TD
+    subgraph Ingestion ["1. Data Ingestion (SODA / SoQL, data.ny.gov)"]
+        A["MTA Bus Hourly Ridership 2025+<br/>(4,354,344 route-hour rows)"]
+        B["MTA Bus Schedules 2026 (GTFS-derived)<br/>(trips per route per hour, length, stops)"]
+        C["Segment Speeds · Route Speeds<br/>Wait Assessment · Fare Evasion"]
+        D["Routes + Shapes · Stops<br/>(1,657 shapes · 23,257 route-stops)"]
+    end
 
-*Why MTA and not Lepton GTFS?* GTFS contains schedules only (no ridership) and the Lepton feed is commercial.
-The MTA portal provides **ridership per route per hour** plus GTFS-derived tables. Indian GTFS feeds can still be
-analysed in the app via the GTFS upload analyser.
+    subgraph Processing ["2. Cleaning & Feature Engineering"]
+        E["Cleaning<br/>(ID normalisation, hourly grid, outlier capping,<br/>106 negligible routes removed)"]
+        F["Route-Hour Feature Table<br/>(3,370,080 rows · 340 routes · 413 days)"]
+        G["KPIs: load/trip, occupancy, productivity,<br/>headway, wait, fare-evasion correction"]
+    end
 
----
+    subgraph ML ["3. EDA, Preprocessing & Machine Learning"]
+        H["EDA (11 figures + JSON summary)"]
+        I["Chronological split + Profile Encoder<br/>(train to 2026-10-20 · validate last 28 days)"]
+        J["K-Means (k=7) + DBSCAN<br/>(route segments + 13 outliers)"]
+        K["RF / XGBoost Classifier<br/>(macro-F1 0.871)"]
+        L["RF / XGBoost Forecaster<br/>(WAPE 13.35%, R² 0.964)"]
+    end
 
-## 🧠 Methods
+    subgraph App ["4. Service & Application Layer"]
+        M["RouteRankerService<br/>(predict · rank · explain · validate · optimise · simulate)"]
+        N["Streamlit Dashboard<br/>(11 pages, IST clock)"]
+        O["FastAPI REST API<br/>(/api/best-route, /api/predict ...)"]
+    end
 
-| Stage | Module | Highlights |
-|---|---|---|
-| 1. Data collection | `data_collection.py` | SoQL server-side aggregation, monthly parquet cache, incremental refresh |
-| 2. Cleaning | `cleaning.py` | ID normalisation, duplicates, negatives, hourly grid completion, outlier capping |
-| 3. Feature engineering | `feature_engineering.py` | hour/weekday/holiday/peak, cyclical encodings, trips, speed, load, occupancy, productivity, wait |
-| 4. EDA | `eda.py` | descriptive stats, hourly curves, heatmaps, Spearman correlation, IQR outliers, Jaccard overlap |
-| 5. Preprocessing | `preprocessing.py` | chronological split (last 28 days = validation), target/profile encoding, one-hot, scaling |
-| 6. Clustering | `clustering.py` | **KMeans** (k by silhouette) + **DBSCAN** (eps by k-distance knee, outlier routes) |
-| 7. Classification | `supervised.py` | **Random Forest vs XGBoost** → Underutilized / Balanced / Overcrowded |
-| 8. Forecasting | `supervised.py` | **XGBoost vs Random Forest vs seasonal baseline** – hourly boardings per route |
-| 9. Inference & optimisation | `inference.py`, `optimization.py` | RouteRank score, explanation, validation, recommendations, simulator |
-| 10. Apps | `streamlit_app.py`, `app/`, `api/` | Streamlit UI and FastAPI |
-
-<!-- RESULTS:START -->
-## 📈 Results (last pipeline run: 2026-11-27 17:00:06 IST)
-
-Data: **2025-10-01 → 2026-11-17**, 340 routes, 3,370,080 route-hours (hourly).
-Validation = last 28 days (chronological hold-out).
-
-| Model | Metric | Result |
-|---|---|---|
-| KMeans (k=7) | silhouette / Davies-Bouldin | 0.216 / 1.290 |
-| DBSCAN (eps=2.38) | dense clusters / outlier routes | 2 / 13 |
-| Random Forest classifier | accuracy / macro-F1 | 0.888 / 0.870 |
-| XGBoost classifier | accuracy / macro-F1 | 0.887 / 0.870 |
-| Seasonal baseline forecaster | MAE / R² / WAPE | 27.7 / 0.921 / 20.2% |
-| Random Forest forecaster | MAE / R² / WAPE | 18.4 / 0.964 / 13.3% |
-| XGBoost forecaster | MAE / R² / WAPE | 18.5 / 0.962 / 13.5% |
-
-Selected: classifier **XGBoost**, forecaster **RandomForest**.
-Optimiser on the hold-out: overcrowded route-hours 13.0% → 0.0%,
-underutilised 21.8% → 10.8%,
-vehicle-hours 291,000 → 327,088.
-<!-- RESULTS:END -->
-
-![Pipeline](reports/figures/pipeline_diagram.png)
-
----
-
-## 🚀 Run locally
-
-```bash
-# 1. install (Python 3.10+)
-pip install -r requirements.txt
-
-# 2. download data + train all models (first run ≈ 30-45 min, later runs only fetch the newest month)
-#    Windows:  scripts\run_pipeline.bat        Linux/macOS: ./scripts/run_pipeline.sh
-set PYTHONPATH=src                 # macOS/Linux: export PYTHONPATH=src
-python -m routeranker.pipeline
-
-# 3. start the dashboard  ->  http://localhost:8501
-streamlit run streamlit_app.py
-
-# 4. (optional) start the REST API  ->  http://localhost:8000/docs
-uvicorn api.main:app --port 8000
-
-# 5. tests
-pytest -q                          # unit tests
-python tests/smoke_pages.py        # headless test of every dashboard page
+    A --> E
+    B --> E
+    C --> E
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    G --> I
+    I --> J
+    I --> K
+    I --> L
+    J --> M
+    K --> M
+    L --> M
+    M --> N
+    M --> O
 ```
 
-### REST API
+![Architecture](reports/figures/architecture_diagram.png)
+![Pipeline](reports/figures/pipeline_diagram.png)
+
+### 2.2 Best-Route Inference & Validation Workflow (IST)
+The user picks a date and time in **IST**. The service converts it to the bus network's local time (America/New_York), forecasts every route hour by hour, scores the candidates, explains the winner and back-tests the choice on actual data.
+
+```mermaid
+flowchart LR
+    A["Select Date & Time (IST)<br/>+ candidate set (journey A→B /<br/>borough / hand-picked)"] --> B["IST → America/New_York<br/>day type & holiday detection"]
+    B --> C["Build 24h feature frame<br/>(schedule, speed, route profile)"]
+    C --> D["Forecaster: hourly boardings"]
+    C --> E["Classifier: P(Overcrowded)"]
+    D --> F["KPIs: productivity, occupancy,<br/>wait, speed, reliability"]
+    E --> F
+    F --> G["RouteRank Score<br/>(weighted percentile ranks)"]
+    G --> H["Best Route + 'Why it wins'"]
+    G --> I["Back-test on previous<br/>same-weekdays (actual data)"]
+```
+
+---
+
+## 3. Methodology & Technical Implementation
+
+### 3.1 Data Sources (all hourly-capable, NY Open Data)
+
+| Dataset | ID | Granularity | Role |
+|---|---|---|---|
+| MTA Bus Hourly Ridership: Beginning 2025 | `gxb3-akrn` | hourly x route x fare class | **Target**: boardings per route per hour |
+| MTA Bus Schedules: 2026 (GTFS-derived) | `4fnn-qsea` | trip / stop | Trips per route per hour, route length, stops |
+| MTA Bus Route Segment Speeds: Beginning 2025 | `kufs-yh3x` | hourly x route x weekday | Operating speed |
+| MTA Bus Speeds: Beginning 2015 | `cudb-vcni` | monthly x route | Speed fallback |
+| MTA Bus Wait Assessment | `v4z4-2h6n` | monthly x route x period | Reliability |
+| MTA Bus Fare Evasion | `uv5h-dfhp` | quarterly x trip type | Paid → total rider correction |
+| MTA Bus Routes / Stops (GTFS routes, shapes, stops) | `bzwk-3hb4`, `2ucp-7wg5` | route / stop | Names, geometry, stop overlap |
+
+> **Why MTA instead of the Lepton GTFS feed?** GTFS contains schedules only, with **no ridership counts**, and the Lepton feed for Indian cities is commercial. MTA publishes **hourly ridership per route** plus GTFS-derived tables. Indian GTFS feeds can still be profiled, clustered and screened for overlaps through the built-in **GTFS upload analyser**.
+
+### 3.2 Data Cleaning & Reconciliation
+* **Server-side aggregation:** hourly ridership is summed over payment method and fare class with SoQL, downloaded month by month and cached as Parquet. Refreshes are incremental.
+* **Route-ID normalisation:** `-SBS` becomes `+`, values are upper-cased, so ridership, schedules, speeds and reliability all join.
+* **Quality checks:** 0 missing values, 0 negative counts, 0 duplicate route-hours. **6** extreme spikes were capped at 3 x the route's 99.9th percentile. The hourly grid was completed per route.
+* **Filtering:** **106** negligible routes (< 20 boardings/day: shuttles, school or retired routes) and **4** routes without a schedule were removed, leaving **340 routes**.
+* **Fare-evasion correction:** the ridership table counts **paid** boardings. MTA's own evasion rates (Local **49.0%**, SBS **50.6%**, Express **5.5%**) convert paid boardings into estimated total riders for load and crowding.
+
+### 3.3 Feature Engineering (route x hour)
+| Group | Features |
+|---|---|
+| Time | hour, day of week, month, week of year, weekend, **US/NY holiday** (holidays run on the Sunday schedule), AM/PM peak, night, summer, sin/cos cyclical encodings |
+| Service | scheduled trips per hour (Weekday / Saturday / Sunday), speed (mph), trip minutes, route length, stops, stop density, vehicle capacity |
+| KPIs | load per trip, **occupancy** (= load x 0.55 peak-load factor / capacity), **productivity** (riders per revenue vehicle-hour), headway, average wait, transfer rate |
+| Label | `perf_class`: **Underutilized** (occupancy < 0.061, 25th percentile) · **Balanced** · **Overcrowded** (> 0.422, 90th percentile). Thresholds are calibrated on the training period. |
+| Route profile | average daily/weekday/weekend riders, AM/PM peak share, night share, weekend ratio, mean and p90 occupancy, % hours overcrowded/underutilised, speed, reliability, 4-week trend |
+
+### 3.4 Exploratory Data Analysis
+Methods: descriptive statistics (incl. skewness and kurtosis), hour-of-day curves per day type, daily trend with a 7-day rolling mean, day-of-week box plots, a **route density heatmap**, an occupancy distribution, class share by hour, **Spearman correlation**, the **IQR outlier rule** (1.2% of route-days), borough and route-type comparison, and **stop-set Jaccard overlap** (215 overlapping pairs, e.g. BX1 ↔ BX2 with Jaccard 0.84).
+
+* **Weekday peaks:** 07:00 and 08:00, then 17:00 and 16:00 (≈ 112,700 boardings in the 07:00 hour, ≈ 1.19 M per weekday).
+* **Weekends:** a single midday peak at 15:00 (≈ 758 k boardings on Saturday, ≈ 639 k on Sunday).
+* **Busiest routes:** M15+ (≈ 19,450 riders/day), Q25, Q44+, B6, M15.
+* **Most productive routes:** M79+, M42, M14D+, M34+, M86+ (> 600 riders per vehicle-hour).
+
+| | |
+|---|---|
+| ![](reports/figures/eda_hourly_ridership_curve.png) | ![](reports/figures/eda_route_density_heatmap.png) |
+| ![](reports/figures/eda_daily_trend.png) | ![](reports/figures/eda_kpi_correlation.png) |
+
+### 3.5 Unsupervised Route Profiling (K-Means + DBSCAN)
+**K-Means** (partitional, centroid-based, k chosen by silhouette over k = 4…10) runs on 15 standardised route-profile features. **DBSCAN** (density-based, eps = 2.38 from the k-distance knee, min_samples = 6) is used as an outlier detector.
+
+| Segment (auto-named from centroid) | Routes | Median daily riders |
+|---|---:|---:|
+| Unreliable / Slow | 102 | 2,783 |
+| Reliable / Night-Owl | 75 | 2,541 |
+| High-Volume / Crowded | 60 | 6,702 |
+| Express Long-Haul / Fast | 40 | 683 |
+| Express AM-Peak Commuter / Weekday-Focused | 35 | 238 |
+| Express Long-Haul / AM-Peak Commuter | 25 | 510 |
+| Limited Off-Peak / Unreliable | 3 | 61 |
+
+**DBSCAN outlier routes (13):** B39, BX20, M35, Q42, QM64, S66, S81, S84, S86, SIM1C, SIM33C, SIM3C, SIM4C.
+
+![](reports/figures/model_clusters_pca.png)
+
+### 3.6 Performance Classification (Random Forest vs XGBoost)
+The classifier predicts each service hour's class **before** it happens, using calendar, schedule, speed, route attributes and training-period profile encodings only.
+
+| Model | Accuracy | Balanced Acc. | Macro-F1 | F1 Under / Balanced / Over |
+|---|:---:|:---:|:---:|:---:|
+| Random Forest (200 trees, depth 20) | 0.888 | 0.902 | 0.870 | 0.853 / 0.910 / 0.847 |
+| **XGBoost (selected)** (hist, depth 8, early stopping) | **0.887** | **0.914** | **0.871** | 0.857 / 0.909 / 0.845 |
+
+### 3.7 Hourly Demand Forecasting (XGBoost vs Random Forest vs Baseline)
+The target is log1p(boardings) per route-hour. The chronological split trains on `2025-10-01 → 2026-10-20` (3.14 M rows) and validates on `2026-10-21 → 2026-11-17` (228 k rows).
+
+| Model | MAE | RMSE | R² | WAPE |
+|---|:---:|:---:|:---:|:---:|
+| Seasonal-profile baseline | 27.72 | 57.93 | 0.921 | 20.15% |
+| **Random Forest (selected)** | **18.36** | **39.22** | **0.964** | **13.35%** |
+| XGBoost | 18.51 | 40.06 | 0.962 | 13.46% |
+
+Top forecaster features: route x day-type x hour profile, route x weekday x hour profile, scheduled trips, route x hour profile.
+
+| | |
+|---|---|
+| ![](reports/figures/model_forecast_validation.png) | ![](reports/figures/model_confusion_matrices.png) |
+
+### 3.8 RouteRank Score, Explanation & Validation
+For the selected window, each candidate route gets five components. Each is converted to a percentile among the candidates and weighted. The weights are adjustable, with presets: *Balanced*, *Rider*, *Planner*.
+
+| Component | Measure | Default weight |
+|---|---|:---:|
+| Productivity | predicted riders per revenue vehicle-hour | 25% |
+| Speed | expected mph for that weekday/hour | 20% |
+| Reliability | wait-assessment share (peak value in peak windows) | 20% |
+| Frequency | scheduled buses per hour | 15% |
+| Comfort | 1 − P(Overcrowded) from the classifier | 20% |
+
+The app then writes a plain-language **"why it's the best"** explanation (winner vs median of alternatives, per component). It also **back-tests** the pick by re-scoring every candidate on **actual** ridership for the previous six same-weekdays.
+
+### 3.9 Optimisation Rules & Scenario Simulator
+* **Increase frequency** in overcrowded hours up to the target occupancy. **Reduce frequency** in underutilised hours, keeping at least 2 trips/hour. **Rebalance** when a route needs both.
+* **Merge** a mostly underutilised route with a partner serving > 40% of its stops. **Split / short-turn** long (≥ 90th percentile), unreliable, crowded routes.
+* **Scenario simulator:** demand %, frequency multiplier, speed change (bus lanes) and vehicle size. Every KPI is recomputed, current vs simulated.
+
+---
+
+## 4. User Interface & Operational Modules
+
+The Streamlit dashboard has **11 pages** in 4 groups. A live **IST clock** (with the matching New York time) sits in the sidebar, and every forecast is stamped with its IST generation time.
+
+### 4.1 Network Overview
+KPIs, route map coloured by K-Means segment, predicted status, borough or route type, a segment table, borough share, today's forecast curve and the predicted class mix by hour.
+
+![](reports/figures/screens/network_overview.png)
+
+### 4.2 Best Route Today (Live): Date/Time Selection in IST
+Pick any date and time in IST: today gives a real-time forecast, past dates are compared with actuals, future dates are planning forecasts. Choose a journey (stop A → stop B), a borough or hand-picked routes, and get the winning route, **why it wins**, radar and score comparisons, the hourly forecast and **back-test validation**. The page auto-refreshes every 5 minutes.
+
+![](reports/figures/screens/best_route.png)
+
+### 4.3 Productivity Ranking
+A league table by forecast date or historical average, top/bottom N routes, an efficiency vs comfort bubble chart and CSV export.
+
+![](reports/figures/screens/productivity_ranking.png)
+
+### 4.4 Route Comparison
+Compare 2 to 6 routes side by side: indicator table, radar, map, hourly forecasts, occupancy, speed, trips, daily history, weekday profile and class mix.
+
+![](reports/figures/screens/route_comparison.png)
+
+### 4.5 Historical Replay
+An animated map (▶) of any past day, hour by hour, with actual boardings and status, plus network actual vs forecast and an hour inspector.
+
+![](reports/figures/screens/historical_replay.png)
+
+### 4.6 Scenario Simulator
+What-if sliders for demand, frequency, speed and vehicle size, with current vs simulated occupancy, class mix, waits and vehicle-hours.
+
+![](reports/figures/screens/scenario_simulator.png)
+
+### 4.7 Optimisation Actions
+Network impact, action mix, trips per hour (current vs optimised), a prioritised action table with rationale, route drill-down and overlapping pairs.
+
+![](reports/figures/screens/recommendations.png)
+
+### 4.8 Model Performance · EDA Insights · Data & Coverage · Pipeline & Architecture
+Clustering, classifier and forecaster diagnostics; interactive EDA; data sources, freshness check against the live API and a completeness heatmap; a **GTFS upload analyser** for any city feed (e.g. Indian Lepton feeds); and the architecture/pipeline diagrams.
+
+| | |
+|---|---|
+| ![](reports/figures/screens/model_performance.png) | ![](reports/figures/screens/data_coverage.png) |
+| ![](reports/figures/screens/eda_insights.png) | ![](reports/figures/screens/pipeline_architecture.png) |
+
+---
+
+## 5. REST API (FastAPI)
 
 | Endpoint | Description |
 |---|---|
-| `GET /api/health` | status, IST time, data window |
-| `GET /api/routes` | routes with segment & KPIs |
-| `GET /api/predict?route_id=M15&date_ist=2026-11-27` | 24-hour forecast for a route |
-| `GET /api/best-route?date_ist=2026-11-27&time_ist=19:30&origin=FLATBUSH AV&destination=ATLANTIC AV` | best route + why + validation |
-| `GET /api/ranking?date_ist=...` | RouteRank league table |
-| `GET /api/recommendations?date_ist=...` | optimisation actions & impact |
-| `POST /api/simulate` | scenario simulation |
+| `GET /api/health` | status, current IST time, data window |
+| `GET /api/routes` | routes with segment and KPIs (filters: borough, route_type) |
+| `GET /api/predict?route_id=M15&date_ist=2026-11-27` | 24-hour forecast + class probabilities |
+| `GET /api/best-route?date_ist=2026-11-27&time_ist=19:30&origin=FLATBUSH AV&destination=ATLANTIC AV` | best route + explanation + ranking + validation |
+| `GET /api/ranking?date_ist=...&start_hour=6&end_hour=22` | RouteRank league table |
+| `GET /api/recommendations?date_ist=...` | optimisation actions and network impact |
+| `POST /api/simulate` | scenario simulation (JSON body) |
+
+Interactive docs are at `http://localhost:8000/docs`.
 
 ---
 
-## 📁 Project structure
+## 6. Technology Stack & Repository Structure
 
-```
+* **Data engineering & analytics:** Python, Pandas, NumPy, PyArrow, Socrata SODA/SoQL, holidays
+* **Machine learning:** scikit-learn (K-Means, DBSCAN, Random Forest, PCA, scalers), XGBoost
+* **Visualisation & UI:** Streamlit, Plotly (MapLibre / OpenStreetMap maps), Matplotlib, Seaborn
+* **Backend API:** FastAPI, Uvicorn, Pydantic
+* **Quality & docs:** pytest (18 unit tests + headless smoke test of all 11 pages), python-docx, Playwright (screenshots)
+
+```text
 Route Ranker/
-├── streamlit_app.py           # Streamlit entry point (navigation)
+├── streamlit_app.py            # Streamlit entry point (navigation, IST clock)
 ├── app/
-│   ├── common.py              # shared UI helpers, IST clock, maps, pickers
-│   └── views/                 # 11 dashboard pages
-├── api/main.py                # FastAPI backend
-├── src/routeranker/           # ML package
-│   ├── config.py              # paths, sources, assumptions
-│   ├── data_collection.py     # Module 1
-│   ├── cleaning.py            # Module 2a
-│   ├── feature_engineering.py # Module 2b
-│   ├── eda.py                 # Module 3
-│   ├── preprocessing.py       # Module 4
-│   ├── clustering.py          # Module 5a (KMeans, DBSCAN, overlap)
-│   ├── supervised.py          # Module 5b (RF / XGBoost classifier + regressor)
-│   ├── inference.py           # Module 6a (prediction, ranking, explanation, validation)
-│   ├── optimization.py        # Module 6b (recommendations, simulator)
-│   ├── gtfs.py                # GTFS upload analyser
-│   ├── diagrams.py            # architecture / pipeline / model figures
-│   └── pipeline.py            # end-to-end orchestration
-├── tests/                     # pytest unit tests + page smoke test
-├── reports/figures/           # EDA, model and architecture figures (PNG)
-├── reports/metrics/           # EDA summary, model metrics, pipeline manifest (JSON)
-├── docs/                      # project report (.docx/.pdf), report generator, project brief
-├── scripts/                   # run_pipeline / run_app / run_api (.bat & .sh)
-├── data/  models/             # generated – git-ignored
-├── requirements.txt  pyproject.toml  LICENSE  .gitignore
-└── .streamlit/config.toml
+│   ├── common.py               # shared UI helpers, IST pickers, maps
+│   └── views/                  # 11 dashboard pages
+├── api/main.py                 # FastAPI backend
+├── src/routeranker/            # ML package
+│   ├── config.py               # paths, sources, assumptions
+│   ├── data_collection.py      # 1. Data collection (SODA / SoQL)
+│   ├── cleaning.py             # 2a. Cleaning
+│   ├── feature_engineering.py  # 2b. Feature engineering
+│   ├── eda.py                  # 3. EDA
+│   ├── preprocessing.py        # 4. Preprocessing (split, encoding, scaling)
+│   ├── clustering.py           # 5a. K-Means, DBSCAN, overlap
+│   ├── supervised.py           # 5b. RF / XGBoost classifier + forecaster
+│   ├── inference.py            # 6a. Prediction, ranking, explanation, validation
+│   ├── optimization.py         # 6b. Recommendations, scenario simulator
+│   ├── gtfs.py                 # GTFS upload analyser
+│   ├── diagrams.py             # architecture / pipeline / model figures
+│   └── pipeline.py             # end-to-end orchestration
+├── tests/                      # unit tests + page smoke test
+├── reports/figures/            # EDA, model, architecture figures + app screenshots
+├── reports/metrics/            # EDA summary, model metrics, pipeline manifest (JSON)
+├── docs/                       # Project report (.docx / .pdf) + generator
+├── scripts/                    # run_pipeline / run_app / run_api (.bat / .sh)
+├── requirements.txt · pyproject.toml · LICENSE
+└── README.md
 ```
 
-## 📄 Documentation
+> `data/` (~57 MB) and `models/` (~1 GB) are generated by the pipeline and are git-ignored.
 
-* `docs/RouteRanker_Project_Report.docx` (and `.pdf`) – full methodology, every module and function, models,
-  metrics, architecture. Re-generate after retraining with `python docs/build_report.py`.
+---
 
-## ⚠️ Assumptions & limitations
+## 7. Local Setup & Execution
 
-* Occupancy is estimated from boardings (peak-load factor, vehicle capacity, fare-evasion correction); class
-  thresholds are calibrated from the data (25th / 90th percentile).
-* Hourly ridership is published with ~1 week delay; "real-time" = model forecast for the current hour.
-* Journey mode considers direct routes only.
+### 1. Install dependencies (Python 3.10+)
+```bash
+python -m venv .venv
+.venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 2. Download data & train all models
+First run ≈ 35 min download + ≈ 15 min training. Later runs only fetch the newest month.
+```bash
+set PYTHONPATH=src              # macOS/Linux: export PYTHONPATH=src
+python -m routeranker.pipeline  # or scripts\run_pipeline.bat
+```
+
+### 3. Start the dashboard
+```bash
+streamlit run streamlit_app.py  # http://localhost:8501
+```
+
+### 4. (Optional) Start the REST API
+```bash
+uvicorn api.main:app --port 8000   # http://localhost:8000/docs
+```
+
+### 5. Tests & documentation
+```bash
+pytest -q                          # unit tests
+python tests/smoke_pages.py        # headless test of every dashboard page
+python docs/build_report.py        # regenerate the Word/PDF project report
+```
+
+---
+
+## 8. Assumptions & Limitations
+* Occupancy is **estimated** from boardings (peak-load factor 0.55, vehicle capacity, fare-evasion correction). The class thresholds are data-calibrated percentiles, not measured on-board loads.
+* MTA publishes hourly ridership with roughly a one-week delay, so "real-time" means a model forecast for the current hour.
+* Journey mode considers **direct** routes only. Transfers are future work.
+* Full methodology, every function and all metrics are in **`docs/RouteRanker_Project_Report.docx`** (PDF copy alongside).
 
 ## License
-
 MIT
