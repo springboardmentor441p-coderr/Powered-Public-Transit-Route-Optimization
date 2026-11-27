@@ -1,24 +1,24 @@
 {
-  "built_at_ist": "2026-11-27 17:00:06 IST",
+  "built_at_ist": "2026-11-27 17:57:55 IST",
   "data_start": "2025-10-01",
   "data_end": "2026-11-17",
   "last_timestamp_local": "2026-11-17 23:00:00",
-  "granularity": "hourly",
   "routes": 340,
   "route_hours": 3370080,
+  "granularity": "hourly",
   "stage_seconds": {
-    "1_data_collection": 0.4,
-    "2_cleaning": 31.4,
-    "3_feature_engineering": 10.1,
-    "4_eda": 10.5,
-    "5_preprocessing": 10.1,
+    "1_data_collection": 0.5,
+    "2_cleaning": 37.3,
+    "3_feature_engineering": 10.9,
+    "4_overlap_and_cleaning_report": 0.2,
+    "5_preprocessing": 12.0,
     "6_clustering": 0.7,
-    "7_classification": 517.7,
-    "8_forecasting": 285.8,
-    "9_optimisation": 0.2,
-    "10_persist": 14.0
+    "7_classification": 401.6,
+    "8_forecasting": 344.1,
+    "9_optimisation": 0.9,
+    "10_persist": 16.0
   },
-  "total_seconds": 880.9,
+  "total_seconds": 824.2,
   "sources": {
     "ridership": {
       "id": "gxb3-akrn",

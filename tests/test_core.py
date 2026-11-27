@@ -1,4 +1,4 @@
-"""Unit tests for cleaning, feature engineering, optimisation, clustering helpers and GTFS parsing.
+"""Unit tests for backend/main.py: cleaning, feature engineering, optimisation, clustering helpers, GTFS parsing.
 
 Run:  pytest -q
 """
@@ -9,14 +9,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from routeranker import config as C
-from routeranker.cleaning import borough_of, clean_ridership, normalize_route_id
-from routeranker.clustering import stop_overlap
-from routeranker.feature_engineering import add_performance_metrics, add_time_features, classify_occupancy, day_type_of
-from routeranker.gtfs import analyse_gtfs, gtfs_time_to_hours
-from routeranker.inference import ist_to_transit
-from routeranker.optimization import optimize_frequencies, simulate_scenario
-from routeranker.preprocessing import time_split
+from backend import main as C
+from backend.main import (add_performance_metrics, add_time_features, analyse_gtfs, borough_of, classify_occupancy,
+                          clean_ridership, day_type_of, gtfs_time_to_hours, ist_to_transit, normalize_route_id,
+                          optimize_frequencies, simulate_scenario, stop_overlap, time_split)
 
 
 @pytest.fixture(autouse=True)

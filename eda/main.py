@@ -1,32 +1,71 @@
-"""Module 3 - Exploratory Data Analysis.
+"""RouteRanker - EXPLORATORY DATA ANALYSIS (single main file).
 
-Methods used
+Reads the processed hourly route x hour table produced by the backend
+(``python backend/main.py train``) and runs the complete EDA:
+
 * descriptive statistics (mean, median, std, quantiles, skewness, kurtosis)
 * temporal profiling (hour-of-day curves per day type, day-of-week boxplots,
-  daily time series with 7-day rolling mean)
+  daily time series with 7-day rolling mean and holiday markers)
 * route density heatmap (route x hour mean boardings)
 * distribution analysis of occupancy with class thresholds
-* Spearman rank correlation between KPIs
+* performance-class share by hour
+* Spearman rank correlation between route KPIs
 * IQR outlier detection on daily route ridership
-* group comparisons by borough and route type
-* overlap analysis (stop-set Jaccard) and under-utilisation screening
+* group comparisons by borough and route type, productivity ranking
+* speed vs crowding, stop-set overlap (Jaccard) and under-utilisation screening
 
-All figures are written to ``reports/figures`` and a JSON summary to
-``reports/metrics/eda_summary.json``.
+Granularity: HOURLY (one row per route per clock hour, America/New_York).
+
+Usage (from the project root):
+    python eda/main.py
+
+Outputs: eda/figures/*.png and eda/eda_summary.json
 """
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
-import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 import seaborn as sns  # noqa: E402
 
-from . import config as C  # noqa: E402
+# ----------------------------------------------------------------------------------------------
+# Paths and inputs (produced by backend/main.py)
+# ----------------------------------------------------------------------------------------------
+ROOT = Path(__file__).resolve().parents[1]
+PROCESSED_DIR = ROOT / "data" / "processed"
+METRICS_DIR = ROOT / "reports" / "metrics"
+EDA_DIR = ROOT / "eda"
+FIGURES_DIR = EDA_DIR / "figures"
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+CLASS_LABELS = ["Underutilized", "Balanced", "Overcrowded"]
+THRESHOLDS = {"underutilized_max": 0.25, "overcrowded_min": 0.85}
+if (PROCESSED_DIR / "thresholds.json").exists():
+    THRESHOLDS.update(json.loads((PROCESSED_DIR / "thresholds.json").read_text()))
 
+
+def load_inputs() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
+    """Load the hourly route-hour table, route profiles, stop-overlap pairs and cleaning report."""
+    missing = [f for f in ("route_hour.parquet", "route_info.parquet", "overlap.parquet")
+               if not (PROCESSED_DIR / f).exists()]
+    if missing:
+        raise SystemExit(f"Missing {missing} in data/processed - run `python backend/main.py train` first.")
+    rh = pd.read_parquet(PROCESSED_DIR / "route_hour.parquet")
+    rh["is_am_peak"] = rh["hour"].isin(range(6, 10)).astype("int8")
+    rh["is_pm_peak"] = rh["hour"].isin(range(16, 20)).astype("int8")
+    profiles = pd.read_parquet(PROCESSED_DIR / "route_info.parquet")
+    overlap = pd.read_parquet(PROCESSED_DIR / "overlap.parquet")
+    rep_file = METRICS_DIR / "cleaning_report.json"
+    cleaning_report = json.loads(rep_file.read_text()) if rep_file.exists() else {}
+    return rh, profiles, overlap, cleaning_report
+
+
+# ----------------------------------------------------------------------------------------------
+# EDA methods and figures
+# ----------------------------------------------------------------------------------------------
 sns.set_theme(style="whitegrid", context="notebook")
 PALETTE = {"Weekday": "#2563eb", "Saturday": "#f59e0b", "Sunday": "#10b981",
            "Underutilized": "#94a3b8", "Balanced": "#22c55e", "Overcrowded": "#ef4444"}
@@ -34,11 +73,11 @@ PALETTE = {"Weekday": "#2563eb", "Saturday": "#f59e0b", "Sunday": "#10b981",
 
 def _save(fig, name: str) -> str:
     """Save a matplotlib figure to reports/figures and return its relative path."""
-    path = C.FIGURES_DIR / name
+    path = FIGURES_DIR / name
     fig.tight_layout()
     fig.savefig(path, dpi=130)
     plt.close(fig)
-    return str(path.relative_to(C.ROOT_DIR))
+    return str(path.relative_to(ROOT))
 
 
 def descriptive_stats(rh: pd.DataFrame) -> dict:
@@ -127,8 +166,8 @@ def fig_occupancy_distribution(rh: pd.DataFrame) -> str:
     occ = rh["occupancy"].dropna().clip(upper=2)
     fig, ax = plt.subplots(figsize=(9, 4))
     ax.hist(occ, bins=80, color="#6366f1", alpha=.85)
-    ax.axvline(C.UNDERUTILIZED_MAX, color="#64748b", ls="--", label=f"Underutilized < {C.UNDERUTILIZED_MAX}")
-    ax.axvline(C.OVERCROWDED_MIN, color="#ef4444", ls="--", label=f"Overcrowded > {C.OVERCROWDED_MIN}")
+    ax.axvline(THRESHOLDS['underutilized_max'], color="#64748b", ls="--", label=f"Underutilized < {THRESHOLDS['underutilized_max']:.3f}")
+    ax.axvline(THRESHOLDS['overcrowded_min'], color="#ef4444", ls="--", label=f"Overcrowded > {THRESHOLDS['overcrowded_min']:.3f}")
     ax.set(title="Distribution of estimated occupancy (route-hours with service)",
            xlabel="Estimated max-load / capacity", ylabel="Route-hours")
     ax.legend()
@@ -138,9 +177,9 @@ def fig_occupancy_distribution(rh: pd.DataFrame) -> str:
 def fig_class_by_hour(rh: pd.DataFrame) -> str:
     """Stacked bar chart of performance-class shares by hour (weekdays)."""
     wk = rh[(rh["day_type"] == "Weekday") & rh["perf_class"].notna()]
-    share = pd.crosstab(wk["hour"], wk["perf_class"], normalize="index")[C.CLASS_LABELS]
+    share = pd.crosstab(wk["hour"], wk["perf_class"], normalize="index")[CLASS_LABELS]
     fig, ax = plt.subplots(figsize=(10, 4))
-    share.plot(kind="bar", stacked=True, ax=ax, color=[PALETTE[c] for c in C.CLASS_LABELS], width=.85)
+    share.plot(kind="bar", stacked=True, ax=ax, color=[PALETTE[c] for c in CLASS_LABELS], width=.85)
     ax.set(title="Performance class share by hour (weekdays)", xlabel="Hour", ylabel="Share of route-hours")
     ax.legend(loc="upper right", fontsize=8)
     return _save(fig, "eda_class_share_by_hour.png")
@@ -235,5 +274,19 @@ def run_eda(rh: pd.DataFrame, profiles: pd.DataFrame, overlap: pd.DataFrame, cle
         "cleaning_report": cleaning_report,
         "figures": figs,
     }
-    (C.METRICS_DIR / "eda_summary.json").write_text(json.dumps(summary, indent=2, default=str))
+    (EDA_DIR / "eda_summary.json").write_text(json.dumps(summary, indent=2, default=str))
     return summary
+
+
+def main() -> None:
+    """Run the complete EDA and print where the outputs were written."""
+    rh, profiles, overlap, rep = load_inputs()
+    summary = run_eda(rh, profiles, overlap, rep)
+    print(f"EDA complete: {len([f for f in summary['figures'].values() if f])} figures in {FIGURES_DIR}")
+    print(f"Summary: {EDA_DIR / 'eda_summary.json'}")
+    for dt, v in summary["peak_windows"].items():
+        print(f"  {dt:8s} peak hour {v['peak_hour']:02d}:00  ~{v['peak_boardings']:,.0f} boardings/hour")
+
+
+if __name__ == "__main__":
+    main()

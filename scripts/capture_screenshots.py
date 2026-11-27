@@ -24,7 +24,7 @@ def main():
     browser = next((b for b in BROWSERS if b and Path(b).exists()), None)
     if not browser:
         sys.exit("No Chromium-based browser found")
-    srv = subprocess.Popen([sys.executable, "-m", "streamlit", "run", "streamlit_app.py", "--server.port", str(PORT),
+    srv = subprocess.Popen([sys.executable, "-m", "streamlit", "run", "frontend/main.py", "--server.port", str(PORT),
                             "--server.headless", "true"], cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
         for _ in range(60):

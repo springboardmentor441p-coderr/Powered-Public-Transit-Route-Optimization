@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-cd "$(dirname "$0")/.." && PYTHONPATH=src python -m routeranker.pipeline "$@"
+cd "$(dirname "$0")/.." && python backend/main.py train "$@" && python eda/main.py

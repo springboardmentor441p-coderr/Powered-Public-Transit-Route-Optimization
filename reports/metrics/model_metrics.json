@@ -104,7 +104,7 @@
   "classification": {
     "best": "XGBoost",
     "RandomForest": {
-      "train_seconds": 120.2,
+      "train_seconds": 84.4,
       "train_rows": 400000,
       "accuracy": 0.8880774586883341,
       "balanced_accuracy": 0.9018167246485812,
@@ -162,7 +162,7 @@
       ]
     },
     "XGBoost": {
-      "train_seconds": 393.5,
+      "train_seconds": 314.4,
       "train_rows": 1500000,
       "best_iteration": 498,
       "accuracy": 0.8873701985810937,
@@ -330,15 +330,15 @@
       "wape": 0.20151809312043995
     },
     "RandomForest": {
-      "train_seconds": 200.5,
+      "train_seconds": 262.4,
       "train_rows": 500000,
       "mae": 18.358096745394583,
-      "rmse": 39.22433329086888,
+      "rmse": 39.22433329086887,
       "r2": 0.9637657294666853,
       "wape": 0.13346436734177886
     },
     "XGBoost": {
-      "train_seconds": 84.9,
+      "train_seconds": 80.7,
       "best_iteration": 137,
       "mae": 18.50970854997224,
       "rmse": 40.06320618125877,

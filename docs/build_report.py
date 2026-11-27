@@ -9,6 +9,7 @@ The function reference is generated from the source code (signatures + docstring
 from __future__ import annotations
 
 import ast
+import re
 import json
 import os
 import shutil
@@ -26,11 +27,11 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-from routeranker import config as C  # noqa: E402
+sys.path.insert(0, str(ROOT))
+from backend import main as C  # noqa: E402  (backend/main.py doubles as the configuration namespace)
 
 M = json.loads((C.METRICS_DIR / "model_metrics.json").read_text())
-E = json.loads((C.METRICS_DIR / "eda_summary.json").read_text())
+E = json.loads((C.EDA_DIR / "eda_summary.json").read_text())
 MAN = json.loads((C.METRICS_DIR / "pipeline_manifest.json").read_text())
 FIG = {**E["figures"], **M["figures"]}
 OUT = ROOT / "docs" / "RouteRanker_Project_Report.docx"
@@ -366,12 +367,12 @@ P(f"Because occupancy is an estimate (boardings, not on-board counts), fixed abs
   f"targets occupancy {C.TARGET_OCCUPANCY:.3f}. The calibrated values are saved to data/processed/thresholds.json "
   "and reused by the app and API.")
 P("Vehicle capacity assumptions: " + ", ".join(f"{k} {v}" for k, v in C.VEHICLE_CAPACITY.items()) +
-  ". These, the peak-load factor and the class thresholds are configurable in `config.py`.")
+  ". These, the peak-load factor and the class thresholds are configurable in the configuration section of `backend/main.py`.")
 
 # ---- 6 EDA
 H("6. Module 3 - Exploratory Data Analysis")
 T(["EDA method", "What it shows", "Output"], [
-    ["Descriptive statistics (mean, std, quantiles, skewness, kurtosis)", "scale & shape of ridership, load, speed", "eda_summary.json"],
+    ["Descriptive statistics (mean, std, quantiles, skewness, kurtosis)", "scale & shape of ridership, load, speed", "eda/eda_summary.json"],
     ["Hour-of-day curves per day type", "high-traffic time windows", "hourly curve figure"],
     ["Daily time series + 7-day rolling mean, holiday markers", "trend, seasonality, holiday dips", "daily trend figure"],
     ["Day-of-week box plots", "weekly pattern & variability", "box-plot figure"],
@@ -532,12 +533,15 @@ P("**Architecture type: layered modular monolith with a shared service layer and
 IMG("architecture", "Figure 11.1 - System architecture", 16.5)
 IMG("pipeline", "Figure 11.2 - End-to-end ML pipeline", 16.5)
 T(["Layer", "Modules", "Responsibility"], [
-    ["Data ingestion", "data_collection.py", "SODA/SoQL pulls, server-side aggregation, caching, freshness check"],
-    ["Processing", "cleaning.py, feature_engineering.py, eda.py, preprocessing.py", "cleaning, KPIs, EDA, encodings, split"],
-    ["Modelling", "clustering.py, supervised.py", "KMeans, DBSCAN, RF & XGBoost classifier/regressor"],
-    ["Service", "inference.py, optimization.py, gtfs.py", "prediction, ranking, explanation, validation, optimisation, simulation"],
-    ["Presentation", "streamlit_app.py, app/views/*, api/main.py", "dashboard pages, REST endpoints"],
-    ["Orchestration", "pipeline.py, diagrams.py", "runs stages 1-10, writes artefacts & figures"],
+    ["Configuration", "backend/main.py §1", "paths, data sources, time zones, assumptions"],
+    ["Data ingestion", "backend/main.py §2", "SODA/SoQL pulls, server-side aggregation, caching, freshness check"],
+    ["Processing", "backend/main.py §3-5", "cleaning, feature engineering / KPIs, preprocessing (encodings, split)"],
+    ["EDA", "eda/main.py", "all exploratory analysis, 11 figures + eda_summary.json"],
+    ["Modelling", "backend/main.py §6-7", "KMeans, DBSCAN, RF & XGBoost classifier/regressor"],
+    ["Service", "backend/main.py §8-10", "optimisation, simulation, prediction, ranking, explanation, validation, GTFS"],
+    ["Orchestration", "backend/main.py §11-12, §14", "figures, training pipeline, command-line interface"],
+    ["Backend API", "backend/main.py §13", "FastAPI REST endpoints"],
+    ["Frontend", "frontend/main.py", "shared UI helpers + 11 Streamlit pages + navigation"],
 ], [3.2, 6.4, 7.0], size=8.5)
 P("Tech stack: Python 3, Pandas, NumPy, scikit-learn, XGBoost, Matplotlib, Seaborn, Plotly (MapLibre maps), "
   "Folium (optional), Streamlit, FastAPI/Uvicorn, holidays, PyArrow, python-docx, pytest.")
@@ -613,20 +617,18 @@ B(["`pytest` unit tests (18) cover route-ID normalisation, borough inference, ho
 
 H("16. Deployment on Localhost and GitHub Structure")
 code("""pip install -r requirements.txt
-set PYTHONPATH=src            (Linux/macOS: export PYTHONPATH=src)
-python -m routeranker.pipeline           # download data + train (≈ 25-40 min first time)
-streamlit run streamlit_app.py           # http://localhost:8501
-uvicorn api.main:app --port 8000         # http://localhost:8000/docs
+python backend/main.py train            # download data + train (≈ 35 min download + 15 min training)
+python eda/main.py                       # exploratory data analysis -> eda/figures, eda/eda_summary.json
+streamlit run frontend/main.py           # frontend dashboard: http://localhost:8501
+python backend/main.py serve             # backend REST API:   http://localhost:8000/docs
 pytest -q""")
 code("""Route Ranker/
-├── streamlit_app.py        app entry (navigation)
-├── app/common.py           shared UI helpers, IST clock, maps
-├── app/views/*.py          11 dashboard pages
-├── api/main.py             FastAPI backend
-├── src/routeranker/        ML package (config, data_collection, cleaning, feature_engineering, eda,
-│                           preprocessing, clustering, supervised, inference, optimization, gtfs,
-│                           diagrams, pipeline)
-├── tests/                  pytest suite
+├── backend/main.py         ALL backend code: config, data collection, cleaning, features,
+│                           preprocessing, clustering, classification, forecasting, optimisation,
+│                           inference service, GTFS analyser, diagrams, pipeline, FastAPI, CLI
+├── eda/main.py             ALL exploratory data analysis (+ eda/figures, eda/eda_summary.json)
+├── frontend/main.py        ALL frontend code: UI helpers + 11 Streamlit pages + navigation
+├── tests/                  pytest suite + page smoke test
 ├── reports/figures, reports/metrics   generated figures & JSON metrics
 ├── docs/                   this report + generator
 ├── scripts/                run_pipeline / run_app / run_api (.bat, .sh)
@@ -635,13 +637,13 @@ code("""Route Ranker/
 
 H("17. Milestone Mapping (from the project brief)")
 T(["Milestone / week", "Delivered"], [
-    ["M1 W1 - collect & load GTFS, inspect", "data_collection.py (7 MTA datasets incl. GTFS-derived routes/stops/schedules), manifest, Data & Coverage page"],
-    ["M1 W2 - clean, time features, passengers per route per hour, route profiles", "cleaning.py, feature_engineering.py"],
-    ["M2 W3 - EDA, heatmaps, hourly curves, overlap/underuse", "eda.py, EDA Insights page"],
-    ["M2 W4 - scaling, encoding, train/validation split", "preprocessing.py"],
-    ["M3 W5 - KMeans, DBSCAN, XGBoost, Random Forest, evaluation", "clustering.py, supervised.py, Model Performance page"],
-    ["M3 W6 - inference, merge/split/frequency suggestions, current vs optimised", "inference.py, optimization.py, Optimisation Actions page"],
-    ["M4 W7 - Streamlit dashboard, GTFS upload, clusters, scenarios", "11-page Streamlit app, GTFS analyser, Scenario Simulator"],
+    ["M1 W1 - collect & load GTFS, inspect", "backend/main.py §2 (MTA datasets incl. GTFS-derived routes/stops/schedules), manifest, Data & Coverage page"],
+    ["M1 W2 - clean, time features, passengers per route per hour, route profiles", "backend/main.py §3-4"],
+    ["M2 W3 - EDA, heatmaps, hourly curves, overlap/underuse", "eda/main.py, EDA Insights page"],
+    ["M2 W4 - scaling, encoding, train/validation split", "backend/main.py §5"],
+    ["M3 W5 - KMeans, DBSCAN, XGBoost, Random Forest, evaluation", "backend/main.py §6-7, Model Performance page"],
+    ["M3 W6 - inference, merge/split/frequency suggestions, current vs optimised", "backend/main.py §8-9, Optimisation Actions page"],
+    ["M4 W7 - Streamlit dashboard, GTFS upload, clusters, scenarios", "frontend/main.py (11 pages), GTFS analyser, Scenario Simulator"],
     ["M4 W8 - architecture docs, recommendations", "architecture & pipeline diagrams, README, this report"],
 ], [6.6, 10.0], size=8.5)
 
@@ -654,37 +656,62 @@ B(["Occupancy is estimated from boardings with a peak-load factor; automatic pas
    "current hour; plugging the MTA Bus Time (SIRI) live feed with an API key would add live vehicle positions.",
    "Journey mode covers direct routes only; transfers could be added with a graph search over shared stops.",
    "Indian GTFS feeds can be analysed on the supply side today; once ridership/ETM ticket data for an Indian "
-   "city is available the same pipeline can be retrained by changing `config.py` sources."])
+   "city is available the same pipeline can be retrained by changing the source list in `backend/main.py`."])
 
 # ---- function reference
 page_break()
 H("Appendix A - Function Reference")
-P("Generated automatically from the source code: every module, class and function with its signature and "
-  "docstring.")
-files = sorted((ROOT / "src" / "routeranker").glob("*.py")) + [ROOT / "api" / "main.py", ROOT / "app" / "common.py"]
-for fpath in files:
-    if fpath.name == "__init__.py":
-        continue
-    tree = ast.parse(fpath.read_text(encoding="utf-8"))
-    rel = fpath.relative_to(ROOT).as_posix()
-    H(rel, 2)
-    mdoc = ast.get_docstring(tree)
-    if mdoc:
-        P(mdoc.split("\n\n")[0].replace("\n", " "), italic=True)
+P("Generated automatically from the source code of the three main files (backend, eda, frontend): every "
+  "section, class and function with its signature and docstring.")
+MARKER = re.compile(r"^# (?:SECTION |PAGE: )?(.+?)\s*$")
+
+
+def _section_markers(src: str) -> list[tuple[int, str]]:
+    """(line number, title) of the '# ====' banner sections inside a main file."""
+    lines, out = src.split("\n"), []
+    for i in range(1, len(lines) - 1):
+        if lines[i - 1].startswith("# ====") and lines[i + 1].startswith("# ===="):
+            m = MARKER.match(lines[i])
+            if m:
+                out.append((i + 1, m.group(1)))
+    return out
+
+
+def _rows(nodes) -> list:
+    """Table rows (signature, first docstring paragraph) for functions, classes and methods."""
     rows = []
-    for node in tree.body:
+    for node in nodes:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             sig = f"{node.name}({ast.unparse(node.args)})"
             rows.append([f"`{sig}`", (ast.get_docstring(node) or "-").split("\n\n")[0].replace("\n", " ")])
         elif isinstance(node, ast.ClassDef):
             rows.append([f"`class {node.name}`", (ast.get_docstring(node) or "-").split("\n\n")[0].replace("\n", " ")])
             for sub in node.body:
-                if isinstance(sub, ast.FunctionDef) and not sub.name.startswith("__") or \
-                        (isinstance(sub, ast.FunctionDef) and sub.name == "__init__"):
+                if isinstance(sub, ast.FunctionDef) and (not sub.name.startswith("__") or sub.name == "__init__"):
                     sig = f"{node.name}.{sub.name}({ast.unparse(sub.args)})"
                     rows.append([f"`{sig}`", (ast.get_docstring(sub) or "-").split("\n\n")[0].replace("\n", " ")])
-    if rows:
-        T(["Function / class", "Description"], rows, [7.6, 9.0], size=8)
+    return rows
+
+
+for folder in ("backend", "eda", "frontend"):
+    fpath = ROOT / folder / "main.py"
+    src = fpath.read_text(encoding="utf-8")
+    tree = ast.parse(src)
+    H(f"{folder}/main.py", 2)
+    mdoc = ast.get_docstring(tree)
+    if mdoc:
+        P(mdoc.split("\n\n")[0].replace("\n", " "), italic=True)
+    marks = _section_markers(src)
+    groups: dict = {}
+    for node in tree.body:
+        title = next((t for ln, t in reversed(marks) if ln < node.lineno), "Module")
+        groups.setdefault(title, []).append(node)
+    for title, nodes in groups.items():
+        rows = _rows(nodes)
+        if rows:
+            if len(groups) > 1:
+                H(title, 3)
+            T(["Function / class", "Description"], rows, [7.6, 9.0], size=8)
 
 H("Appendix B - Configuration and Assumptions")
 T(["Setting", "Value"], [[k, json.dumps(v)] for k, v in MAN["assumptions"].items()], [6, 10.6])
@@ -718,7 +745,7 @@ def heading_pages(pdf: Path) -> list:
     texts = [pg.get_text() for pg in d]
     out, start = [], 2
     for text, lvl in HEADINGS:
-        if lvl > 2 or text.startswith("src/") or text.startswith("api/") or text.startswith("app/"):
+        if lvl > 2:
             continue
         key = " ".join(text.split())[:45]
         for i in range(start, len(texts)):

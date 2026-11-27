@@ -581,16 +581,16 @@
     "routes_modelled": 340
   },
   "figures": {
-    "hourly_curve": "reports\\figures\\eda_hourly_ridership_curve.png",
-    "daily_trend": "reports\\figures\\eda_daily_trend.png",
-    "dow_box": "reports\\figures\\eda_day_of_week_box.png",
-    "route_heatmap": "reports\\figures\\eda_route_density_heatmap.png",
-    "occupancy_distribution": "reports\\figures\\eda_occupancy_distribution.png",
-    "class_by_hour": "reports\\figures\\eda_class_share_by_hour.png",
-    "borough_type": "reports\\figures\\eda_borough_and_type.png",
-    "productivity_rank": "reports\\figures\\eda_productivity_top_bottom.png",
-    "speed_vs_load": "reports\\figures\\eda_speed_vs_occupancy.png",
-    "overlap": "reports\\figures\\eda_route_overlap.png",
-    "correlation": "reports\\figures\\eda_kpi_correlation.png"
+    "hourly_curve": "eda\\figures\\eda_hourly_ridership_curve.png",
+    "daily_trend": "eda\\figures\\eda_daily_trend.png",
+    "dow_box": "eda\\figures\\eda_day_of_week_box.png",
+    "route_heatmap": "eda\\figures\\eda_route_density_heatmap.png",
+    "occupancy_distribution": "eda\\figures\\eda_occupancy_distribution.png",
+    "class_by_hour": "eda\\figures\\eda_class_share_by_hour.png",
+    "borough_type": "eda\\figures\\eda_borough_and_type.png",
+    "productivity_rank": "eda\\figures\\eda_productivity_top_bottom.png",
+    "speed_vs_load": "eda\\figures\\eda_speed_vs_occupancy.png",
+    "overlap": "eda\\figures\\eda_route_overlap.png",
+    "correlation": "eda\\figures\\eda_kpi_correlation.png"
   }
 }

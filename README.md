@@ -25,7 +25,15 @@ It reconciles **4,354,344 raw hourly ridership records** with scheduled service,
 ## 2. System Architecture & Data Engineering Flowcharts
 
 ### 2.1 End-to-End Pipeline Architecture
-**Architecture type:** a layered **modular monolith**. A batch ML pipeline (offline training) feeds a shared **service layer** (`RouteRankerService`), which serves two presentation channels: a **Streamlit dashboard** and a **FastAPI REST API**. Storage is file-based (Parquet, joblib, JSON), so the whole system runs on a laptop.
+**Architecture type:** a layered **modular monolith**, organised into three folders, each with **one `main.py` that holds all of that folder's code**:
+
+| Folder | Main file | Contents |
+|---|---|---|
+| `backend/` | `backend/main.py` | configuration, data collection, cleaning, feature engineering, preprocessing, clustering, classification & forecasting models, optimisation, inference service (`RouteRankerService`), GTFS analyser, diagrams, training pipeline, **FastAPI REST API**, CLI |
+| `eda/` | `eda/main.py` | all exploratory data analysis → `eda/figures/*.png`, `eda/eda_summary.json` |
+| `frontend/` | `frontend/main.py` | UI helpers + all **11 Streamlit pages** + navigation |
+
+A batch ML pipeline (offline training) feeds the shared service layer, which serves the Streamlit frontend and the REST API. Storage is file-based (Parquet, joblib, JSON), so the whole system runs on a laptop.
 
 ```mermaid
 flowchart TD
@@ -43,7 +51,7 @@ flowchart TD
     end
 
     subgraph ML ["3. EDA, Preprocessing & Machine Learning"]
-        H["EDA (11 figures + JSON summary)"]
+        H["eda/main.py: EDA<br/>(11 figures + JSON summary)"]
         I["Chronological split + Profile Encoder<br/>(train to 2026-10-20 · validate last 28 days)"]
         J["K-Means (k=7) + DBSCAN<br/>(route segments + 13 outliers)"]
         K["RF / XGBoost Classifier<br/>(macro-F1 0.871)"]
@@ -51,9 +59,9 @@ flowchart TD
     end
 
     subgraph App ["4. Service & Application Layer"]
-        M["RouteRankerService<br/>(predict · rank · explain · validate · optimise · simulate)"]
-        N["Streamlit Dashboard<br/>(11 pages, IST clock)"]
-        O["FastAPI REST API<br/>(/api/best-route, /api/predict ...)"]
+        M["backend/main.py: RouteRankerService<br/>(predict · rank · explain · validate · optimise · simulate)"]
+        N["frontend/main.py: Streamlit Dashboard<br/>(11 pages, IST clock)"]
+        O["backend/main.py: FastAPI REST API<br/>(/api/best-route, /api/predict ...)"]
     end
 
     A --> E
@@ -137,8 +145,8 @@ Methods: descriptive statistics (incl. skewness and kurtosis), hour-of-day curve
 
 | | |
 |---|---|
-| ![](reports/figures/eda_hourly_ridership_curve.png) | ![](reports/figures/eda_route_density_heatmap.png) |
-| ![](reports/figures/eda_daily_trend.png) | ![](reports/figures/eda_kpi_correlation.png) |
+| ![](eda/figures/eda_hourly_ridership_curve.png) | ![](eda/figures/eda_route_density_heatmap.png) |
+| ![](eda/figures/eda_daily_trend.png) | ![](eda/figures/eda_kpi_correlation.png) |
 
 ### 3.5 Unsupervised Route Profiling (K-Means + DBSCAN)
 **K-Means** (partitional, centroid-based, k chosen by silhouette over k = 4…10) runs on 15 standardised route-profile features. **DBSCAN** (density-based, eps = 2.38 from the k-distance knee, min_samples = 6) is used as an outlier detector.
@@ -261,7 +269,7 @@ Clustering, classifier and forecaster diagnostics; interactive EDA; data sources
 | `GET /api/recommendations?date_ist=...` | optimisation actions and network impact |
 | `POST /api/simulate` | scenario simulation (JSON body) |
 
-Interactive docs are at `http://localhost:8000/docs`.
+Start it with `python backend/main.py serve`; interactive docs are at `http://localhost:8000/docs`.
 
 ---
 
@@ -275,28 +283,24 @@ Interactive docs are at `http://localhost:8000/docs`.
 
 ```text
 Route Ranker/
-├── streamlit_app.py            # Streamlit entry point (navigation, IST clock)
-├── app/
-│   ├── common.py               # shared UI helpers, IST pickers, maps
-│   └── views/                  # 11 dashboard pages
-├── api/main.py                 # FastAPI backend
-├── src/routeranker/            # ML package
-│   ├── config.py               # paths, sources, assumptions
-│   ├── data_collection.py      # 1. Data collection (SODA / SoQL)
-│   ├── cleaning.py             # 2a. Cleaning
-│   ├── feature_engineering.py  # 2b. Feature engineering
-│   ├── eda.py                  # 3. EDA
-│   ├── preprocessing.py        # 4. Preprocessing (split, encoding, scaling)
-│   ├── clustering.py           # 5a. K-Means, DBSCAN, overlap
-│   ├── supervised.py           # 5b. RF / XGBoost classifier + forecaster
-│   ├── inference.py            # 6a. Prediction, ranking, explanation, validation
-│   ├── optimization.py         # 6b. Recommendations, scenario simulator
-│   ├── gtfs.py                 # GTFS upload analyser
-│   ├── diagrams.py             # architecture / pipeline / model figures
-│   └── pipeline.py             # end-to-end orchestration
-├── tests/                      # unit tests + page smoke test
-├── reports/figures/            # EDA, model, architecture figures + app screenshots
-├── reports/metrics/            # EDA summary, model metrics, pipeline manifest (JSON)
+├── backend/
+│   ├── main.py                 # ALL backend code, in numbered sections:
+│   │                           #  1 config · 2 data collection · 3 cleaning · 4 feature engineering
+│   │                           #  5 preprocessing · 6 clustering · 7 classification + forecasting
+│   │                           #  8 optimisation · 9 inference service · 10 GTFS analyser
+│   │                           #  11 diagrams · 12 training pipeline · 13 FastAPI · 14 CLI
+│   └── README.md
+├── eda/
+│   ├── main.py                 # ALL exploratory data analysis
+│   ├── figures/                # 11 EDA figures (PNG)
+│   ├── eda_summary.json        # statistics, peak windows, outliers, correlations ...
+│   └── README.md
+├── frontend/
+│   ├── main.py                 # ALL frontend code: UI helpers + 11 Streamlit pages + navigation
+│   └── README.md
+├── tests/                      # unit tests (backend) + headless smoke test of every page
+├── reports/figures/            # model + architecture figures, app screenshots
+├── reports/metrics/            # model metrics, pipeline manifest, cleaning report (JSON)
 ├── docs/                       # Project report (.docx / .pdf) + generator
 ├── scripts/                    # run_pipeline / run_app / run_api (.bat / .sh)
 ├── requirements.txt · pyproject.toml · LICENSE
@@ -316,24 +320,28 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 2. Download data & train all models
+### 2. Backend: download data & train all models
 First run ≈ 35 min download + ≈ 15 min training. Later runs only fetch the newest month.
 ```bash
-set PYTHONPATH=src              # macOS/Linux: export PYTHONPATH=src
-python -m routeranker.pipeline  # or scripts\run_pipeline.bat
+python backend/main.py train      # or: python backend/main.py collect  (download only)
 ```
 
-### 3. Start the dashboard
+### 3. EDA: run the exploratory data analysis
 ```bash
-streamlit run streamlit_app.py  # http://localhost:8501
+python eda/main.py                # -> eda/figures/*.png, eda/eda_summary.json
 ```
 
-### 4. (Optional) Start the REST API
+### 4. Frontend: start the dashboard
 ```bash
-uvicorn api.main:app --port 8000   # http://localhost:8000/docs
+streamlit run frontend/main.py    # http://localhost:8501
 ```
 
-### 5. Tests & documentation
+### 5. Backend API (optional)
+```bash
+python backend/main.py serve      # http://localhost:8000/docs   (or: uvicorn backend.main:app --port 8000)
+```
+
+### 6. Tests & documentation
 ```bash
 pytest -q                          # unit tests
 python tests/smoke_pages.py        # headless test of every dashboard page
