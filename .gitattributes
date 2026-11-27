@@ -1,0 +1,4 @@
+# Files whose sha256 is recorded in a manifest must have the same bytes on every checkout.
+# Without this, Git on Windows (core.autocrlf=true) writes CRLF line endings into a fresh clone, the hash changes,
+# and the import refuses: "group_names.json: sha256 ... differs from its manifest".
+analytics/config/*.json text eol=lf
