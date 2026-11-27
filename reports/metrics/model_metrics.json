@@ -1,0 +1,473 @@
+{
+  "clustering": {
+    "k_selection": [
+      {
+        "k": 2,
+        "inertia": 2879.5286,
+        "silhouette": 0.4437,
+        "davies_bouldin": 0.9919,
+        "calinski_harabasz": 260.6397
+      },
+      {
+        "k": 3,
+        "inertia": 2448.7773,
+        "silhouette": 0.2189,
+        "davies_bouldin": 1.4812,
+        "calinski_harabasz": 182.4302
+      },
+      {
+        "k": 4,
+        "inertia": 2165.3197,
+        "silhouette": 0.205,
+        "davies_bouldin": 1.5724,
+        "calinski_harabasz": 151.7948
+      },
+      {
+        "k": 5,
+        "inertia": 1958.9669,
+        "silhouette": 0.1928,
+        "davies_bouldin": 1.5464,
+        "calinski_harabasz": 134.2858
+      },
+      {
+        "k": 6,
+        "inertia": 1778.2211,
+        "silhouette": 0.2058,
+        "davies_bouldin": 1.2996,
+        "calinski_harabasz": 124.7847
+      },
+      {
+        "k": 7,
+        "inertia": 1604.4338,
+        "silhouette": 0.2156,
+        "davies_bouldin": 1.2898,
+        "calinski_harabasz": 120.9174
+      },
+      {
+        "k": 8,
+        "inertia": 1507.5072,
+        "silhouette": 0.2091,
+        "davies_bouldin": 1.3132,
+        "calinski_harabasz": 113.0255
+      },
+      {
+        "k": 9,
+        "inertia": 1424.1719,
+        "silhouette": 0.2083,
+        "davies_bouldin": 1.3799,
+        "calinski_harabasz": 106.7901
+      },
+      {
+        "k": 10,
+        "inertia": 1344.3551,
+        "silhouette": 0.2147,
+        "davies_bouldin": 1.3255,
+        "calinski_harabasz": 102.4335
+      }
+    ],
+    "kmeans": {
+      "k": 7,
+      "silhouette": 0.2156469125121682,
+      "davies_bouldin": 1.2897791967204364,
+      "calinski_harabasz": 120.91737588532142,
+      "cluster_sizes": {
+        "0": 40,
+        "1": 60,
+        "2": 25,
+        "3": 75,
+        "4": 35,
+        "5": 3,
+        "6": 102
+      },
+      "cluster_names": {
+        "0": "Express Long-Haul / Fast",
+        "1": "High-Volume / Crowded",
+        "2": "Express Long-Haul / AM-Peak Commuter",
+        "3": "Reliable / Night-Owl",
+        "4": "Express AM-Peak Commuter / Weekday-Focused",
+        "5": "Limited Off-Peak / Unreliable",
+        "6": "Unreliable / Slow"
+      }
+    },
+    "dbscan": {
+      "eps": 2.380011706929997,
+      "min_samples": 6,
+      "n_clusters": 2,
+      "n_outliers": 13,
+      "silhouette_non_noise": 0.19468705747023113
+    },
+    "pca_explained_variance": [
+      0.5473,
+      0.1344
+    ]
+  },
+  "classification": {
+    "best": "XGBoost",
+    "RandomForest": {
+      "train_seconds": 120.2,
+      "train_rows": 400000,
+      "accuracy": 0.8880774586883341,
+      "balanced_accuracy": 0.9018167246485812,
+      "f1_macro": 0.870255528288733,
+      "f1_weighted": 0.8897670776194295,
+      "report": {
+        "Underutilized": {
+          "precision": 0.7873147043789402,
+          "recall": 0.9303601540281378,
+          "f1-score": 0.8528811213012631,
+          "support": 39733.0
+        },
+        "Balanced": {
+          "precision": 0.9540571638974548,
+          "recall": 0.8707311540691081,
+          "f1-score": 0.9104916851879508,
+          "support": 119031.0
+        },
+        "Overcrowded": {
+          "precision": 0.7971798410862835,
+          "recall": 0.9043588658484977,
+          "f1-score": 0.8473937783769852,
+          "support": 23630.0
+        },
+        "accuracy": 0.8880774586883341,
+        "macro avg": {
+          "precision": 0.8461839031208928,
+          "recall": 0.9018167246485812,
+          "f1-score": 0.870255528288733,
+          "support": 182394.0
+        },
+        "weighted avg": {
+          "precision": 0.8974095259155194,
+          "recall": 0.8880774586883341,
+          "f1-score": 0.8897670776194295,
+          "support": 182394.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          36966,
+          2761,
+          6
+        ],
+        [
+          9956,
+          103644,
+          5431
+        ],
+        [
+          30,
+          2230,
+          21370
+        ]
+      ]
+    },
+    "XGBoost": {
+      "train_seconds": 393.5,
+      "train_rows": 1500000,
+      "best_iteration": 498,
+      "accuracy": 0.8873701985810937,
+      "balanced_accuracy": 0.9143380859826377,
+      "f1_macro": 0.8704672715752811,
+      "f1_weighted": 0.8893963035163719,
+      "report": {
+        "Underutilized": {
+          "precision": 0.7917270479924985,
+          "recall": 0.9350162333576624,
+          "f1-score": 0.8574264052528936,
+          "support": 39733.0
+        },
+        "Balanced": {
+          "precision": 0.9644968740275538,
+          "recall": 0.8592887567104368,
+          "f1-score": 0.9088582624690107,
+          "support": 119031.0
+        },
+        "Overcrowded": {
+          "precision": 0.7619209461985521,
+          "recall": 0.9487092678798138,
+          "f1-score": 0.8451171470039395,
+          "support": 23630.0
+        },
+        "accuracy": 0.8873701985810937,
+        "macro avg": {
+          "precision": 0.8393816227395346,
+          "recall": 0.9143380859826377,
+          "f1-score": 0.8704672715752811,
+          "support": 182394.0
+        },
+        "weighted avg": {
+          "precision": 0.9006157558304083,
+          "recall": 0.8873701985810937,
+          "f1-score": 0.8893963035163719,
+          "support": 182394.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          37151,
+          2565,
+          17
+        ],
+        [
+          9761,
+          102282,
+          6988
+        ],
+        [
+          12,
+          1200,
+          22418
+        ]
+      ]
+    },
+    "feature_importance": {
+      "RandomForest": {
+        "te_occ_route_hour": 0.32447,
+        "te_route_dow_hour": 0.15514,
+        "te_route_daytype_hour": 0.12444,
+        "te_route_hour": 0.08687,
+        "trips": 0.04039,
+        "speed_mph": 0.03372,
+        "te_route": 0.03273,
+        "month": 0.02748,
+        "hour_cos": 0.02478,
+        "hour": 0.02103,
+        "trip_minutes": 0.0166,
+        "is_night": 0.01576,
+        "route_code": 0.01197,
+        "length_mi": 0.01111,
+        "stop_density": 0.00796,
+        "capacity": 0.00779,
+        "reliability": 0.00588,
+        "dow": 0.00579,
+        "dow_sin": 0.00579,
+        "is_holiday": 0.0054,
+        "hour_sin": 0.00515,
+        "rt_Express": 0.00406,
+        "n_stops": 0.00398,
+        "dow_cos": 0.00386,
+        "boro_Manhattan": 0.00203,
+        "is_peak": 0.00196,
+        "is_summer": 0.00194,
+        "rt_Local": 0.00191,
+        "boro_Queens": 0.00171,
+        "is_weekend": 0.00119,
+        "rt_Select Bus Service": 0.00113,
+        "boro_Queens (Express)": 0.00105,
+        "boro_Bronx": 0.00086,
+        "is_am_peak": 0.0008,
+        "boro_Brooklyn": 0.00064,
+        "is_pm_peak": 0.00062,
+        "boro_Staten Island": 0.00057,
+        "rt_Limited": 0.0005,
+        "boro_Bronx (Express)": 0.0004,
+        "boro_Staten Island (Express)": 0.00037,
+        "boro_Brooklyn (Express)": 9e-05,
+        "boro_Express": 5e-05
+      },
+      "XGBoost": {
+        "te_occ_route_hour": 0.37841999530792236,
+        "te_route_dow_hour": 0.1150600016117096,
+        "rt_Express": 0.05722999945282936,
+        "trips": 0.050289999693632126,
+        "rt_Select Bus Service": 0.049059998244047165,
+        "capacity": 0.047589998692274094,
+        "is_holiday": 0.0451200008392334,
+        "te_route_daytype_hour": 0.03982999920845032,
+        "te_route_hour": 0.018489999696612358,
+        "month": 0.017629999667406082,
+        "rt_Local": 0.01640000008046627,
+        "is_weekend": 0.011800000444054604,
+        "rt_Limited": 0.01018999982625246,
+        "dow": 0.009340000338852406,
+        "dow_cos": 0.009170000441372395,
+        "is_peak": 0.008910000324249268,
+        "boro_Queens": 0.0076299998909235,
+        "dow_sin": 0.0070500001311302185,
+        "boro_Brooklyn": 0.0065899998880922794,
+        "boro_Manhattan": 0.006399999838322401,
+        "stop_density": 0.0058200000785291195,
+        "is_summer": 0.0057299998588860035,
+        "boro_Bronx": 0.00571999978274107,
+        "te_route": 0.0055599999614059925,
+        "length_mi": 0.0048500001430511475,
+        "hour_sin": 0.004639999940991402,
+        "hour": 0.0044999998062849045,
+        "hour_cos": 0.004470000043511391,
+        "boro_Bronx (Express)": 0.004379999823868275,
+        "route_code": 0.004220000002533197,
+        "is_am_peak": 0.0038799999747425318,
+        "n_stops": 0.003860000055283308,
+        "is_night": 0.003759999992325902,
+        "boro_Staten Island": 0.0036100000143051147,
+        "reliability": 0.0034799999557435513,
+        "boro_Queens (Express)": 0.003169999923557043,
+        "speed_mph": 0.0030300000216811895,
+        "trip_minutes": 0.002959999954327941,
+        "is_pm_peak": 0.0028800000436604023,
+        "boro_Staten Island (Express)": 0.0026199999265372753,
+        "boro_Brooklyn (Express)": 0.002369999885559082,
+        "boro_Express": 0.0022700000554323196
+      }
+    },
+    "class_distribution_train": {
+      "Balanced": 1641344,
+      "Underutilized": 631254,
+      "Overcrowded": 252507
+    },
+    "class_distribution_valid": {
+      "Balanced": 119031,
+      "Underutilized": 39733,
+      "Overcrowded": 23630
+    }
+  },
+  "forecasting": {
+    "best": "RandomForest",
+    "SeasonalProfileBaseline": {
+      "mae": 27.71892395802341,
+      "rmse": 57.92533446228143,
+      "r2": 0.9209784613322717,
+      "wape": 0.20151809312043995
+    },
+    "RandomForest": {
+      "train_seconds": 200.5,
+      "train_rows": 500000,
+      "mae": 18.358096745394583,
+      "rmse": 39.22433329086888,
+      "r2": 0.9637657294666853,
+      "wape": 0.13346436734177886
+    },
+    "XGBoost": {
+      "train_seconds": 84.9,
+      "best_iteration": 137,
+      "mae": 18.50970854997224,
+      "rmse": 40.06320618125877,
+      "r2": 0.9621993049137401,
+      "wape": 0.13456659345269517
+    },
+    "feature_importance": {
+      "RandomForest": {
+        "te_route_daytype_hour": 0.43072,
+        "te_route_dow_hour": 0.33109,
+        "trips": 0.09393,
+        "te_route_hour": 0.07683,
+        "te_occ_route_hour": 0.02234,
+        "month": 0.01569,
+        "te_route": 0.00688,
+        "speed_mph": 0.00264,
+        "trip_minutes": 0.00231,
+        "dow_sin": 0.00195,
+        "dow": 0.00172,
+        "dow_cos": 0.00162,
+        "hour_cos": 0.00158,
+        "route_code": 0.00155,
+        "reliability": 0.00151,
+        "stop_density": 0.00139,
+        "length_mi": 0.00122,
+        "hour": 0.00105,
+        "hour_sin": 0.00091,
+        "n_stops": 0.00067,
+        "is_holiday": 0.00059,
+        "is_peak": 0.00029,
+        "is_summer": 0.00028,
+        "is_weekend": 0.00022,
+        "boro_Bronx": 0.00011,
+        "is_pm_peak": 0.00011,
+        "boro_Queens": 0.0001,
+        "is_am_peak": 0.0001,
+        "boro_Manhattan": 9e-05,
+        "rt_Local": 8e-05,
+        "boro_Brooklyn": 7e-05,
+        "rt_Limited": 7e-05,
+        "boro_Staten Island": 5e-05,
+        "capacity": 5e-05,
+        "is_night": 4e-05,
+        "boro_Bronx (Express)": 4e-05,
+        "rt_Select Bus Service": 4e-05,
+        "boro_Queens (Express)": 3e-05,
+        "boro_Brooklyn (Express)": 3e-05,
+        "boro_Staten Island (Express)": 2e-05,
+        "rt_Express": 2e-05,
+        "boro_Express": 1e-05
+      },
+      "XGBoost": {
+        "te_route_daytype_hour": 0.44464999437332153,
+        "te_route_dow_hour": 0.3688099980354309,
+        "trips": 0.10941000282764435,
+        "is_weekend": 0.018120000138878822,
+        "te_route_hour": 0.016119999811053276,
+        "te_occ_route_hour": 0.009180000051856041,
+        "month": 0.008820000104606152,
+        "dow_cos": 0.004189999774098396,
+        "is_holiday": 0.0034000000450760126,
+        "dow": 0.0028699999675154686,
+        "dow_sin": 0.0018899999558925629,
+        "capacity": 0.0017999999690800905,
+        "is_peak": 0.0008299999753944576,
+        "boro_Staten Island (Express)": 0.0007600000244565308,
+        "rt_Limited": 0.0007399999885819852,
+        "boro_Staten Island": 0.000699999975040555,
+        "boro_Brooklyn (Express)": 0.0006500000017695129,
+        "hour_sin": 0.0005099999834783375,
+        "is_summer": 0.0004600000102072954,
+        "hour": 0.0004199999966658652,
+        "is_pm_peak": 0.00039999998989515007,
+        "boro_Bronx (Express)": 0.0003600000054575503,
+        "hour_cos": 0.00031999999191612005,
+        "te_route": 0.0003100000030826777,
+        "boro_Bronx": 0.0003100000030826777,
+        "route_code": 0.0002899999963119626,
+        "is_am_peak": 0.0002899999963119626,
+        "rt_Select Bus Service": 0.0002699999895412475,
+        "rt_Local": 0.0002699999895412475,
+        "boro_Express": 0.0002500000118743628,
+        "stop_density": 0.0002500000118743628,
+        "is_night": 0.0002500000118743628,
+        "length_mi": 0.00023999999393709004,
+        "boro_Queens (Express)": 0.00023999999393709004,
+        "boro_Manhattan": 0.0002300000051036477,
+        "rt_Express": 0.00022000000171829015,
+        "n_stops": 0.00022000000171829015,
+        "boro_Queens": 0.0002099999983329326,
+        "trip_minutes": 0.0002099999983329326,
+        "reliability": 0.0001900000061141327,
+        "speed_mph": 0.00016999999934341758,
+        "boro_Brooklyn": 0.00015999999595806003
+      }
+    }
+  },
+  "optimisation_impact_validation": {
+    "route_hours": 182394,
+    "overcrowded_share_now": 0.12955470026426308,
+    "overcrowded_share_opt": 0.0,
+    "underutilized_share_now": 0.2178415956665241,
+    "underutilized_share_opt": 0.10770091121418468,
+    "balanced_share_now": 0.6526037040692128,
+    "balanced_share_opt": 0.8922990887858153,
+    "trips_now": 1870638.0,
+    "trips_opt": 2019400.0,
+    "veh_hours_now": 291000.40625,
+    "veh_hours_opt": 327088.25,
+    "productivity_now": 207.34695434570312,
+    "productivity_opt": 184.47024536132812,
+    "mean_wait_now": 10.120759963989258,
+    "mean_wait_opt": 12.794554710388184
+  },
+  "split": {
+    "train_rows": 3141600,
+    "valid_rows": 228480,
+    "cutoff": "2026-10-21",
+    "train_start": "2025-10-01",
+    "valid_end": "2026-11-17"
+  },
+  "figures": {
+    "k_selection": "reports\\figures\\model_kmeans_k_selection.png",
+    "clusters_pca": "reports\\figures\\model_clusters_pca.png",
+    "confusion": "reports\\figures\\model_confusion_matrices.png",
+    "importance": "reports\\figures\\model_feature_importance.png",
+    "forecast_fit": "reports\\figures\\model_forecast_validation.png",
+    "forecast_comparison": "reports\\figures\\model_forecast_comparison.png",
+    "architecture": "reports\\figures\\architecture_diagram.png",
+    "pipeline": "reports\\figures\\pipeline_diagram.png"
+  }
+}

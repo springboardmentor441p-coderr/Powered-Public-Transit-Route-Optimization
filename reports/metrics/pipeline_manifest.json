@@ -1,0 +1,117 @@
+{
+  "built_at_ist": "2026-11-27 17:00:06 IST",
+  "data_start": "2025-10-01",
+  "data_end": "2026-11-17",
+  "last_timestamp_local": "2026-11-17 23:00:00",
+  "granularity": "hourly",
+  "routes": 340,
+  "route_hours": 3370080,
+  "stage_seconds": {
+    "1_data_collection": 0.4,
+    "2_cleaning": 31.4,
+    "3_feature_engineering": 10.1,
+    "4_eda": 10.5,
+    "5_preprocessing": 10.1,
+    "6_clustering": 0.7,
+    "7_classification": 517.7,
+    "8_forecasting": 285.8,
+    "9_optimisation": 0.2,
+    "10_persist": 14.0
+  },
+  "total_seconds": 880.9,
+  "sources": {
+    "ridership": {
+      "id": "gxb3-akrn",
+      "name": "MTA Bus Hourly Ridership: Beginning 2025",
+      "url": "https://data.ny.gov/d/gxb3-akrn",
+      "granularity": "Hourly x route x fare class",
+      "role": "Target variable - boardings per route per hour"
+    },
+    "schedules": {
+      "id": "4fnn-qsea",
+      "name": "MTA Bus Schedules: 2026 (GTFS-derived)",
+      "url": "https://data.ny.gov/d/4fnn-qsea",
+      "granularity": "Stop-level scheduled trips",
+      "role": "Scheduled trips per route per hour, route length, stops"
+    },
+    "segment_speeds": {
+      "id": "kufs-yh3x",
+      "name": "MTA Bus Route Segment Speeds: Beginning 2025",
+      "url": "https://data.ny.gov/d/kufs-yh3x",
+      "granularity": "Hourly x route x day-of-week x segment",
+      "role": "Hourly operating speed per route"
+    },
+    "route_speeds": {
+      "id": "cudb-vcni",
+      "name": "MTA Bus Speeds: Beginning 2015",
+      "url": "https://data.ny.gov/d/cudb-vcni",
+      "granularity": "Monthly x route x peak/off-peak",
+      "role": "Fallback route speed"
+    },
+    "wait_assessment": {
+      "id": "v4z4-2h6n",
+      "name": "MTA Bus Wait Assessment: Beginning 2015",
+      "url": "https://data.ny.gov/d/v4z4-2h6n",
+      "granularity": "Monthly x route x peak/off-peak",
+      "role": "Service reliability"
+    },
+    "fare_evasion": {
+      "id": "uv5h-dfhp",
+      "name": "MTA Bus Fare Evasion: Beginning 2019",
+      "url": "https://data.ny.gov/d/uv5h-dfhp",
+      "granularity": "Quarterly x trip type",
+      "role": "Paid-to-actual rider correction (ridership counts paid boardings)"
+    },
+    "routes": {
+      "id": "bzwk-3hb4",
+      "name": "MTA Bus Routes (GTFS routes + shapes)",
+      "url": "https://data.ny.gov/d/bzwk-3hb4",
+      "granularity": "Route x direction x shape",
+      "role": "Route names, type, colour, geometry"
+    },
+    "stops": {
+      "id": "2ucp-7wg5",
+      "name": "MTA Bus Stops (GTFS stops)",
+      "url": "https://data.ny.gov/d/2ucp-7wg5",
+      "granularity": "Route x stop",
+      "role": "Stop locations, overlap detection, maps"
+    }
+  },
+  "raw_rows": {
+    "ridership": 4354344,
+    "tph": 45698,
+    "geo": 3541,
+    "seg": 49836,
+    "monthly": 1379,
+    "wait": 687,
+    "routes": 1657,
+    "stops": 23257,
+    "evasion": 102
+  },
+  "assumptions": {
+    "vehicle_capacity": {
+      "Local": 65,
+      "Limited": 65,
+      "Select Bus Service": 95,
+      "Express": 57,
+      "Other": 65
+    },
+    "peak_load_factor": 0.55,
+    "fare_evasion_rates": {
+      "Local": 0.4898,
+      "Limited": 0.4898,
+      "Select Bus Service": 0.506,
+      "Express": 0.055,
+      "Other": 0.4825
+    },
+    "threshold_quantiles": [
+      0.25,
+      0.9
+    ],
+    "underutilized_max": 0.061202265322208405,
+    "overcrowded_min": 0.4218745231628418,
+    "target_occupancy": 0.33170645870268345,
+    "min_trips_per_hour": 2,
+    "validation_days": 28
+  }
+}

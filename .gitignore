@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Data & trained artefacts (re-create with: python -m routeranker.pipeline)
+data/raw/
+data/processed/
+models/*.joblib
+*.log
+
+# Local / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.streamlit/secrets.toml
+~$*.docx
+docs/.toc_pages.json
