@@ -253,11 +253,11 @@ The end-to-end path through every stage, with the commands, is in [docs/INTEGRAT
 | Pipeline + API tests (pytest; database tests use `routeranker_test`) | `python -m pytest` (repo root) | 389 passed |
 | Frontend unit tests | `npx vitest run` (`frontend\`) | 117 passed |
 | Type check, lint, build | `npx tsc -b`, `npm run lint`, `npm run build` (`frontend\`) | clean |
-| Browser click-through, all screens | `node scripts\clickthrough.mjs` | 8 of 8 |
-| Replay and scenario browser checks (test database only) | `node scripts\replay_check.mjs <folder>`, `node scripts\scenario_check.mjs <folder>` | all checks pass |
+| Browser click-through, all screens | `node scripts\clickthrough.mjs` (`frontend\`) | 8 of 8 |
+| Replay and scenario browser checks (test database only) | `node scripts\replay_check.mjs <folder>`, `node scripts\scenario_check.mjs <folder>` (`frontend\`) | replay 28 of 28; scenarios 72 checks, 0 failures |
 
 - The integration tests skip until the stage they check has been run.
-- A full pytest run takes about 30 minutes and empties `routeranker_test` afterwards.
+- A full pytest run takes 8–30 minutes, depending on the machine, and empties `routeranker_test` afterwards.
 - The replay and scenario browser checks create sessions and scenarios that can never be deleted. So they refuse to run unless the API reports `routeranker_test`.
 - How to run them on temporary ports: [docs/SETUP.md](docs/SETUP.md#browser-checks).
 

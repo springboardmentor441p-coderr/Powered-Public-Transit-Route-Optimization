@@ -106,7 +106,7 @@ python -m pytest
 ```
 - The pipeline tests need the processed data. The API tests need `TEST_DATABASE_URL`.
 - Integration tests skip until the stage they check has been run.
-- A full run takes about 30 minutes and leaves `routeranker_test` empty.
+- A full run takes 8–30 minutes, depending on the machine, and leaves `routeranker_test` empty.
 
 From `frontend\`:
 ```

@@ -2000,3 +2000,42 @@ Format per step: **Built · Why · Key concept · Decisions · Results · Interv
   - The docs describe only the project.
 - **Results:** the docs are committed. The evaluation report follows after the fresh-setup run and the final test run, so it can quote their results.
 - **Interview Q:** *"How do you keep documentation from going stale?"* Quote numbers from generated reports, not memory. Re-run a check that compares the docs with their sources before each release, and write down which source each number came from.
+
+## Step 108: The fresh-setup run, and a bug only a fresh clone could find (`.gitattributes`)
+- **Built:** spec 9.18's Stage 9 evidence: "fresh setup runs the documented replay".
+  - The branch was cloned into a new folder, with a new venv, `pip install -r requirements.txt` and `npm ci`.
+  - The existing data was given to it as read-only hard links, and the gitignored model files were copied in.
+  - Then the steps in `docs/SETUP.md` ran on `routeranker_test`: the imports, an API on 8010 and Vite on 5180 from the clone, and the three browser checks.
+- **The bug:**
+  - The first clone's import refused: *"group_names.json: sha256 484564bfa228… differs from its manifest 7104d7cde764…"*.
+  - Git on Windows has `core.autocrlf=true`, so a checkout rewrites LF line endings as CRLF. The file *looks* identical but its bytes, and so its hash, change.
+  - Our own working copy never showed this, because it was never checked out fresh.
+  - **Fix:** `.gitattributes` keeps `analytics/config/*.json` at LF on checkout. The committed files were already LF (checked: 0 CR bytes, and the hashes equal the manifests), so no content changed. A troubleshooting row was added to SETUP.
+- **Why a fresh clone:** "it works on my machine" checks the machine, not the instructions. Only a clean copy shows what the instructions leave out.
+- **Key concept:** *hash the bytes, then protect the bytes*. A content hash is strict on purpose: it changes when a single invisible `\r` is added. So every file whose hash is recorded must also be protected from tools that "helpfully" rewrite it.
+- **Decisions:**
+  - Junctions didn't work. Python's `resolve()` follows the link back to the real repo, so the importer correctly refused a path outside its repo. Hard links give real paths inside the clone with no extra disk.
+  - The pipeline stages weren't re-run (hours of downloads and training). Their reports and hashes stand, and the import re-checks every hash anyway.
+  - After the fix, a **second brand-new clone** was used, not the patched first one.
+  - The clones (which held a copy of `.env`) and the temporary servers were removed. The repo's 131 data files were checked before and after.
+- **Results (second clone):**
+  - import: 9/9 identities;
+  - 14,036 forecasts with content hash `5d5bb651…` (the same as Stage 7), and the consistency check reproduces 398.0115 vs 421.1546 exactly;
+  - the 3 examples have the same ids and hashes;
+  - replay check 28/28 in four runs, scenario check 72 checks with 0 failures, click-through 8/8 in four runs.
+- **Interview Q:** *"What's the most useful test you ran at the end of the project?"* Cloning it fresh and following my own README. It found a bug every other test missed: Windows line-ending conversion changed a hashed config file, so a new user's import would have been refused.
+
+## Step 109: Stage 9 evaluation report and final checks (`reports/stage9_evaluation_report.md`)
+- **Built:** the final evaluation in one place:
+  - data quality, forecasting results, replay, groups and rankings, scenarios;
+  - a requirement → evidence table for all 9 stages, plus the Stage 9 requirements D1–D13 with their spec references;
+  - each spec 9.19.1 correctness case → the test that proves it;
+  - the fresh-setup result, the test counts, how the figures were checked, and the limitations, each tied to its spec section.
+- **Why:** spec 9.18 row 9 asks for an evaluation report and limitations, and 9.19.2 asks to report baselines, common-row errors, per-route results and coverage, with the serving method frozen before final scoring.
+- **Key concept:** *one table from requirement to proof*. A reviewer shouldn't have to trust a summary. Every row names the file or test that shows it, so it can be checked in minutes.
+- **Decisions:** the report was written only after the fresh-setup run and the final tests, so it quotes their real results, not expected ones.
+- **Results:**
+  - backend and pipeline: **389 passed** (8 min 4 s);
+  - frontend: vitest 117 passed, tsc, lint and build clean;
+  - figures: 22 of 22 match.
+- **Interview Q:** *"Your model wins on only 29 of 61 days. Is it actually better?"* Over all 6,542 route-days its average miss is 5.5 % lower, on exactly the same rows as the baseline, and it was chosen before the test was scored. But day-to-day noise is large, so the honest summary is "modestly better over a period, not every day", and the report says exactly that.
